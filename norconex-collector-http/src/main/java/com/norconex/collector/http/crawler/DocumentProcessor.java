@@ -73,6 +73,8 @@ import com.norconex.importer.filter.OnMatch;
     private RobotsTxt robotsTxt;
     private RobotsMeta robotsMeta;
     
+    public static String StatusMeta = "status-code"; 
+    
     // Order is important.
     private final IURLProcessingStep[] steps = new IURLProcessingStep[] {
         new DelayResolverStep(),
@@ -192,6 +194,8 @@ import com.norconex.importer.filter.OnMatch;
             if (status == CrawlStatus.OK) {
                 HttpCrawlerEventFirer.fireDocumentFetched(
                         crawler, doc, config.getHttpDocumentFetcher());
+            } else if (status == CrawlStatus.NOT_FOUND) {
+                doc.getMetadata().addInt(StatusMeta, 404);
             }
             crawlURL.setStatus(status);
             if (crawlURL.getStatus() != CrawlStatus.OK) {

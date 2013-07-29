@@ -61,6 +61,7 @@ public class HttpCrawler extends AbstractResumableJob {
     private DefaultHttpClient httpClient;
     private boolean stopped;
     private int okURLsCount;
+    private int notFoundCount;
     
 	public HttpCrawler(
 	        HttpCrawlerConfig crawlerConfig) {
@@ -176,7 +177,8 @@ public class HttpCrawler extends AbstractResumableJob {
                     + ": committing documents.");
             committer.commit();
         }
-        
+        LOG.info("There are " + notFoundCount + " broken links (status 404) " 
+                + "have been found.");
         watch.stop();
         LOG.info(database.getProcessedCount() + " URLs processed "
                 + "in " + watch.toString() + " for \"" + getId() + "\".");
@@ -327,6 +329,13 @@ public class HttpCrawler extends AbstractResumableJob {
             
             if (!new DocumentProcessor(this, httpClient, database, 
                     outputFile, doc, crawlURL).processURL()) {
+                if (doc.getMetadata().containsKey(
+                        DocumentProcessor.StatusMeta)) {
+                    if (doc.getMetadata().getInt(DocumentProcessor.StatusMeta) 
+                            == 404){
+                        notFoundCount++;
+                    }
+                }
                 return;
             }
         } catch (Exception e) {
