@@ -69,6 +69,7 @@ public class HttpCrawlerConfig implements Cloneable, Serializable {
     private boolean ignoreSitemap;
     private boolean keepDownloads;
     private boolean deleteOrphans;
+    private boolean reportBrokenURLs;
 
     private IURLNormalizer urlNormalizer;
 
@@ -309,6 +310,12 @@ public class HttpCrawlerConfig implements Cloneable, Serializable {
     }
     public void setSitemapResolver(ISitemapsResolver sitemapResolver) {
         this.sitemapResolver = sitemapResolver;
+    }
+    public boolean isReportBrokenURLs() {
+        return reportBrokenURLs;
+    }
+    public void setReportBrokenURLs(boolean reportBrokenURLs) {
+        this.reportBrokenURLs = reportBrokenURLs;
     }
     @Override
     protected Object clone() throws CloneNotSupportedException {

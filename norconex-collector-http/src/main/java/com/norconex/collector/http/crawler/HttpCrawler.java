@@ -38,6 +38,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.collector.http.HttpCollectorException;
+import com.norconex.collector.http.brokenURLs.impl.DefaultBrokenURLsReporter;
 import com.norconex.collector.http.db.ICrawlURLDatabase;
 import com.norconex.collector.http.doc.HttpDocument;
 import com.norconex.collector.http.doc.HttpMetadata;
@@ -52,27 +53,29 @@ import com.norconex.jef.progress.JobProgress;
 import com.norconex.jef.suite.JobSuite;
 
 public class HttpCrawler extends AbstractResumableJob {
-	
-	private static final Logger LOG = LogManager.getLogger(HttpCrawler.class);
-	
-	private static final int MINIMUM_DELAY = 10;
-	
-	private final HttpCrawlerConfig crawlerConfig;
+
+    private static final Logger LOG = LogManager.getLogger(HttpCrawler.class);
+
+    private static final int MINIMUM_DELAY = 10;
+
+    private final HttpCrawlerConfig crawlerConfig;
     private DefaultHttpClient httpClient;
     private boolean stopped;
     private int okURLsCount;
     private int notFoundCount;
-    
-	public HttpCrawler(
-	        HttpCrawlerConfig crawlerConfig) {
-		super();
-		this.crawlerConfig = crawlerConfig;
+    private DefaultBrokenURLsReporter brokenURLsReporter = 
+            new DefaultBrokenURLsReporter();
+
+    public HttpCrawler(
+            HttpCrawlerConfig crawlerConfig) {
+        super();
+        this.crawlerConfig = crawlerConfig;
         crawlerConfig.getWorkDir().mkdirs();
-	}
-	
-	@Override
-	public IJobContext createJobContext() {
-	    return new IJobContext() {            
+    }
+
+    @Override
+    public IJobContext createJobContext() {
+        return new IJobContext() {            
             private static final long serialVersionUID = 2785476254478043557L;
             @Override
             public long getProgressMinimum() {
@@ -87,24 +90,24 @@ public class HttpCrawler extends AbstractResumableJob {
                 return "Norconex HTTP Crawler";
             }
         };
-	}
-	
-	
-	
-	@Override
-	public String getId() {
-		return crawlerConfig.getId();
-	}
+    }
+
+
+
+    @Override
+    public String getId() {
+        return crawlerConfig.getId();
+    }
 
     public boolean isStopped() {
         return stopped;
     }
-    
+
     @Override
     protected void resumeExecution(JobProgress progress, JobSuite suite) {
         ICrawlURLDatabase database = 
-              crawlerConfig.getCrawlURLDatabaseFactory().createCrawlURLDatabase(
-                      crawlerConfig, true);
+                crawlerConfig.getCrawlURLDatabaseFactory().createCrawlURLDatabase(
+                        crawlerConfig, true);
         initializeHTTPClient();
         okURLsCount = NumberUtils.toInt(progress.getMetadata());
         try {
@@ -117,8 +120,8 @@ public class HttpCrawler extends AbstractResumableJob {
     @Override
     protected void startExecution(JobProgress progress, JobSuite suite) {
         ICrawlURLDatabase database = 
-              crawlerConfig.getCrawlURLDatabaseFactory().createCrawlURLDatabase(
-                      crawlerConfig, false);
+                crawlerConfig.getCrawlURLDatabaseFactory().createCrawlURLDatabase(
+                        crawlerConfig, false);
         initializeHTTPClient();
         String[] startURLs = crawlerConfig.getStartURLs();
         for (int i = 0; i < startURLs.length; i++) {
@@ -133,13 +136,13 @@ public class HttpCrawler extends AbstractResumableJob {
             httpClient.getConnectionManager().shutdown();
         }
     }
-	
+
     private void execute(
             ICrawlURLDatabase database, JobProgress progress, JobSuite suite) {
 
         StopWatch watch = new StopWatch();
         watch.start();
-        
+
         //TODO print initialization information
         LOG.info("RobotsTxt support " + 
                 (crawlerConfig.isIgnoreRobotsTxt() ? "disabled." : "enabled"));
@@ -169,7 +172,7 @@ public class HttpCrawler extends AbstractResumableJob {
                         + gelBaseDownloadDir(), e);
             }
         }
-        
+
         ICommitter committer = crawlerConfig.getCommitter();
         if (committer != null) {
             LOG.info("Crawler \"" + getId() + "\" " 
@@ -179,6 +182,12 @@ public class HttpCrawler extends AbstractResumableJob {
         }
         LOG.info("There are " + notFoundCount + " broken links (status 404) " 
                 + "have been found.");
+        if (crawlerConfig.isReportBrokenURLs() && (notFoundCount > 0)) {
+            File report = brokenURLsReporter.createReport(getId(), 
+                    crawlerConfig.getWorkDir().getParentFile());
+            LOG.info("Broken links report can be found in " 
+                    + report.getAbsolutePath());
+        }
         watch.stop();
         LOG.info(database.getProcessedCount() + " URLs processed "
                 + "in " + watch.toString() + " for \"" + getId() + "\".");
@@ -187,24 +196,24 @@ public class HttpCrawler extends AbstractResumableJob {
         FileUtil.deleteEmptyDirs(gelCrawlerDownloadDir());
 
         database.close();
-        
+
         if (!stopped) {
             HttpCrawlerEventFirer.fireCrawlerFinished(this);
         }
         LOG.info("Crawler \"" + getId() + "\" " 
                 + (stopped ? "stopped." : "completed."));
     }
-    
+
     /*default*/ HttpCrawlerConfig getCrawlerConfig() {
         return crawlerConfig;
     }
-    
+
     private void processURLs(
-    		final ICrawlURLDatabase database,
-    		final JobProgress progress, 
-    		final JobSuite suite,
-    		final boolean delete) {
-        
+            final ICrawlURLDatabase database,
+            final JobProgress progress, 
+            final JobSuite suite,
+            final boolean delete) {
+
         int numThreads = crawlerConfig.getNumThreads();
         final CountDownLatch latch = new CountDownLatch(numThreads);
         ExecutorService pool = Executors.newFixedThreadPool(numThreads);
@@ -222,8 +231,8 @@ public class HttpCrawler extends AbstractResumableJob {
                             }
                         } catch (Exception e) {
                             LOG.fatal("An error occured that could compromise "
-                                + "the stability of the crawler. Stopping "
-                                + "excution to avoid further issues...", e);
+                                    + "the stability of the crawler. Stopping "
+                                    + "excution to avoid further issues...", e);
                             stop(progress, suite);
                         }
                     }
@@ -236,10 +245,10 @@ public class HttpCrawler extends AbstractResumableJob {
             latch.await();
             pool.shutdown();
         } catch (InterruptedException e) {
-             throw new HttpCollectorException(e);
+            throw new HttpCollectorException(e);
         }
     }
-    
+
     /**
      * @return <code>true</code> if more urls to process
      */
@@ -274,7 +283,7 @@ public class HttpCrawler extends AbstractResumableJob {
         }
         return true;
     }
-    
+
     private void setProgress(JobProgress progress, ICrawlURLDatabase db) {
         int queued = db.getQueueSize();
         int processed = db.getProcessedCount();
@@ -299,7 +308,7 @@ public class HttpCrawler extends AbstractResumableJob {
                 + PathUtils.urlToPath(crawlURL.getUrl())
                 + extension);
     }
-    
+
     private void deleteURL(
             CrawlURL crawlURL, File outputFile, HttpDocument doc) {
         LOG.debug("Deleting URL: " + crawlURL.getUrl());
@@ -310,7 +319,7 @@ public class HttpCrawler extends AbstractResumableJob {
                     crawlURL.getUrl(), outputFile, doc.getMetadata());
         }
     }
-    
+
     private void processNextQueuedURL(
             CrawlURL crawlURL, ICrawlURLDatabase database, boolean delete) {
         String url = crawlURL.getUrl();
@@ -318,7 +327,7 @@ public class HttpCrawler extends AbstractResumableJob {
         HttpDocument doc = new HttpDocument(
                 crawlURL.getUrl(), createLocalFile(crawlURL, ".raw"));
         setURLMetadata(doc.getMetadata(), crawlURL);
-        
+
         try {
             if (delete) {
                 deleteURL(crawlURL, outputFile, doc);
@@ -326,7 +335,7 @@ public class HttpCrawler extends AbstractResumableJob {
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("Processing URL: " + url);
             }
-            
+
             if (!new DocumentProcessor(this, httpClient, database, 
                     outputFile, doc, crawlURL).processURL()) {
                 if (doc.getMetadata().containsKey(
@@ -334,6 +343,9 @@ public class HttpCrawler extends AbstractResumableJob {
                     if (doc.getMetadata().getInt(DocumentProcessor.StatusMeta) 
                             == 404){
                         notFoundCount++;
+                        if (crawlerConfig.isReportBrokenURLs()) {
+                            brokenURLsReporter.addBrokenURL(crawlURL.getUrl());
+                        }
                     }
                 }
                 return;
@@ -345,16 +357,16 @@ public class HttpCrawler extends AbstractResumableJob {
             crawlURL.setStatus(CrawlStatus.ERROR);
             LOG.error("Could not process document: " + url
                     + " (" + e.getMessage() + ")", e);
-	    } finally {
+        } finally {
             //--- Flag URL for deletion ----------------------------------------
-	        ICommitter committer = crawlerConfig.getCommitter();
+            ICommitter committer = crawlerConfig.getCommitter();
             if (database.isVanished(crawlURL)) {
                 crawlURL.setStatus(CrawlStatus.DELETED);
                 if (committer != null) {
                     committer.queueRemove(url, outputFile, doc.getMetadata());
                 }
             }
-	    	
+
             //--- Mark URL as Processed ----------------------------------------
             if (crawlURL.getStatus() == CrawlStatus.OK) {
                 okURLsCount++;
@@ -365,27 +377,27 @@ public class HttpCrawler extends AbstractResumableJob {
                 crawlURL.setStatus(CrawlStatus.BAD_STATUS);
             }
             crawlURL.getStatus().logInfo(crawlURL);
-            
+
             //--- Delete Local File Download -----------------------------------
             if (!crawlerConfig.isKeepDownloads()) {
                 LOG.debug("Deleting " + doc.getLocalFile());
                 FileUtils.deleteQuietly(doc.getLocalFile());
             }
-	    }
-	}
+        }
+    }
 
-	private void initializeHTTPClient() {
+    private void initializeHTTPClient() {
         //TODO set HTTPClient user-agent from config before calling init..
-	    PoolingClientConnectionManager m = new PoolingClientConnectionManager();
-	    if (crawlerConfig.getNumThreads() <= 0) {
-	        m.setMaxTotal(Integer.MAX_VALUE);
-	    } else {
-	        m.setMaxTotal(crawlerConfig.getNumThreads());
-	    }
+        PoolingClientConnectionManager m = new PoolingClientConnectionManager();
+        if (crawlerConfig.getNumThreads() <= 0) {
+            m.setMaxTotal(Integer.MAX_VALUE);
+        } else {
+            m.setMaxTotal(crawlerConfig.getNumThreads());
+        }
         httpClient = new DefaultHttpClient(m);
         crawlerConfig.getHttpClientInitializer().initializeHTTPClient(
                 httpClient);
-	}
+    }
 
     @Override
     public void stop(IJobStatus progress, JobSuite suite) {
@@ -399,7 +411,7 @@ public class HttpCrawler extends AbstractResumableJob {
     private File gelCrawlerDownloadDir() {
         return new File(gelBaseDownloadDir() + "/" + crawlerConfig.getId());
     }
-    
+
     private boolean isMaxURLs() {
         return crawlerConfig.getMaxURLs() > -1 
                 && okURLsCount >= crawlerConfig.getMaxURLs();

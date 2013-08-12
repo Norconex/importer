@@ -216,7 +216,7 @@ public final class HttpCrawlerConfigLoader {
         config.setPostImportProcessors(defaultIfEmpty(
                 postProcFilters, config.getPostImportProcessors()));
 
-        //--- HTTP Document Checksummer -----------------------------------------
+        //--- HTTP Document Checksummer ----------------------------------------
         config.setHttpDocumentChecksummer(ConfigurationUtil.newInstance(
                 node, "httpDocumentChecksummer",
         		config.getHttpDocumentChecksummer()));
@@ -224,6 +224,11 @@ public final class HttpCrawlerConfigLoader {
         //--- Document Committers ----------------------------------------------
         config.setCommitter(ConfigurationUtil.newInstance(
                 node, "committer", config.getCommitter()));
+        
+        //--- Broken URLs Reporter ---------------------------------------------
+        config.setReportBrokenURLs(node.getBoolean("reportBrokenURLs", 
+                config.isReportBrokenURLs()));
+
     }
     
     //TODO consider moving to Norconex Commons Lang
