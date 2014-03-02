@@ -32,6 +32,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
@@ -57,6 +59,8 @@ import com.norconex.importer.tagger.IDocumentTagger;
 public class KeepOnlyTagger 
         implements IDocumentTagger, IXMLConfigurable {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(KeepOnlyTagger.class);
     private static final long serialVersionUID = -4075527874358712815L;
 
     private final List<String> fields = new ArrayList<String>();
@@ -69,15 +73,30 @@ public class KeepOnlyTagger
         
         // If fields is empty, it means we should keep nothing
         if (fields.isEmpty()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Clear all metadata from " + reference);
+            }
             metadata.clear();
         } else {
             // Remove metadata not in fields
             Iterator<String> iter = metadata.keySet().iterator();
+            List<String> removed = null;
             while (iter.hasNext()) {
                 String name = iter.next();
                 if (!exists(name)) {
+                    if (LOG.isDebugEnabled()) {
+                        if (removed == null) {
+                            removed = new ArrayList<String>();
+                        }
+                        removed.add(name);
+                    }
                     iter.remove();
                 }
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Removed metadata fields \""
+                        + StringUtils.join(removed, ",")
+                        + "\" from " + reference);
             }
         }
     }

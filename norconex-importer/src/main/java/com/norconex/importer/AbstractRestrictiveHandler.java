@@ -49,7 +49,7 @@ import com.norconex.importer.filter.impl.RegexMetadataFilter;
  * </pre>
  * <p>
  * Subclasses must test if a document is accepted using the 
- * {@link #documentAccepted(Properties, boolean)} method.
+ * {@link #documentAccepted(String, Properties, boolean)} method.
  * </p>
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
@@ -64,6 +64,12 @@ public abstract class AbstractRestrictiveHandler implements Serializable {
     
     private final RegexMetadataFilter filter = new RegexMetadataFilter();
 
+    /**
+     * Sets what this handler should be restricted to.
+     * @param metaProperty metadata property/field
+     * @param regex regular expression
+     * @param caseSensitive whether regular expression should be case sensitive
+     */
     public void setRestriction(
             String metaProperty, String regex, boolean caseSensitive) {
         filter.setProperty(metaProperty);
@@ -71,6 +77,15 @@ public abstract class AbstractRestrictiveHandler implements Serializable {
         filter.setCaseSensitive(caseSensitive);
     }
 
+    /**
+     * Class to invoke by subclasses to find out if this handler should be
+     * rejected or not based on the metadata restriction provided.
+     * @param reference document reference
+     * @param metadata document metadata.
+     * @param parsed if the document was parsed (i.e. imported) already
+     * @return <code>true</code> if the document is accepted
+     * @throws IOException
+     */
     protected boolean documentAccepted(
             String reference, Properties metadata, boolean parsed)
             throws IOException {

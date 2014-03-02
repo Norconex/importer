@@ -55,10 +55,9 @@ import com.norconex.importer.transformer.IDocumentTransformer;
 /**
  * Principal class responsible for importing documents.
  * @author Pascal Essiembre
- *
  */
 public class Importer {
-    
+
     public static final String IMPORTER_PREFIX = "importer.";
     public static final String DOC_REFERENCE = "document.reference";
     public static final String DOC_CONTENT_TYPE = 
@@ -82,7 +81,7 @@ public class Importer {
     }
     /**
      * Creates a new importer with the given configuration.
-     * @param importerConfig
+     * @param importerConfig Importer configuration
      */
     public Importer(ImporterConfig importerConfig) {
         super();
@@ -367,8 +366,8 @@ public class Importer {
         boolean accepted = filter.acceptDocument(reader, metadata, parsed);
         reader.close();
         if (!accepted) {
-            if (LOG.isInfoEnabled()) {
-                LOG.info("Document import rejected. Filter=" + filter);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Document import rejected. Filter=" + filter);
             }
             return false;
         }

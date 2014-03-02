@@ -37,7 +37,10 @@ public final class ContentType implements Serializable {
     public static final ContentType PDF = new ContentType("application/pdf");
     public static final ContentType XPDF = new ContentType("application/x-pdf");
     
-    
+    /**
+     * Constructor.
+     * @param contentType string representation of a content type
+     */
     private ContentType(String contentType) {
         super();
         this.contentType = contentType;

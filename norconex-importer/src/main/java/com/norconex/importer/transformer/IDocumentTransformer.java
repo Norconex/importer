@@ -39,6 +39,7 @@ public interface IDocumentTransformer extends IImportHandler {
      * @param metadata document metadata
      * @param parsed whether the document has been parsed already or not (a 
      *        parsed document should normally be text-based)
+     * @throws IOException could not transform the document
      */
     void transformDocument(
             String reference, InputStream input, 

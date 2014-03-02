@@ -155,8 +155,8 @@ public class TextBetweenTagger
      * Adds a new pair of end points to match.
      * @param name target metadata field name where to store the extracted
      *             values
-     * @param fromText
-     * @param toText
+     * @param fromText the left string to match
+     * @param toText the right string to match
      */
     public void addTextEndpoints(String name, String fromText, String toText) {
         if (StringUtils.isBlank(name)

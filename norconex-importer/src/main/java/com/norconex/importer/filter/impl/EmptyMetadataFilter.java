@@ -23,15 +23,14 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -44,89 +43,63 @@ import com.norconex.importer.filter.AbstractOnMatchFilter;
 import com.norconex.importer.filter.IDocumentFilter;
 import com.norconex.importer.filter.OnMatch;
 /**
- * Accepts or rejects a document based on its property values using 
- * regular expression.  
+ * Accepts or rejects a document based on whether specified metadata properties
+ * are empty or not.  Any control characters (char < 32) are removed 
+ * before evaluating if a property is empty or not.
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.filter.impl.RegexMetadataFilter"
+ *  &lt;filter class="com.norconex.importer.filter.impl.EmptyMetadataFilter"
  *          onMatch="[include|exclude]" 
- *          caseSensitive="[false|true]"
- *          property="(name of metadata name to match)" &gt;
- *      (regular expression of value to match)
- *  &lt;/filter&gt;
+ *          properties="(coma separated list of properties to match)" /&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 1.2
  */
-public class RegexMetadataFilter extends AbstractOnMatchFilter
+public class EmptyMetadataFilter extends AbstractOnMatchFilter
         implements IDocumentFilter, IXMLConfigurable {
 
     private static final long serialVersionUID = -8029862304058855686L;
 
-    private boolean caseSensitive;
-    private String property;
-    private String regex;
-    private Pattern pattern;
-
-    public RegexMetadataFilter() {
-        this(null, null, OnMatch.INCLUDE);
-    }
-    public RegexMetadataFilter(String property, String regex) {
-        this(property, regex, OnMatch.INCLUDE);
-    }
-    public RegexMetadataFilter(String property, String regex, OnMatch onMatch) {
-        this(property, regex, onMatch, false);
-    }
-    public RegexMetadataFilter(
-            String property, String regex, 
-            OnMatch onMatch, boolean caseSensitive) {
-        super();
-        this.caseSensitive = caseSensitive;
-        this.property = property;
-        setOnMatch(onMatch);
-        setRegex(regex);
-    }
+    private String[] properties;
     
-    public String getRegex() {
-        return regex;
+
+    public EmptyMetadataFilter() {
+        this(OnMatch.INCLUDE, (String) null);
     }
-    public boolean isCaseSensitive() {
-        return caseSensitive;
+    public EmptyMetadataFilter(
+            OnMatch onMatch, String... properties) {
+        super();
+        this.properties = properties;
+        setOnMatch(onMatch);
     }
-    public String getProperty() {
-        return property;
+
+    public String[] getProperties() {
+        return properties;
     }
-    public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-    }
-    public void setProperty(String property) {
-        this.property = property;
-    }
-    public final void setRegex(String regex) {
-        this.regex = regex;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex);
-            } else {
-                this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+    public void setProperties(String... properties) {
+        this.properties = properties;
     }
 
     @Override
     public final boolean acceptDocument(
             InputStream document, Properties metadata, boolean parsed)
             throws IOException {
-        if (StringUtils.isBlank(regex)) {
+        if (ArrayUtils.isEmpty(properties)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }
-        Collection<String> values =  metadata.getStrings(property);
-        for (Object value : values) {
-            String strVal = ObjectUtils.toString(value);
-            if (pattern.matcher(strVal).matches()) {
+        for (String prop : properties) {
+            Collection<String> values =  metadata.getStrings(prop);
+            
+            boolean isPropEmpty = true;
+            for (String value : values) {
+                if (!StringUtils.isBlank(StringUtils.trim(value))) {
+                    isPropEmpty = false;
+                    break;
+                }
+            }
+            if (isPropEmpty) {
                 return getOnMatch() == OnMatch.INCLUDE;
             }
         }
@@ -136,9 +109,12 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     @Override
     public void loadFromXML(Reader in) {
         XMLConfiguration xml = ConfigurationLoader.loadXML(in);
-        setProperty(xml.getString("[@property]"));
-        setRegex(xml.getString(""));
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
+        String fieldsStr = xml.getString("[@properties]");
+        String[] props = StringUtils.split(fieldsStr, ",");
+        if (ArrayUtils.isEmpty(props)) {
+            props = ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+        setProperties(props);
         super.loadFromXML(xml);
 
     }
@@ -150,9 +126,8 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
             writer.writeStartElement("filter");
             writer.writeAttribute("class", getClass().getCanonicalName());
             super.saveToXML(writer);
-            writer.writeAttribute("caseSensitive", 
-                    Boolean.toString(caseSensitive));
-            writer.writeCharacters(regex == null ? "" : regex);
+            writer.writeAttribute(
+                    "properties", StringUtils.join(properties, ","));
             writer.writeEndElement();
             writer.flush();
             writer.close();
@@ -165,17 +140,14 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
             .appendSuper(super.toString())
-            .append("regex", regex)
-            .append("caseSensitive", caseSensitive)
+            .append("properties", properties)
             .toString();
     }
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
             .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(property)
-            .append(regex)
+            .append(properties)
             .toHashCode();
     }
 
@@ -187,15 +159,13 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof RegexMetadataFilter)) {
+        if (!(obj instanceof EmptyMetadataFilter)) {
             return false;
         }
-        RegexMetadataFilter other = (RegexMetadataFilter) obj;
+        EmptyMetadataFilter other = (EmptyMetadataFilter) obj;
         return new EqualsBuilder()
             .appendSuper(super.equals(obj))
-            .append(caseSensitive, other.caseSensitive)
-            .append(property, other.property)
-            .append(regex, other.regex)
+            .append(properties, other.properties)
             .isEquals();
     }
 

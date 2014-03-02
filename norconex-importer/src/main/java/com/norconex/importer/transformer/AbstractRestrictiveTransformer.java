@@ -33,7 +33,7 @@ import com.norconex.importer.filter.impl.RegexMetadataFilter;
 /**
  * <p>This class is deprecated.  Use {@link AbstractRestrictiveHandler} instead.
  * </p>
- * @deprecated use {@link AbstractRestrictiveHandler}
+ * @deprecated Since 1.1.0. Use {@link AbstractRestrictiveHandler}
  * @author Pascal Essiembre
  */
 @Deprecated

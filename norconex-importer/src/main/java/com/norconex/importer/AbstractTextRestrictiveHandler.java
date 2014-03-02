@@ -55,13 +55,13 @@ import com.norconex.commons.lang.map.Properties;
  * </p>
  * <p>
  * Subclasses must test if a document is accepted using the 
- * {@link #documentAccepted(Properties, boolean)} method.
+ * {@link #documentAccepted(String, Properties, boolean)} method.
  * </p>
  * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:</p>
  * <pre>
  *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overridding default)
+ *      (regex to identify text content-types, overriding default)
  *  &lt;/contentTypeRegex&gt;
  *  &lt;restrictTo
  *          caseSensitive="[false|true]" &gt;
@@ -81,10 +81,17 @@ public abstract class AbstractTextRestrictiveHandler
     
     private Pattern contentTypeRegex = Pattern.compile("^text/.*$");
     
-    
+    /**
+     * Gets the regular expression to match the content type.
+     * @return regular expression
+     */
     public String getContentTypeRegex() {
         return contentTypeRegex.toString();
     }
+    /**
+     * Sets the regular expression to match the content type.
+     * @param contentTypeRegex the regular expression
+     */
     public void setContentTypeRegex(String contentTypeRegex) {
         this.contentTypeRegex = Pattern.compile(contentTypeRegex);
     }

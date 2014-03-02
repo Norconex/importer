@@ -1,3 +1,16 @@
 
+- Add transformer to strip consecutive spaces and control characters 
+  (including \r\n\t) to a single space.
+
+- Add filter that eliminate documents when a given field (or set of fields)
+  is empty.
+
+
 - Allow to break documents into smaller documents.
 
+- Offer ways to force Character Encoding.
+
+- Add/Create a parser for WordPerfect
+
+- Make it easier to change output format (but how to make it work with
+  committer still?).
