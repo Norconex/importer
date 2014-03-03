@@ -1,3 +1,11 @@
+Norconex licenses:
+==================
+
+Unless explicitly stated, all Norconex code and libraries delivered with this 
+product are licensed under the GPL v.3.0.  A copy of the GPL license should
+have been shipped with this product.
+
+
 Third party license pointers:
 =============================
 
@@ -48,3 +56,7 @@ xml-apis                - see LICENSE(Apache2.0).txt
 xmlbeans                - see LICENSE(Apache2.0).txt
 xmpcore                 - see LICENSE(XMP).txt
 xz                      - Public Domain
+
+The code under the com.norconex.importer.parser.impl.wordperfect.* package
+was inspired/derived from LogicalDoc WordPerfect parser code, which is licensed
+under LGPL 3.0.  See LICENSE(LogicalDoc).txt

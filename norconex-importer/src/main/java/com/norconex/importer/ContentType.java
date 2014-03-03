@@ -36,6 +36,16 @@ public final class ContentType implements Serializable {
     public static final ContentType HTML = new ContentType("text/html");
     public static final ContentType PDF = new ContentType("application/pdf");
     public static final ContentType XPDF = new ContentType("application/x-pdf");
+
+    /** @since 1.2.0 */
+    public static final ContentType WORDPERFECT = 
+            new ContentType("application/wordperfecet");
+    /** @since 1.2.0 */
+    public static final ContentType WORDPERFECT_6_0 = 
+            new ContentType("application/wordperfect6.0");
+    /** @since 1.2.0 */
+    public static final ContentType WORDPERFECT_6_1 = 
+            new ContentType("application/wordperfect6.1");
     
     /**
      * Constructor.

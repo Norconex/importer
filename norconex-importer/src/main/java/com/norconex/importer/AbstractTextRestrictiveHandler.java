@@ -24,6 +24,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -104,9 +106,14 @@ public abstract class AbstractTextRestrictiveHandler
             return false;
         }
         String type = metadata.getString(Importer.DOC_CONTENT_TYPE);
-        if ( parsed || contentTypeRegex == null 
+        type = ObjectUtils.toString(type, "");
+        if (parsed || contentTypeRegex == null 
                 || contentTypeRegex.matcher(type).matches()) {
             return true;
+        }
+        if (StringUtils.isBlank(type)) {
+            LOG.debug("No content-type for: " + reference);
+            return false;
         }
         if (LOG.isDebugEnabled()) {
             LOG.debug("Content-type \"" + type + "\" does not represent a "

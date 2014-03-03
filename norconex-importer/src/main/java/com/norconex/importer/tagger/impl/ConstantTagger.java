@@ -52,7 +52,7 @@ import com.norconex.importer.tagger.IDocumentTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.tagger.impl.ConstantTagger"&gt;
  *      &lt;constant name="CONSTANT_NAME"&gtConstant Value&lt;/constant&gt
- *      &lt;-- multiple constant tags allowed --&gt;
+ *      &lt;!-- multiple constant tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre

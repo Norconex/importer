@@ -9,8 +9,24 @@
 
     <release version="1.2.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
-        New filter "EmptyMetadataFilter" to skip documents that has no data
-        for one or more specified metadata properties.
+        Now extracts text from WordPerfect documents 
+        (new WordPerfectParser class).
+      </action>
+      <action dev="essiembp" type="add">
+        New transformer "ReduceConsecutivesTransformer" to reduce consecutive
+        instances of the same string to only one instance.
+      </action>
+      <action dev="essiembp" type="add">
+        New transformer "ReplaceTransformer" to perform search and replace
+        on document content using regular expression.
+      </action>
+      <action dev="essiembp" type="add">
+        New filter "EmptyMetadataFilter" to exclude/include documents with
+        no data for one or more specified metadata properties.
+      </action>
+      <action dev="essiembp" type="fix">
+        Fixed NPE in AbstractTextRestrictiveHandler when
+        no content-type is found when used before parsing.
       </action>
     </release>
 

@@ -39,12 +39,12 @@ public interface IDocumentParser extends Serializable {
      * Parses a document.
      * @param inputStream the document to parse
      * @param contentType the content type of the document
-     * @param outputStream where to save the extracted text
+     * @param writer where to save the extracted text
      * @param metadata where to store the metadata
      * @throws DocumentParserException
      */
     void parseDocument(
             InputStream inputStream, ContentType contentType,
-            Writer outputStream, Properties metadata)
+            Writer writer, Properties metadata)
         throws DocumentParserException;
 }

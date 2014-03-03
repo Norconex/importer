@@ -36,6 +36,7 @@ import com.norconex.importer.ContentType;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.HTMLParser;
 import com.norconex.importer.parser.impl.PDFParser;
+import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 
 /**
  * Uses Apacke Tika for all its supported content types.  For unknown
@@ -113,8 +114,16 @@ public class DefaultDocumentParserFactory
 
     private void registerNamedParsers() {
         registerNamedParser(ContentType.HTML, new HTMLParser(format));
-        registerNamedParser(ContentType.PDF, new PDFParser(format));
-        registerNamedParser(ContentType.XPDF, new PDFParser(format));
+
+        IDocumentParser pdfParser = new PDFParser(format);
+        registerNamedParser(ContentType.PDF, pdfParser);
+        registerNamedParser(ContentType.XPDF, pdfParser);
+
+        IDocumentParser wpParser = new WordPerfectParser();
+        registerNamedParser(ContentType.WORDPERFECT, wpParser);
+        registerNamedParser(ContentType.WORDPERFECT_6_0, wpParser);
+        registerNamedParser(ContentType.WORDPERFECT_6_1, wpParser);
+        
     }
     private void registerFallbackParser() {
         registerFallbackParser(new FallbackParser(format));

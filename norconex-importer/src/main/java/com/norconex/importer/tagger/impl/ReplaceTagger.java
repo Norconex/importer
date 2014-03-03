@@ -61,7 +61,7 @@ import com.norconex.importer.tagger.IDocumentTagger;
  *          &lt;fromValue&gtSource Value&lt;/fromValue&gt
  *          &lt;toValue&gtTarget Value&lt;/toValue&gt
  *      &lt;/replace&gt
- *      &lt;-- multiple replace tags allowed --&gt;
+ *      &lt;!-- multiple replace tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
