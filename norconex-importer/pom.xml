@@ -29,9 +29,6 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <site.baseurl/>
     <currentStableVersion>1.1.0</currentStableVersion>
-    <sonar.exclusions>
-        **/impl/wordperfect/*.java
-    </sonar.exclusions>
   </properties>
   <inceptionYear>2009</inceptionYear>
 
