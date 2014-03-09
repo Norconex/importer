@@ -89,6 +89,13 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           </sections>
         </contribute>
 
+        <formats>
+          <sections>
+            <body />
+            <columns>3</columns>
+          </sections>
+        </formats>
+
       </pages>
       
       <endContent>
@@ -124,6 +131,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     <menu name="Documentation">
       <item name="Usage" href="usage.html"/>
       <item name="Configuration" href="configuration.html"/>
+      <item name="Supported Formats" href="formats.html"/>
       <item name="Javadoc (Latest release)" href="apidocs/index.html"/>
       <item name="Release Notes" href="changes-report.html" />
     </menu>
