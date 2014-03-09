@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -78,7 +80,13 @@ public abstract class AbstractCharStreamTagger
         if (!documentAccepted(reference, metadata, parsed)) {
             return;
         }
-        InputStreamReader is = new InputStreamReader(document);
+        String contentType = metadata.getString("Content-Type", "");
+        contentType = contentType.replaceAll(".*charset=", "");
+        if (StringUtils.isBlank(contentType)) {
+            contentType = CharEncoding.UTF_8;
+        }
+        InputStreamReader is = new InputStreamReader(document, contentType);
+        
         tagTextDocument(reference, is, metadata, parsed);
     }
 
