@@ -1,37 +1,132 @@
 /* Copyright 2010-2013 Norconex Inc.
  * 
- * This file is part of Norconex JEF.
+ * This file is part of Norconex Commons Lang.
  * 
- * Norconex JEF is free software: you can redistribute it and/or modify
+ * Norconex Commons Lang is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * Norconex JEF is distributed in the hope that it will be useful, 
+ * Norconex Commons Lang is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with Norconex JEF. If not, see <http://www.gnu.org/licenses/>.
+ * along with Norconex Commons Lang. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#banner {
-  min-width: 990px;
-  border-width: 1px 1px 0px 1px;
-  border-color: #ccc;
-  border-style: solid;
-  border-radius: 5px 5px 0px 0px;
+
+.color-highlight {
+  color: #225e9b;
+}
+#advertisement {
+  text-align: center;
+  padding-top: 4px;
+  background-color: black;
+  max-height: 95px;
+}
+
+#currentStableVersionSection {
+  border-top: 1px solid #bbbbbb;
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 30px;
+  font-size: 16px;
+  color: #bbbbbb;
+}
+#currentStableVersion {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 42px;
+  color: #bbbbbb;
+  font-weight: bold;
+}
+
+#nx-invisible-head {
+  visibility: hidden;
+  line-height: 0px;
+  margin: 0px 0px 0px 0px;
 }
 
 
-#breadcrumbs .breadcrumb {
-  border-width: 0px 1px 1px 1px;
-  border-color: #ccc;
-  border-style: solid;
-  border-radius: 0px 0px 5px 5px;
+.nx-news {
+  width:400px;
+  background-color: #f7f7f7;
+  font-size: 12px;
+  padding: 5px;
+  border-radius: 10px;
+  margin: -15px 0px 5px 10px;
+  line-height: 1.4em;
+}
+.nx-news-date {
+  font-size: 8px;
+  xxfont-weight: bold;
+}
+.nx-news img {
+  padding-right: 5px;
+  vertical-align: middle;
+}
+.nx-news a.nx-download-link {
+  font-weight: bold;
 }
 
-h1, h2, h3, h4 {
-  color: #D78E24;
+.nx-heading {
+  font-size: 41px;
+  color: #000000;
 }
+.nx-heading2 {
+  line-height: 42px;
+  font-size: 33.75px;
+  color: #000000;
+}
+
+
+.nx-subheading {
+  font-size: 24px;
+  color: #000000;
+}
+
+
+/* -------------- FIX/MODIF TO reflow-skin.css ------------------------- */
+.project-norconex-importer h1[id]:before,
+.project-norconex-importer h2[id]:before,
+.project-norconex-importer h3[id]:before,
+.project-norconex-importer h4[id]:before,
+.project-norconex-importer h5[id]:before,
+.project-norconex-importer h6[id]:before,
+.project-norconex-importer a[name]:before {
+    display:block; 
+    content:""; 
+    height:0px; 
+    margin:-0px 0 0; 
+    xxheight:90px; 
+    xxmargin:-90px 0 0;
+}
+
+.breadcrumb {
+  height: 1.5em;
+}
+#banner.row div.pull-left {
+  margin-top: 20px;
+  xxmargin-top: 10px;
+}
+
+
+/* 
+body.project-norconex-importer {
+  padding-top: 42px;
+  padding-bottom: 20px;
+}
+
+.project-norconex-importer header.jumbotron.subhead #banner.row {
+  margin-top: 5px;
+}
+.project-norconex-importer header.jumbotron.subhead ul.breadcrumb {
+  height: 0px;
+  background-color: #ffffff;
+  border-width: 0px;
+  padding: 0px;
+  margin: 0px 0px 0px 0px;
+  font-size: 13px;
+}
+*/

@@ -1,0 +1,48 @@
+#*
+ Copyright 2010-2014 Norconex Inc.
+ 
+ This file is part of Norconex Importer.
+ 
+ Norconex Importer is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ Norconex Importer is distributed in the hope that it will be useful, 
+ but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
+*#
+#set($h1 = '#')
+#set($h2 = '##')
+#set($h3 = '###')
+#set($h4 = '####')
+<head><title>Home</title><meta name="Author" content="Norconex Inc." /></head> 
+
+<p class="lead">
+<a href="download.html" class="btn btn-primary btn-large">Download ${currentStableVersion}</a> 
+<br/><br/>
+
+Norconex Importer is a Java library and command-line application meant to 
+"parse" and "extract" content out of a computer file as plain text, 
+whatever its format (HTML, PDF, Word, etc).  In addition, it allows you to 
+perform any manipulation on the extracted text before importing/using it in
+your own service or application.
+
+</p>
+
+A typical but not limited usage is to "import" crawled content into a 
+search engine (indexing pipeline).   We invite you to consider 
+[Norconex HTTP Collector](http://www.norconex.com/product/collector-http)
+for this purpose (which relies on the Norconex Importer).
+
+Norconex Importer relies heavily on 
+[Apache Tika](http://tika.apache.org/) for 
+its parsing capabilities (see its 
+[supported formats](http://tika.apache.org/1.5/formats.html). 
+You can establish your own parsing strategy for the 
+content-types of your choice. 
+

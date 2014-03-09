@@ -98,6 +98,7 @@ public abstract class AbstractTextRestrictiveHandler
         this.contentTypeRegex = Pattern.compile(contentTypeRegex);
     }
     
+    @SuppressWarnings("deprecation")
     @Override
     protected boolean documentAccepted(
             String reference, Properties metadata, boolean parsed)
