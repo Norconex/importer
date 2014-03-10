@@ -40,7 +40,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           <span class="color-highlight">Norconex</span> Importer
           ]]>
         </name>
-        <href>http://www.norconex.com/product/committer/index.html</href>
+        <href>http://www.norconex.com/product/importer/index.html</href>
       </brand>
       <slogan><![CDATA[
           Open-Source document text extractor and transformer
@@ -55,7 +55,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
       </bottomNav>
       <bottomDescription><![CDATA[
           <a href="http://www.norconex.com"><img src="./images/norconex_logo.png"></a><br />
-          Norconex Committer is released and actively maintained by 
+          Norconex Importer is released and actively maintained by 
           <a href="http://www.norconex.com">Norconex</a>. 
           ]]>
       </bottomDescription>
@@ -162,77 +162,3 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
 
   <googleAnalyticsAccountId>UA-23162620-1</googleAnalyticsAccountId>
 </project>
-<!--
-
-
-  <bannerLeft>
-    <name>Norconex Importer</name>
-    <src>images/leftbanner.png</src>
-    <href>http://www.norconex.com</href>
-  </bannerLeft>
-  <bannerRight>
-    <src>images/rightbanner.png</src>
-    <href>http://www.norconex.com/product/importer</href>
-  </bannerRight>
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.3.0</version>
-  </skin>
-  <custom>
-    <fluidoSkin>
-      <sideBarEnabled>true</sideBarEnabled>
-      <sourceLineNumbersEnabled>false</sourceLineNumbersEnabled>
-      <twitter>
-        <user>Norconex</user>
-        <showUser>false</showUser>
-        <showFollowers>false</showFollowers>
-      </twitter>
-      <facebookLike />
-      <googlePlusOne />
-    </fluidoSkin>
-  </custom>  
-
-  <body>
-    <links>
-      <item name="Norconex" href="http://www.norconex.com" />
-      <item name="Support" href="support.html"/>
-    </links>
-
-
-    <menu name="Overview">
-      <item name="Introduction" href="index.html"/>
-      <item name="Usage" href="usage.html"/>
-      <item name="Configuration" href="configuration.html"/>
-      <item name="Javadoc (Latest release)" href="apidocs/index.html"/>
-      <item name="License" href="license.html"/>
-      <item name="Download" href="download.html"/>
-      <item name="Support" href="support.html"/>
-
-    </menu>
-
-    <menu ref="reports"/>
-
-    <menu name="Norconex Products">
-      <item name="HTTP Collector"  href="http://www.norconex.com/product/collector-http"/>
-      <item name="Search Analytics" href="http://www.norconex.com/analytics"/>
-      <item name="JEF" href="http://www.norconex.com/product/jef"/>
-      <item name="Committer" href="http://www.norconex.com/product/committer"/>
-      <item name="Commons Lang" href="http://www.norconex.com/product/commons-lang"/>
-    </menu>
-
-  </body>
-
-  <googleAdSenseClient>ca-pub-4572498016361754</googleAdSenseClient>
-  <googleAdSenseSlot>8193066023</googleAdSenseSlot>
-  <googleAnalyticsAccountId>UA-23162620-1</googleAnalyticsAccountId>
-
-  <poweredBy>
-    <logo name="Maven" href="http://maven.apache.org/" position="right"
-          img="images/build-by-maven-white.png"/>
-    <logo name="GPL" href="http://www.gnu.org/licenses/gpl.html" position="right"
-          img="images/gplv3-88x31.png"/>
-  </poweredBy>
-  
-</project>
--->
