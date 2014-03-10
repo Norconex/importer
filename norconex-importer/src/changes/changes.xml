@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="1.2.0" date="2014-??-??" description="Feature release">
+    <release version="1.2.0" date="2014-03-09" description="Feature release">
       <action dev="essiembp" type="add">
         Now extracts text from WordPerfect documents 
         (new WordPerfectParser class).
