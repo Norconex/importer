@@ -48,7 +48,7 @@ If you find more supported formats or inaccuracies, please let us know.
         * Java
         * Groovy
         * C++
-    * Others (content)
+    * Others (may take them as is)
   * Microsoft Office
     * Excel
     * Word
@@ -57,7 +57,7 @@ If you find more supported formats or inaccuracies, please let us know.
     * Outlook
     * Publisher
     * Works
-    * Files serialized using Microsoft Foundation Class (MFC) API 
+    * Files serialized using MFC API 
   * Open Office (Open Document Format)
     * Calc
     * Writer
@@ -67,7 +67,7 @@ If you find more supported formats or inaccuracies, please let us know.
     * Keynote
     * Pages
     * Numbers     
-  * Word Perect (text content only, no metadata)
+  * Word Perect (text content only)
   * PDF
 
 

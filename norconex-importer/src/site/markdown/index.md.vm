@@ -37,12 +37,10 @@ your own service or application.
 A typical but not limited usage is to "import" crawled content into a 
 search engine (indexing pipeline).   We invite you to consider 
 [Norconex HTTP Collector](http://www.norconex.com/product/collector-http)
-for this purpose (which relies on the Norconex Importer).
+for this purpose (which relies on Norconex Importer).
 
-Norconex Importer relies heavily on 
-[Apache Tika](http://tika.apache.org/) for 
-its parsing capabilities (see its 
-[supported formats](http://tika.apache.org/1.5/formats.html). 
-You can establish your own parsing strategy for the 
-content-types of your choice. 
+Norconex Importer supports many [file formats](formats.html).  It relies 
+heavily on [Apache Tika](http://tika.apache.org/) for its parsing 
+capabilities. You can also create your own parsers for the content-types of
+your choice. 
 
