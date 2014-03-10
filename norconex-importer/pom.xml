@@ -140,6 +140,24 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
   </dependencies>
   
   <build>
+    <resources>
+        <resource>
+            <directory>${project.build.testSourceDirectory}</directory>
+            <includes>
+                <include>**</include>
+            </includes>
+        </resource>
+        <resource>
+            <filtering>false</filtering>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**</include>
+            </includes>
+            <excludes>
+                <exclude>**/*.java</exclude>
+            </excludes>
+        </resource>
+    </resources>
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
@@ -159,7 +177,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.3</version>
                 <configuration>
-                    <generateReports>false</generateReports>
+                    <generateReports>true</generateReports>
                     <templateFile>
                         ${basedir}/src/site/resources/skin/reflow-modified.vm
                     </templateFile>
@@ -226,6 +244,8 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
           <detectLinks>true</detectLinks>
+          <link>http://junit.org/javadoc/4.11/</link>
+          <link>http://tika.apache.org/1.5/api/</link>
         </configuration>
         <executions>
           <execution>
@@ -339,6 +359,8 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           </footer>
           <show>protected</show>
           <detectLinks>true</detectLinks>
+          <link>http://junit.org/javadoc/4.11/</link>
+          <link>http://tika.apache.org/1.5/api/</link>
         </configuration>
         <reportSets>
           <reportSet>
