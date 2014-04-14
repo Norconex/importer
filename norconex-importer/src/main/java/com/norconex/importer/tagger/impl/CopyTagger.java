@@ -31,6 +31,8 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
@@ -71,7 +73,53 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
             this.to = to;
             this.overwrite = overwrite;
         }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((from == null) ? 0 : from.hashCode());
+            result = prime * result + (overwrite ? 1231 : 1237);
+            result = prime * result + ((to == null) ? 0 : to.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            CopyDetails other = (CopyDetails) obj;
+            if (from == null) {
+                if (other.from != null)
+                    return false;
+            } else if (!from.equals(other.from))
+                return false;
+            if (overwrite != other.overwrite)
+                return false;
+            if (to == null) {
+                if (other.to != null)
+                    return false;
+            } else if (!to.equals(other.to))
+                return false;
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            ToStringBuilder builder = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE);
+            builder.append("from", from);
+            builder.append("to", to);
+            builder.append("overwrite", overwrite);
+            return builder.toString();
+        }
+        
     }
+    
     
     private final List<CopyDetails> list = new ArrayList<CopyDetails>();
 
@@ -79,14 +127,11 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     public void tagDocument(String reference, InputStream document,
             Properties metadata, boolean parsed) throws IOException {
         for (CopyDetails details : list) {
-            List<String> values = metadata.getStrings(details.from);
-            if (values != null) {
-                for (String value : values) {
-                    if (details.overwrite) {
-                        metadata.setString(details.to, value);
-                    } else {
-                        metadata.addString(details.to, value);
-                    }
+            for (String value : metadata.getStrings(details.from)) {
+                if (details.overwrite) {
+                    metadata.setString(details.to, value);
+                } else {
+                    metadata.addString(details.to, value);
                 }
             }
         }
@@ -142,4 +187,36 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
         }
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((list == null) ? 0 : list.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CopyTagger other = (CopyTagger) obj;
+        if (list == null) {
+            if (other.list != null)
+                return false;
+        } else if (!list.equals(other.list))
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        ToStringBuilder builder = new ToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        builder.append("list", list);
+        return builder.toString();
+    }
 }

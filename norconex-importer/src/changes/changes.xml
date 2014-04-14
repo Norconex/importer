@@ -11,6 +11,10 @@
       <action dev="essiembp" type="add">
         New CopyTagger: copies document metadata fields to other fields.
       </action>
+      <action dev="essiembp" type="add">
+        New HierarchyTagger: splits a field string into multiple segments 
+        representing each node of a hierarchical branch.
+      </action>
     </release>
 
     <release version="1.2.0" date="2014-03-09" description="Feature release">
