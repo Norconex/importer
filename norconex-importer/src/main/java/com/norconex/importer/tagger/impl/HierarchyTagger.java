@@ -62,7 +62,7 @@ import com.norconex.importer.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.HierarchycalTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.tagger.impl.HierarchyTagger"&gt;
  *      &lt;hierarchy fromField="(from field)" toField="(to field)" 
  *                 fromSeparator="(original separator)" toSeparator="(new separator)"
  *                 overwrite="[false|true]" /&gt
