@@ -19,9 +19,11 @@ package com.norconex.importer.tagger;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.tagger.impl.ReplaceTagger;
 
 public class ReplaceTaggerTest {
@@ -35,6 +37,56 @@ public class ReplaceTaggerTest {
         tagger.addReplacement("fromValue3", "toValue3", "fromName3", "toName3");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
+    }
+
+    
+    @Test
+    public void testRegularReplace() throws IOException {
+        Properties meta = new Properties();
+        meta.addString("fullMatchField", "full value match"); 
+        meta.addString("partialNoMatchField", "partial value nomatch"); 
+        meta.addString("matchOldField", "match to new field"); 
+        meta.addString("nomatchOldField", "no match to new field"); 
+        
+        ReplaceTagger tagger = new ReplaceTagger();
+        tagger.addReplacement("full value match", "replaced", 
+                "fullMatchField");
+        tagger.addReplacement("bad if you see me", "not replaced", 
+                "partialNoMatchField");
+        tagger.addReplacement("match to new field", "replaced to new field", 
+                "matchOldField", "matchNewField");
+        tagger.addReplacement("bad if you see me", "not replaced", 
+                "nomatchOldField", "nomatchNewField");
+
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assert.assertEquals("replaced", meta.getString("fullMatchField"));
+        Assert.assertEquals(
+                "partial value nomatch", meta.getString("partialNoMatchField"));
+        Assert.assertEquals("replaced to new field", 
+                meta.getString("matchNewField"));
+        Assert.assertEquals("no match to new field", 
+                meta.getString("nomatchOldField"));
+        Assert.assertNull(meta.getString("nomatchNewField"));
+    }
+    
+    @Test
+    public void testRegexReplace() throws IOException {
+        Properties meta = new Properties();
+        meta.addString("path1", "/this/is/a/path/file.doc"); 
+        meta.addString("path2", "/that/is/a/path/file.doc"); 
+        
+        ReplaceTagger tagger = new ReplaceTagger();
+        tagger.addReplacement("(.*)/.*", "$1", "path1", true);
+        tagger.addReplacement("(.*)/.*", "$1", "path2", "folder", true);
+        
+        
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assert.assertEquals("/this/is/a/path", meta.getString("path1"));
+        Assert.assertEquals("/that/is/a/path", meta.getString("folder"));
+        Assert.assertEquals(
+                "/that/is/a/path/file.doc", meta.getString("path2"));
     }
 
 }

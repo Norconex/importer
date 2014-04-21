@@ -20,12 +20,13 @@ package com.norconex.importer.tagger.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -33,10 +34,8 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
@@ -57,7 +56,8 @@ import com.norconex.importer.tagger.IDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.tagger.impl.ReplaceTagger"&gt;
- *      &lt;replace fromName="sourceFieldName" toName="targetFieldName"&gt
+ *      &lt;replace fromName="sourceFieldName" toName="targetFieldName" 
+ *               regex="[false|true]"&gt
  *          &lt;fromValue&gtSource Value&lt;/fromValue&gt
  *          &lt;toValue&gtTarget Value&lt;/toValue&gt
  *      &lt;/replace&gt
@@ -70,124 +70,112 @@ import com.norconex.importer.tagger.IDocumentTagger;
 @SuppressWarnings("nls")
 public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
 
-    private static final Logger LOG = LogManager.getLogger(ReplaceTagger.class);
     private static final long serialVersionUID = -6062036871216739761L;
     
-    private final Map<String, Replacement> replacements = 
-            new HashMap<String, Replacement>();
+    private final List<Replacement> replacements = new ArrayList<>();
     
     @Override
     public void tagDocument(
             String reference, InputStream document,
             Properties metadata, boolean parsed)
             throws IOException {
-        for (String name : replacements.keySet()) {
-            Replacement repl = replacements.get(name);
-            // Skip if no replacement
-            if (repl == null) {
-                continue;
-            }
-
-            // Do the potential replacement
-            String value = metadata.getString(name);
-
-            if(repl.details.containsKey(value))
-            {
-                ReplacementDetails detail = repl.details.get(value);
-                    if (detail != null) {
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug(name + " value replaced: "
-                                    + detail.fromValue + "->" + detail.toValue);
-                        }
-                        value = detail.toValue;
-                    }
-                    if ((detail.toName != null) && (detail.toName.length() > 0)) {
-                        metadata.addString(detail.toName, value);
+        
+        
+        for (Replacement repl : replacements) {
+            if (metadata.containsKey(repl.getFromName())) {
+                String[] metaValues = metadata.getStrings(repl.getFromName())
+                        .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+                for (int i = 0; i < metaValues.length; i++) {
+                    String metaValue = metaValues[i];
+                    String newValue = null;
+                    if (repl.isRegex()) {
+                        newValue = regexReplace(metaValue, 
+                                repl.getFromValue(), repl.getToValue());
                     } else {
-                        metadata.setString(repl.fromName, value);
+                        newValue = regularReplace(metaValue, 
+                                repl.getFromValue(), repl.getToValue());
                     }
-            }
-            else{
-                LOG.error("THE VALUE DOES NOT EXIST IN MIME TYPE----"+value);
+                    if (!Objects.equals(metaValue, newValue)) {
+                        if (StringUtils.isNotBlank(repl.getToName())) {
+                            metadata.addString(repl.getToName(), newValue);
+                        } else {
+                            metaValues[i] = newValue;
+                            metadata.setString(repl.getFromName(), metaValues);
+                        }
+                    }
+                }
             }
         }
     }
-
     
-    public Map<String, Replacement> getReplacements() {
-        return Collections.unmodifiableMap(replacements);
+
+    private String regexReplace(
+            String metaValue, String fromValue, String toValue) {
+        Pattern p = Pattern.compile(fromValue);
+        return p.matcher(metaValue).replaceFirst(toValue);
+    }
+    private String regularReplace(
+            String metaValue, String fromValue, String toValue) {
+        if (Objects.equals(metaValue, fromValue)) {
+            return toValue;
+        }
+        return metaValue;
+    }
+        
+    public List<Replacement> getReplacements() {
+        return Collections.unmodifiableList(replacements);
     }
 
     public void removeReplacement(String fromName) {
-        replacements.remove(fromName);
+        List<Replacement> toRemove = new ArrayList<>();
+        for (Replacement replacement : replacements) {
+            if (Objects.equals(replacement.getFromName(), fromName)) {
+                toRemove.add(replacement);
+            }
+        }
+        synchronized (replacements) {
+            replacements.removeAll(toRemove);
+        }
     }
     
     public void addReplacement(
             String fromValue, String toValue, String fromName) {
-        addReplacement(fromValue, toValue, fromName, null);
+        addReplacement(fromValue, toValue, fromName, null, false);
     }
-
     public void addReplacement(
-            String fromValue, String toValue, String fromName, String toName) {
-        Replacement repl = replacements.get(fromName);
-        if (repl == null) {
-            repl = new Replacement();
-            repl.fromName = fromName;
-            replacements.put(fromName, repl);
-        }
-        ReplacementDetails details = new ReplacementDetails();
-        details.fromValue = fromValue;
-        details.toName = toName;
-        details.toValue = toValue;
-        repl.details.put(fromValue, details);
+            String fromValue, String toValue, String fromName, boolean regex) {
+        addReplacement(fromValue, toValue, fromName, null, regex);
+    }
+    public void addReplacement(String fromValue, String toValue, 
+            String fromName, String toName) {
+        addReplacement(fromValue, toValue, fromName, toName, false);
+    }
+    public void addReplacement(String fromValue, String toValue, 
+            String fromName, String toName, boolean regex) {
+        replacements.add(new Replacement(
+                fromName, fromValue, toName, toValue, regex));
     }
 
     
-    public class Replacement {
-        private String fromName;
-        private final Map<String, ReplacementDetails> details = 
-            new HashMap<String, ReplacementDetails>();
+    public class Replacement implements Serializable {
+        private static final long serialVersionUID = 9206061804991938873L;
+        private final String fromName;
+        private final String fromValue;
+        private final String toName;
+        private final String toValue;
+        private final boolean regex;
+        public Replacement(String fromName, String fromValue, String toName,
+                String toValue, boolean regex) {
+            super();
+            this.fromName = fromName;
+            this.fromValue = fromValue;
+            this.toName = toName;
+            this.toValue = toValue;
+            this.regex = regex;
+        }
         public String getFromName() {
             return fromName;
         }
-        public List<ReplacementDetails> getDetails() {
-            return Collections.unmodifiableList(
-                    new ArrayList<ReplacementDetails>(details.values()));
-        }
-        @Override
-        public String toString() {
-            return "Replacement [fromName=" + fromName + ", details=" + details
-                    + "]";
-        }
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder()
-                .append(details)
-                .append(fromName)
-            .toHashCode();
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof ReplaceTagger.Replacement)) {
-                return false;
-            }
-            ReplaceTagger.Replacement other = (ReplaceTagger.Replacement) obj;
-            return new EqualsBuilder()
-                .append(details, other.details)
-                .append(fromName, other.fromName)
-                .isEquals();
-        }
-    }
-    public class ReplacementDetails {
-        private String fromValue;
-        private String toName;
-        private String toValue;
         public String getFromValue() {
             return fromValue;
         }
@@ -197,18 +185,23 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         public String getToValue() {
             return toValue;
         }
-        @Override
-        public String toString() {
-            return "ReplacementDetails [fromValue=" + fromValue + ", toName="
-                    + toName + ", toValue=" + toValue + "]";
+        public boolean isRegex() {
+            return regex;
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                .append(fromValue)
-                .append(toName)
-                .append(toValue)
-                .toHashCode();
+            final int prime = 31;
+            int result = 1;
+            result = prime * result
+                    + ((fromName == null) ? 0 : fromName.hashCode());
+            result = prime * result
+                    + ((fromValue == null) ? 0 : fromValue.hashCode());
+            result = prime * result + (regex ? 1231 : 1237);
+            result = prime * result
+                    + ((toName == null) ? 0 : toName.hashCode());
+            result = prime * result
+                    + ((toValue == null) ? 0 : toValue.hashCode());
+            return result;
         }
         @Override
         public boolean equals(Object obj) {
@@ -218,15 +211,48 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             if (obj == null) {
                 return false;
             }
-            if (!(obj instanceof ReplaceTagger.ReplacementDetails)) {
+            if (getClass() != obj.getClass()) {
                 return false;
             }
-            ReplaceTagger.ReplacementDetails other = (ReplaceTagger.ReplacementDetails) obj;
-            return new EqualsBuilder()
-                .append(fromValue, other.fromValue)
-                .append(toName, other.toName)
-                .append(toValue, other.toValue)
-                .isEquals();
+            Replacement other = (Replacement) obj;
+            if (fromName == null) {
+                if (other.fromName != null) {
+                    return false;
+                }
+            } else if (!fromName.equals(other.fromName)) {
+                return false;
+            }
+            if (fromValue == null) {
+                if (other.fromValue != null) {
+                    return false;
+                }
+            } else if (!fromValue.equals(other.fromValue)) {
+                return false;
+            }
+            if (regex != other.regex) {
+                return false;
+            }
+            if (toName == null) {
+                if (other.toName != null) {
+                    return false;
+                }
+            } else if (!toName.equals(other.toName)) {
+                return false;
+            }
+            if (toValue == null) {
+                if (other.toValue != null) {
+                    return false;
+                }
+            } else if (!toValue.equals(other.toValue)) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public String toString() {
+            return "Replacement [fromName=" + fromName + ", fromValue="
+                    + fromValue + ", toName=" + toName + ", toValue=" + toValue
+                    + ", regex=" + regex + "]";
         }
     }
     
@@ -241,7 +267,8 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
                         node.getString("fromValue"),
                         node.getString("toValue"),
                         node.getString("[@fromName]"),
-                        node.getString("[@toName]"));
+                        node.getString("[@toName]", null),
+                        node.getBoolean("[@regex]", false));
             }
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
@@ -255,24 +282,22 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             XMLStreamWriter writer = factory.createXMLStreamWriter(out);
             writer.writeStartElement("tagger");
             writer.writeAttribute("class", getClass().getCanonicalName());
-            for (String key : replacements.keySet()) {
-                Replacement replacement = replacements.get(key);
-                for (String detailKey : replacement.details.keySet()) {
-                    ReplacementDetails details = 
-                            replacement.details.get(detailKey);
-                    writer.writeStartElement("replace");
-                    writer.writeAttribute("fromName", key);
-                    if (details.toName != null) {
-                        writer.writeAttribute("toName", details.toName);
-                    }
-                    writer.writeStartElement("fromValue");
-                    writer.writeCharacters(details.fromValue);
-                    writer.writeEndElement();
-                    writer.writeStartElement("toValue");
-                    writer.writeCharacters(details.toValue);
-                    writer.writeEndElement();
-                    writer.writeEndElement();
+
+            for (Replacement replacement : replacements) {
+                writer.writeStartElement("replace");
+                writer.writeAttribute("fromName", replacement.getFromName());
+                if (replacement.getToName() != null) {
+                    writer.writeAttribute("toName", replacement.getToName());
                 }
+                writer.writeAttribute("regex", 
+                        Boolean.toString(replacement.isRegex()));
+                writer.writeStartElement("fromValue");
+                writer.writeCharacters(replacement.getFromValue());
+                writer.writeEndElement();
+                writer.writeStartElement("toValue");
+                writer.writeCharacters(replacement.getToValue());
+                writer.writeEndElement();
+                writer.writeEndElement();
             }
             writer.writeEndElement();
             writer.flush();

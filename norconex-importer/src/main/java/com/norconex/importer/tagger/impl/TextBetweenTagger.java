@@ -54,7 +54,7 @@ import com.norconex.importer.tagger.AbstractStringTagger;
  * can be specified at once. The field specified for a pair of end-points
  * is considered a multi-value field.</p>
  * 
- * <p>This class can be used as a pre-parsing (text content-types only) 
+ * <p>This class can be used as a pre-parsing  
  * or post-parsing handlers.</p>
  * <p>
  * XML configuration usage:
@@ -77,7 +77,7 @@ import com.norconex.importer.tagger.AbstractStringTagger;
  *          &lt;end&gt(regex)&lt;/end&gt
  *      &lt;/textBetween&gt
  *      &lt;-- multiple textBetween tags allowed --&gt;
- *  &lt;/transformer&gt;
+ *  &lt;/tagger&gt;
  * </pre>
  * @author Khalid AlHomoud
  * @author Pascal Essiembre

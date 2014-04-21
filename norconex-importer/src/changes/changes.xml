@@ -15,6 +15,15 @@
         New HierarchyTagger: splits a field string into multiple segments 
         representing each node of a hierarchical branch.
       </action>
+      <action dev="essiembp" type="update">
+        ReplaceTagger now supports regular expressions (via a new "regex" flag).
+      </action>
+      <action dev="essiembp" type="update">
+        Now requires Java 7 or higher.
+      </action>
+      <action dev="essiembp" type="fix">
+        RelpaceTagger regular matching now only replaces matching "fromValue".
+      </action>
     </release>
 
     <release version="1.2.0" date="2014-03-09" description="Feature release">
