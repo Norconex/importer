@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -39,7 +40,11 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.tika.Tika;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.mime.MediaType;
 
 import com.norconex.commons.lang.io.FileUtil;
 import com.norconex.commons.lang.map.Properties;
@@ -72,6 +77,8 @@ public class Importer {
     private static final String ARG_CONFIG = "config";
 
 	private final ImporterConfig importerConfig;
+	private final TikaConfig tikaConfig;
+	private final Pattern extPattern = Pattern.compile("^.*(\\.[A-z0-9]+).*");
     
     /**
      * Creates a new importer with default configuration.
@@ -89,6 +96,12 @@ public class Importer {
             this.importerConfig = importerConfig;
         } else {
             this.importerConfig = new ImporterConfig();
+        }
+        try {
+            tikaConfig = new TikaConfig();
+        } catch (TikaException | IOException e) {
+            throw new ImporterException(
+                    "Could not properly initialize importer.", e);
         }
     }
 
@@ -208,13 +221,26 @@ public class Importer {
             throws IOException {
 
         MutableObject<File> workFile = new MutableObject<File>(input);
-        
         ContentType finalContentType = contentType;
         if (finalContentType == null 
                 || StringUtils.isBlank(finalContentType.toString())) {
-            Tika tika = new Tika();
-            finalContentType = ContentType.newContentType(tika.detect(input));
+            String fileName = docReference;
+            if (StringUtils.isBlank(fileName)) {
+                fileName = input.toString();
+            }
+            Metadata meta = new Metadata();
+            String extension = extPattern.matcher(fileName).replaceFirst("$1");
+            meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
+            MediaType media = tikaConfig.getDetector().detect(
+                    TikaInputStream.get(input), meta);
+            finalContentType = ContentType.newContentType(media.toString());
+            
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Detected \"" + finalContentType 
+                        + "\" content-type for: " + docReference);
+            }
         }
+        
         String finalDocRef = docReference;
         if (StringUtils.isBlank(docReference)) {
             finalDocRef = input.getAbsolutePath();
