@@ -6,7 +6,6 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
-
     <release version="1.3.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
         New CopyTagger: copies document metadata fields to other fields.
@@ -16,7 +15,15 @@
         representing each node of a hierarchical branch.
       </action>
       <action dev="essiembp" type="update">
+        Improved detection of certain mime types, such as those previously 
+        appearing as application/x-tika-*.
+      </action>
+      <action dev="essiembp" type="update">
         ReplaceTagger now supports regular expressions (via a new "regex" flag).
+      </action>
+      <action dev="essiembp" type="update">
+        Can now detect these MS Viso mime-types properly: vsdx, vstc, vssx, 
+        vsdm, vstm, vssm.
       </action>
       <action dev="essiembp" type="update">
         Now requires Java 7 or higher.
