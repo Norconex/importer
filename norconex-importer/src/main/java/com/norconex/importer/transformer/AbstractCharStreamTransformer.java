@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
@@ -32,6 +33,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.AbstractRestrictiveHandler;
 import com.norconex.importer.AbstractTextRestrictiveHandler;
 import com.norconex.importer.Importer;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
@@ -82,8 +84,9 @@ public abstract class AbstractCharStreamTransformer
         if (!documentAccepted(reference, metadata, parsed)) {
             return;
         }
-        InputStreamReader is = new InputStreamReader(input);
-        OutputStreamWriter os = new OutputStreamWriter(output);
+        InputStreamReader is = new InputStreamReader(input, CharEncoding.UTF_8);
+        OutputStreamWriter os = 
+                new OutputStreamWriter(output, CharEncoding.UTF_8);
         transformTextDocument(reference, is, os, metadata, parsed);
         os.flush();
     }

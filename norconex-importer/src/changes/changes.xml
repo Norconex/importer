@@ -26,6 +26,9 @@
         vsdm, vstm, vssm.
       </action>
       <action dev="essiembp" type="update">
+        AbstractCharStreamTransformer now enforces streaming as UTF8.
+      </action>
+      <action dev="essiembp" type="update">
         Now requires Java 7 or higher.
       </action>
       <action dev="essiembp" type="fix">
