@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.tagger;
+package com.norconex.importer.tagger.impl;
 
 import java.io.File;
 import java.io.FileInputStream;

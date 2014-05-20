@@ -23,15 +23,16 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
@@ -45,32 +46,32 @@ import com.norconex.importer.tagger.IDocumentTagger;
 
 
 /**
- * Replaces an existing metadata value with another one.  The "toName" argument
- * is optional (the same field will be used for the replacement if no
+ * Splits an existing metadata value into multiple values based on a given
+ * value separator.  The "toName" argument
+ * is optional (the same field will be used to store the splits if no
  * "toName" is specified").
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.ReplaceTagger"&gt;
- *      &lt;replace fromName="sourceFieldName" toName="targetFieldName" 
+ *  &lt;tagger class="com.norconex.importer.tagger.impl.SplitTagger"&gt;
+ *      &lt;split fromName="sourceFieldName" toName="targetFieldName" 
  *               regex="[false|true]"&gt
- *          &lt;fromValue&gtSource Value&lt;/fromValue&gt
- *          &lt;toValue&gtTarget Value&lt;/toValue&gt
- *      &lt;/replace&gt
- *      &lt;!-- multiple replace tags allowed --&gt;
+ *          &lt;separator&gt(separator value)&lt;/separator&gt
+ *      &lt;/split&gt
+ *      &lt;!-- multiple split tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
- *
+ * @since 1.3.0
  */
 @SuppressWarnings("nls")
-public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
+public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
 
     private static final long serialVersionUID = -6062036871216739761L;
     
-    private final List<Replacement> replacements = new ArrayList<>();
+    private final List<Split> splits = new ArrayList<>();
     
     @Override
     public void tagDocument(
@@ -78,110 +79,95 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             Properties metadata, boolean parsed)
             throws IOException {
         
-        
-        for (Replacement repl : replacements) {
-            if (metadata.containsKey(repl.getFromName())) {
-                String[] metaValues = metadata.getStrings(repl.getFromName())
+        for (Split split : splits) {
+            if (metadata.containsKey(split.getFromName())) {
+                String[] metaValues = metadata.getStrings(split.getFromName())
                         .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+                List<String> sameFieldValues = 
+                        SetUniqueList.setUniqueList(new ArrayList<String>());
                 for (int i = 0; i < metaValues.length; i++) {
                     String metaValue = metaValues[i];
-                    String newValue = null;
-                    if (repl.isRegex()) {
-                        newValue = regexReplace(metaValue, 
-                                repl.getFromValue(), repl.getToValue());
+                    String[] splitValues = null;
+                    if (split.isRegex()) {
+                        splitValues = regexSplit(
+                                metaValue, split.getSeparator());
                     } else {
-                        newValue = regularReplace(metaValue, 
-                                repl.getFromValue(), repl.getToValue());
+                        splitValues = regularSplit(
+                                metaValue, split.getSeparator());
                     }
-                    if (!Objects.equals(metaValue, newValue)) {
-                        if (StringUtils.isNotBlank(repl.getToName())) {
-                            metadata.addString(repl.getToName(), newValue);
+                    if (ArrayUtils.isNotEmpty(splitValues)) {
+                        if (StringUtils.isNotBlank(split.getToName())) {
+                            metadata.addString(split.getToName(), splitValues);
                         } else {
-                            metaValues[i] = newValue;
-                            metadata.setString(repl.getFromName(), metaValues);
+                            sameFieldValues.addAll(Arrays.asList(splitValues));
                         }
                     }
+                }
+                if (StringUtils.isBlank(split.getToName())) {
+                    metadata.setString(split.getFromName(), 
+                            sameFieldValues.toArray(
+                                    ArrayUtils.EMPTY_STRING_ARRAY));
                 }
             }
         }
     }
     
 
-    private String regexReplace(
-            String metaValue, String fromValue, String toValue) {
-        Pattern p = Pattern.compile(fromValue);
-        return p.matcher(metaValue).replaceFirst(toValue);
+    private String[] regexSplit(String metaValue, String separator) {
+        return metaValue.split(separator);
     }
-    private String regularReplace(
-            String metaValue, String fromValue, String toValue) {
-        if (Objects.equals(metaValue, fromValue)) {
-            return toValue;
-        }
-        return metaValue;
+    private String[] regularSplit(String metaValue, String separator) {
+        return StringUtils.splitByWholeSeparator(metaValue, separator);
     }
         
-    public List<Replacement> getReplacements() {
-        return Collections.unmodifiableList(replacements);
+    public List<Split> getSplits() {
+        return Collections.unmodifiableList(splits);
     }
 
-    public void removeReplacement(String fromName) {
-        List<Replacement> toRemove = new ArrayList<>();
-        for (Replacement replacement : replacements) {
-            if (Objects.equals(replacement.getFromName(), fromName)) {
-                toRemove.add(replacement);
+    public void removeSplit(String fromName) {
+        List<Split> toRemove = new ArrayList<>();
+        for (Split split : splits) {
+            if (Objects.equals(split.getFromName(), fromName)) {
+                toRemove.add(split);
             }
         }
-        synchronized (replacements) {
-            replacements.removeAll(toRemove);
+        synchronized (splits) {
+            splits.removeAll(toRemove);
         }
     }
     
-    public void addReplacement(
-            String fromValue, String toValue, String fromName) {
-        addReplacement(fromValue, toValue, fromName, null, false);
+    public void addSplit(
+            String fromName, String separator, boolean regex) {
+        splits.add(new Split(fromName, null, separator, regex));
     }
-    public void addReplacement(
-            String fromValue, String toValue, String fromName, boolean regex) {
-        addReplacement(fromValue, toValue, fromName, null, regex);
-    }
-    public void addReplacement(String fromValue, String toValue, 
-            String fromName, String toName) {
-        addReplacement(fromValue, toValue, fromName, toName, false);
-    }
-    public void addReplacement(String fromValue, String toValue, 
-            String fromName, String toName, boolean regex) {
-        replacements.add(new Replacement(
-                fromName, fromValue, toName, toValue, regex));
+    public void addSplit(
+            String fromName, String toName, String separator, boolean regex) {
+        splits.add(new Split(fromName, toName, separator, regex));
     }
 
     
-    public class Replacement implements Serializable {
+    public class Split implements Serializable {
         private static final long serialVersionUID = 9206061804991938873L;
         private final String fromName;
-        private final String fromValue;
         private final String toName;
-        private final String toValue;
+        private final String separator;
         private final boolean regex;
-        public Replacement(String fromName, String fromValue, String toName,
-                String toValue, boolean regex) {
+        public Split(String fromName, String toName,
+                String separator, boolean regex) {
             super();
             this.fromName = fromName;
-            this.fromValue = fromValue;
             this.toName = toName;
-            this.toValue = toValue;
+            this.separator = separator;
             this.regex = regex;
         }
         public String getFromName() {
             return fromName;
         }
-        public String getFromValue() {
-            return fromValue;
-        }
         public String getToName() {
             return toName;
         }
-        public String getToValue() {
-            return toValue;
+        public String getSeparator() {
+            return separator;
         }
         public boolean isRegex() {
             return regex;
@@ -192,13 +178,11 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             int result = 1;
             result = prime * result
                     + ((fromName == null) ? 0 : fromName.hashCode());
-            result = prime * result
-                    + ((fromValue == null) ? 0 : fromValue.hashCode());
             result = prime * result + (regex ? 1231 : 1237);
             result = prime * result
                     + ((toName == null) ? 0 : toName.hashCode());
             result = prime * result
-                    + ((toValue == null) ? 0 : toValue.hashCode());
+                    + ((separator == null) ? 0 : separator.hashCode());
             return result;
         }
         @Override
@@ -212,19 +196,12 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            Replacement other = (Replacement) obj;
+            Split other = (Split) obj;
             if (fromName == null) {
                 if (other.fromName != null) {
                     return false;
                 }
             } else if (!fromName.equals(other.fromName)) {
-                return false;
-            }
-            if (fromValue == null) {
-                if (other.fromValue != null) {
-                    return false;
-                }
-            } else if (!fromValue.equals(other.fromValue)) {
                 return false;
             }
             if (regex != other.regex) {
@@ -237,19 +214,19 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             } else if (!toName.equals(other.toName)) {
                 return false;
             }
-            if (toValue == null) {
-                if (other.toValue != null) {
+            if (separator == null) {
+                if (other.separator != null) {
                     return false;
                 }
-            } else if (!toValue.equals(other.toValue)) {
+            } else if (!separator.equals(other.separator)) {
                 return false;
             }
             return true;
         }
         @Override
         public String toString() {
-            return "Replacement [fromName=" + fromName + ", fromValue="
-                    + fromValue + ", toName=" + toName + ", toValue=" + toValue
+            return "Split [fromName=" + fromName
+                    + ", toName=" + toName + ", separator=" + separator
                     + ", regex=" + regex + "]";
         }
     }
@@ -259,13 +236,12 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         try {
             XMLConfiguration xml = ConfigurationLoader.loadXML(in);
             List<HierarchicalConfiguration> nodes = 
-                    xml.configurationsAt("replace");
+                    xml.configurationsAt("split");
             for (HierarchicalConfiguration node : nodes) {
-                addReplacement(
-                        node.getString("fromValue"),
-                        node.getString("toValue"),
+                addSplit(
                         node.getString("[@fromName]"),
                         node.getString("[@toName]", null),
+                        node.getString("separator"),
                         node.getBoolean("[@regex]", false));
             }
         } catch (ConfigurationException e) {
@@ -281,19 +257,16 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             writer.writeStartElement("tagger");
             writer.writeAttribute("class", getClass().getCanonicalName());
 
-            for (Replacement replacement : replacements) {
-                writer.writeStartElement("replace");
-                writer.writeAttribute("fromName", replacement.getFromName());
-                if (replacement.getToName() != null) {
-                    writer.writeAttribute("toName", replacement.getToName());
+            for (Split split : splits) {
+                writer.writeStartElement("split");
+                writer.writeAttribute("fromName", split.getFromName());
+                if (split.getToName() != null) {
+                    writer.writeAttribute("toName", split.getToName());
                 }
                 writer.writeAttribute("regex", 
-                        Boolean.toString(replacement.isRegex()));
-                writer.writeStartElement("fromValue");
-                writer.writeCharacters(replacement.getFromValue());
-                writer.writeEndElement();
-                writer.writeStartElement("toValue");
-                writer.writeCharacters(replacement.getToValue());
+                        Boolean.toString(split.isRegex()));
+                writer.writeStartElement("separator");
+                writer.writeCharacters(split.getSeparator());
                 writer.writeEndElement();
                 writer.writeEndElement();
             }
@@ -308,7 +281,7 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
 
     @Override
     public String toString() {
-        return "ReplaceTagger [replacements=" + replacements + "]";
+        return "SplitTagger [splits=" + splits + "]";
     }
 
 
@@ -316,8 +289,7 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result
-                + ((replacements == null) ? 0 : replacements.hashCode());
+        result = prime * result + ((splits == null) ? 0 : splits.hashCode());
         return result;
     }
 
@@ -333,12 +305,12 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        ReplaceTagger other = (ReplaceTagger) obj;
-        if (replacements == null) {
-            if (other.replacements != null) {
+        SplitTagger other = (SplitTagger) obj;
+        if (splits == null) {
+            if (other.splits != null) {
                 return false;
             }
-        } else if (!replacements.equals(other.replacements)) {
+        } else if (!splits.equals(other.splits)) {
             return false;
         }
         return true;

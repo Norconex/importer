@@ -15,25 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.tagger;
+package com.norconex.importer.tagger.impl;
 
 import java.io.IOException;
 
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.tagger.impl.ConstantTagger;
+import com.norconex.importer.tagger.impl.DeleteTagger;
 
-public class ConstantTaggerTest {
+public class DeleteTaggerTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        ConstantTagger tagger = new ConstantTagger();
-        tagger.addConstant("constant1", "value1");
-        tagger.addConstant("constant1", "value2");
-        tagger.addConstant("constant2", "valueA");
-        tagger.addConstant("constant2", "valueA");
-        tagger.addConstant("constant3", "valueZ");
+        DeleteTagger tagger = new DeleteTagger();
+        tagger.addField("potato");
+        tagger.addField("potato");
+        tagger.addField("carrot");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }
