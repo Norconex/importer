@@ -114,7 +114,14 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
     
 
     private String[] regexSplit(String metaValue, String separator) {
-        return metaValue.split(separator);
+        String[] values = metaValue.split(separator);
+        List<String> cleanValues = new ArrayList<>();
+        for (String value : values) {
+            if (StringUtils.isNotBlank(value)) {
+                cleanValues.add(value);
+            }
+        }
+        return cleanValues.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
     }
     private String[] regularSplit(String metaValue, String separator) {
         return StringUtils.splitByWholeSeparator(metaValue, separator);
