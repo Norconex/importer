@@ -46,7 +46,8 @@ import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
 
-import com.norconex.commons.lang.io.FileUtil;
+import com.norconex.commons.lang.file.ContentFamily;
+import com.norconex.commons.lang.file.FileUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.filter.IDocumentFilter;
 import com.norconex.importer.filter.IOnMatchFilter;
@@ -67,6 +68,8 @@ public class Importer {
     public static final String DOC_REFERENCE = "document.reference";
     public static final String DOC_CONTENT_TYPE = 
     		IMPORTER_PREFIX + "contentType";
+    public static final String DOC_CONTENT_FAMILY = 
+            IMPORTER_PREFIX + "contentFamily";
 
 	private static final Logger LOG = LogManager.getLogger(Importer.class);
 
@@ -245,9 +248,15 @@ public class Importer {
         if (StringUtils.isBlank(docReference)) {
             finalDocRef = input.getAbsolutePath();
         }
+
         
         metadata.addString(DOC_REFERENCE, finalDocRef); 
     	metadata.addString(DOC_CONTENT_TYPE, finalContentType.toString()); 
+        ContentFamily contentFamily = 
+                ContentFamily.forContentType(finalContentType.toString());
+        if (contentFamily != null) {
+            metadata.addString(DOC_CONTENT_FAMILY, contentFamily.getId());
+        }
         
     	if (!executeHandlers(docReference, input, workFile, metadata, 
     	        importerConfig.getPreParseHandlers(), false)) {

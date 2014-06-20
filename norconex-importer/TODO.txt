@@ -1,4 +1,10 @@
 
+- Add language detection
+
+- Add document splitting in multiple docs, with option to keep the parent
+  document or not and offer options what the document reference should be
+  (default: parentref!childref).
+
 - Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Allow to break documents into smaller documents.

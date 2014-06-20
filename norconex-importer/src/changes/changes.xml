@@ -8,6 +8,11 @@
   <body>
     <release version="1.3.0" date="2014-??-??" description="Feature release">
       <action dev="essiembp" type="add">
+        Now stores the content "family" for each documents as 
+        "importer.contentFamily".  This is a higher level representation
+        of a file content types.
+      </action>
+      <action dev="essiembp" type="add">
         New SplitTagger: Split values into multiple-values using a separator
         of choice.
       </action>
