@@ -32,7 +32,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.importer.ContentType;
+import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.HTMLParser;
 import com.norconex.importer.parser.impl.PDFParser;
@@ -117,13 +117,16 @@ public class DefaultDocumentParserFactory
 
         IDocumentParser pdfParser = new PDFParser(format);
         registerNamedParser(ContentType.PDF, pdfParser);
-        registerNamedParser(ContentType.XPDF, pdfParser);
+        registerNamedParser(
+                ContentType.valueOf("application/x-pdf"), pdfParser);
 
         IDocumentParser wpParser = new WordPerfectParser();
-        registerNamedParser(ContentType.WORDPERFECT, wpParser);
-        registerNamedParser(ContentType.WORDPERFECT_6_0, wpParser);
-        registerNamedParser(ContentType.WORDPERFECT_6_1, wpParser);
-        
+        registerNamedParser(
+                ContentType.valueOf("application/wordperfecet"), wpParser);
+        registerNamedParser(
+                ContentType.valueOf("application/wordperfect6.0"), wpParser);
+        registerNamedParser(
+                ContentType.valueOf("application/wordperfect6.1"), wpParser);
     }
     private void registerFallbackParser() {
         registerFallbackParser(new FallbackParser(format));

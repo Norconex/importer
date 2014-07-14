@@ -37,7 +37,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.tagger.IDocumentTagger;
 
 /**
@@ -157,17 +158,20 @@ public class HierarchyTagger implements IDocumentTagger, IXMLConfigurable {
         
     }
     
-    private final List<HierarchyDetails> list = new ArrayList<HierarchyDetails>();
+    private final List<HierarchyDetails> list = 
+            new ArrayList<HierarchyDetails>();
 
     @Override
     public void tagDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed) throws IOException {
+            ImporterMetadata metadata, boolean parsed) 
+                    throws ImporterHandlerException {
         for (HierarchyDetails details : list) {
             breakSegments(metadata, details);
         }
     }
 
-    private void breakSegments(Properties metadata, HierarchyDetails details) {
+    private void breakSegments(
+            ImporterMetadata metadata, HierarchyDetails details) {
         List<String> nodes = new ArrayList<String>();
         String sep = details.fromSeparator;
         if (StringUtils.isNotEmpty(details.toSeparator)) {

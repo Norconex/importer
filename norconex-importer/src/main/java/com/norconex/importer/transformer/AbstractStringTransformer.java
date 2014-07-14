@@ -30,7 +30,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.util.BufferUtil;
 import com.norconex.importer.util.MemoryUtil;
 
@@ -81,7 +81,7 @@ public abstract class AbstractStringTransformer
     @Override
     protected final void transformTextDocument(
             String reference, Reader input,
-            Writer output, Properties metadata, boolean parsed)
+            Writer output, ImporterMetadata metadata, boolean parsed)
             throws IOException {
         
         // Initial size is half free memory, considering chars take 2 bytes
@@ -106,7 +106,7 @@ public abstract class AbstractStringTransformer
     }
     
     protected abstract void transformStringDocument(
-           String reference, StringBuilder content, Properties metadata,
+           String reference, StringBuilder content, ImporterMetadata metadata,
            boolean parsed, boolean partialContent);
    
     // We ensure buffer size never goes beyond half available memory.

@@ -27,8 +27,8 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ContentType;
+import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -82,7 +82,7 @@ public class WordPerfectParser implements IDocumentParser {
     
     @Override
     public void parseDocument(InputStream inputStream, ContentType contentType,
-            Writer outputStream, Properties metadata)
+            Writer outputStream, ImporterMetadata metadata)
             throws DocumentParserException {
         try {
             outputStream.write(extract(inputStream).trim());

@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.transformer.AbstractStringTransformer;
 
 /**
@@ -79,7 +79,7 @@ public class StripBeforeTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringDocument(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
+            StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         if (stripBeforeRegex == null) {
             LOG.error("No regular expression provided.");

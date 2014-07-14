@@ -36,7 +36,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.tagger.IDocumentTagger;
 
 /**
@@ -125,7 +126,8 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
 
     @Override
     public void tagDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed) throws IOException {
+            ImporterMetadata metadata, boolean parsed) 
+                    throws ImporterHandlerException {
         for (CopyDetails details : list) {
             for (String value : metadata.getStrings(details.from)) {
                 if (details.overwrite) {

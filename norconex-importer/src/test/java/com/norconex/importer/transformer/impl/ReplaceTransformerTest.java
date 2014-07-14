@@ -28,7 +28,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReplaceTransformerTest {
 
@@ -40,7 +41,8 @@ public class ReplaceTransformerTest {
             + "</transformer>";
     
     @Test
-    public void testTransformTextDocument() throws IOException {
+    public void testTransformTextDocument() 
+            throws IOException, ImporterHandlerException {
         String text = "I like to eat cakes and candies.";
         
         ReplaceTransformer t = new ReplaceTransformer();
@@ -51,7 +53,7 @@ public class ReplaceTransformerTest {
         
         InputStream is = IOUtils.toInputStream(text);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        t.transformDocument("dummyRef", is, os, new Properties(), true);
+        t.transformDocument("dummyRef", is, os, new ImporterMetadata(), true);
         
         String response = os.toString();
         System.out.println(response);

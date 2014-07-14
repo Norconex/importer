@@ -24,8 +24,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.tagger.impl.HierarchyTagger;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class HierarchyTaggerTest {
 
@@ -44,8 +44,8 @@ public class HierarchyTaggerTest {
         ConfigurationUtil.assertWriteRead(tagger);
     }
 
-    public void testTagDocument() throws IOException {
-        Properties meta = new Properties();
+    public void testTagDocument() throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
         meta.setString("path", "/vegetable/potato/sweet");
         HierarchyTagger tagger = new HierarchyTagger();
         tagger.addHierarcyDetails(

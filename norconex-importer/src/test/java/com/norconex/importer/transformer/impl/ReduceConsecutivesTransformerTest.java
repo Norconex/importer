@@ -28,7 +28,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReduceConsecutivesTransformerTest {
 
@@ -37,28 +38,36 @@ public class ReduceConsecutivesTransformerTest {
             + "<reduce>\\s</reduce><reduce>.</reduce></transformer>";
     
     @Test
-    public void testTransformTextDocument() throws IOException {
+    public void testTransformTextDocument() throws ImporterHandlerException {
         String text = "\t\tThis is the text TeXt I want to modify...\n\r\n\r"
                 + "     Too much space.";
         
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
 
         Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
-        t.loadFromXML(reader);
-        reader.close();
+        try {
+            t.loadFromXML(reader);
+        } catch (IOException e) {
+            throw new ImporterHandlerException(
+                    "Could not reduce consecutives.", e);
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
         
         InputStream is = IOUtils.toInputStream(text);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        t.transformDocument("dummyRef", is, os, new Properties(), true);
-        
-        String response = os.toString();
-        System.out.println(response);
-        Assert.assertEquals(
-                "\tthis is the text i want to modify.\n\r too much space.", 
-                response.toLowerCase());
 
-        is.close();
-        os.close();
+        try { 
+            t.transformDocument("dummyRef", is, os, new ImporterMetadata(), true);
+            String response = os.toString();
+            System.out.println(response);
+            Assert.assertEquals(
+                    "\tthis is the text i want to modify.\n\r too much space.", 
+                    response.toLowerCase());
+        } finally {
+            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly(os);
+        }
     }
     
     

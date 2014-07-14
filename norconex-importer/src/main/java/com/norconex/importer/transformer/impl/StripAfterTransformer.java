@@ -29,14 +29,14 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.transformer.AbstractStringTransformer;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * <p>Strips any content found after first match found for given pattern.</p>
@@ -78,7 +78,7 @@ public class StripAfterTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringDocument(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
+            StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         if (stripAfterRegex == null) {
             LOG.error("No regular expression provided.");

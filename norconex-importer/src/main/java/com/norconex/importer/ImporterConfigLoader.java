@@ -30,6 +30,7 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.importer.handler.IImporterHandler;
 
 /**
  * Importer configuration loader.  Configuration options are defined
@@ -95,6 +96,14 @@ public final class ImporterConfigLoader {
         }
         ImporterConfig config = new ImporterConfig();
         try {
+            //--- Temp directory -----------------------------------------------
+            config.setTempDir(new File(xml.getString(
+                    "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
+
+            //--- File Mem Cache Size ------------------------------------------
+            config.setFileMemCacheSize(xml.getInt("fileMemCacheSize", 
+                    ImporterConfig.DEFAULT_FILE_MEM_CACHE_SIZE));
+            
             //--- Pre-Import Handlers ------------------------------------------
             config.setPreParseHandlers(
                     loadImportHandlers(xml, "preParseHandlers"));
@@ -113,9 +122,9 @@ public final class ImporterConfigLoader {
         return config;
     }
     
-    private static IImportHandler[] loadImportHandlers(
+    private static IImporterHandler[] loadImportHandlers(
             XMLConfiguration xml, String xmlPath) {
-        List<IImportHandler> handlers = new ArrayList<IImportHandler>();
+        List<IImporterHandler> handlers = new ArrayList<IImporterHandler>();
 
         ExpressionEngine originalEngine = xml.getExpressionEngine();
         xml.setExpressionEngine(new XPathExpressionEngine());
@@ -125,8 +134,8 @@ public final class ImporterConfigLoader {
         for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
             handlers.add(
-                    (IImportHandler) ConfigurationUtil.newInstance(xmlHandler));
+                    (IImporterHandler) ConfigurationUtil.newInstance(xmlHandler));
         }
-        return handlers.toArray(new IImportHandler[]{});
+        return handlers.toArray(new IImporterHandler[]{});
     }
 }

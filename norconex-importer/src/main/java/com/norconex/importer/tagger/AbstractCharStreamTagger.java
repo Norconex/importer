@@ -17,10 +17,10 @@
  */
 package com.norconex.importer.tagger;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +28,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.AbstractRestrictiveHandler;
-import com.norconex.importer.AbstractTextRestrictiveHandler;
-import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.AbstractRestrictiveHandler;
+import com.norconex.importer.handler.AbstractTextRestrictiveHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * <p>Base class for taggers dealing with the body of text documents only.  
@@ -40,7 +40,7 @@ import com.norconex.importer.Importer;
  * <p>
  * For pre-parsing, non-text documents will simply be ignored and no
  * tagging will occur.  To find out if a document is a text-one, the
- * metadata {@link Importer#DOC_CONTENT_TYPE} value is used. By default
+ * metadata {@link ImporterMetadata#DOC_CONTENT_TYPE} value is used. By default
  * any content type starting with "text/" is considered text.  This default
  * behavior can be changed with the {@link #setContentTypeRegex(String)} method.
  * One must make sure to only match text documents to parsing exceptions.
@@ -75,7 +75,8 @@ public abstract class AbstractCharStreamTagger
 
     @Override
     public void tagDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed) throws IOException {
+            ImporterMetadata metadata, boolean parsed) 
+                    throws ImporterHandlerException {
         
         if (!documentAccepted(reference, metadata, parsed)) {
             return;
@@ -85,15 +86,19 @@ public abstract class AbstractCharStreamTagger
         if (StringUtils.isBlank(contentType)) {
             contentType = CharEncoding.UTF_8;
         }
-        InputStreamReader is = new InputStreamReader(document, contentType);
+        try {
+            InputStreamReader is = new InputStreamReader(document, contentType);
+            tagTextDocument(reference, is, metadata, parsed);
+        } catch (UnsupportedEncodingException e) {
+            throw new ImporterHandlerException(e);
+        }
         
-        tagTextDocument(reference, is, metadata, parsed);
     }
 
     protected abstract void tagTextDocument(
             String reference, Reader input,
-            Properties metadata, boolean parsed)
-            throws IOException;
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException;
 
     @Override
     public boolean equals(final Object other) {

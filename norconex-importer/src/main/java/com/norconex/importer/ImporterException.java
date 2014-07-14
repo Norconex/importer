@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -18,11 +18,10 @@
 package com.norconex.importer;
 
 /**
- * Runtime exception thrown by many of the importer classes upon encountering
- * issues.
+ * Exception thrown when an issue prevented the proper importation of a file.
  * @author Pascal Essiembre
  */
-public class ImporterException extends RuntimeException {
+public class ImporterException extends Exception {
 
     private static final long serialVersionUID = -805913995358009121L;
 

@@ -25,7 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class SplitTaggerTest {
 
@@ -42,8 +43,8 @@ public class SplitTaggerTest {
 
     
     @Test
-    public void testRegularSplit() throws IOException {
-        Properties meta = new Properties();
+    public void testRegularSplit() throws ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
         meta.addString("metaToSplitSameField", "Joe, Jack, William, Avrel"); 
         meta.addString("metaNoSplitSameField", "Joe Jack William Avrel"); 
         meta.addString("metaToSplitNewField", "Joe, Jack, William, Avrel"); 
@@ -87,8 +88,8 @@ public class SplitTaggerTest {
     }
     
     @Test
-    public void testRegexSplit() throws IOException {
-        Properties meta = new Properties();
+    public void testRegexSplit() throws ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
         meta.addString("path1", "/a/path/file.doc"); 
         meta.addString("path2", "a, b,c d;e, f"); 
         

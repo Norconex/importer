@@ -27,14 +27,13 @@ import java.io.Writer;
 
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.AbstractRestrictiveHandler;
-import com.norconex.importer.AbstractTextRestrictiveHandler;
-import com.norconex.importer.Importer;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.AbstractRestrictiveHandler;
+import com.norconex.importer.handler.AbstractTextRestrictiveHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * <p>Base class for transformers dealing with text documents only.  Subclasses
@@ -43,7 +42,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * <p>
  * For pre-parsing, non-text documents will simply be ignored and no
  * transformation will occur.  To find out if a document is a text-one, the
- * metadata {@link Importer#DOC_CONTENT_TYPE} value is used. By default
+ * metadata {@link ImporterMetadata#DOC_CONTENT_TYPE} value is used. By default
  * any content type starting with "text/" is considered text.  This default
  * behavior can be changed with the {@link #setContentTypeRegex(String)} method.
  * One must make sure to only match text documents to parsing exceptions.
@@ -78,22 +77,27 @@ public abstract class AbstractCharStreamTransformer
     
     @Override
     public final void transformDocument(String reference, InputStream input,
-            OutputStream output, Properties metadata, boolean parsed)
-            throws IOException {
+            OutputStream output, ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         
         if (!documentAccepted(reference, metadata, parsed)) {
             return;
         }
-        InputStreamReader is = new InputStreamReader(input, CharEncoding.UTF_8);
-        OutputStreamWriter os = 
-                new OutputStreamWriter(output, CharEncoding.UTF_8);
-        transformTextDocument(reference, is, os, metadata, parsed);
-        os.flush();
+        try {
+            InputStreamReader is = new InputStreamReader(input, CharEncoding.UTF_8);
+            OutputStreamWriter os = 
+                    new OutputStreamWriter(output, CharEncoding.UTF_8);
+            transformTextDocument(reference, is, os, metadata, parsed);
+            os.flush();
+        } catch (IOException e) {
+            throw new ImporterHandlerException(
+                    "Cannot transform character stream.", e);
+        }
     }
 
     protected abstract void transformTextDocument(
             String reference, Reader input,
-            Writer output, Properties metadata, boolean parsed)
+            Writer output, ImporterMetadata metadata, boolean parsed)
             throws IOException;
 
     @Override

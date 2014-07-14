@@ -37,7 +37,8 @@ import org.apache.commons.configuration.XMLConfiguration;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.tagger.IDocumentTagger;
 
 /**
@@ -69,8 +70,8 @@ public class ConstantTagger
     @Override
     public void tagDocument(
             String reference, InputStream document, 
-            Properties metadata, boolean parsed)
-            throws IOException {
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         for (String name : constants.keySet()) {
             List<String> values = constants.get(name);
             if (values != null) {

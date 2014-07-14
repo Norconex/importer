@@ -36,7 +36,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.transformer.AbstractStringTransformer;
 
 /**
@@ -82,7 +82,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringDocument(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
+            StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
 
         String text = content.toString();

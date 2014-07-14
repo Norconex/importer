@@ -1,0 +1,16 @@
+Some notes to help migrate from 1.x to 2.0.0:
+
+* com.norconex.importer.ContentType has been replaced with 
+  com.norconex.commons.lang.file.ContentType.
+  
+* These classes were moved from com.norconex.importer to 
+  com.norconex.importer.handler:
+    - AbstractRestrictiveHandler
+    - AbstractTextRestrictiveHandler
+    - IImportHandler
+    
+    
+    
+    
+* New fileMemCacheSize
+* New TempDirPath

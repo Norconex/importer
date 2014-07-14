@@ -29,7 +29,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.BufferUtil;
 import com.norconex.importer.util.MemoryUtil;
 
@@ -81,34 +82,41 @@ public abstract class AbstractStringTagger
     @Override
     protected final void tagTextDocument(
             String reference, Reader input,
-            Properties metadata, boolean parsed)
-            throws IOException {
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         
-        // Initial size is half free memory, considering chars take 2 bytes
-        StringBuilder b = new StringBuilder(
-                (int)(MemoryUtil.getFreeMemory() / STRING_TOTAL_MEMORY_DIVIDER));
-        int i;
-        while ((i = input.read()) != -1) {
-            char ch = (char) i;
-            b.append(ch);
-            if (b.length() * 2 % READ_CHUNK_SIZE == 0
-                    && isTakingTooMuchMemory(b)) {
-                tagStringDocument(reference, b, metadata, parsed, true);
-                BufferUtil.flushBuffer(b, null, true);
+        try {
+            // Initial size is half free memory, considering chars take 2 bytes
+            StringBuilder b = new StringBuilder(
+                    (int)(MemoryUtil.getFreeMemory() 
+                            / STRING_TOTAL_MEMORY_DIVIDER));
+            int i;
+            while ((i = input.read()) != -1) {
+                char ch = (char) i;
+                b.append(ch);
+                if (b.length() * 2 % READ_CHUNK_SIZE == 0
+                        && isTakingTooMuchMemory(b)) {
+                    tagStringDocument(reference, b, metadata, parsed, true);
+                    BufferUtil.flushBuffer(b, null, true);
+                }
             }
+            if (b.length() > 0) {
+                tagStringDocument(reference, b, metadata, parsed, false);
+                BufferUtil.flushBuffer(b, null, false);
+            }
+            b.setLength(0);
+            b = null;
+        } catch (IOException e) {
+            throw new ImporterHandlerException("Cannot tag text document.", e);
         }
-        if (b.length() > 0) {
-            tagStringDocument(reference, b, metadata, parsed, false);
-            BufferUtil.flushBuffer(b, null, false);
-        }
-        b.setLength(0);
-        b = null;
+        
     }
     
     
     protected abstract void tagStringDocument(
-           String reference, StringBuilder content, Properties metadata,
-           boolean parsed, boolean partialContent);
+           String reference, StringBuilder content, ImporterMetadata metadata,
+           boolean parsed, boolean partialContent) 
+                   throws ImporterHandlerException;
     
     // We ensure buffer size never goes beyond half available memory.
     private boolean isTakingTooMuchMemory(StringBuilder b) {

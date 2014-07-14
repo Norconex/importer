@@ -26,14 +26,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.TestUtil;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class StripBeforeTransformerTest {
 
     @Test
-    public void testTransformTextDocument() throws IOException {
+    public void testTransformTextDocument() 
+            throws IOException, ImporterHandlerException {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setStripBeforeRegex("So she set to work");
         t.setCaseSensitive(false);
@@ -42,8 +43,8 @@ public class StripBeforeTransformerTest {
         FileInputStream is = new FileInputStream(htmlFile);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Properties metadata = new Properties();
-        metadata.setString(Importer.DOC_CONTENT_TYPE, "text/html");
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setContentType("text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(), 
                 is, os, metadata, false);

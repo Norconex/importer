@@ -21,8 +21,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.Writer;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ContentType;
+import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.ImporterMetadata;
 
 /**
  * Implementations are responsible for parsing a document (InputStream) to 
@@ -46,6 +46,6 @@ public interface IDocumentParser extends Serializable {
      */
     void parseDocument(
             InputStream inputStream, ContentType contentType,
-            Writer writer, Properties metadata)
+            Writer writer, ImporterMetadata metadata)
         throws DocumentParserException;
 }

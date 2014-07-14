@@ -17,8 +17,13 @@
  */
 package com.norconex.importer;
 
+import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.io.FileUtils;
+
+import com.norconex.commons.lang.unit.DataUnit;
+import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.DefaultDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
 
@@ -30,11 +35,19 @@ public class ImporterConfig implements Serializable {
 
     private static final long serialVersionUID = -7110188100703942075L;
 
+    public static final String DEFAULT_TEMP_DIR_PATH = 
+            FileUtils.getTempDirectoryPath();
+    public static final int DEFAULT_FILE_MEM_CACHE_SIZE = 
+            (int) DataUnit.MB.toBytes(1);
+    
     private IDocumentParserFactory documentParserFactory = 
             new DefaultDocumentParserFactory();
 
-    private IImportHandler[] preParseHandlers;
-    private IImportHandler[] postParseHandlers;
+    private IImporterHandler[] preParseHandlers;
+    private IImporterHandler[] postParseHandlers;
+
+    private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
+    private int fileMemCacheSize = DEFAULT_FILE_MEM_CACHE_SIZE;
     
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
@@ -43,17 +56,31 @@ public class ImporterConfig implements Serializable {
         this.documentParserFactory = parserFactory;
     }
     
+    public File getTempDir() {
+        return tempDir;
+    }
+    public void setTempDir(File tempDir) {
+        this.tempDir = tempDir;
+    }
 
-    public void setPreParseHandlers(IImportHandler... handlers) {
+    public void setPreParseHandlers(IImporterHandler... handlers) {
         preParseHandlers = handlers;
     }
-    public IImportHandler[] getPreParseHandlers() {
+    public IImporterHandler[] getPreParseHandlers() {
         return preParseHandlers;
     }
-    public void setPostParseHandlers(IImportHandler... handlers) {
+
+    public void setPostParseHandlers(IImporterHandler... handlers) {
         postParseHandlers = handlers;
     }
-    public IImportHandler[] getPostParseHandlers() {
+    public IImporterHandler[] getPostParseHandlers() {
         return postParseHandlers;
+    }
+
+    public int getFileMemCacheSize() {
+        return fileMemCacheSize;
+    }
+    public void setFileMemCacheSize(int fileMemCacheSize) {
+        this.fileMemCacheSize = fileMemCacheSize;
     }
 }

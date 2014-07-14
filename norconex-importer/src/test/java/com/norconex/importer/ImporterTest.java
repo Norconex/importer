@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.transformer.IDocumentTransformer;
 
 public class ImporterTest {
@@ -46,17 +47,21 @@ public class ImporterTest {
             private static final long serialVersionUID = -4814791150728184883L;
             @Override
             public void transformDocument(String reference, InputStream input,
-                    OutputStream output, Properties metadata, boolean parsed)
-                            throws IOException {
-                // Clean up what we know is extra noise for a given format
-                Pattern pattern = 
-                        Pattern.compile("[^a-zA-Z ]", Pattern.MULTILINE);
-                String txt = IOUtils.toString(input);
-                txt = pattern.matcher(txt).replaceAll("");
-                txt = txt.replaceAll("DowntheRabbitHole", "");
-                txt = StringUtils.replace(txt, " ", "");
-                txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
-                IOUtils.write(txt, output);
+                    OutputStream output, ImporterMetadata metadata, 
+                            boolean parsed) throws ImporterHandlerException {
+                try {
+                    // Clean up what we know is extra noise for a given format
+                    Pattern pattern = 
+                            Pattern.compile("[^a-zA-Z ]", Pattern.MULTILINE);
+                    String txt = IOUtils.toString(input);
+                    txt = pattern.matcher(txt).replaceAll("");
+                    txt = txt.replaceAll("DowntheRabbitHole", "");
+                    txt = StringUtils.replace(txt, " ", "");
+                    txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
+                    IOUtils.write(txt, output);
+                } catch (IOException e) {
+                    throw new ImporterHandlerException(e);
+                }
             }
         }});
         importer = new Importer(config);

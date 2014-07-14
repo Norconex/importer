@@ -27,6 +27,9 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
      -->
 <importer>
 
+    <!-- Path to temporary directory. Defaults to system temp directory. -->
+    <tempDir></tempDir>
+
     <preParseHandlers>
         <!-- These tags can be mixed, in the desired order of execution. -->
         <tagger class="..." />

@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -15,25 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.parser;
+package com.norconex.importer.handler;
 
-import java.io.Serializable;
-
-import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.ImporterException;
 
 /**
- * Factory providing document parsers for documents.
+ * Exception thrown by several handler classes upon encountering
+ * issues.
  * @author Pascal Essiembre
  */
-public interface IDocumentParserFactory extends Serializable{
+public class ImporterHandlerException extends ImporterException {
 
-    /**
-     * Gets a document parser, optionally based on its reference or content
-     * type.
-     * @param documentReference document reference
-     * @param contentType content type
-     * @return document parser
-     */
-    IDocumentParser getParser(
-            String documentReference, ContentType contentType);
+    private static final long serialVersionUID = 6845549545987836093L;
+
+    public ImporterHandlerException() {
+        super();
+    }
+
+    public ImporterHandlerException(String message) {
+        super(message);
+    }
+
+    public ImporterHandlerException(Throwable cause) {
+        super(cause);
+    }
+
+    public ImporterHandlerException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

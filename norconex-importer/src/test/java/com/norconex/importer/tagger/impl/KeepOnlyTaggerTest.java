@@ -25,8 +25,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.tagger.impl.KeepOnlyTagger;
+import com.norconex.importer.ImporterMetadata;
 
 public class KeepOnlyTaggerTest {
 
@@ -43,7 +42,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void test_keep_all_fields() throws Exception {
 
-        Properties metadata = new Properties();
+        ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
         metadata.addString("key2", "value2");
         metadata.addString("key3", "value3");
@@ -61,7 +60,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void test_keep_single_field() throws Exception {
 
-        Properties metadata = new Properties();
+        ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
         metadata.addString("key2", "value2");
         metadata.addString("key3", "value3");
@@ -78,7 +77,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void test_delete_all_metadata() throws Exception {
 
-        Properties metadata = new Properties();
+        ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
         metadata.addString("key2", "value2");
         metadata.addString("key3", "value3");

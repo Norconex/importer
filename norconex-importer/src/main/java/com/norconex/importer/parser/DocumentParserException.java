@@ -17,12 +17,14 @@
  */
 package com.norconex.importer.parser;
 
+import com.norconex.importer.ImporterException;
+
 /**
  * Exception thrown upon encountering a non-recoverable issue parsing a
  * document.
  * @author Pascal Essiembre
  */
-public class DocumentParserException extends Exception {
+public class DocumentParserException extends ImporterException {
 
     private static final long serialVersionUID = -8668185121797858885L;
 

@@ -38,7 +38,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.tagger.IDocumentTagger;
 
 /**
@@ -69,8 +70,8 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
     @Override
     public void tagDocument(
             String reference, InputStream document, 
-            Properties metadata, boolean parsed)
-            throws IOException {
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         for (String from : renames.keySet()) {
             RenameDetails details = renames.get(from);
             List<String> fromValues = metadata.get(from);

@@ -17,11 +17,11 @@
  */
 package com.norconex.importer.filter;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.IImportHandler;
+import com.norconex.importer.handler.IImporterHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * Filters documents. Before
@@ -30,7 +30,7 @@ import com.norconex.importer.IImportHandler;
  * be available.
  * @author Pascal Essiembre
  */
-public interface IDocumentFilter extends IImportHandler {
+public interface IDocumentFilter extends IImporterHandler {
 
     /**
      * Whether to accepts a document.
@@ -39,9 +39,12 @@ public interface IDocumentFilter extends IImportHandler {
      * @param parsed whether the document has been parsed already or not (a 
      *        parsed document should normally be text-based)
      * @return <code>true</code> if document is accepted
-     * @throws IOException problem reading the document
+     * @throws ImporterHandlerException problem reading the document
      */
     boolean acceptDocument(
             InputStream document, Properties metadata, boolean parsed)
-        throws IOException;
+        throws ImporterHandlerException;
+
+   //TODO have a RejectionCause returned instead of boolean?
+
 }

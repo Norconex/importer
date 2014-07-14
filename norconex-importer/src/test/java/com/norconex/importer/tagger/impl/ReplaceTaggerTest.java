@@ -23,8 +23,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.tagger.impl.ReplaceTagger;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReplaceTaggerTest {
 
@@ -41,8 +41,8 @@ public class ReplaceTaggerTest {
 
     
     @Test
-    public void testRegularReplace() throws IOException {
-        Properties meta = new Properties();
+    public void testRegularReplace() throws ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
         meta.addString("fullMatchField", "full value match"); 
         meta.addString("partialNoMatchField", "partial value nomatch"); 
         meta.addString("matchOldField", "match to new field"); 
@@ -71,8 +71,8 @@ public class ReplaceTaggerTest {
     }
     
     @Test
-    public void testRegexReplace() throws IOException {
-        Properties meta = new Properties();
+    public void testRegexReplace() throws ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
         meta.addString("path1", "/this/is/a/path/file.doc"); 
         meta.addString("path2", "/that/is/a/path/file.doc"); 
         

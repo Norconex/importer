@@ -1,15 +1,39 @@
 
+MUST for 2.0.0 release:
+==============
+
+
 - Add language detection
 
 - Add document splitting in multiple docs, with option to keep the parent
   document or not and offer options what the document reference should be
   (default: parentref!childref).
 
-- Add CharacterCaseTransformer (upper, lower, sentence, word)
+- Return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
 
-- Allow to break documents into smaller documents.
+- Make it possible to bypass parsing for some files (when people want to index
+  raw documents as-is.
+
+- Have a CSV and TSV splitter implementations? Asking which column has the 
+  reference field, and which fields should make up content (if any).
+
+?? have a RejectionCause returned instead of boolean?
+
+?? Move transformer, tagger, filter, under handler package?
+
+++ DONE: Write tmp files in specified temp directory (defaulting to system tmp)
+
+++ DONE: Make an all memory-only options (as opposed to always rely on files
+   after each modification).   Best senario would be to always use memory,
+   except when too big, then swap.
+
+Any release:
+==============
+
+- Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Offer ways to force Character Encoding.
 
 - Make it easier to change output format (but how to make it work with
   committer still?).
+

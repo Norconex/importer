@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer;
+package com.norconex.importer.handler;
 
 import java.io.Serializable;
 
@@ -35,6 +35,6 @@ import com.norconex.importer.transformer.IDocumentTransformer;
  * </ul>
  * @author Pascal Essiembre
  */
-public interface IImportHandler extends Serializable {
+public interface IImporterHandler extends Serializable {
     // Act as a marker only for now.
 }

@@ -36,14 +36,14 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.transformer.AbstractStringTransformer;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * <p>Strips any content found between a matching start and end strings.  The
@@ -95,7 +95,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringDocument(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
+            StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
         if (!caseSensitive) {

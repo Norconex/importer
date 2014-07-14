@@ -44,7 +44,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.tagger.AbstractStringTagger;
 
 /**
@@ -94,7 +94,7 @@ public class TextBetweenTagger
 
     @Override
     protected void tagStringDocument(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, boolean partialContent) {
+            ImporterMetadata metadata, boolean parsed, boolean partialContent) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
         if (!caseSensitive) {
             flags = flags | Pattern.CASE_INSENSITIVE;

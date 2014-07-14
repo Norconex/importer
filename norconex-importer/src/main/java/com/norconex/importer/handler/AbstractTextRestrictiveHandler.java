@@ -15,16 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer;
+package com.norconex.importer.handler;
 
-import java.io.IOException;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -34,7 +33,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 
 /**
  * <p>Base class for handlers dealing with text documents only.  Subclasses
@@ -43,7 +42,7 @@ import com.norconex.commons.lang.map.Properties;
  * <p>
  * For pre-parsing, non-text documents will simply be ignored and no
  * transformation will occur.  To find out if a document is a text-one, the
- * metadata {@link Importer#DOC_CONTENT_TYPE} value is used. By default
+ * metadata {@link ImporterMetadata#DOC_CONTENT_TYPE} value is used. By default
  * any content type starting with "text/" is considered text.  This default
  * behavior can be changed with the {@link #setContentTypeRegex(String)} method.
  * One must make sure to only match text documents to avoid parsing exceptions.
@@ -57,7 +56,7 @@ import com.norconex.commons.lang.map.Properties;
  * </p>
  * <p>
  * Subclasses must test if a document is accepted using the 
- * {@link #documentAccepted(String, Properties, boolean)} method.
+ * {@link #documentAccepted(String, ImporterMetadata, boolean)} method.
  * </p>
  * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:</p>
@@ -98,16 +97,15 @@ public abstract class AbstractTextRestrictiveHandler
         this.contentTypeRegex = Pattern.compile(contentTypeRegex);
     }
     
-    @SuppressWarnings("deprecation")
     @Override
     protected boolean documentAccepted(
-            String reference, Properties metadata, boolean parsed)
-            throws IOException {
+            String reference, ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         if (!super.documentAccepted(reference, metadata, parsed)) {
             return false;
         }
-        String type = metadata.getString(Importer.DOC_CONTENT_TYPE);
-        type = ObjectUtils.toString(type, "");
+        String type = metadata.getString(ImporterMetadata.DOC_CONTENT_TYPE);
+        type = Objects.toString(type, "");
         if (parsed || contentTypeRegex == null 
                 || contentTypeRegex.matcher(type).matches()) {
             return true;

@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
+import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -37,9 +38,8 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ContentType;
-import com.norconex.importer.Importer;
+import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -68,7 +68,7 @@ public class AbstractTikaParser implements IDocumentParser {
     @Override
     public final void parseDocument(
             InputStream inputStream, ContentType contentType,
-            Writer output, Properties metadata)
+            Writer output, ImporterMetadata metadata)
             throws DocumentParserException {
 
         org.apache.tika.metadata.Metadata tikaMetadata = 
@@ -76,7 +76,7 @@ public class AbstractTikaParser implements IDocumentParser {
         tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
                 contentType.toString());
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
-                metadata.getString(Importer.DOC_REFERENCE));
+                metadata.getDocumentReference());
         SAXTransformerFactory factory = (SAXTransformerFactory)
                 TransformerFactory.newInstance();
 
@@ -103,7 +103,7 @@ public class AbstractTikaParser implements IDocumentParser {
     }
     
     protected void addTikaMetadata(
-            org.apache.tika.metadata.Metadata tikaMeta, Properties metadata) {
+            Metadata tikaMeta, ImporterMetadata metadata) {
         String[]  names = tikaMeta.names();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
@@ -114,19 +114,24 @@ public class AbstractTikaParser implements IDocumentParser {
     protected class RecursiveMetadataParser extends ParserDecorator {
         private static final long serialVersionUID = -5011890258694908887L;
         private final Writer writer;
-        private final Properties metadata;
+        private final ImporterMetadata metadata;
         public RecursiveMetadataParser(
-                Parser parser, Writer writer, Properties metadata) {
+                Parser parser, Writer writer, ImporterMetadata metadata) {
             super(parser);
             this.writer = writer;
             this.metadata = metadata;
         }
         @Override
         public void parse(InputStream stream, ContentHandler handler,
-                org.apache.tika.metadata.Metadata tikaMeta, 
-                ParseContext context)
+                Metadata tikaMeta, ParseContext context)
                 throws IOException, SAXException, TikaException {
 
+            System.out.println("========================================");
+            for (String name : tikaMeta.names()) {
+                System.out.println("Metadata:");
+                System.out.println("    " + name + " => " + tikaMeta.get(name));
+            }
+            
             //TODO Make it a file writer somehow?? storing it as new document
             //TODO so we can have a zip and its containing files separate.
             ContentHandler content = new BodyContentHandler(writer);

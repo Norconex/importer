@@ -17,18 +17,18 @@
  */
 package com.norconex.importer.tagger;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.IImportHandler;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.IImporterHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * Tags a document with extra metadata information, or manipulate existing
  * metadata information.
  * @author Pascal Essiembre
  */
-public interface IDocumentTagger extends IImportHandler {
+public interface IDocumentTagger extends IImporterHandler {
 
     /**
      * Tags a document with extra metadata information.
@@ -37,9 +37,9 @@ public interface IDocumentTagger extends IImportHandler {
      * @param metadata document metadata
      * @param parsed whether the document has been parsed already or not (a 
      *        parsed document should normally be text-based)
-     * @throws IOException problem reading the document
+     * @throws ImporterHandlerException problem tagging the document
      */
     void tagDocument(String reference, InputStream document, 
-            Properties metadata, boolean parsed)
-            throws IOException;
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException;
 }

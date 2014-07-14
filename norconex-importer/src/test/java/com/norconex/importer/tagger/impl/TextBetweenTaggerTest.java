@@ -26,15 +26,15 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.tagger.impl.TextBetweenTagger;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TextBetweenTaggerTest {
 
     @Test
-    public void testTagTextDocument() throws IOException {
+    public void testTagTextDocument() 
+            throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();
         t.addTextEndpoints("headings", "<h1>", "</H1>");
         t.addTextEndpoints("headings", "<h2>", "</H2>");
@@ -45,8 +45,8 @@ public class TextBetweenTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         FileInputStream is = new FileInputStream(htmlFile);
 
-        Properties metadata = new Properties();
-        metadata.setString(Importer.DOC_CONTENT_TYPE, "text/html");
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setContentType("text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

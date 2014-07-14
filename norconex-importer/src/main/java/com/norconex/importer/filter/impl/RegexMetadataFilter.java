@@ -43,6 +43,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.filter.AbstractOnMatchFilter;
 import com.norconex.importer.filter.IDocumentFilter;
 import com.norconex.importer.filter.OnMatch;
+import com.norconex.importer.handler.ImporterHandlerException;
 /**
  * Accepts or rejects a document based on its property values using 
  * regular expression.  
@@ -119,7 +120,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     @Override
     public final boolean acceptDocument(
             InputStream document, Properties metadata, boolean parsed)
-            throws IOException {
+            throws ImporterHandlerException {
         if (StringUtils.isBlank(regex)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }

@@ -17,19 +17,19 @@
  */
 package com.norconex.importer.transformer;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.IImportHandler;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.IImporterHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * Transformers allow to manipulate and convert extracted text and
  * save the modified text back.
  * @author Pascal Essiembre
  */
-public interface IDocumentTransformer extends IImportHandler {
+public interface IDocumentTransformer extends IImporterHandler {
 
     /**
      * Transforms document content and metadata.
@@ -39,10 +39,10 @@ public interface IDocumentTransformer extends IImportHandler {
      * @param metadata document metadata
      * @param parsed whether the document has been parsed already or not (a 
      *        parsed document should normally be text-based)
-     * @throws IOException could not transform the document
+     * @throws ImporterHandlerException could not transform the document
      */
     void transformDocument(
             String reference, InputStream input, 
-            OutputStream output, Properties metadata, boolean parsed)
-                    throws IOException;
+            OutputStream output, ImporterMetadata metadata, boolean parsed)
+                    throws ImporterHandlerException;
 }

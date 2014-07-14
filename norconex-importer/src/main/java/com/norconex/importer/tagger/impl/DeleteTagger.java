@@ -36,9 +36,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.tagger.IDocumentTagger;
-
 /**
  * <p>
  * Delete the metadata fields provided.
@@ -63,8 +63,8 @@ public class DeleteTagger
     @Override
     public void tagDocument(
             String reference, InputStream document, 
-            Properties metadata, boolean parsed)
-            throws IOException {
+            ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         String[] names = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
         for (String name : names) {

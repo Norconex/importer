@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer;
+package com.norconex.importer.handler;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import javax.xml.stream.XMLStreamException;
@@ -30,7 +29,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.filter.impl.RegexMetadataFilter;
 
 /**
@@ -49,7 +48,7 @@ import com.norconex.importer.filter.impl.RegexMetadataFilter;
  * </pre>
  * <p>
  * Subclasses must test if a document is accepted using the 
- * {@link #documentAccepted(String, Properties, boolean)} method.
+ * {@link #documentAccepted(String, ImporterMetadata, boolean)} method.
  * </p>
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
@@ -84,11 +83,11 @@ public abstract class AbstractRestrictiveHandler implements Serializable {
      * @param metadata document metadata.
      * @param parsed if the document was parsed (i.e. imported) already
      * @return <code>true</code> if the document is accepted
-     * @throws IOException
+     * @throws ImporterHandlerException
      */
     protected boolean documentAccepted(
-            String reference, Properties metadata, boolean parsed)
-            throws IOException {
+            String reference, ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
         if (filter.acceptDocument(null, metadata, parsed)) {
             return true;
         }
