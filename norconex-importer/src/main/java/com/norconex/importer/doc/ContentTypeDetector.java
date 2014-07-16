@@ -77,7 +77,7 @@ public class ContentTypeDetector {
     }
     public ContentType detect(InputStream content, String fileName)
             throws IOException {
-        return doDetect(TikaInputStream.get(content), fileName);
+        return doDetect(content, fileName);
     }
     
     private TikaConfig getTikaConfig() throws IOException {
@@ -93,11 +93,11 @@ public class ContentTypeDetector {
     }
     
     private ContentType doDetect(
-            TikaInputStream tikaIs, String fileName) throws IOException {
+            InputStream is, String fileName) throws IOException {
         Metadata meta = new Metadata();
         String extension = extPattern.matcher(fileName).replaceFirst("$1");
         meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
-        MediaType media = getTikaConfig().getDetector().detect(tikaIs, meta);
+        MediaType media = getTikaConfig().getDetector().detect(is, meta);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Detected \"" + media.toString()
                     + "\" content-type for: " + fileName);

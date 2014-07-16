@@ -3,6 +3,7 @@
  */
 package com.norconex.importer.doc;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class ImporterDocument implements Serializable {
     private final ImporterMetadata metadata;
     private ContentType contentType;
     private final List<ImporterDocument> childDocuments = 
-            new ArrayList<ImporterDocument>(0);
+            new ArrayList<ImporterDocument>();
 
     private ImporterDocument parentDocument;
     
@@ -45,7 +46,7 @@ public class ImporterDocument implements Serializable {
         }
         this.reference = reference;
         if (content == null) {
-            content = Content.NO_CONTENT;
+            content = new Content((InputStream) null);
         }
         this.content = content;
         if (metadata == null) {
@@ -88,6 +89,19 @@ public class ImporterDocument implements Serializable {
     public void addChildDocument(ImporterDocument doc) {
         doc.setParent(this);
         childDocuments.add(doc);
+    }
+    public void removeChildDocument(String reference) {
+        ImporterDocument doc = null;
+        for (ImporterDocument childDoc : childDocuments) {
+            if (childDoc.getReference().equals(reference)) {
+                doc = childDoc;
+            }
+        }
+        if (doc == null) {
+            return;
+        }
+        doc.setParent(null);
+        childDocuments.remove(doc);
     }
     
     public ImporterDocument[] getChildDocuments() {

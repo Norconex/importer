@@ -35,12 +35,11 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * added as children of a parent {@link ImportDocument}.  Each children
  * will then be passed to this interface again for further splitting if
  * necessary.  Each document returned will also go through the same
- * pre-handler/parse/post-handler cycle as the parent class, starting
- * from where this splitter instance was invoked, following the order
- * defined in the importer configuration.
+ * pre-handler/parse/post-handler cycle as defined in the importer 
+ * configuration.
  * <p/>
- * To blank values form a parent, you simply not write to the output stream
- * and modify the metadata as desired.  The parent document will still get
+ * To blank values form a parent, you do not write to the output stream
+ * and blank metadata values as desired.  The parent document will still get
  * processed as usual.  To prevent the parent from being processed
  * further, make sure to filter it out using an {@link IDocumentFilter}
  * implementation.
@@ -58,5 +57,4 @@ public interface IDocumentSplitter extends IImporterHandler {
     List<ImporterDocument> splitDocument(String reference, InputStream input, 
             OutputStream output, ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException;
-
 }

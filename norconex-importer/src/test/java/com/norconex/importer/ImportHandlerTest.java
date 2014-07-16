@@ -19,7 +19,6 @@ package com.norconex.importer;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -46,10 +45,9 @@ public class ImportHandlerTest {
     }
     
     @Test
-    public void testHandlers() throws IOException {
+    public void testHandlers() throws IOException, ImporterException {
         FileInputStream is = new FileInputStream(TestUtil.getAliceHtmlFile());
-        StringWriter writer = new StringWriter();
-        importer.importDocument(is, writer, metadata);
+        importer.importDocument(is, metadata, "alice.html");
         is.close();
 
         // Test Constant

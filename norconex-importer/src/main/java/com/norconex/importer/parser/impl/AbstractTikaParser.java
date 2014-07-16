@@ -17,6 +17,7 @@
  */
 package com.norconex.importer.parser.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -27,6 +28,8 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
@@ -79,7 +82,6 @@ public class AbstractTikaParser implements IDocumentParser {
                 metadata.getDocumentReference());
         SAXTransformerFactory factory = (SAXTransformerFactory)
                 TransformerFactory.newInstance();
-
         TransformerHandler handler;
         try {
             handler = factory.newTransformerHandler();
@@ -87,8 +89,6 @@ public class AbstractTikaParser implements IDocumentParser {
                     OutputKeys.METHOD, format);
             handler.getTransformer().setOutputProperty(
                     OutputKeys.INDENT, "yes");
-            
-
             handler.setResult(new StreamResult(output));
             
             Parser recursiveParser = new RecursiveMetadataParser(

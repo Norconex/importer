@@ -18,6 +18,7 @@
 package com.norconex.importer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.transformer.IDocumentTransformer;
 
@@ -73,23 +75,26 @@ public class ImporterTest {
     }
     
     @Test
-    public void testImportDocument() throws IOException {
+    public void testImportDocument() throws IOException, ImporterException {
         
         // MS Doc
         File docxOutput = File.createTempFile("ImporterTest-doc-", ".txt");
         Properties metaDocx = new Properties();
-        importer.importDocument(TestUtil.getAliceDocxFile(), docxOutput, metaDocx);
-        
+        writeToFile(importer.importDocument(
+                TestUtil.getAliceDocxFile(), metaDocx), docxOutput);
+
         // PDF
         File pdfOutput = File.createTempFile("ImporterTest-pdf-", ".txt");
         Properties metaPdf = new Properties();
-        importer.importDocument(TestUtil.getAlicePdfFile(), pdfOutput, metaPdf);
+        writeToFile(importer.importDocument(
+                TestUtil.getAlicePdfFile(), metaPdf), pdfOutput);
 
         // ZIP/RTF
         File rtfOutput = File.createTempFile("ImporterTest-zip-rtf-", ".txt");
         Properties metaRtf = new Properties();
-        importer.importDocument(TestUtil.getAliceZipFile(), rtfOutput, metaRtf);
-
+        writeToFile(importer.importDocument(
+                TestUtil.getAliceZipFile(), metaRtf), rtfOutput);
+        
         Assert.assertTrue("Converted file size is too small to be valid.",
                 pdfOutput.length() > 10);
 
@@ -109,4 +114,11 @@ public class ImporterTest {
         }
     }
 
+    private void writeToFile(ImporterDocument doc, File file)
+            throws IOException {
+        FileOutputStream out = new FileOutputStream(file);
+        IOUtils.copy(doc.getContent().getInputStream(), out);
+        out.close();
+    }
+    
 }

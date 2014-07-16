@@ -17,13 +17,16 @@
  */
 package com.norconex.importer;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,7 +39,6 @@ import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.tika.io.TikaInputStream;
 
 import com.norconex.commons.lang.file.ContentFamily;
 import com.norconex.commons.lang.file.ContentType;
@@ -51,6 +53,7 @@ import com.norconex.importer.filter.IOnMatchFilter;
 import com.norconex.importer.filter.OnMatch;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
@@ -72,7 +75,8 @@ public class Importer {
     private static final String ARG_CONFIG = "config";
 
 	private final ImporterConfig importerConfig;
-	private final ContentTypeDetector contentTypeDetector;
+	private final ContentTypeDetector contentTypeDetector =
+	        new ContentTypeDetector();
     
     /**
      * Creates a new importer with default configuration.
@@ -86,7 +90,6 @@ public class Importer {
      */
     public Importer(ImporterConfig importerConfig) {
         super();
-        contentTypeDetector = new ContentTypeDetector();
         if (importerConfig != null) {
             this.importerConfig = importerConfig;
         } else {
@@ -125,9 +128,6 @@ public class Importer {
             ImporterDocument doc = new Importer(config).importDocument(
                     inputFile, contentType, metadata, reference);
             
-//            new Importer(config).importDocument(
-//                    inputFile, contentType, outputFile, metadata, reference);
-
             // Write document file
             FileOutputStream docOutStream = new FileOutputStream(outputFile);
             CachedInputStream docInStream = doc.getContent().getInputStream();
@@ -140,7 +140,8 @@ public class Importer {
             metadata.store(metaOut, null);
             IOUtils.closeQuietly(metaOut);
         } catch (Exception e) {
-            System.err.println("A problem occured while importing " + inputFile);
+            System.err.println(
+                    "A problem occured while importing " + inputFile);
             e.printStackTrace(System.err);
         }
     }
@@ -148,149 +149,85 @@ public class Importer {
     /**
      * Imports a document according to the importer configuration.
      * @param input document input
-     * @param output document output
      * @param metadata the document starting metadata
-     * @return <code>true</code> if the document has successfully been imported,
-     *         <code>false</code> if the document was rejected (i.e. filtered)
-     * @throws IOException problem importing document
+     * @param reference document reference (e.g. URL, file path, etc)
+     * @return importer output
+     * @throws ImporterException problem importing document
      */
-    @Deprecated
-    public boolean importDocument(
-            InputStream input, Writer output, Properties metadata)
-            throws IOException {
-        return importDocument(input, null, output, metadata, null);
+    public ImporterDocument importDocument(
+            InputStream input, Properties metadata, String reference)
+            throws ImporterException {
+        return importDocument(input, null, metadata, reference);
     }
-    /**
-     * Imports a document according to the importer configuration.
-     * @param input document input
-     * @param contentType document content-type
-     * @param output document output
-     * @param metadata the document starting metadata
-     * @return <code>true</code> if the document has successfully been imported,
-     *         <code>false</code> if the document was rejected (i.e. filtered)
-     * @param docReference document reference (e.g. URL, file path, etc)
-     * @throws IOException problem importing document
-     */
-    @Deprecated
-    public boolean importDocument(
-            InputStream input, ContentType contentType, 
-            Writer output, Properties metadata, String docReference)
-            throws IOException {
-        File tmpInput = File.createTempFile("NorconexImporter", "input");
-        FileOutputStream out = new FileOutputStream(tmpInput);
-        IOUtils.copy(input, out);
-        out.close();
 
-        File tmpOutput = File.createTempFile("NorconexImporter", "output");
-        
-        ContentType safeContentType = contentType;
-        if (safeContentType == null 
-                || StringUtils.isBlank(safeContentType.toString())) {
-            safeContentType = 
-                    contentTypeDetector.detect(tmpOutput, docReference);
-        }
-        boolean accepted = importDocument(
-                tmpInput, safeContentType, tmpOutput, metadata, docReference);
-        InputStream is = new FileInputStream(tmpOutput);
-        IOUtils.copy(is, output);
-        is.close();
-        return accepted;
-    }
     /**
      * Imports a document according to the importer configuration.
      * @param input document input
-     * @param output document output
      * @param metadata the document starting metadata
-     * @return <code>true</code> if the document has successfully been imported,
-     *         <code>false</code> if the document was rejected (i.e. filtered)
-     * @throws IOException problem importing document
+     * @return importer output
+     * @throws ImporterException problem importing document
      */
-    @Deprecated
-    public boolean importDocument(
-            File input, File output, Properties metadata)
-            throws IOException {
-        return importDocument(input, null, output, metadata, null);
+    public ImporterDocument importDocument(
+            File input, Properties metadata) throws ImporterException {
+        return importDocument(input, null, metadata, null);
     }
-    /**
-     * Imports a document according to the importer configuration.
-     * @param input document input
-     * @param contentType document content-type
-     * @param output document output
-     * @param metadata the document starting metadata
-     * @return <code>true</code> if the document has successfully been imported,
-     *         <code>false</code> if the document was rejected (i.e. filtered)
-     * @param docReference document reference (e.g. URL, file path, etc)
-     * @throws IOException problem importing document
-     */    
-    @Deprecated
-    public boolean importDocument(
-            final File input, ContentType contentType, 
-            File output, Properties metadata, String docReference)
-            throws IOException {
-
-        throw new UnsupportedOperationException("Method now deprecated.");
-//        MutableObject<File> workFile = new MutableObject<File>(input);
-//        ContentType safeContentType = contentType;
-//        if (safeContentType == null 
-//                || StringUtils.isBlank(safeContentType.toString())) {
-//            safeContentType = contentTypeDetector.detect(input, docReference);
-//        }
-//        
-//        String finalDocRef = docReference;
-//        if (StringUtils.isBlank(docReference)) {
-//            finalDocRef = input.getAbsolutePath();
-//        }
-//        
-////        metadata.addString(DOC_REFERENCE, finalDocRef); 
-////    	metadata.addString(DOC_CONTENT_TYPE, safeContentType.toString()); 
-////        ContentFamily contentFamily = 
-////                ContentFamily.forContentType(safeContentType.toString());
-////        if (contentFamily != null) {
-////            metadata.addString(DOC_CONTENT_FAMILY, contentFamily.getId());
-////        }
-//        
-//    	if (!executeHandlers(doc,
-//    	        importerConfig.getPreParseHandlers(), false)) {
-//    	    return false;
-//    	}
-//    	
-//    	parseDocument(workFile.getValue(), 
-//    	        safeContentType, output, metadata, finalDocRef);
-//    	workFile.setValue(output);
-//
-//    	if (!executeHandlers(docReference, input, workFile, metadata, 
-//                importerConfig.getPostParseHandlers(), true)) {
-//            return false;
-//        }
-//    	
-//    	if (!workFile.getValue().equals(output)) {
-//            FileUtil.moveFile(workFile.getValue(), output);
-//    	}
-//        return true;
-    }
-    
     
     /**
      * Imports a document according to the importer configuration.
-     * @param fileInput document input
+     * @param file document input
      * @param contentType document content-type
      * @param metadata the document starting metadata
-     * @param docReference document reference (e.g. URL, file path, etc)
+     * @param reference document reference (e.g. URL, file path, etc)
      * @return importer output
      * @throws ImporterException problem importing document
      */    
     //TODO return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
     public ImporterDocument importDocument(
-            final File fileInput, ContentType contentType, 
-            Properties metadata, String docReference) throws ImporterException {
+            final File file, ContentType contentType, 
+            Properties metadata, String reference) throws ImporterException {
 
-        ImporterMetadata meta = new ImporterMetadata(metadata);
+        //--- Validate File ---
+        if (file == null) {
+            throw new ImporterException("File cannot be null.");
+        } else if (!file.isFile()) {
+            throw new ImporterException(
+                    "File does not exists or is not a file.");
+        }
+
+        //--- Reference ---
+        String finalReference = reference;
+        if (StringUtils.isBlank(reference)) {
+            finalReference = file.getAbsolutePath();
+        }
+        
+        InputStream is = null;
+        try {
+            is = new BufferedInputStream(new FileInputStream(file));
+            return importDocument(is, contentType, metadata, finalReference);
+        } catch (FileNotFoundException e) {
+            throw new ImporterException("Could not import file.", e);
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+    }
+
+    public ImporterDocument importDocument(
+            final InputStream input, ContentType contentType, 
+            Properties metadata, String reference) throws ImporterException {        
+
+        //--- Input ---
+        BufferedInputStream bufInput = null;
+        if (input instanceof BufferedInputStream) {
+            bufInput = (BufferedInputStream) input;
+        } else {
+            bufInput = new BufferedInputStream(input);
+        }
         
         //--- Reference ---
-        String finalDocRef = docReference;
-        if (StringUtils.isBlank(docReference)) {
-            finalDocRef = fileInput.getAbsolutePath();
+        if (StringUtils.isBlank(reference)) {
+            throw new ImporterException("The document reference was not set.");
         }
+
 
         //--- Content Type ---
         ContentType safeContentType = contentType;
@@ -298,7 +235,7 @@ public class Importer {
                 || StringUtils.isBlank(safeContentType.toString())) {
             try {
                 safeContentType = 
-                        contentTypeDetector.detect(fileInput, finalDocRef);
+                        contentTypeDetector.detect(bufInput, reference);
             } catch (IOException e) {
                 LOG.error("Could not detect content type. Defaulting to "
                         + "\"application/octet-stream\".", e);
@@ -308,7 +245,13 @@ public class Importer {
         }
         
         //--- Metadata ---
-        meta.setDocumentReference(finalDocRef); 
+        ImporterMetadata meta = null;
+        if (metadata instanceof ImporterMetadata) {
+            meta = (ImporterMetadata) metadata;
+        } else {
+            meta = new ImporterMetadata(metadata);
+        }
+        meta.setDocumentReference(reference); 
         meta.setContentType(safeContentType); 
         ContentFamily contentFamily = 
                 ContentFamily.forContentType(safeContentType.toString());
@@ -316,11 +259,12 @@ public class Importer {
             meta.setContentFamily(contentFamily);
         }
         
+        //--- Document Handling ---
         ImporterDocument document;
         try {
-            //--- Document ---
+            Content content = new Content(bufInput);
             document = new ImporterDocument(
-                    finalDocRef, new Content(fileInput), meta);
+                    reference, content, meta);
             document.setContentType(safeContentType);
             
             //--- Pre-handlers ---
@@ -328,12 +272,13 @@ public class Importer {
                     document, importerConfig.getPreParseHandlers(), false)) {
                 return null;// false;
             }
-            
+
             //--- Parse ---
             //TODO make parse just another handler in the chain?  Eliminating
             //the need for pre and post handlers?
             parseDocument(document);
 
+            
             //--- Post-handlers ---
             if (!executeHandlers(
                     document, importerConfig.getPostParseHandlers(), true)) {
@@ -341,7 +286,9 @@ public class Importer {
             }
         } catch (IOException e) {
             throw new ImporterException(
-                    "Could not import document: " + docReference, e);
+                    "Could not import document: " + reference, e);
+        } finally {
+            IOUtils.closeQuietly(bufInput);
         }
         
         return document; //true;
@@ -350,17 +297,21 @@ public class Importer {
     private boolean executeHandlers(
             ImporterDocument doc,
             IImporterHandler[] handlers, boolean parsed)
-            throws IOException, ImporterHandlerException {
+            throws IOException, ImporterException {
         if (handlers == null) {
             return true;
         }
         
+        List<ImporterDocument> childDocs = new ArrayList<>();
         IncludeMatchResolver includeResolver = new IncludeMatchResolver();
         for (IImporterHandler h : handlers) {
             if (h instanceof IDocumentTagger) {
                 tagDocument(doc, (IDocumentTagger) h, parsed);
             } else if (h instanceof IDocumentTransformer) {
                 transformDocument(doc, (IDocumentTransformer) h, parsed);
+            } else if (h instanceof IDocumentSplitter) {
+                childDocs.addAll(
+                        splitDocument(doc, (IDocumentSplitter) h, parsed));
             } else if (h instanceof IDocumentFilter) {
                 boolean accepted = acceptDocument(
                         doc, (IDocumentFilter) h, parsed);
@@ -377,6 +328,17 @@ public class Importer {
                 }
             } else {
                 LOG.error("Unsupported Import Handler: " + h);
+            }
+        }
+        for (ImporterDocument childDoc : childDocs) {
+            ImporterDocument processedDoc = importDocument(
+                    new BufferedInputStream(
+                            childDoc.getContent().getInputStream()),
+                    doc.getContentType(), 
+                    doc.getMetadata(), 
+                    doc.getReference());
+            if (processedDoc != null) {
+                doc.addChildDocument(processedDoc);
             }
         }
         return includeResolver.passes();
@@ -436,21 +398,21 @@ public class Importer {
             throws IOException, DocumentParserException {
         
         CachedInputStream  in = doc.getContent().getInputStream();
-        CachedOutputStream out = new CachedOutputStream(
-                importerConfig.getFileMemCacheSize(), 
-                importerConfig.getTempDir());
+        BufferedInputStream bufInput = new BufferedInputStream(in);
+
+        CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
                 out, CharEncoding.UTF_8);
-        
-        InputStream input = TikaInputStream.get(in);
+
+        //InputStream input = TikaInputStream.get(bufInput);
         IDocumentParserFactory factory = importerConfig.getParserFactory();
         IDocumentParser parser = 
                 factory.getParser(doc.getReference(), doc.getContentType());
         try {
             parser.parseDocument(
-                    input, doc.getContentType(), output, doc.getMetadata());
+                    bufInput, doc.getContentType(), output, doc.getMetadata());
         } finally {
-            IOUtils.closeQuietly(input);
+            IOUtils.closeQuietly(bufInput);
             CachedInputStream newInputStream = out.getInputStream();
             IOUtils.closeQuietly(out);
             doc.setContent(new Content(newInputStream));
@@ -483,9 +445,7 @@ public class Importer {
                     throws ImporterHandlerException, IOException {
         
         CachedInputStream  in = doc.getContent().getInputStream();
-        CachedOutputStream out = new CachedOutputStream(
-                importerConfig.getFileMemCacheSize(), 
-                importerConfig.getTempDir());
+        CachedOutputStream out = createOutputStream();
         
         transformer.transformDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
@@ -509,4 +469,33 @@ public class Importer {
         }
         doc.setContent(new Content(newInputStream));
     }
+    
+    private List<ImporterDocument> splitDocument(
+            ImporterDocument doc, IDocumentSplitter h, boolean parsed)
+                    throws ImporterHandlerException, IOException {
+
+        CachedInputStream  in = doc.getContent().getInputStream();
+        CachedOutputStream out = createOutputStream();
+        
+        List<ImporterDocument> childDocs = h.splitDocument(
+                doc.getReference(), in, out, doc.getMetadata(), parsed);
+        try {
+            doc.setContent(new Content(out.getInputStream()));
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+        }
+        
+        if (childDocs == null) {
+            return new ArrayList<ImporterDocument>();
+        }
+        return childDocs;
+    }
+    
+    private CachedOutputStream createOutputStream() {
+        return new CachedOutputStream(
+                importerConfig.getFileMemCacheSize(), 
+                importerConfig.getTempDir());
+    }
+
 }

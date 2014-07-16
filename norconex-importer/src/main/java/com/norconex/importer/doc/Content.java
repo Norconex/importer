@@ -25,8 +25,6 @@ public class Content {
     
     public static final int DEFAULT_MAX_MEMORY_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(1);
-    public static final Content NO_CONTENT = new Content(
-            new NullInputStream(0), 0);
     
     private CachedInputStream cacheStream;
     
