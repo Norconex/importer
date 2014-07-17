@@ -53,10 +53,10 @@ import com.norconex.importer.filter.IOnMatchFilter;
 import com.norconex.importer.filter.OnMatch;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
+import com.norconex.importer.splitter.IDocumentSplitter;
 import com.norconex.importer.tagger.IDocumentTagger;
 import com.norconex.importer.transformer.IDocumentTransformer;
 
@@ -266,24 +266,35 @@ public class Importer {
             document = new ImporterDocument(
                     reference, content, meta);
             document.setContentType(safeContentType);
+
+            printContent(document, "new document");
             
             //--- Pre-handlers ---
             if (!executeHandlers(
                     document, importerConfig.getPreParseHandlers(), false)) {
+                printContent(document, "pre-handlers rejected");
                 return null;// false;
             }
 
+            printContent(document, "pre-handlers accepted");
+
+            
             //--- Parse ---
             //TODO make parse just another handler in the chain?  Eliminating
             //the need for pre and post handlers?
             parseDocument(document);
 
+            printContent(document, "parsed");
+
             
             //--- Post-handlers ---
             if (!executeHandlers(
                     document, importerConfig.getPostParseHandlers(), true)) {
+                printContent(document, "post-handlers rejected");
                 return null; //false;
             }
+            printContent(document, "post-handlers accepted");
+            
         } catch (IOException e) {
             throw new ImporterException(
                     "Could not import document: " + reference, e);
@@ -307,14 +318,18 @@ public class Importer {
         for (IImporterHandler h : handlers) {
             if (h instanceof IDocumentTagger) {
                 tagDocument(doc, (IDocumentTagger) h, parsed);
+                printContent(doc, "tagged");
             } else if (h instanceof IDocumentTransformer) {
                 transformDocument(doc, (IDocumentTransformer) h, parsed);
+                printContent(doc, "transformed");
             } else if (h instanceof IDocumentSplitter) {
                 childDocs.addAll(
                         splitDocument(doc, (IDocumentSplitter) h, parsed));
+                printContent(doc, "splitted");
             } else if (h instanceof IDocumentFilter) {
                 boolean accepted = acceptDocument(
                         doc, (IDocumentFilter) h, parsed);
+                printContent(doc, "filtered");
                 if (isMatchIncludeFilter((IOnMatchFilter) h)) {
                     includeResolver.hasIncludes = true;
                     if (accepted) {
@@ -331,6 +346,8 @@ public class Importer {
             }
         }
         for (ImporterDocument childDoc : childDocs) {
+            printContent(doc, "child doc");
+
             ImporterDocument processedDoc = importDocument(
                     new BufferedInputStream(
                             childDoc.getContent().getInputStream()),
@@ -411,12 +428,36 @@ public class Importer {
         try {
             parser.parseDocument(
                     bufInput, doc.getContentType(), output, doc.getMetadata());
-        } finally {
+        } catch (DocumentParserException e) {
             IOUtils.closeQuietly(bufInput);
-            CachedInputStream newInputStream = out.getInputStream();
             IOUtils.closeQuietly(out);
-            doc.setContent(new Content(newInputStream));
+            throw e;
+//        } finally {
+//
+//            IOUtils.closeQuietly(bufInput);
+//            CachedInputStream newInputStream = out.getInputStream();
+//            IOUtils.closeQuietly(out);
+//            doc.setContent(new Content(newInputStream));
         }
+        
+        CachedInputStream newInputStream = null;
+        if (out.isCacheEmpty()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Parser \"" + parser.getClass()
+                        + "\" did not produce new content for: " 
+                        + doc.getReference());
+            }
+            IOUtils.closeQuietly(out);
+            newInputStream = in;
+        } else {
+            IOUtils.closeQuietly(in);
+            try {
+                newInputStream = out.getInputStream();
+            } finally {
+                IOUtils.closeQuietly(out);
+            }
+        }
+        doc.setContent(new Content(newInputStream));
     }
 
     private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
@@ -498,4 +539,19 @@ public class Importer {
                 importerConfig.getTempDir());
     }
 
+    //TODO remove: for debugging
+    public static void printContent(ImporterDocument doc, String msg) {
+        printContent(doc.getContent(), msg);
+    }
+    public static void printContent(Content content, String msg) {
+        try {
+            System.out.println("============================================"); 
+            System.out.println(msg + " content: ");
+            System.out.println(IOUtils.toString(content.getInputStream()));
+            System.out.println("============================================"); 
+            System.out.flush();
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot read content", e);
+        }
+    }
 }

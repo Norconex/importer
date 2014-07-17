@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.handler.splitter;
+package com.norconex.importer.splitter;
 
 import java.io.InputStream;
 import java.io.OutputStream;

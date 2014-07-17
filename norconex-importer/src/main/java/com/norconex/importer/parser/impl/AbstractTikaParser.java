@@ -126,11 +126,11 @@ public class AbstractTikaParser implements IDocumentParser {
                 Metadata tikaMeta, ParseContext context)
                 throws IOException, SAXException, TikaException {
 
-            System.out.println("========================================");
-            for (String name : tikaMeta.names()) {
-                System.out.println("Metadata:");
-                System.out.println("    " + name + " => " + tikaMeta.get(name));
-            }
+//            System.out.println("========================================");
+//            for (String name : tikaMeta.names()) {
+//                System.out.println("Metadata:");
+//                System.out.println("    " + name + " => " + tikaMeta.get(name));
+//            }
             
             //TODO Make it a file writer somehow?? storing it as new document
             //TODO so we can have a zip and its containing files separate.
