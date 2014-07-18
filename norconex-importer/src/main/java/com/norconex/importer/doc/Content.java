@@ -1,5 +1,19 @@
-/**
+/* Copyright 2014 Norconex Inc.
  * 
+ * This file is part of Norconex Importer.
+ * 
+ * Norconex Importer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Norconex Importer is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
 package com.norconex.importer.doc;
 
@@ -17,6 +31,7 @@ import com.norconex.commons.lang.unit.DataUnit;
 /**
  * This class is not thread-safe.
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public class Content {
     //TODO make this a unique representation of content, which can be 
@@ -51,10 +66,12 @@ public class Content {
     }
     
     /**
-     * This method is not thread-safe.  
+     * Gets the content input stream. 
+     * This method is not thread-safe.   
      * @return input stream
      */
     public CachedInputStream getInputStream() {
+        cacheStream.rewind();
         return cacheStream;
     }
     

@@ -267,34 +267,22 @@ public class Importer {
                     reference, content, meta);
             document.setContentType(safeContentType);
 
-            printContent(document, "new document");
-            
             //--- Pre-handlers ---
             if (!executeHandlers(
                     document, importerConfig.getPreParseHandlers(), false)) {
-                printContent(document, "pre-handlers rejected");
                 return null;// false;
             }
-
-            printContent(document, "pre-handlers accepted");
-
             
             //--- Parse ---
             //TODO make parse just another handler in the chain?  Eliminating
             //the need for pre and post handlers?
             parseDocument(document);
-
-            printContent(document, "parsed");
-
             
             //--- Post-handlers ---
             if (!executeHandlers(
                     document, importerConfig.getPostParseHandlers(), true)) {
-                printContent(document, "post-handlers rejected");
                 return null; //false;
             }
-            printContent(document, "post-handlers accepted");
-            
         } catch (IOException e) {
             throw new ImporterException(
                     "Could not import document: " + reference, e);
@@ -318,18 +306,14 @@ public class Importer {
         for (IImporterHandler h : handlers) {
             if (h instanceof IDocumentTagger) {
                 tagDocument(doc, (IDocumentTagger) h, parsed);
-                printContent(doc, "tagged");
             } else if (h instanceof IDocumentTransformer) {
                 transformDocument(doc, (IDocumentTransformer) h, parsed);
-                printContent(doc, "transformed");
             } else if (h instanceof IDocumentSplitter) {
                 childDocs.addAll(
                         splitDocument(doc, (IDocumentSplitter) h, parsed));
-                printContent(doc, "splitted");
             } else if (h instanceof IDocumentFilter) {
                 boolean accepted = acceptDocument(
                         doc, (IDocumentFilter) h, parsed);
-                printContent(doc, "filtered");
                 if (isMatchIncludeFilter((IOnMatchFilter) h)) {
                     includeResolver.hasIncludes = true;
                     if (accepted) {
@@ -346,8 +330,6 @@ public class Importer {
             }
         }
         for (ImporterDocument childDoc : childDocs) {
-            printContent(doc, "child doc");
-
             ImporterDocument processedDoc = importDocument(
                     new BufferedInputStream(
                             childDoc.getContent().getInputStream()),
@@ -415,7 +397,7 @@ public class Importer {
             throws IOException, DocumentParserException {
         
         CachedInputStream  in = doc.getContent().getInputStream();
-        BufferedInputStream bufInput = new BufferedInputStream(in);
+        InputStream bufInput = new BufferedInputStream(in);
 
         CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
@@ -432,12 +414,6 @@ public class Importer {
             IOUtils.closeQuietly(bufInput);
             IOUtils.closeQuietly(out);
             throw e;
-//        } finally {
-//
-//            IOUtils.closeQuietly(bufInput);
-//            CachedInputStream newInputStream = out.getInputStream();
-//            IOUtils.closeQuietly(out);
-//            doc.setContent(new Content(newInputStream));
         }
         
         CachedInputStream newInputStream = null;
@@ -448,6 +424,7 @@ public class Importer {
                         + doc.getReference());
             }
             IOUtils.closeQuietly(out);
+            in.rewind();
             newInputStream = in;
         } else {
             IOUtils.closeQuietly(in);
@@ -464,6 +441,7 @@ public class Importer {
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(), 
                 doc.getContent().getInputStream(), doc.getMetadata(), parsed);
+        doc.getContent().getInputStream().rewind();
     }
     
     private boolean acceptDocument(
@@ -472,6 +450,7 @@ public class Importer {
         
         boolean accepted = filter.acceptDocument(
                 doc.getContent().getInputStream(), doc.getMetadata(), parsed);
+        doc.getContent().getInputStream().rewind();
         if (!accepted) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document import rejected. Filter=" + filter);
@@ -508,6 +487,7 @@ public class Importer {
                 IOUtils.closeQuietly(out);
             }
         }
+        newInputStream.rewind();
         doc.setContent(new Content(newInputStream));
     }
     
@@ -521,7 +501,11 @@ public class Importer {
         List<ImporterDocument> childDocs = h.splitDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
         try {
-            doc.setContent(new Content(out.getInputStream()));
+            if (out.isCacheEmpty()) {
+                in.rewind();
+            } else {
+                doc.setContent(new Content(out.getInputStream()));
+            }
         } finally {
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(out);
@@ -539,19 +523,22 @@ public class Importer {
                 importerConfig.getTempDir());
     }
 
-    //TODO remove: for debugging
-    public static void printContent(ImporterDocument doc, String msg) {
-        printContent(doc.getContent(), msg);
-    }
-    public static void printContent(Content content, String msg) {
-        try {
-            System.out.println("============================================"); 
-            System.out.println(msg + " content: ");
-            System.out.println(IOUtils.toString(content.getInputStream()));
-            System.out.println("============================================"); 
-            System.out.flush();
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot read content", e);
-        }
-    }
+//    //TODO remove: for debugging
+//    public static void printContent(ImporterDocument doc, String msg) {
+//        printContent(doc.getContent(), msg);
+//    }
+//    public static void printContent(Content content, String msg) {
+//        printContent(content.getInputStream(), msg);
+//    }
+//    public static void printContent(CachedInputStream is, String msg) {
+//        try {
+//            System.out.println("\n==== BEGIN " + msg + "======================="); 
+//            System.out.println(IOUtils.toString(is));
+//            System.out.println("\n==== END ===================================="); 
+//            System.out.flush();
+//            is.rewind();
+//        } catch (IOException e) {
+//            throw new RuntimeException("Cannot read content", e);
+//        }
+//    }
 }

@@ -46,8 +46,9 @@ public class ImporterMetadata extends Properties {
     public void setContentType(ContentType contentType) {
         if (contentType == null) {
             setString(DOC_CONTENT_TYPE, (String) null);
+        } else {
+            setString(DOC_CONTENT_TYPE, contentType.toString());
         }
-        setString(DOC_CONTENT_TYPE, contentType.toString());
     }
     public void setContentType(String contentType) {
         setString(DOC_CONTENT_TYPE, contentType);
@@ -59,8 +60,9 @@ public class ImporterMetadata extends Properties {
     public void setContentFamily(ContentFamily contentFamily) {
         if (contentFamily == null) {
             setString(DOC_CONTENT_FAMILY, (String) null);
+        } else {
+            setString(DOC_CONTENT_FAMILY, contentFamily.toString());
         }
-        setString(DOC_CONTENT_FAMILY, contentFamily.toString());
     }
     public void setContentFamily(String contentFamily) {
         setString(DOC_CONTENT_FAMILY, contentFamily);
