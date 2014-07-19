@@ -34,6 +34,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
@@ -53,10 +54,10 @@ import com.norconex.importer.filter.IOnMatchFilter;
 import com.norconex.importer.filter.OnMatch;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
-import com.norconex.importer.splitter.IDocumentSplitter;
 import com.norconex.importer.tagger.IDocumentTagger;
 import com.norconex.importer.transformer.IDocumentTransformer;
 
@@ -115,8 +116,8 @@ public class Importer {
         if (StringUtils.isBlank(output)) {
             output = cmd.getOptionValue(ARG_INPUTFILE) + "-imported.txt";
         }
-        File outputFile = new File(output);
-        File metadataFile = new File(output + ".meta");
+//        File outputFile = new File(output);
+//        File metadataFile = new File(output + ".meta");
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
         try {
@@ -127,22 +128,60 @@ public class Importer {
             }
             ImporterDocument doc = new Importer(config).importDocument(
                     inputFile, contentType, metadata, reference);
+
+            writeDocument(doc, output, 0, 0);
             
-            // Write document file
-            FileOutputStream docOutStream = new FileOutputStream(outputFile);
-            CachedInputStream docInStream = doc.getContent().getInputStream();
-            IOUtils.copy(docInStream, docOutStream);
-            IOUtils.closeQuietly(docOutStream);
-            IOUtils.closeQuietly(docInStream);
-            
-            // Write metadata file
-            FileOutputStream metaOut = new FileOutputStream(metadataFile);
-            metadata.store(metaOut, null);
-            IOUtils.closeQuietly(metaOut);
+//            // Write document file
+//            FileOutputStream docOutStream = new FileOutputStream(outputFile);
+//            CachedInputStream docInStream = doc.getContent().getInputStream();
+//            IOUtils.copy(docInStream, docOutStream);
+//            IOUtils.closeQuietly(docOutStream);
+//            IOUtils.closeQuietly(docInStream);
+//            
+//            // Write metadata file
+//            FileOutputStream metaOut = new FileOutputStream(metadataFile);
+//            metadata.store(metaOut, null);
+//            IOUtils.closeQuietly(metaOut);
         } catch (Exception e) {
             System.err.println(
                     "A problem occured while importing " + inputFile);
             e.printStackTrace(System.err);
+        }
+    }
+    
+    private static void writeDocument(
+            ImporterDocument doc, String outputPath, int depth, int index) 
+                    throws IOException {
+
+        StringBuilder path = new StringBuilder(outputPath);
+        if (depth > 0) {
+            int pathLength = outputPath.length();
+            int extLength = FilenameUtils.getExtension(outputPath).length();
+            if (extLength > 0) {
+                extLength++;
+            }
+            String nameSuffix = "_" + depth + "-" + index;
+            path.insert(pathLength - extLength, nameSuffix);
+        }
+        File docfile = new File(path.toString());
+        File metafile = new File(path.toString() + ".meta");
+
+        // Write document file
+        FileOutputStream docOutStream = new FileOutputStream(docfile);
+        CachedInputStream docInStream = doc.getContent().getInputStream();
+        IOUtils.copy(docInStream, docOutStream);
+        IOUtils.closeQuietly(docOutStream);
+        IOUtils.closeQuietly(docInStream);
+
+        // Write metadata file
+        FileOutputStream metaOut = new FileOutputStream(metafile);
+        doc.getMetadata().store(metaOut, null);
+        IOUtils.closeQuietly(metaOut);
+
+        ImporterDocument[] childDocs = doc.getChildDocuments();
+        for (int i = 0; i < childDocs.length; i++) {
+            ImporterDocument childDoc = childDocs[i];
+            writeDocument(childDoc, outputPath, depth + 1, i + 1);
         }
     }
     
@@ -333,9 +372,9 @@ public class Importer {
             ImporterDocument processedDoc = importDocument(
                     new BufferedInputStream(
                             childDoc.getContent().getInputStream()),
-                    doc.getContentType(), 
-                    doc.getMetadata(), 
-                    doc.getReference());
+                            childDoc.getContentType(), 
+                            childDoc.getMetadata(), 
+                            childDoc.getReference());
             if (processedDoc != null) {
                 doc.addChildDocument(processedDoc);
             }
@@ -501,11 +540,9 @@ public class Importer {
         List<ImporterDocument> childDocs = h.splitDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
         try {
-            if (out.isCacheEmpty()) {
-                in.rewind();
-            } else {
-                doc.setContent(new Content(out.getInputStream()));
-            }
+            //For splitters, not writing to output stream means to blank it.
+            //so we always go with output stream.
+            doc.setContent(new Content(out.getInputStream()));
         } finally {
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(out);

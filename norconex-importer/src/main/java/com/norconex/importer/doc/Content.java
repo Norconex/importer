@@ -20,13 +20,17 @@ package com.norconex.importer.doc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.unit.DataUnit;
+import com.norconex.importer.ImporterRuntimeException;
 
 /**
  * This class is not thread-safe.
@@ -63,6 +67,24 @@ public class Content {
     }
     public Content(CachedInputStream is) {
         cacheStream = is;
+    }
+    public Content(String string) {
+        this(string, DEFAULT_MAX_MEMORY_CACHE_SIZE);
+    }
+    public Content(String string, int maxMemoryCacheSize) {
+        try {
+            InputStream is = IOUtils.toInputStream(string, CharEncoding.UTF_8);
+            cacheStream = new CachedInputStream(is, maxMemoryCacheSize);
+        } catch (IOException e) {
+            throw new ImporterRuntimeException(
+                    "Cannot create content from string.", e);
+        }
+    }
+    /**
+     * Creates an empty content.
+     */
+    public Content() {
+        this(StringUtils.EMPTY, 0);
     }
     
     /**

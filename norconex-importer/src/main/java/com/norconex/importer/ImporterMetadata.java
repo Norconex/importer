@@ -16,6 +16,9 @@ import com.norconex.commons.lang.map.Properties;
  */
 public class ImporterMetadata extends Properties {
 
+    //TODO have all fields from importer start with document instead
+    // of importer??
+    
     private static final long serialVersionUID = -2568349411949228998L;
 
     public static final String DOC_REFERENCE = "document.reference";
@@ -25,6 +28,11 @@ public class ImporterMetadata extends Properties {
             IMPORTER_PREFIX + "contentType";
     public static final String DOC_CONTENT_FAMILY = 
             IMPORTER_PREFIX + "contentFamily";
+
+    public static final String DOC_PARENT_REFERENCE = 
+            IMPORTER_PREFIX + "parent.reference";
+    public static final String DOC_PARENT_CONTENT_TYPE = 
+            IMPORTER_PREFIX + "parent.contentType";
     
     public ImporterMetadata() {
         super();
@@ -75,5 +83,18 @@ public class ImporterMetadata extends Properties {
         setString(DOC_REFERENCE, documentReference);
     }
 
+    public String getParentReference() {
+        return getString(DOC_PARENT_REFERENCE);
+    }
+    public void setParentReference(String parentReference) {
+        setString(DOC_PARENT_REFERENCE, parentReference);
+    }
     
+    //TODO really have this is we go with suggestion above?
+    public String getParentContentType() {
+        return getString(DOC_PARENT_CONTENT_TYPE);
+    }
+    public void setParentContentType(String parentContentType) {
+        setString(DOC_PARENT_CONTENT_TYPE, parentContentType);
+    }
 }

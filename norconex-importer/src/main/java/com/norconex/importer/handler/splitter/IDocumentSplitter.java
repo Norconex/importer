@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.splitter;
+package com.norconex.importer.handler.splitter;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,6 +51,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * example, to break some entities from XML data files into separate documents.
  * 
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public interface IDocumentSplitter extends IImporterHandler {
 

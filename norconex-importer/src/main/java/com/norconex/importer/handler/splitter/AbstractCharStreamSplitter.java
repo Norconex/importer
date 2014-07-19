@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.transformer;
+package com.norconex.importer.handler.splitter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.List;
 
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -31,12 +32,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.AbstractRestrictiveHandler;
 import com.norconex.importer.handler.AbstractTextRestrictiveHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * <p>Base class for transformers dealing with text documents only.  Subclasses
+ * <p>Base class for splitters dealing with text documents only.  Subclasses
  * can safely be used as either pre-parse or post-parse handlers.
  * </p>
  * <p>
@@ -51,7 +53,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * For post-parsing, all documents are assumed to be text.
  * </p>
  * <p>
- * Sub-classes can restrict to which document to apply this transformation
+ * Sub-classes can restrict to which document to apply this split
  * based on document metadata (see {@link AbstractRestrictiveHandler}).
  * </p>
  * <p>
@@ -59,7 +61,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * configuration:</p>
  * <pre>
  *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overridding default)
+ *      (regex to identify text content-types, overriding default)
  *  &lt;/contentTypeRegex&gt;
  *  &lt;restrictTo
  *          caseSensitive="[false|true]" &gt;
@@ -68,41 +70,47 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *  &lt;/restrictTo&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
-public abstract class AbstractCharStreamTransformer 
+public abstract class AbstractCharStreamSplitter 
             extends AbstractTextRestrictiveHandler
-            implements IDocumentTransformer {
+            implements IDocumentSplitter {
 
-    private static final long serialVersionUID = -7465364282740091371L;
-    
+    private static final long serialVersionUID = -2595121808885491325L;
+
     @Override
-    public final void transformDocument(String reference, InputStream input,
-            OutputStream output, ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
+    public final List<ImporterDocument> splitDocument(
+            String reference, InputStream input, OutputStream output, 
+            ImporterMetadata metadata, boolean parsed) 
+                    throws ImporterHandlerException {
         
         if (!documentAccepted(reference, metadata, parsed)) {
-            return;
+            return null;
         }
+
+        List<ImporterDocument> children = null;
         try {
-            InputStreamReader is = new InputStreamReader(input, CharEncoding.UTF_8);
+            InputStreamReader is = 
+                    new InputStreamReader(input, CharEncoding.UTF_8);
             OutputStreamWriter os = 
                     new OutputStreamWriter(output, CharEncoding.UTF_8);
-            transformTextDocument(reference, is, os, metadata, parsed);
+            children = splitTextDocument(reference, is, os, metadata, parsed);
             os.flush();
         } catch (IOException e) {
             throw new ImporterHandlerException(
-                    "Cannot transform character stream.", e);
+                    "Cannot split character stream.", e);
         }
+        return children;
     }
 
-    protected abstract void transformTextDocument(
-            String reference, Reader input,
-            Writer output, ImporterMetadata metadata, boolean parsed)
-            throws IOException;
+    protected abstract List<ImporterDocument> splitTextDocument(
+            String reference, Reader input, Writer output, 
+            ImporterMetadata metadata, boolean parsed)
+                    throws IOException;
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamTransformer)) {
+        if (!(other instanceof AbstractCharStreamSplitter)) {
             return false;
         }
         return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();

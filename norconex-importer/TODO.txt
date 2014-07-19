@@ -30,6 +30,13 @@ MUST for 2.0.0 release:
 Any release:
 ==============
 
+- Have "conditional" handler decorators that would act wrapper around other
+  handlers, but those will only be invoked when the condition matches.
+  That would better than having tons of filter options on every handlers 
+  defined.  This is different than usualy filters since documents are not
+  rejected if they do not meet a condition, they move on to the next handler.
+  
+
 - Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Offer ways to force Character Encoding.
