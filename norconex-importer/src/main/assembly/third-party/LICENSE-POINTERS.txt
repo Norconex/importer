@@ -33,10 +33,13 @@ httpcore                - see LICENSE(Apache2.0).txt
 isoparser               - see LICENSE(Apache2.0).txt
 jdom                    - see LICENSE(JDOM).txt
 jempbox                 - see LICENSE(Apache2.0).txt
+jsonic                  - see LICENSE(Apache2.0).txt
 juniversalchardet       - see LICENSE(MPL).txt
+langdetect              - see LICENSE(Apache2.0).txt
 log4j                   - see LICENSE(Apache2.0).txt
 metadata-extractor      - see LICENSE(Apache2.0).txt
 netcdf                  - see LICENSE(UCAR).txt
+opencsv                 - see LICENSE(Apache2.0).txt
 pdfbox                  - see LICENSE(Apache2.0).txt
 poi                     - see LICENSE(Apache2.0).txt
 poi-scratchpad          - see LICENSE(Apache2.0).txt
