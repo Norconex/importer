@@ -35,19 +35,22 @@ public class ImporterMetadata extends Properties {
     
     private static final long serialVersionUID = -2568349411949228998L;
 
-    public static final String IMPORTER_PREFIX = "document.";
+    private static final String DOC_META_PREFIX = "document.";
 
-    public static final String DOC_REFERENCE = IMPORTER_PREFIX + "reference";
-
+    public static final String DOC_REFERENCE = DOC_META_PREFIX + "reference";
     public static final String DOC_CONTENT_TYPE = 
-            IMPORTER_PREFIX + "contentType";
+            DOC_META_PREFIX + "contentType";
     public static final String DOC_CONTENT_FAMILY = 
-            IMPORTER_PREFIX + "contentFamily";
+            DOC_META_PREFIX + "contentFamily";
+    public static final String DOC_LANGUAGE = 
+            DOC_META_PREFIX + "language";
 
-    public static final String DOC_PARENT_REFERENCE = 
-            IMPORTER_PREFIX + "parent.reference";
+    private static final String DOC_PARENT_META_PREFIX = 
+            DOC_META_PREFIX + "parent.";
+    public static final String DOC_PARENT_REFERENCE =
+            DOC_PARENT_META_PREFIX + "reference";
     public static final String DOC_PARENT_CONTENT_TYPE = 
-            IMPORTER_PREFIX + "parent.contentType";
+            DOC_PARENT_META_PREFIX + "contentType";
     
     public ImporterMetadata() {
         super();
@@ -89,6 +92,13 @@ public class ImporterMetadata extends Properties {
     }
     public void setContentFamily(String contentFamily) {
         setString(DOC_CONTENT_FAMILY, contentFamily);
+    }
+    
+    public String getLanguage() {
+        return getString(DOC_LANGUAGE);
+    }
+    public void setLanguage(String language) {
+        setString(DOC_LANGUAGE, language);
     }
 
     public String getDocumentReference() {

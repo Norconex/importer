@@ -147,9 +147,9 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     </dependency>
 
     <dependency>
-      <groupId>com.cybozu.labs</groupId>
-      <artifactId>langdetect</artifactId>
-      <version>1.3.0</version>
+      <groupId>com.norconex.language</groupId>
+      <artifactId>language-detector</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   

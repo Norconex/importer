@@ -37,7 +37,7 @@ import com.norconex.importer.util.MemoryUtil;
 /**
  * <p>Base class to facilitate creating taggers based on text content, loading
  * text into {@link StringBuilder} for memory processing, also giving more 
- * options (like fancy regex).  This class check for free memory every 10KB of 
+ * options (like fancy regex).  This class checks for free memory every 10KB of 
  * text read.  If enough memory, it keeps going for another 10KB or until
  * all the content is read, or the buffer size reaches half the available 
  * memory.  In either case, it passes the buffered content so far for 

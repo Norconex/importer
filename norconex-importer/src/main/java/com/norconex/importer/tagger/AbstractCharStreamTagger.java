@@ -92,7 +92,6 @@ public abstract class AbstractCharStreamTagger
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);
         }
-        
     }
 
     protected abstract void tagTextDocument(
