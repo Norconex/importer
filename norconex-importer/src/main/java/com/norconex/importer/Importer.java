@@ -333,6 +333,8 @@ public class Importer {
 //          IOUtils.closeQuietly(is);
         }
         
+        //TODO store to file before returning???
+        
         return document; //true;
     }
     

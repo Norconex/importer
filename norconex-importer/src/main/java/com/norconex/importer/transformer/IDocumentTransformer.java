@@ -25,8 +25,8 @@ import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * Transformers allow to manipulate and convert extracted text and
- * save the modified text back.
+ * Transformers allow to manipulate and modify a document metadata or content.
+ * 
  * @author Pascal Essiembre
  */
 public interface IDocumentTransformer extends IImporterHandler {

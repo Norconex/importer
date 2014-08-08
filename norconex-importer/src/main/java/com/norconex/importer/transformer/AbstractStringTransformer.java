@@ -75,7 +75,7 @@ public abstract class AbstractStringTransformer
     private static final Logger LOG = 
             LogManager.getLogger(AbstractStringTransformer.class);
 
-    private static final int READ_CHUNK_SIZE = 10 * (int) FileUtils.ONE_KB;
+    private static final int READ_CHUNK_SIZE = 100 * (int) FileUtils.ONE_KB;
     private static final int STRING_TOTAL_MEMORY_DIVIDER = 4;
     
     @Override
