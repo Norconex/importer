@@ -2,9 +2,6 @@
 MUST for 2.0.0 release:
 ==============
 
-
-- Add language detection
-
 - Return ImporterOutput instead, which will hold: isRejected, rejectedCause, 
   ImportDocument.  This involves building a generic way to report issues
   as opposed to rely on log4j alone (or instead of?)
