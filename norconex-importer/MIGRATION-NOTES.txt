@@ -14,3 +14,5 @@ Some notes to help migrate from 1.x to 2.0.0:
     
 * New fileMemCacheSize
 * New TempDirPath
+* New ability to skip parsing for specific content types
+* New CsvSplitter

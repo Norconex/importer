@@ -245,8 +245,10 @@ public class Importer {
             return importDocument(is, contentType, metadata, finalReference);
         } catch (FileNotFoundException e) {
             throw new ImporterException("Could not import file.", e);
-        } finally {
-            IOUtils.closeQuietly(is);
+//        } finally {
+              // delete this line as we cannot close it since that is
+              // what the caller expects to get.
+//            IOUtils.closeQuietly(is);
         }
     }
 
@@ -325,8 +327,10 @@ public class Importer {
         } catch (IOException e) {
             throw new ImporterException(
                     "Could not import document: " + reference, e);
-        } finally {
-            IOUtils.closeQuietly(bufInput);
+//          } finally {
+            // delete this line as we cannot close it since that is
+            // what the caller expects to get.
+//          IOUtils.closeQuietly(is);
         }
         
         return document; //true;
@@ -435,6 +439,15 @@ public class Importer {
     private void parseDocument(ImporterDocument doc)
             throws IOException, DocumentParserException {
         
+        IDocumentParserFactory factory = importerConfig.getParserFactory();
+        IDocumentParser parser = 
+                factory.getParser(doc.getReference(), doc.getContentType());
+
+        // No parser means no parsing, so we simply return
+        if (parser == null) {
+            return;
+        }
+        
         CachedInputStream  in = doc.getContent().getInputStream();
         InputStream bufInput = new BufferedInputStream(in);
 
@@ -442,10 +455,6 @@ public class Importer {
         OutputStreamWriter output = new OutputStreamWriter(
                 out, CharEncoding.UTF_8);
 
-        //InputStream input = TikaInputStream.get(bufInput);
-        IDocumentParserFactory factory = importerConfig.getParserFactory();
-        IDocumentParser parser = 
-                factory.getParser(doc.getReference(), doc.getContentType());
         try {
             parser.parseDocument(
                     bufInput, doc.getContentType(), output, doc.getMetadata());

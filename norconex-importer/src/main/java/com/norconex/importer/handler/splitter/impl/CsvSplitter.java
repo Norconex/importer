@@ -65,7 +65,6 @@ import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
  *              property="(name of header/metadata name to match)"
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
- *     TODO : have a way to overwrite content types or regex on URL to accept/reject
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre

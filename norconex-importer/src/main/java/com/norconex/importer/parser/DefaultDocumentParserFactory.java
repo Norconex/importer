@@ -28,6 +28,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
@@ -39,13 +40,30 @@ import com.norconex.importer.parser.impl.PDFParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 
 /**
- * Uses Apacke Tika for all its supported content types.  For unknown
- * content types, falls back to Tika generic media detector/parser.
- * <p>
- * XML configuration usage (not required since default):
- * </p>
+ * Default document parser factory.  It uses Apacke Tika for <i>most</i> of its 
+ * supported content types.  For unknown
+ * content types, it falls back to Tika generic media detector/parser.
+ * <p />
+ * <h3>Ignoring content types:</h3>
+ * As of version 2.0.0, you can "ignore" content-types so they do not get
+ * parsed.  Unparsed documents will be sent as is to the post handlers 
+ * and the calling application.   Use caution when using that feature since
+ * many post-parsing handlers or applications expect text-only content for 
+ * them to execute properly.  Unless you really know what you are doing, <b> 
+ * avoid excluding binary content types from parsing.</b>
+ * <p />
+ * <h3>XML configuration usage:</h3>
+ * (Not required since used by default)
+ * <p />
  * <pre>
- *  &lt;documentParserFactory class="com.norconex.importer.parser.DefaultDocumentParserFactory" format="text|xml" /&gt;
+ *  &lt;documentParserFactory 
+ *          class="com.norconex.importer.parser.DefaultDocumentParserFactory"
+ *          format="text|xml" &gt;
+ *      &lt;ignoredContentTypes&gt;
+ *          (optional regex matching content types to ignore for parsing, 
+ *           i.e., not parsed.)
+ *      &lt;/ignoredContentTypes&gt;
+ *  &lt;/documentParserFactory&gt;
  * </pre>
  * @author Pascal Essiembre
  */
@@ -62,6 +80,7 @@ public class DefaultDocumentParserFactory
             new HashMap<ContentType, IDocumentParser>();
     private IDocumentParser fallbackParser;
     private String format;
+    private String ignoredContentTypesRegex;
     
     /**
      * Creates a new document parser factory of "text" format.
@@ -88,6 +107,13 @@ public class DefaultDocumentParserFactory
     @Override
     public final IDocumentParser getParser(
             String documentReference, ContentType contentType) {
+        // If ignoring content-type, do not even return a parser
+        if (contentType != null 
+                && StringUtils.isNotBlank(ignoredContentTypesRegex)
+                && contentType.toString().matches(ignoredContentTypesRegex)) {
+            return null;
+        }
+        
         IDocumentParser parser = namedParsers.get(contentType);
         if (parser == null) {
             return fallbackParser;
@@ -100,6 +126,12 @@ public class DefaultDocumentParserFactory
     }
     public void setFormat(String format) {
         this.format = format;
+    }
+    public String getIgnoredContentTypesRegex() {
+        return ignoredContentTypesRegex;
+    }
+    public void setIgnoredContentTypesRegex(String ignoredContentTypesRegex) {
+        this.ignoredContentTypesRegex = ignoredContentTypesRegex;
     }
     protected final void registerNamedParser(
             ContentType contentType, IDocumentParser parser) {
@@ -137,6 +169,7 @@ public class DefaultDocumentParserFactory
         try {
             XMLConfiguration xml = ConfigurationLoader.loadXML(in);
             setFormat(xml.getString("[@format]"));
+            setIgnoredContentTypesRegex(xml.getString("ignoredContentTypes"));
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
         }
@@ -151,6 +184,11 @@ public class DefaultDocumentParserFactory
             writer.writeAttribute("class", getClass().getCanonicalName());
             if (format != null) {
                 writer.writeAttribute("format", format);
+            }
+            if (ignoredContentTypesRegex != null) {
+                writer.writeStartElement("ignoredContentTypes");
+                writer.writeCharacters(ignoredContentTypesRegex);
+                writer.writeEndElement();
             }
             writer.writeEndElement();
             writer.flush();
