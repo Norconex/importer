@@ -48,7 +48,8 @@ public class DefaultDocumentParserFactoryTest {
         config.setParserFactory(factory);
         Importer importer = new Importer(config);
         ImporterDocument doc = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, metadata, "n/a");
+                TestUtil.getAlicePdfFile(), ContentType.PDF, 
+                        metadata, "n/a").getDocument();
         
         try (InputStream is = doc.getContent().getInputStream()) {
             String output = IOUtils.toString(is).substring(0, 100);

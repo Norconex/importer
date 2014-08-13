@@ -35,7 +35,7 @@ import com.norconex.importer.filter.impl.RegexMetadataFilter;
 /**
  * <p>Base class for handlers applying only to certain type of documents
  * by providing a way to restrict applicable documents based on 
- * a metadata value (matched via regex).
+ * a metadata field value (matched via regex).
  * </p>
  * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:</p>

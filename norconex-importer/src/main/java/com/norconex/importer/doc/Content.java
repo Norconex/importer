@@ -100,8 +100,6 @@ public class Content {
     @Override
     protected void finalize() throws Throwable {
         super.finalize();
-        if (cacheStream != null) {
-            IOUtils.closeQuietly(cacheStream);
-        }
+        IOUtils.closeQuietly(cacheStream);
     }
 }

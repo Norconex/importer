@@ -2,41 +2,27 @@
 MUST for 2.0.0 release:
 ==============
 
-- MERGE TAGGERS AND TRANSFORMERS?  Since with version 2.0.0 nothing gets 
-  streamed if only dealing with metadata, there not much value in separating
-  the two of then now.   Where a field is required as input, not specifying
-  any would mean to apply on the content, unless the javadoc clearly says
-  it applies only to fields.  Create abstract classes for those dealing
-  with metadata only, and those with content + metadata plus reading only 
-  (default will be all these + output).
-    - When text documents are processed in chunks because too big, how
-      to mix that with field transformation.  We do not want to re-operate
-      on the same fields when processing a new content section of the same
-      doc.
-  
 - Be consistant in the way metadata fields are named.  Use the term 
   metadata "field" all across.
   
-
-- Return ImporterOutput instead, which will hold: isRejected, rejectedCause, 
-  ImportDocument.  This involves building a generic way to report issues
-  as opposed to rely on log4j alone (or instead of?)
-
 - Have the CsvSplitter offer to provide which column has the 
   reference field (for each child docs), and which fields should make up 
   content (if any).
   
-- Find a way to handle returning an input stream in the ImportDocument. 
-  Shall we write to file and provide a regular input stream instead?
-  How to make sure the inputStream gets closed if the caller is not 
-  interested in the content?
-  Maybe have the input stream created on demand?  Maybe the CachedInputStream
-  is already safe to use (will delete cache file on finalize)?
+- Have embeded docs in tika parser behave similar to a split, returning
+  embedded docs as child docs.
 
+- Compare files with previous release and update changes.xml accordingly
+- Compare files with pervious release and add @since where appropriate
 
 ?? have a RejectionCause returned instead of boolean?
 
 ?? Move transformer, tagger, filter, under handler package?
+
+
+++ DONE: Return ImporterOutput instead, which will hold: isRejected, 
+   rejectedCause, ImportDocument. This involves building a generic way to 
+   report issues as opposed to rely on log4j alone (or instead of?)
 
 ++ DONE: Make it possible to bypass parsing for some files (when people want to 
    index raw documents as-is.
@@ -74,3 +60,15 @@ Any release:
 - Make it easier to change output format (but how to make it work with
   committer still?).
 
+
+Applicable?
+==============
+- Find a way to handle returning an input stream in the ImportDocument. 
+  Shall we write to file and provide a regular input stream instead?
+  How to make sure the inputStream gets closed if the caller is not 
+  interested in the content?
+  Maybe have the input stream created on demand?  Maybe the CachedInputStream
+  is already safe to use (will delete cache file on finalize)?
+    Verdict so far: the collectors using them do not keep them around long
+    enough to accumulate them in memory.  They should be disposed relatively
+    quickly.

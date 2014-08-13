@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -32,8 +32,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.filter.OnMatch;
+import com.norconex.importer.filter.impl.RegexMetadataFilter;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.transformer.IDocumentTransformer;
 
@@ -81,19 +84,20 @@ public class ImporterTest {
         File docxOutput = File.createTempFile("ImporterTest-doc-", ".txt");
         Properties metaDocx = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAliceDocxFile(), metaDocx), docxOutput);
+                TestUtil.getAliceDocxFile(), metaDocx).getDocument(), 
+                        docxOutput);
 
         // PDF
         File pdfOutput = File.createTempFile("ImporterTest-pdf-", ".txt");
         Properties metaPdf = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAlicePdfFile(), metaPdf), pdfOutput);
+                TestUtil.getAlicePdfFile(), metaPdf).getDocument(), pdfOutput);
 
         // ZIP/RTF
         File rtfOutput = File.createTempFile("ImporterTest-zip-rtf-", ".txt");
         Properties metaRtf = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAliceZipFile(), metaRtf), rtfOutput);
+                TestUtil.getAliceZipFile(), metaRtf).getDocument(), rtfOutput);
         
         Assert.assertTrue("Converted file size is too small to be valid.",
                 pdfOutput.length() > 10);
@@ -114,6 +118,21 @@ public class ImporterTest {
         }
     }
 
+    @Test
+    public void testImportRejected() throws IOException, ImporterException {
+        ImporterConfig config = new ImporterConfig();
+        config.setPostParseHandlers(new RegexMetadataFilter(
+                "Content-Type", "application/pdf", OnMatch.EXCLUDE));
+        Importer importer = new Importer(config);
+        ImporterResult result = importer.importDocument(
+                TestUtil.getAlicePdfFile(), ContentType.PDF, 
+                        new ImporterMetadata(), "n/a");
+        System.out.println("Reject desc: " + result.getRejectionDescription());
+        Assert.assertTrue(result.isRejected() 
+                && result.getRejectionDescription().contains(
+                        "RegexMetadataFilter"));
+    }
+    
     private void writeToFile(ImporterDocument doc, File file)
             throws IOException {
         FileOutputStream out = new FileOutputStream(file);

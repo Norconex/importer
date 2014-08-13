@@ -171,6 +171,13 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
                 <exclude>**/*.java</exclude>
             </excludes>
         </resource>
+        <resource>
+            <filtering>false</filtering>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>**</include>
+            </includes>
+        </resource>
     </resources>
     <extensions>
       <extension>

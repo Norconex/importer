@@ -75,6 +75,9 @@ public class Importer {
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
 
+    private static final ImporterFilterStatus PASSING_FILTER_STATUS = 
+            new ImporterFilterStatus();
+    
 	private final ImporterConfig importerConfig;
 	private final ContentTypeDetector contentTypeDetector =
 	        new ContentTypeDetector();
@@ -126,10 +129,15 @@ public class Importer {
                 config = ImporterConfigLoader.loadImporterConfig(
                         new File(cmd.getOptionValue(ARG_CONFIG)), null);
             }
-            ImporterDocument doc = new Importer(config).importDocument(
+            ImporterResult result = new Importer(config).importDocument(
                     inputFile, contentType, metadata, reference);
 
-            writeDocument(doc, output, 0, 0);
+            if (!result.isRejected()) {
+                writeDocument(result.getDocument(), output, 0, 0);
+            } else {
+                System.out.println("Document was rejected by " 
+                        + result.getRejectionDescription());
+            }
             
 //            // Write document file
 //            FileOutputStream docOutStream = new FileOutputStream(outputFile);
@@ -193,7 +201,7 @@ public class Importer {
      * @return importer output
      * @throws ImporterException problem importing document
      */
-    public ImporterDocument importDocument(
+    public ImporterResult importDocument(
             InputStream input, Properties metadata, String reference)
             throws ImporterException {
         return importDocument(input, null, metadata, reference);
@@ -206,7 +214,7 @@ public class Importer {
      * @return importer output
      * @throws ImporterException problem importing document
      */
-    public ImporterDocument importDocument(
+    public ImporterResult importDocument(
             File input, Properties metadata) throws ImporterException {
         return importDocument(input, null, metadata, null);
     }
@@ -221,7 +229,7 @@ public class Importer {
      * @throws ImporterException problem importing document
      */    
     //TODO return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
-    public ImporterDocument importDocument(
+    public ImporterResult importDocument(
             final File file, ContentType contentType, 
             Properties metadata, String reference) throws ImporterException {
 
@@ -252,7 +260,7 @@ public class Importer {
         }
     }
 
-    public ImporterDocument importDocument(
+    public ImporterResult importDocument(
             final InputStream input, ContentType contentType, 
             Properties metadata, String reference) throws ImporterException {        
 
@@ -307,11 +315,13 @@ public class Importer {
             document = new ImporterDocument(
                     reference, content, meta);
             document.setContentType(safeContentType);
+            ImporterFilterStatus filterStatus = null;
 
             //--- Pre-handlers ---
-            if (!executeHandlers(
-                    document, importerConfig.getPreParseHandlers(), false)) {
-                return null;// false;
+            filterStatus = executeHandlers(
+                    document, importerConfig.getPreParseHandlers(), false);
+            if (filterStatus.isRejected()) {
+                return new ImporterResult(filterStatus);
             }
             
             //--- Parse ---
@@ -320,9 +330,10 @@ public class Importer {
             parseDocument(document);
             
             //--- Post-handlers ---
-            if (!executeHandlers(
-                    document, importerConfig.getPostParseHandlers(), true)) {
-                return null; //false;
+            filterStatus = executeHandlers(
+                    document, importerConfig.getPostParseHandlers(), true);
+            if (filterStatus.isRejected()) {
+                return new ImporterResult(filterStatus);
             }
         } catch (IOException e) {
             throw new ImporterException(
@@ -335,15 +346,15 @@ public class Importer {
         
         //TODO store to file before returning???
         
-        return document; //true;
+        return new ImporterResult(document);
     }
     
-    private boolean executeHandlers(
+    private ImporterFilterStatus executeHandlers(
             ImporterDocument doc,
             IImporterHandler[] handlers, boolean parsed)
             throws IOException, ImporterException {
         if (handlers == null) {
-            return true;
+            return PASSING_FILTER_STATUS;
         }
         
         List<ImporterDocument> childDocs = new ArrayList<>();
@@ -357,8 +368,8 @@ public class Importer {
                 childDocs.addAll(
                         splitDocument(doc, (IDocumentSplitter) h, parsed));
             } else if (h instanceof IDocumentFilter) {
-                boolean accepted = acceptDocument(
-                        doc, (IDocumentFilter) h, parsed);
+                IDocumentFilter filter = (IDocumentFilter) h;
+                boolean accepted = acceptDocument(doc, filter, parsed);
                 if (isMatchIncludeFilter((IOnMatchFilter) h)) {
                     includeResolver.hasIncludes = true;
                     if (accepted) {
@@ -368,24 +379,30 @@ public class Importer {
                 }
                 // Deal with exclude and non-OnMatch filters
                 if (!accepted){
-                    return false;
+                    return new ImporterFilterStatus(filter);
                 }
             } else {
                 LOG.error("Unsupported Import Handler: " + h);
             }
         }
         for (ImporterDocument childDoc : childDocs) {
-            ImporterDocument processedDoc = importDocument(
+            ImporterResult processedResult = importDocument(
                     new BufferedInputStream(
                             childDoc.getContent().getInputStream()),
                             childDoc.getContentType(), 
                             childDoc.getMetadata(), 
                             childDoc.getReference());
-            if (processedDoc != null) {
-                doc.addChildDocument(processedDoc);
+            if (processedResult != null && !processedResult.isRejected()) {
+                doc.addChildDocument(processedResult.getDocument());
             }
         }
-        return includeResolver.passes();
+        
+        if (!includeResolver.passes()) {
+            return new ImporterFilterStatus(
+                    "None of the filters with onMatch being INCLUDE got "
+                  + "matched.");
+        }
+        return PASSING_FILTER_STATUS;
     }
     
     private class IncludeMatchResolver {
@@ -571,6 +588,20 @@ public class Importer {
                 importerConfig.getTempDir());
     }
 
+//    private class FilterStatus {
+//        private final String description;
+//        public FilterStatus(String description) {
+//            super();
+//            this.description = description;
+//        }
+//        public boolean isRejected() {
+//            return description != null;
+//        }
+//        public String getDescription() {
+//            return description;
+//        }
+//    }
+//    
 //    //TODO remove: for debugging
 //    public static void printContent(ImporterDocument doc, String msg) {
 //        printContent(doc.getContent(), msg);
