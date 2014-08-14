@@ -123,6 +123,7 @@ public class CsvSplitter extends AbstractCharStreamSplitter
                     new ImporterDocument(childRef, childMeta); 
             childMeta.setDocumentReference(childRef);
             childMeta.setParentReference(reference);
+            childMeta.setParentRootReference(reference);
             
             String[] colNames = null;
             if (count == 1 && useFirstRowAsFields) {

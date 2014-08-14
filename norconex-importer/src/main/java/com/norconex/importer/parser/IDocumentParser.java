@@ -20,9 +20,11 @@ package com.norconex.importer.parser;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.Writer;
+import java.util.List;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterDocument;
 
 /**
  * Implementations are responsible for parsing a document (InputStream) to 
@@ -33,18 +35,18 @@ import com.norconex.importer.ImporterMetadata;
 @SuppressWarnings("nls")
 public interface IDocumentParser extends Serializable {
 
-    String RDF_BASE_URI = "http://norconex.com/Document";
-    String RDF_SUBJECT_CONTENT = "Content";
-
     /**
      * Parses a document.
+     * @param reference document reference
      * @param inputStream the document to parse
      * @param contentType the content type of the document
      * @param writer where to save the extracted text
      * @param metadata where to store the metadata
+     * @return a list of first-level embedded documents, if any
      * @throws DocumentParserException
      */
-    void parseDocument(
+    List<ImporterDocument> parseDocument(
+            String reference,
             InputStream inputStream, ContentType contentType,
             Writer writer, ImporterMetadata metadata)
         throws DocumentParserException;

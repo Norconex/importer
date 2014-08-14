@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -29,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -81,7 +83,9 @@ public class WordPerfectParser implements IDocumentParser {
 
     
     @Override
-    public void parseDocument(InputStream inputStream, ContentType contentType,
+    public List<ImporterDocument> parseDocument(
+            String reference,
+            InputStream inputStream, ContentType contentType,
             Writer outputStream, ImporterMetadata metadata)
             throws DocumentParserException {
         try {
@@ -89,6 +93,7 @@ public class WordPerfectParser implements IDocumentParser {
         } catch (IOException e) {
             throw new DocumentParserException(e);
         }
+        return null;
 
     }
     

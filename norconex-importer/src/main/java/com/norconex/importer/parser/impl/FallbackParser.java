@@ -32,10 +32,9 @@ public class FallbackParser extends AbstractTikaParser {
 
     /**
      * Creates a new parser.
-     * @param format one of parser's supported format
      */
-    public FallbackParser(String format) {
-        super(new AutoDetectParser(), format);
+    public FallbackParser() {
+        super(new AutoDetectParser());
     }
 
 }

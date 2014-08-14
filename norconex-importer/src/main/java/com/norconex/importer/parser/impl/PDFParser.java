@@ -19,15 +19,16 @@ package com.norconex.importer.parser.impl;
 
 
 /**
- * HTML parser based on Apache Tika
+ * PDF parser based on Apache Tika
  * {@link org.apache.tika.parser.pdf.PDFParser}.
  * @author Pascal Essiembre
  */
+//TODO keep this class since default Tika parser covers it?
 public class PDFParser extends AbstractTikaParser {
 
     private static final long serialVersionUID = 1L;
 
-    public PDFParser(String format) {
-        super(new org.apache.tika.parser.pdf.PDFParser(), format);
+    public PDFParser() {
+        super(new org.apache.tika.parser.pdf.PDFParser());
     }
 }

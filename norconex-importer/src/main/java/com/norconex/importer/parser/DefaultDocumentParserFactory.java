@@ -57,8 +57,7 @@ import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
  * <p />
  * <pre>
  *  &lt;documentParserFactory 
- *          class="com.norconex.importer.parser.DefaultDocumentParserFactory"
- *          format="text|xml" &gt;
+ *          class="com.norconex.importer.parser.DefaultDocumentParserFactory" &gt;
  *      &lt;ignoredContentTypes&gt;
  *          (optional regex matching content types to ignore for parsing, 
  *           i.e., not parsed.)
@@ -74,28 +73,17 @@ public class DefaultDocumentParserFactory
 
     private static final long serialVersionUID = 6639928288252330105L;
     
-    public static final String DEFAULT_FORMAT = "text";
-    
     private final Map<ContentType, IDocumentParser> namedParsers = 
             new HashMap<ContentType, IDocumentParser>();
     private IDocumentParser fallbackParser;
-    private String format;
+
     private String ignoredContentTypesRegex;
     
     /**
-     * Creates a new document parser factory of "text" format.
+     * Creates a new document parser factory of the given format.
      */
     public DefaultDocumentParserFactory() {
-        this(DEFAULT_FORMAT);
-    }
-    /**
-     * Creates a new document parser factory of the given format.
-     * @param format dependent on parser expectations but typically, one 
-     *        of "text" or "xml"
-     */
-    public DefaultDocumentParserFactory(String format) {
         super();
-        this.format = format;
         registerNamedParsers();
         registerFallbackParser();
     }
@@ -121,12 +109,6 @@ public class DefaultDocumentParserFactory
         return parser;
     }
     
-    public String getFormat() {
-        return format;
-    }
-    public void setFormat(String format) {
-        this.format = format;
-    }
     public String getIgnoredContentTypesRegex() {
         return ignoredContentTypesRegex;
     }
@@ -145,9 +127,9 @@ public class DefaultDocumentParserFactory
     }
 
     private void registerNamedParsers() {
-        registerNamedParser(ContentType.HTML, new HTMLParser(format));
+        registerNamedParser(ContentType.HTML, new HTMLParser());
 
-        IDocumentParser pdfParser = new PDFParser(format);
+        IDocumentParser pdfParser = new PDFParser();
         registerNamedParser(ContentType.PDF, pdfParser);
         registerNamedParser(
                 ContentType.valueOf("application/x-pdf"), pdfParser);
@@ -161,14 +143,13 @@ public class DefaultDocumentParserFactory
                 ContentType.valueOf("application/wordperfect6.1"), wpParser);
     }
     private void registerFallbackParser() {
-        registerFallbackParser(new FallbackParser(format));
+        registerFallbackParser(new FallbackParser());
     }
     
     @Override
     public void loadFromXML(Reader in) throws IOException {
         try {
             XMLConfiguration xml = ConfigurationLoader.loadXML(in);
-            setFormat(xml.getString("[@format]"));
             setIgnoredContentTypesRegex(xml.getString("ignoredContentTypes"));
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
@@ -182,9 +163,6 @@ public class DefaultDocumentParserFactory
             XMLStreamWriter writer = factory.createXMLStreamWriter(out);
             writer.writeStartElement("tagger");
             writer.writeAttribute("class", getClass().getCanonicalName());
-            if (format != null) {
-                writer.writeAttribute("format", format);
-            }
             if (ignoredContentTypesRegex != null) {
                 writer.writeStartElement("ignoredContentTypes");
                 writer.writeCharacters(ignoredContentTypesRegex);

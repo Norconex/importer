@@ -4,8 +4,6 @@
 package com.norconex.importer.doc;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.ImporterMetadata;
@@ -18,17 +16,10 @@ public class ImporterDocument implements Serializable {
 
     private static final long serialVersionUID = 7098788330064549944L;
 
-    private static final ImporterDocument[] EMPTY_DOCS = 
-            new ImporterDocument[] {};
-    
     private final String reference;
     private Content content;
     private final ImporterMetadata metadata;
     private ContentType contentType;
-    private final List<ImporterDocument> childDocuments = 
-            new ArrayList<ImporterDocument>();
-
-    private ImporterDocument parentDocument;
     
     public ImporterDocument(String reference) {
         this(reference, (Content) null);
@@ -78,39 +69,5 @@ public class ImporterDocument implements Serializable {
     
     public ImporterMetadata getMetadata() {
         return metadata;
-    }
-
-    public ImporterDocument getParentDocument() {
-        return parentDocument;
-    }
-    
-    public boolean isRootDocument() {
-        return parentDocument == null;
-    }
-    
-    public void addChildDocument(ImporterDocument doc) {
-        doc.setParent(this);
-        childDocuments.add(doc);
-    }
-    public void removeChildDocument(String reference) {
-        ImporterDocument doc = null;
-        for (ImporterDocument childDoc : childDocuments) {
-            if (childDoc.getReference().equals(reference)) {
-                doc = childDoc;
-            }
-        }
-        if (doc == null) {
-            return;
-        }
-        doc.setParent(null);
-        childDocuments.remove(doc);
-    }
-    
-    public ImporterDocument[] getChildDocuments() {
-        return childDocuments.toArray(EMPTY_DOCS);
-    }
-    
-    private void setParent(ImporterDocument parentDocument) {
-        this.parentDocument = parentDocument;
     }
 }

@@ -124,12 +124,13 @@ public class ImporterTest {
         config.setPostParseHandlers(new RegexMetadataFilter(
                 "Content-Type", "application/pdf", OnMatch.EXCLUDE));
         Importer importer = new Importer(config);
-        ImporterResult result = importer.importDocument(
+        ImporterResponse result = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, 
                         new ImporterMetadata(), "n/a");
-        System.out.println("Reject desc: " + result.getRejectionDescription());
-        Assert.assertTrue(result.isRejected() 
-                && result.getRejectionDescription().contains(
+        System.out.println("Reject desc: "
+                        + result.getImporterStatus().getDescription());
+        Assert.assertTrue(result.getImporterStatus().isRejected() 
+                && result.getImporterStatus().getDescription().contains(
                         "RegexMetadataFilter"));
     }
     

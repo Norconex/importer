@@ -49,8 +49,8 @@ public class ImporterMetadata extends Properties {
             DOC_META_PREFIX + "parent.";
     public static final String DOC_PARENT_REFERENCE =
             DOC_PARENT_META_PREFIX + "reference";
-    public static final String DOC_PARENT_CONTENT_TYPE = 
-            DOC_PARENT_META_PREFIX + "contentType";
+    public static final String DOC_PARENT_ROOT_REFERENCE =
+            DOC_PARENT_META_PREFIX + "root.reference";
     
     public ImporterMetadata() {
         super();
@@ -114,12 +114,11 @@ public class ImporterMetadata extends Properties {
     public void setParentReference(String parentReference) {
         setString(DOC_PARENT_REFERENCE, parentReference);
     }
-    
-    //TODO really have this is we go with suggestion above?
-    public String getParentContentType() {
-        return getString(DOC_PARENT_CONTENT_TYPE);
+
+    public String getParentRootReference() {
+        return getString(DOC_PARENT_ROOT_REFERENCE);
     }
-    public void setParentContentType(String parentContentType) {
-        setString(DOC_PARENT_CONTENT_TYPE, parentContentType);
+    public void setParentRootReference(String parentRootReference) {
+        setString(DOC_PARENT_ROOT_REFERENCE, parentRootReference);
     }
 }

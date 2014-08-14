@@ -46,6 +46,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterStatus.Status;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.ImporterDocument;
@@ -75,8 +76,8 @@ public class Importer {
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
 
-    private static final ImporterFilterStatus PASSING_FILTER_STATUS = 
-            new ImporterFilterStatus();
+    private static final ImporterStatus PASSING_FILTER_STATUS = 
+            new ImporterStatus();
     
 	private final ImporterConfig importerConfig;
 	private final ContentTypeDetector contentTypeDetector =
@@ -119,8 +120,6 @@ public class Importer {
         if (StringUtils.isBlank(output)) {
             output = cmd.getOptionValue(ARG_INPUTFILE) + "-imported.txt";
         }
-//        File outputFile = new File(output);
-//        File metadataFile = new File(output + ".meta");
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
         try {
@@ -129,27 +128,9 @@ public class Importer {
                 config = ImporterConfigLoader.loadImporterConfig(
                         new File(cmd.getOptionValue(ARG_CONFIG)), null);
             }
-            ImporterResult result = new Importer(config).importDocument(
+            ImporterResponse response = new Importer(config).importDocument(
                     inputFile, contentType, metadata, reference);
-
-            if (!result.isRejected()) {
-                writeDocument(result.getDocument(), output, 0, 0);
-            } else {
-                System.out.println("Document was rejected by " 
-                        + result.getRejectionDescription());
-            }
-            
-//            // Write document file
-//            FileOutputStream docOutStream = new FileOutputStream(outputFile);
-//            CachedInputStream docInStream = doc.getContent().getInputStream();
-//            IOUtils.copy(docInStream, docOutStream);
-//            IOUtils.closeQuietly(docOutStream);
-//            IOUtils.closeQuietly(docInStream);
-//            
-//            // Write metadata file
-//            FileOutputStream metaOut = new FileOutputStream(metadataFile);
-//            metadata.store(metaOut, null);
-//            IOUtils.closeQuietly(metaOut);
+            writeResponse(response, output, 0, 0);
         } catch (Exception e) {
             System.err.println(
                     "A problem occured while importing " + inputFile);
@@ -157,39 +138,58 @@ public class Importer {
         }
     }
     
-    private static void writeDocument(
-            ImporterDocument doc, String outputPath, int depth, int index) 
+    private static void writeResponse(
+            ImporterResponse response, String outputPath, int depth, int index) 
                     throws IOException {
-
-        StringBuilder path = new StringBuilder(outputPath);
-        if (depth > 0) {
-            int pathLength = outputPath.length();
-            int extLength = FilenameUtils.getExtension(outputPath).length();
-            if (extLength > 0) {
-                extLength++;
+        if (!response.isSuccess()) {
+            String statusLabel = "REJECTED: ";
+            if (response.getImporterStatus().isError()) {
+                statusLabel = "   ERROR: ";
             }
-            String nameSuffix = "_" + depth + "-" + index;
-            path.insert(pathLength - extLength, nameSuffix);
+            System.out.println(statusLabel + response.getReference() + " (" 
+                    + response.getImporterStatus().getDescription() + ")");
+        } else {
+            ImporterDocument doc = response.getDocument();
+            StringBuilder path = new StringBuilder(outputPath);
+            if (depth > 0) {
+                int pathLength = outputPath.length();
+                int extLength = FilenameUtils.getExtension(outputPath).length();
+                if (extLength > 0) {
+                    extLength++;
+                }
+                String nameSuffix = "_" + depth + "-" + index;
+                path.insert(pathLength - extLength, nameSuffix);
+            }
+            File docfile = new File(path.toString());
+            File metafile = new File(path.toString() + ".meta");
+
+            // Write document file
+            FileOutputStream docOutStream = new FileOutputStream(docfile);
+            CachedInputStream docInStream = doc.getContent().getInputStream();
+            
+            try {
+                IOUtils.copy(docInStream, docOutStream);
+                IOUtils.closeQuietly(docOutStream);
+                IOUtils.closeQuietly(docInStream);
+
+                // Write metadata file
+                FileOutputStream metaOut = new FileOutputStream(metafile);
+                doc.getMetadata().store(metaOut, null);
+                IOUtils.closeQuietly(metaOut);
+                System.out.println("IMPORTED: " + response.getReference());
+            } catch (IOException e) {
+                System.err.println(
+                        "Could not write: " + doc.getReference());
+                e.printStackTrace(System.err);
+                System.err.println();
+                System.err.flush();
+            }
         }
-        File docfile = new File(path.toString());
-        File metafile = new File(path.toString() + ".meta");
 
-        // Write document file
-        FileOutputStream docOutStream = new FileOutputStream(docfile);
-        CachedInputStream docInStream = doc.getContent().getInputStream();
-        IOUtils.copy(docInStream, docOutStream);
-        IOUtils.closeQuietly(docOutStream);
-        IOUtils.closeQuietly(docInStream);
-
-        // Write metadata file
-        FileOutputStream metaOut = new FileOutputStream(metafile);
-        doc.getMetadata().store(metaOut, null);
-        IOUtils.closeQuietly(metaOut);
-
-        ImporterDocument[] childDocs = doc.getChildDocuments();
-        for (int i = 0; i < childDocs.length; i++) {
-            ImporterDocument childDoc = childDocs[i];
-            writeDocument(childDoc, outputPath, depth + 1, i + 1);
+        ImporterResponse[] nextedResponses = response.getNestedResponses();
+        for (int i = 0; i < nextedResponses.length; i++) {
+            ImporterResponse nextedResponse = nextedResponses[i];
+            writeResponse(nextedResponse, outputPath, depth + 1, i + 1);
         }
     }
     
@@ -201,7 +201,7 @@ public class Importer {
      * @return importer output
      * @throws ImporterException problem importing document
      */
-    public ImporterResult importDocument(
+    public ImporterResponse importDocument(
             InputStream input, Properties metadata, String reference)
             throws ImporterException {
         return importDocument(input, null, metadata, reference);
@@ -214,7 +214,7 @@ public class Importer {
      * @return importer output
      * @throws ImporterException problem importing document
      */
-    public ImporterResult importDocument(
+    public ImporterResponse importDocument(
             File input, Properties metadata) throws ImporterException {
         return importDocument(input, null, metadata, null);
     }
@@ -229,7 +229,7 @@ public class Importer {
      * @throws ImporterException problem importing document
      */    
     //TODO return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
-    public ImporterResult importDocument(
+    public ImporterResponse importDocument(
             final File file, ContentType contentType, 
             Properties metadata, String reference) throws ImporterException {
 
@@ -253,17 +253,24 @@ public class Importer {
             return importDocument(is, contentType, metadata, finalReference);
         } catch (FileNotFoundException e) {
             throw new ImporterException("Could not import file.", e);
-//        } finally {
-              // delete this line as we cannot close it since that is
-              // what the caller expects to get.
-//            IOUtils.closeQuietly(is);
         }
     }
 
-    public ImporterResult importDocument(
+    public ImporterResponse importDocument(
             final InputStream input, ContentType contentType, 
-            Properties metadata, String reference) throws ImporterException {        
+            Properties metadata, String reference) {        
+        try {
+            return doImportDocument(input, contentType, metadata, reference);
+        } catch (ImporterException e) {
+            LOG.debug("Could not import " + reference, e);
+            return new ImporterResponse(reference, new ImporterStatus(e));
+        }
+    }
 
+    private ImporterResponse doImportDocument(
+            final InputStream input, ContentType contentType, 
+            Properties metadata, String reference) throws ImporterException {           
+        
         //--- Input ---
         BufferedInputStream bufInput = null;
         if (input instanceof BufferedInputStream) {
@@ -271,12 +278,11 @@ public class Importer {
         } else {
             bufInput = new BufferedInputStream(input);
         }
-        
+
         //--- Reference ---
         if (StringUtils.isBlank(reference)) {
             throw new ImporterException("The document reference was not set.");
         }
-
 
         //--- Content Type ---
         ContentType safeContentType = contentType;
@@ -309,55 +315,72 @@ public class Importer {
         }
         
         //--- Document Handling ---
+        List<ImporterDocument> nestedDocs = new ArrayList<>();
         ImporterDocument document;
         try {
             Content content = new Content(bufInput);
-            document = new ImporterDocument(
-                    reference, content, meta);
+            document = new ImporterDocument(reference, content, meta);
             document.setContentType(safeContentType);
-            ImporterFilterStatus filterStatus = null;
-
-            //--- Pre-handlers ---
-            filterStatus = executeHandlers(
-                    document, importerConfig.getPreParseHandlers(), false);
-            if (filterStatus.isRejected()) {
-                return new ImporterResult(filterStatus);
-            }
             
-            //--- Parse ---
-            //TODO make parse just another handler in the chain?  Eliminating
-            //the need for pre and post handlers?
-            parseDocument(document);
+            ImporterStatus filterStatus = importDocument(document, nestedDocs);
             
-            //--- Post-handlers ---
-            filterStatus = executeHandlers(
-                    document, importerConfig.getPostParseHandlers(), true);
+            ImporterResponse response = null;
             if (filterStatus.isRejected()) {
-                return new ImporterResult(filterStatus);
+                response = new ImporterResponse(reference, filterStatus);
+            } else {
+                response = new ImporterResponse(document);
             }
+            for (ImporterDocument childDoc : nestedDocs) {
+                ImporterResponse nestedResponse = importDocument(
+                                childDoc.getContent().getInputStream(),
+                        childDoc.getContentType(), 
+                        childDoc.getMetadata(), 
+                        childDoc.getReference());
+                if (nestedResponse != null) {
+                    response.addNestedResponse(nestedResponse);
+                }
+            }
+            return response;
         } catch (IOException e) {
             throw new ImporterException(
                     "Could not import document: " + reference, e);
-//          } finally {
-            // delete this line as we cannot close it since that is
-            // what the caller expects to get.
-//          IOUtils.closeQuietly(is);
         }
-        
-        //TODO store to file before returning???
-        
-        return new ImporterResult(document);
     }
     
-    private ImporterFilterStatus executeHandlers(
-            ImporterDocument doc,
+    private ImporterStatus importDocument(
+            ImporterDocument document, List<ImporterDocument> nestedDocs)
+                    throws IOException, ImporterException {
+        ImporterStatus filterStatus = null;
+
+        //--- Pre-handlers ---
+        filterStatus = executeHandlers(document, nestedDocs, 
+                importerConfig.getPreParseHandlers(), false);
+        if (!filterStatus.isSuccess()) {
+            return filterStatus;
+        }
+        
+        //--- Parse ---
+        //TODO make parse just another handler in the chain?  Eliminating
+        //the need for pre and post handlers?
+        parseDocument(document, nestedDocs);
+
+        //--- Post-handlers ---
+        filterStatus = executeHandlers(document, nestedDocs, 
+                importerConfig.getPostParseHandlers(), true);
+        if (!filterStatus.isSuccess()) {
+            return filterStatus;
+        }
+        return PASSING_FILTER_STATUS;
+    }
+    
+    private ImporterStatus executeHandlers(
+            ImporterDocument doc, List<ImporterDocument> childDocsHolder,
             IImporterHandler[] handlers, boolean parsed)
             throws IOException, ImporterException {
         if (handlers == null) {
             return PASSING_FILTER_STATUS;
         }
         
-        List<ImporterDocument> childDocs = new ArrayList<>();
         IncludeMatchResolver includeResolver = new IncludeMatchResolver();
         for (IImporterHandler h : handlers) {
             if (h instanceof IDocumentTagger) {
@@ -365,7 +388,7 @@ public class Importer {
             } else if (h instanceof IDocumentTransformer) {
                 transformDocument(doc, (IDocumentTransformer) h, parsed);
             } else if (h instanceof IDocumentSplitter) {
-                childDocs.addAll(
+                childDocsHolder.addAll(
                         splitDocument(doc, (IDocumentSplitter) h, parsed));
             } else if (h instanceof IDocumentFilter) {
                 IDocumentFilter filter = (IDocumentFilter) h;
@@ -379,26 +402,15 @@ public class Importer {
                 }
                 // Deal with exclude and non-OnMatch filters
                 if (!accepted){
-                    return new ImporterFilterStatus(filter);
+                    return new ImporterStatus(filter);
                 }
             } else {
                 LOG.error("Unsupported Import Handler: " + h);
             }
         }
-        for (ImporterDocument childDoc : childDocs) {
-            ImporterResult processedResult = importDocument(
-                    new BufferedInputStream(
-                            childDoc.getContent().getInputStream()),
-                            childDoc.getContentType(), 
-                            childDoc.getMetadata(), 
-                            childDoc.getReference());
-            if (processedResult != null && !processedResult.isRejected()) {
-                doc.addChildDocument(processedResult.getDocument());
-            }
-        }
         
         if (!includeResolver.passes()) {
-            return new ImporterFilterStatus(
+            return new ImporterStatus(Status.REJECTED,
                     "None of the filters with onMatch being INCLUDE got "
                   + "matched.");
         }
@@ -455,8 +467,9 @@ public class Importer {
         return cmd;
     }
     
-    private void parseDocument(ImporterDocument doc)
-            throws IOException, DocumentParserException {
+    private void parseDocument(
+            ImporterDocument doc, List<ImporterDocument> embeddedDocs)
+            throws IOException, ImporterException {
         
         IDocumentParserFactory factory = importerConfig.getParserFactory();
         IDocumentParser parser = 
@@ -475,15 +488,18 @@ public class Importer {
                 out, CharEncoding.UTF_8);
 
         try {
-            parser.parseDocument(
-                    bufInput, doc.getContentType(), output, doc.getMetadata());
+            List<ImporterDocument> nestedDocs = 
+                    parser.parseDocument(doc.getReference(), bufInput, 
+                            doc.getContentType(), output, doc.getMetadata());
+            if (nestedDocs != null) {
+                embeddedDocs.addAll(nestedDocs);
+            }
         } catch (DocumentParserException e) {
             IOUtils.closeQuietly(bufInput);
             IOUtils.closeQuietly(out);
             throw e;
         }
         
-        CachedInputStream newInputStream = null;
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Parser \"" + parser.getClass()
@@ -491,17 +507,18 @@ public class Importer {
                         + doc.getReference());
             }
             IOUtils.closeQuietly(out);
-            in.rewind();
-            newInputStream = in;
+            in.dispose();
+            doc.setContent(new Content());
         } else {
-            IOUtils.closeQuietly(in);
+            in.dispose();
+            CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();
             } finally {
                 IOUtils.closeQuietly(out);
             }
+            doc.setContent(new Content(newInputStream));
         }
-        doc.setContent(new Content(newInputStream));
     }
 
     private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
@@ -547,7 +564,7 @@ public class Importer {
             IOUtils.closeQuietly(out);
             newInputStream = in;
         } else {
-            IOUtils.closeQuietly(in);
+            in.dispose();
             try {
                 newInputStream = out.getInputStream();
             } finally {
@@ -568,11 +585,11 @@ public class Importer {
         List<ImporterDocument> childDocs = h.splitDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
         try {
-            //For splitters, not writing to output stream means to blank it.
-            //so we always go with output stream.
+            //For splitters, not writing to output stream means to blank the
+            //parent content, so we always obtain input from CachedOutputStream.
             doc.setContent(new Content(out.getInputStream()));
         } finally {
-            IOUtils.closeQuietly(in);
+            in.dispose();
             IOUtils.closeQuietly(out);
         }
         
@@ -587,37 +604,4 @@ public class Importer {
                 importerConfig.getFileMemCacheSize(), 
                 importerConfig.getTempDir());
     }
-
-//    private class FilterStatus {
-//        private final String description;
-//        public FilterStatus(String description) {
-//            super();
-//            this.description = description;
-//        }
-//        public boolean isRejected() {
-//            return description != null;
-//        }
-//        public String getDescription() {
-//            return description;
-//        }
-//    }
-//    
-//    //TODO remove: for debugging
-//    public static void printContent(ImporterDocument doc, String msg) {
-//        printContent(doc.getContent(), msg);
-//    }
-//    public static void printContent(Content content, String msg) {
-//        printContent(content.getInputStream(), msg);
-//    }
-//    public static void printContent(CachedInputStream is, String msg) {
-//        try {
-//            System.out.println("\n==== BEGIN " + msg + "======================="); 
-//            System.out.println(IOUtils.toString(is));
-//            System.out.println("\n==== END ===================================="); 
-//            System.out.flush();
-//            is.rewind();
-//        } catch (IOException e) {
-//            throw new RuntimeException("Cannot read content", e);
-//        }
-//    }
 }
