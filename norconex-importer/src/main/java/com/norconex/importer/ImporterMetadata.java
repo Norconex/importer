@@ -45,12 +45,16 @@ public class ImporterMetadata extends Properties {
     public static final String DOC_LANGUAGE = 
             DOC_META_PREFIX + "language";
 
-    private static final String DOC_PARENT_META_PREFIX = 
-            DOC_META_PREFIX + "parent.";
-    public static final String DOC_PARENT_REFERENCE =
-            DOC_PARENT_META_PREFIX + "reference";
-    public static final String DOC_PARENT_ROOT_REFERENCE =
-            DOC_PARENT_META_PREFIX + "root.reference";
+    private static final String DOC_EMBEDDED_META_PREFIX = 
+            DOC_META_PREFIX + "embedded.";
+    public static final String DOC_EMBEDDED_PARENT_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "parent.reference";
+    public static final String DOC_EMBEDDED_PARENT_ROOT_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "parent.root.reference";
+    public static final String DOC_EMBEDDED_RESOURCE_NAME =
+            DOC_EMBEDDED_META_PREFIX + "resourceName";
+    public static final String DOC_EMBEDDED_TYPE =
+            DOC_EMBEDDED_META_PREFIX + "type";
     
     public ImporterMetadata() {
         super();
@@ -108,17 +112,31 @@ public class ImporterMetadata extends Properties {
         setString(DOC_REFERENCE, documentReference);
     }
 
-    public String getParentReference() {
-        return getString(DOC_PARENT_REFERENCE);
+    public String getEmbeddedParentReference() {
+        return getString(DOC_EMBEDDED_PARENT_REFERENCE);
     }
-    public void setParentReference(String parentReference) {
-        setString(DOC_PARENT_REFERENCE, parentReference);
+    public void setEmbeddedParentReference(String parentReference) {
+        setString(DOC_EMBEDDED_PARENT_REFERENCE, parentReference);
     }
 
-    public String getParentRootReference() {
-        return getString(DOC_PARENT_ROOT_REFERENCE);
+    public String getEmbeddedParentRootReference() {
+        return getString(DOC_EMBEDDED_PARENT_ROOT_REFERENCE);
     }
-    public void setParentRootReference(String parentRootReference) {
-        setString(DOC_PARENT_ROOT_REFERENCE, parentRootReference);
+    public void setEmbeddedParentRootReference(String parentRootReference) {
+        setString(DOC_EMBEDDED_PARENT_ROOT_REFERENCE, parentRootReference);
+    }
+    
+    public String getEmbeddedResourceName() {
+        return getString(DOC_EMBEDDED_RESOURCE_NAME);
+    }
+    public void setEmbeddedResourceName(String resourceName) {
+        setString(DOC_EMBEDDED_RESOURCE_NAME, resourceName);
+    }
+
+    public String getEmbeddedType() {
+        return getString(DOC_EMBEDDED_TYPE);
+    }
+    public void setEmbeddedType(String type) {
+        setString(DOC_EMBEDDED_TYPE, type);
     }
 }

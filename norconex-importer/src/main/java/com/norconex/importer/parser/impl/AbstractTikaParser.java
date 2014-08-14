@@ -43,18 +43,18 @@ import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.parser.DocumentParserException;
-import com.norconex.importer.parser.IDocumentParser;
+import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
 
 /**
  * Base class wrapping Apache Tika parser for use by the importer.
  * @author Pascal Essiembre
  */
-public class AbstractTikaParser implements IDocumentParser {
+public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
 
     private static final long serialVersionUID = -6183461314335335495L;
 
     private final Parser parser;
-    private boolean mergeEmbedded;
+    private boolean splitEmbedded;
 
     /**
      * Creates a new Tika-based parser.
@@ -100,11 +100,12 @@ public class AbstractTikaParser implements IDocumentParser {
         }
     }
 
-    public boolean isMergeEmbedded() {
-        return mergeEmbedded;
+    public boolean isSplitEmbedded() {
+        return splitEmbedded;
     }
-    public void setMergeEmbedded(boolean mergeEmbedded) {
-        this.mergeEmbedded = mergeEmbedded;
+    @Override
+    public void setSplitEmbedded(boolean splitEmbedded) {
+        this.splitEmbedded = splitEmbedded;
     }
 
     protected void addTikaMetadata(
@@ -118,10 +119,10 @@ public class AbstractTikaParser implements IDocumentParser {
 
     protected RecursiveParser createRecursiveParser(
             String reference, Writer writer, ImporterMetadata metadata) {
-        if (mergeEmbedded) {
-            return new MergeEmbeddedParser(this.parser, writer, metadata);
-        } else {
+        if (splitEmbedded) {
             return new SplitEmbbededParser(reference, this.parser, metadata);
+        } else {
+            return new MergeEmbeddedParser(this.parser, writer, metadata);
         }
     }
     
@@ -153,8 +154,11 @@ public class AbstractTikaParser implements IDocumentParser {
                 if (embeddedDocs == null) {
                     embeddedDocs = new ArrayList<>();
                 }
-                String embedRef = reference + "!" + 
-                        getEmbeddedResourceName(tikaMeta, embedCount);
+
+                ImporterMetadata embedMeta = new ImporterMetadata();
+
+                String embedRef = reference + "!" + resolveEmbeddedResourceName(
+                        tikaMeta, embedMeta, embedCount);
 
                 // Read the steam into cache for reuse since Tika will
                 // close the original stream on us causing exceptions later.
@@ -163,17 +167,16 @@ public class AbstractTikaParser implements IDocumentParser {
                 CachedInputStream embedInput = embedOutput.getInputStream();
                 embedOutput.close();
                 
-                ImporterMetadata embedMeta = new ImporterMetadata();
                 ImporterDocument embedDoc = new ImporterDocument(
                         embedRef, new Content(embedInput), embedMeta); 
                 embedMeta.setDocumentReference(embedRef);
-                embedMeta.setParentReference(reference);
+                embedMeta.setEmbeddedParentReference(reference);
                 
-                String rootRef = metadata.getParentRootReference();
+                String rootRef = metadata.getEmbeddedParentRootReference();
                 if (StringUtils.isBlank(rootRef)) {
                     rootRef = reference;
                 }
-                embedMeta.setParentRootReference(rootRef);
+                embedMeta.setEmbeddedParentRootReference(rootRef);
                 
                 embeddedDocs.add(embedDoc);
             }
@@ -184,12 +187,15 @@ public class AbstractTikaParser implements IDocumentParser {
         }
     }
     
-    private String getEmbeddedResourceName(Metadata tikaMeta, int embedCount) {
+    private String resolveEmbeddedResourceName(
+            Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {
         String name = null;
         
         // Package item file name (e.g. a file in a zip)
         name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
         if (StringUtils.isNotBlank(name)) {
+            embedMeta.setEmbeddedResourceName(name);
+            embedMeta.setEmbeddedType("package-file");
             return name;
         }
 
@@ -197,6 +203,8 @@ public class AbstractTikaParser implements IDocumentParser {
         // (e.g. excel file in a word doc)
         name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
         if (StringUtils.isNotBlank(name)) {
+            embedMeta.setEmbeddedResourceName(name);
+            embedMeta.setEmbeddedType("file-file");
             return name;
         }
         
@@ -207,11 +215,13 @@ public class AbstractTikaParser implements IDocumentParser {
         if (StringUtils.isNotBlank(name)) {
             ContentType ct = ContentType.valueOf(name);
             if (ct != null) {
+                embedMeta.setEmbeddedType("file-object");
                 return "embedded-" + embedCount + "." + ct.getExtension();
             }
         }
         
         // Default... we could not find any name so make a unique one.
+        embedMeta.setEmbeddedType("unknown");
         return "embedded-" + embedCount + ".unknown";
     }
     

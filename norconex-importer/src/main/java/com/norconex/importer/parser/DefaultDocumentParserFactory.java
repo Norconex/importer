@@ -34,6 +34,7 @@ import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.importer.ImporterResponse;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.HTMLParser;
 import com.norconex.importer.parser.impl.PDFParser;
@@ -52,12 +53,25 @@ import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
  * them to execute properly.  Unless you really know what you are doing, <b> 
  * avoid excluding binary content types from parsing.</b>
  * <p />
+ * <h3>Embedded documents:</h3>
+ * For documents containing embedded documents (e.g. zip files), the default 
+ * behavior of this treat them as a single document, merging all
+ * embedded documents content and metadata into the parent document.
+ * As of version 2.0.0, you can tell this parser to "split" embedded
+ * documents to have them treated as if they were individual documents.  When
+ * split, each embedded documents will go through the entire import cycle, 
+ * going through your handlers and even this parser again
+ * (just like any regular document would).  The resulting 
+ * {@link ImporterResponse} should then contain nested documents, which in turn,
+ * might contain some (tree-like structure). 
+ * <p />
  * <h3>XML configuration usage:</h3>
  * (Not required since used by default)
  * <p />
  * <pre>
  *  &lt;documentParserFactory 
- *          class="com.norconex.importer.parser.DefaultDocumentParserFactory" &gt;
+ *          class="com.norconex.importer.parser.DefaultDocumentParserFactory" 
+ *          splitEmbedded="(false|true)" &gt;
  *      &lt;ignoredContentTypes&gt;
  *          (optional regex matching content types to ignore for parsing, 
  *           i.e., not parsed.)
@@ -78,6 +92,8 @@ public class DefaultDocumentParserFactory
     private IDocumentParser fallbackParser;
 
     private String ignoredContentTypesRegex;
+    private boolean splitEmbedded;
+    private boolean parsersAllSet = false;
     
     /**
      * Creates a new document parser factory of the given format.
@@ -95,6 +111,7 @@ public class DefaultDocumentParserFactory
     @Override
     public final IDocumentParser getParser(
             String documentReference, ContentType contentType) {
+        ensureParsersAllSet();
         // If ignoring content-type, do not even return a parser
         if (contentType != null 
                 && StringUtils.isNotBlank(ignoredContentTypesRegex)
@@ -115,14 +132,25 @@ public class DefaultDocumentParserFactory
     public void setIgnoredContentTypesRegex(String ignoredContentTypesRegex) {
         this.ignoredContentTypesRegex = ignoredContentTypesRegex;
     }
+
+    public boolean isSplitEmbedded() {
+        return splitEmbedded;
+    }
+    public void setSplitEmbedded(boolean splitEmbedded) {
+        this.splitEmbedded = splitEmbedded;
+    }
+
     protected final void registerNamedParser(
             ContentType contentType, IDocumentParser parser) {
+        parsersAllSet = false;
         namedParsers.put(contentType, parser);
     }
     protected final void registerFallbackParser(IDocumentParser parser) {
+        parsersAllSet = false;
         this.fallbackParser = parser;
     }
     protected final IDocumentParser getFallbackParser() {
+        ensureParsersAllSet();
         return fallbackParser;
     }
 
@@ -146,11 +174,32 @@ public class DefaultDocumentParserFactory
         registerFallbackParser(new FallbackParser());
     }
     
+    private void ensureParsersAllSet() {
+        if (!parsersAllSet) {
+            for (IDocumentParser parser : namedParsers.values()) {
+                if (parser instanceof IDocumentSplittableEmbeddedParser) {
+                    ((IDocumentSplittableEmbeddedParser) parser)
+                            .setSplitEmbedded(splitEmbedded);
+                }
+            }
+            if (fallbackParser != null && fallbackParser 
+                    instanceof IDocumentSplittableEmbeddedParser) {
+                ((IDocumentSplittableEmbeddedParser) fallbackParser)
+                        .setSplitEmbedded(splitEmbedded);
+            }
+            parsersAllSet = true;
+        }
+    }
+    
+    
     @Override
     public void loadFromXML(Reader in) throws IOException {
         try {
             XMLConfiguration xml = ConfigurationLoader.loadXML(in);
-            setIgnoredContentTypesRegex(xml.getString("ignoredContentTypes"));
+            setIgnoredContentTypesRegex(xml.getString(
+                    "ignoredContentTypes", getIgnoredContentTypesRegex()));
+            setSplitEmbedded(xml.getBoolean(
+                    "[@splitEmbedded]", isSplitEmbedded()));
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
         }
@@ -163,6 +212,8 @@ public class DefaultDocumentParserFactory
             XMLStreamWriter writer = factory.createXMLStreamWriter(out);
             writer.writeStartElement("tagger");
             writer.writeAttribute("class", getClass().getCanonicalName());
+            writer.writeAttribute("splitEmbedded", 
+                    Boolean.toString(isSplitEmbedded()));
             if (ignoredContentTypesRegex != null) {
                 writer.writeStartElement("ignoredContentTypes");
                 writer.writeCharacters(ignoredContentTypesRegex);
@@ -175,4 +226,5 @@ public class DefaultDocumentParserFactory
             throw new IOException("Cannot save as XML.", e);
         }
     }
+
 }
