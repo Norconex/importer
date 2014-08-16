@@ -50,6 +50,9 @@ Any release:
   defined.  This is different than usual filters since documents are not
   rejected if they do not meet a condition, they move on to the next handler.
 
+- Add DebugTagger giving options to print to log the metadata (all or some) 
+  and/or the content.
+
 - Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Add a TextStatisticsTagger (or TextMetricsTagger) that add fields for things

@@ -56,7 +56,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.SplitTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
  *      &lt;split fromName="sourceFieldName" toName="targetFieldName" 
  *               regex="[false|true]"&gt
  *          &lt;separator&gt(separator value)&lt;/separator&gt

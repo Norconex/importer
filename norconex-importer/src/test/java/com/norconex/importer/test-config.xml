@@ -20,12 +20,12 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
 <importer>
 
     <preParseHandlers>
-      <tagger class="com.norconex.importer.tagger.impl.ConstantTagger">
+      <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
         <constant name="Author">Lewis Carroll</constant>
       </tagger>
       
       <!-- Should not trigger any transformation: -->
-      <transformer class="com.norconex.importer.transformer.impl.StripBetweenTransformer"
+      <transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
               inclusive="false" 
               caseSensitive="false" >
           <contentTypeRegex>text/doesNotExist</contentTypeRegex>
@@ -36,7 +36,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
       </transformer>
 
       <!-- Should trigger transformation: -->
-      <transformer class="com.norconex.importer.transformer.impl.StripAfterTransformer"
+      <transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
               inclusive="true" 
               caseSensitive="false" >
           <stripAfterRegex>&lt;p&gt;</stripAfterRegex>

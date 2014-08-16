@@ -135,10 +135,10 @@ will accomplish this for you:
 	<importer>
 	
 	    <postParseHandlers>
-	        <tagger class="com.norconex.importer.tagger.impl.ConstantTagger">
+	        <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
 	            <constant name="doctype">News</constant>
 	        </tagger>
-	        <tagger class="com.norconex.importer.tagger.impl.SingleValueTagger">
+	        <tagger class="com.norconex.importer.handler.tagger.impl.SingleValueTagger">
 	            <singleValue field="title" action="keepFirst"/>
 	        </tagger>
 	    </postParseHandlers>

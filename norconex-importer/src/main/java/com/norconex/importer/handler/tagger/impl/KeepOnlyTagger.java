@@ -51,7 +51,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.KeepOnlyTagger"
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"
  *      fields="[coma-separated list of fields to keep]"/&gt
  * </pre>
  * @author Pascal Essiembre

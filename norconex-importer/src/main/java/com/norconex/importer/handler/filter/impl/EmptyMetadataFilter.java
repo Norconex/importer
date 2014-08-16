@@ -51,7 +51,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.filter.impl.EmptyMetadataFilter"
+ *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="[include|exclude]" 
  *          properties="(coma separated list of properties to match)" /&gt;
  * </pre>

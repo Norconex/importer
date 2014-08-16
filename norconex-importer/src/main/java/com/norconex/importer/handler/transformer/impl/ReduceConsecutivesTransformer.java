@@ -52,7 +52,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.transformer.impl.ReduceConsecutivesTransformer"
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
  *          caseSensitive="[false|true]" &gt;
  *      &lt;contentTypeRegex&gt;
  *          (regex to identify text content-types for pre-import, 

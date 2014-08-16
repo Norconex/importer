@@ -48,7 +48,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.DeleteTagger"
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger"
  *      fields="[coma-separated list of fields to delete]"/&gt
  * </pre>
  * @author Pascal Essiembre

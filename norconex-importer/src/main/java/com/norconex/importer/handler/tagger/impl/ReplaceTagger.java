@@ -54,7 +54,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.ReplaceTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
  *      &lt;replace fromName="sourceFieldName" toName="targetFieldName" 
  *               regex="[false|true]"&gt
  *          &lt;fromValue&gtSource Value&lt;/fromValue&gt

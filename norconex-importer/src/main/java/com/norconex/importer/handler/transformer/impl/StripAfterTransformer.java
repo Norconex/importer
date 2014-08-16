@@ -47,7 +47,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.transformer.impl.StripAfterTransformer"
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
  *      &lt;contentTypeRegex&gt;

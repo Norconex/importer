@@ -52,7 +52,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.RenameTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
  *      &lt;rename fromName="(from field)" toName="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple rename tags allowed --&gt;
  *  &lt;/tagger&gt;

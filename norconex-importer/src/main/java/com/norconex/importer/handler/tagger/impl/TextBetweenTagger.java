@@ -60,7 +60,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.transformer.impl.TextBetweenTagger"
+ *  &lt;tagger class="com.norconex.importer.handler.transformer.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
  *      &lt;contentTypeRegex&gt;

@@ -50,7 +50,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.CopyTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
  *      &lt;copy from="(from field)" to="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple copy tags allowed --&gt;
  *  &lt;/tagger&gt;

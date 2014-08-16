@@ -360,7 +360,7 @@ import com.norconex.language.detector.LanguageDetector;
  * <h3>XML configuration usage:</h3>
  * 
  * <pre>
- *  &lt;tagger class="com.norconex.importer.tagger.impl.LanguageTagger"
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
  *          shortText="(false|true)"
  *          keepProbabilities="(false|true)"
  *          fallbackLanguage="" &gt;
