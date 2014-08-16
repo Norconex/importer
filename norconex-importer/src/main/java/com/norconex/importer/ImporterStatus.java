@@ -19,7 +19,7 @@ package com.norconex.importer;
 
 import java.io.Serializable;
 
-import com.norconex.importer.filter.IDocumentFilter;
+import com.norconex.importer.handler.filter.IDocumentFilter;
 
 /**
  * @author Pascal Essiembre

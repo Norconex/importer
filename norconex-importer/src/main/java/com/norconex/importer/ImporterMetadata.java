@@ -51,8 +51,8 @@ public class ImporterMetadata extends Properties {
             DOC_EMBEDDED_META_PREFIX + "parent.reference";
     public static final String DOC_EMBEDDED_PARENT_ROOT_REFERENCE =
             DOC_EMBEDDED_META_PREFIX + "parent.root.reference";
-    public static final String DOC_EMBEDDED_RESOURCE_NAME =
-            DOC_EMBEDDED_META_PREFIX + "resourceName";
+    public static final String DOC_EMBEDDED_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "reference";
     public static final String DOC_EMBEDDED_TYPE =
             DOC_EMBEDDED_META_PREFIX + "type";
     
@@ -105,10 +105,10 @@ public class ImporterMetadata extends Properties {
         setString(DOC_LANGUAGE, language);
     }
 
-    public String getDocumentReference() {
+    public String getReference() {
         return getString(DOC_REFERENCE);
     }
-    public void setDocumentReference(String documentReference) {
+    public void setReference(String documentReference) {
         setString(DOC_REFERENCE, documentReference);
     }
 
@@ -126,11 +126,11 @@ public class ImporterMetadata extends Properties {
         setString(DOC_EMBEDDED_PARENT_ROOT_REFERENCE, parentRootReference);
     }
     
-    public String getEmbeddedResourceName() {
-        return getString(DOC_EMBEDDED_RESOURCE_NAME);
+    public String getEmbeddedReference() {
+        return getString(DOC_EMBEDDED_REFERENCE);
     }
-    public void setEmbeddedResourceName(String resourceName) {
-        setString(DOC_EMBEDDED_RESOURCE_NAME, resourceName);
+    public void setEmbeddedReference(String reference) {
+        setString(DOC_EMBEDDED_REFERENCE, reference);
     }
 
     public String getEmbeddedType() {

@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -29,7 +30,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -37,6 +40,7 @@ import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
 
@@ -55,7 +59,9 @@ import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
  *          quoteCharacter=""
  *          escapeCharacter=""
  *          useFirstRowAsFields="(false|true)"
- *          linesToSkip="(integer)" &gt;
+ *          linesToSkip="(integer)"
+ *          referenceColumn="(column name or position from 1)"
+ *          contentColumns="(csv list of column/position to use as content)" &gt;
  *      &lt;contentTypeRegex&gt;
  *          (regex to identify text content-types for pre-import, 
  *           overriding default)
@@ -95,6 +101,10 @@ public class CsvSplitter extends AbstractCharStreamSplitter
     private boolean useFirstRowAsFields;
     private int linesToSkip;
     
+    //TODO ***** DOCUMENT THESE and ADD TO save/load ********
+    // These can be either column names or position, starting at 1
+    private String referenceColumn;
+    private String[] contentColumns;
     
     @Override
     protected List<ImporterDocument> splitTextDocument(
@@ -111,31 +121,50 @@ public class CsvSplitter extends AbstractCharStreamSplitter
                 quoteCharacter, escapeCharacter, linesToSkip);
         
         String [] cols;
+        String[] colNames = null;
         int count = 0;
+        StringBuilder content = new StringBuilder();
         while ((cols = cvsreader.readNext()) != null) {
             count++;
             ImporterMetadata childMeta = new ImporterMetadata();
             childMeta.load(metadata);
-            String childRef = reference + "!child-" + count;
-            
-            // replace csv by file format or reference field
-            ImporterDocument childDoc = 
-                    new ImporterDocument(childRef, childMeta); 
-            childMeta.setDocumentReference(childRef);
-            childMeta.setEmbeddedParentReference(reference);
-            childMeta.setEmbeddedParentRootReference(reference);
-            
-            String[] colNames = null;
+            String childEmbedRef = "row-" + count;
             if (count == 1 && useFirstRowAsFields) {
                 colNames = cols;
             } else {
                 for (int i = 0; i < cols.length; i++) {
-                    String colValue = cols[i];
+                    int colPos = i + 1;
+                    String colName = null;
                     if (colNames == null || i >= colNames.length) {
-                        childMeta.setString("column" + (i + 1), colValue);
+                        colName = "column" + colPos;
                     } else {
-                        childMeta.setString(colNames[i], colValue);
+                        colName = colNames[i];
                     }
+                    String colValue = cols[i];
+
+                    // If a reference column, set reference value 
+                    if (isColumnMatching(colName, colPos, referenceColumn)) {
+                        childEmbedRef = colValue;
+                    }
+                    // If a content column, add it to content
+                    if (isColumnMatching(colName, colPos, contentColumns)) {
+                        if (content.length() > 0) {
+                            content.append(" ");
+                        }
+                        content.append(colValue);
+                    }
+                    childMeta.setString(colName, colValue);
+                }
+                String childDocRef = reference + "!" + childEmbedRef;
+                ImporterDocument childDoc = 
+                        new ImporterDocument(childDocRef, childMeta); 
+                childMeta.setReference(childDocRef);
+                childMeta.setEmbeddedReference(childEmbedRef);
+                childMeta.setEmbeddedParentReference(reference);
+                childMeta.setEmbeddedParentRootReference(reference);
+                if (content.length() > 0) {
+                    childDoc.setContent(new Content(content.toString()));
+                    content.setLength(0);
                 }
                 rows.add(childDoc);
             }
@@ -143,6 +172,24 @@ public class CsvSplitter extends AbstractCharStreamSplitter
         IOUtils.closeQuietly(cvsreader);
         return rows;
     }
+
+    private boolean isColumnMatching(
+            String colName, int colPosition, String... namesOrPossToMatch) {
+        if (ArrayUtils.isEmpty(namesOrPossToMatch)) {
+            return false;
+        }
+        for (String nameOrPosToMatch : namesOrPossToMatch) {
+            if (StringUtils.isBlank(nameOrPosToMatch)) {
+                continue;
+            }
+            if (Objects.equals(nameOrPosToMatch, colName)
+                   || NumberUtils.toInt(nameOrPosToMatch) == colPosition) {
+                return true;
+            }
+        } 
+        return false;
+    }
+        
 
     /**
      * Gets the value-separator character. 
@@ -223,6 +270,20 @@ public class CsvSplitter extends AbstractCharStreamSplitter
         this.linesToSkip = linesToSkip;
     }
 
+    public String getReferenceColumn() {
+        return referenceColumn;
+    }
+    public void setReferenceColumn(String referenceColumn) {
+        this.referenceColumn = referenceColumn;
+    }
+
+    public String[] getContentColumns() {
+        return contentColumns;
+    }
+    public void setContentColumns(String... contentColumns) {
+        this.contentColumns = contentColumns;
+    }
+
     @Override
     public void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = ConfigurationLoader.loadXML(in);
@@ -232,8 +293,16 @@ public class CsvSplitter extends AbstractCharStreamSplitter
                 xml, "[@quoteCharacter]", quoteCharacter));
         setQuoteCharacter(loadCharacter(
                 xml, "[@escapeCharacter]", escapeCharacter));
-        setUseFirstRowAsFields(xml.getBoolean("useFirstRowAsFields", false));
+        setUseFirstRowAsFields(
+                xml.getBoolean("useFirstRowAsFields", useFirstRowAsFields));
         setLinesToSkip(xml.getInt("linesToSkip", linesToSkip));
+        setReferenceColumn(xml.getString("referenceColumn", referenceColumn));
+
+        String contentCols = xml.getString("contentColumns", null);
+        if (StringUtils.isNotBlank(contentCols)) {
+            setContentColumns(contentCols.split(","));
+        }
+        
         super.loadFromXML(xml);
     }
 
@@ -254,7 +323,14 @@ public class CsvSplitter extends AbstractCharStreamSplitter
             writer.writeAttribute(
                     "useFirstRowAsFields", String.valueOf(useFirstRowAsFields));
             writer.writeAttribute("linesToSkip", String.valueOf(linesToSkip));
-            
+
+            if (StringUtils.isNotBlank(referenceColumn)) {
+                writer.writeAttribute("referenceColumn", referenceColumn);
+            }
+            if (ArrayUtils.isNotEmpty(contentColumns)) {
+                writer.writeAttribute("contentColumns", 
+                        StringUtils.join(contentColumns, ","));
+            }
             super.saveToXML(writer);
             
             writer.writeEndElement();

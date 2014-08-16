@@ -85,7 +85,7 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
                 contentType.toString());
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
-                metadata.getDocumentReference());
+                metadata.getReference());
         try {
             RecursiveParser recursiveParser = 
                     createRecursiveParser(reference, output, metadata);
@@ -169,7 +169,7 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
                 
                 ImporterDocument embedDoc = new ImporterDocument(
                         embedRef, new Content(embedInput), embedMeta); 
-                embedMeta.setDocumentReference(embedRef);
+                embedMeta.setReference(embedRef);
                 embedMeta.setEmbeddedParentReference(reference);
                 
                 String rootRef = metadata.getEmbeddedParentRootReference();
@@ -194,7 +194,7 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         // Package item file name (e.g. a file in a zip)
         name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
         if (StringUtils.isNotBlank(name)) {
-            embedMeta.setEmbeddedResourceName(name);
+            embedMeta.setEmbeddedReference(name);
             embedMeta.setEmbeddedType("package-file");
             return name;
         }
@@ -203,7 +203,7 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         // (e.g. excel file in a word doc)
         name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
         if (StringUtils.isNotBlank(name)) {
-            embedMeta.setEmbeddedResourceName(name);
+            embedMeta.setEmbeddedReference(name);
             embedMeta.setEmbeddedType("file-file");
             return name;
         }

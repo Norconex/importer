@@ -50,17 +50,17 @@ import com.norconex.importer.ImporterStatus.Status;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.filter.IDocumentFilter;
-import com.norconex.importer.filter.IOnMatchFilter;
-import com.norconex.importer.filter.OnMatch;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.filter.IOnMatchFilter;
+import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.splitter.IDocumentSplitter;
+import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
-import com.norconex.importer.tagger.IDocumentTagger;
-import com.norconex.importer.transformer.IDocumentTransformer;
 
 /**
  * Principal class responsible for importing documents.
@@ -306,7 +306,7 @@ public class Importer {
         } else {
             meta = new ImporterMetadata(metadata);
         }
-        meta.setDocumentReference(reference); 
+        meta.setReference(reference); 
         meta.setContentType(safeContentType); 
         ContentFamily contentFamily = 
                 ContentFamily.forContentType(safeContentType.toString());

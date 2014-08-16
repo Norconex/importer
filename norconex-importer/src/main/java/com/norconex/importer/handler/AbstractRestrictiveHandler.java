@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.ImporterMetadata;
-import com.norconex.importer.filter.impl.RegexMetadataFilter;
+import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
 
 /**
  * <p>Base class for handlers applying only to certain type of documents

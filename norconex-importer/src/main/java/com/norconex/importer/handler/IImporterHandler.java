@@ -19,9 +19,9 @@ package com.norconex.importer.handler;
 
 import java.io.Serializable;
 
-import com.norconex.importer.filter.IDocumentFilter;
-import com.norconex.importer.tagger.IDocumentTagger;
-import com.norconex.importer.transformer.IDocumentTransformer;
+import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.transformer.IDocumentTransformer;
 
 /**
  * <p>Identifies a class as being an import handler.  Handlers performs specific
