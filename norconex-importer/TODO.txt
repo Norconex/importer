@@ -4,7 +4,7 @@ MUST for 2.0.0 release:
 
 - Be consistant in the way metadata fields are named.  Use the term 
   metadata "field" all across.  SEE BELOW: may not be necessary if condition
-  is set on all handlers.
+  is set on all handlers.  Or use a base class for all taggers?
   
 - Make field regex filtering a lib core feature (the framework
   would check if it passes before invoking the handler).
@@ -45,6 +45,10 @@ MUST for 2.0.0 release:
 ++ Add DebugTagger giving options to print to log the metadata (all or some) 
    and/or the content.
 
+++ DONE: Add a TextStatisticsTagger (or TextMetricsTagger) that add fields for 
+   things such as: num of characters, num of words, average word length, 
+   average, sentence length, average paragraph length, etc.
+
 Any release:
 ==============
 
@@ -53,11 +57,6 @@ Any release:
   That would better than having tons of filter options on every handlers 
   defined.  This is different than usual filters since documents are not
   rejected if they do not meet a condition, they move on to the next handler.
-
-
-- Add a TextStatisticsTagger (or TextMetricsTagger) that add fields for things
-  such as: num of characters, num of words, average word length, average,
-  sentence length, average paragraph length, etc.
 
 - Offer ways to force Character Encoding.
 
