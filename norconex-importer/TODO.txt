@@ -40,6 +40,10 @@ MUST for 2.0.0 release:
    document or not and offer options what the document reference should be
    (default: parentref!childref).
 
+++ DONE: Add CharacterCaseTransformer (upper, lower)
+
+++ Add DebugTagger giving options to print to log the metadata (all or some) 
+   and/or the content.
 
 Any release:
 ==============
@@ -50,15 +54,10 @@ Any release:
   defined.  This is different than usual filters since documents are not
   rejected if they do not meet a condition, they move on to the next handler.
 
-- Add DebugTagger giving options to print to log the metadata (all or some) 
-  and/or the content.
-
-- Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Add a TextStatisticsTagger (or TextMetricsTagger) that add fields for things
   such as: num of characters, num of words, average word length, average,
   sentence length, average paragraph length, etc.
-
 
 - Offer ways to force Character Encoding.
 
