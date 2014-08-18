@@ -8,8 +8,3 @@
 - Add CharacterCaseTransformer (upper, lower, sentence, word)
 
 - Allow to break documents into smaller documents.
-
-- Offer ways to force Character Encoding.
-
-- Make it easier to change output format (but how to make it work with
-  committer still?).
