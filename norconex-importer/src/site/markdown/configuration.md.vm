@@ -93,7 +93,7 @@ full documentation, giving extra configuration options.
        <a href="$docpath/tagger/impl/KeepOnlyTagger.html">KeepOnlyTagger</a>,
        <a href="$docpath/tagger/impl/RenameTagger.html">RenameTagger</a>,
        <a href="$docpath/tagger/impl/ReplaceTagger.html">ReplaceTagger</a>, 
-       <a href="$docpath/tagger/impl/SplitTagger.html">SplitTagger</a>
+       <a href="$docpath/tagger/impl/SplitTagger.html">SplitTagger</a>, 
        <a href="$docpath/tagger/impl/TextBetweenTagger.html">TextBetweenTagger</a>
      </td>
      <td><a href="$docpath/tagger/IDocumentTagger.html">IDocumentTagger</a></td>

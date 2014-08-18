@@ -28,23 +28,28 @@ $h2 Binaries
 
 **[Download Latest Release ${currentStableVersion}]($releasePath/${currentStableVersion}/norconex-importer-${currentStableVersion}.zip)**
 
-  * Now extracts text from WordPerfect documents (new WordPerfectParser class).
-  * New transformer "ReduceConsecutivesTransformer" to reduce consecutive
-    instances of the same string to only one instance.
-  * New transformer "ReplaceTransformer" to perform search and replace
-    on document content using regular expression.
-  * New filter "EmptyMetadataFilter" to exclude/include documents with
-    no data for one or more specified metadata properties.
+  * Now stores the content "family" for each documents as 
+    "importer.contentFamily".
+  * New SplitTagger: Split values into multiple-values using a separator
+    of choice.
+  * New CopyTagger: copies document metadata fields to other fields.
+  * New HierarchyTagger: splits a field string into multiple segments 
+    representing each node of a hierarchical branch.
+  * ReplaceTagger now supports regular expressions.
+  * Improved mime types detection.
+  * More...  
   * [View all changes]((changes-report.html))
 
 
 **Older Releases**
 
-  * [1.1.0]($releasePath/1.1.0/norconex-committer-1.1.0.zip)<small>
+  * [1.2.0]($releasePath/1.2.0/norconex-importer-1.2.0.zip)<small>
+    [[Release Notes](changes-report.html#a1.2.0)]</small>
+  * [1.1.0]($releasePath/1.1.0/norconex-importer-1.1.0.zip)<small>
     [[Release Notes](changes-report.html#a1.1.0)]</small>
-  * [1.0.1]($releasePath/1.1.0/norconex-committer-1.0.1.zip)<small>
+  * [1.0.1]($releasePath/1.1.0/norconex-importer-1.0.1.zip)<small>
     [[Release Notes](changes-report.html#a1.0.1)]</small>
-  * [1.0.0]($releasePath/1.0.0/norconex-committer-1.0.0.zip)<small>
+  * [1.0.0]($releasePath/1.0.0/norconex-importer-1.0.0.zip)<small>
     [[Release Notes](changes-report.html#a1.0.0)]</small>
 
 

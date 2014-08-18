@@ -6,7 +6,7 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
-    <release version="1.3.0" date="2014-??-??" description="Feature release">
+    <release version="1.3.0" date="2014-08-18" description="Feature release">
       <action dev="essiembp" type="add">
         Now stores the content "family" for each documents as 
         "importer.contentFamily".  This is a higher level representation
