@@ -6,7 +6,6 @@ package com.norconex.importer.doc;
 import java.io.Serializable;
 
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.importer.ImporterMetadata;
 
 /**
  * A document.

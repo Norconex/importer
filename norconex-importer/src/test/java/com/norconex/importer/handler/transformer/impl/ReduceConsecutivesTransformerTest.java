@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer;
 

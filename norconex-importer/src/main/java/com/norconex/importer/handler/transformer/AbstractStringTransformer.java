@@ -30,7 +30,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.util.BufferUtil;
 import com.norconex.importer.util.MemoryUtil;
 

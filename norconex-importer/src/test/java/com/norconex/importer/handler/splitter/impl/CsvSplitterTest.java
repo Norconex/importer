@@ -31,8 +31,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 
 /**
  * @author Pascal Essiembre

@@ -20,7 +20,7 @@ package com.norconex.importer.handler.transformer;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 

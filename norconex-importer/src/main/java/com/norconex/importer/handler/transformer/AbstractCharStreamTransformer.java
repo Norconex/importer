@@ -30,7 +30,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractRestrictiveHandler;
 import com.norconex.importer.handler.AbstractTextRestrictiveHandler;
 import com.norconex.importer.handler.ImporterHandlerException;

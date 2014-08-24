@@ -32,6 +32,8 @@ import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.importer.ImporterRuntimeException;
 
+//TODO Move to Norconex Commons Lang
+
 /**
  * This class is not thread-safe.
  * @author Pascal Essiembre

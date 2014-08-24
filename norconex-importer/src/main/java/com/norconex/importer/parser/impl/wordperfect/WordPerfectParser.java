@@ -29,8 +29,8 @@ import java.util.StringTokenizer;
 import org.apache.commons.io.IOUtils;
 
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 

@@ -39,9 +39,9 @@ import org.xml.sax.SAXException;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
-import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
 

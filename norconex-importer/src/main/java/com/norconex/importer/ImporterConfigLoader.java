@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -19,18 +19,12 @@ package com.norconex.importer;
 
 import java.io.File;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ExpressionEngine;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.handler.IImporterHandler;
 
 /**
  * Importer configuration loader.  Configuration options are defined
@@ -74,7 +68,7 @@ public final class ImporterConfigLoader {
      */    
     public static ImporterConfig loadImporterConfig(Reader config)  {
         try {
-            XMLConfiguration xml = ConfigurationLoader.loadXML(config);
+            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(config);
             return loadImporterConfig(xml);
         } catch (Exception e) {
             throw new ConfigurationException(
@@ -96,46 +90,11 @@ public final class ImporterConfigLoader {
         }
         ImporterConfig config = new ImporterConfig();
         try {
-            //--- Temp directory -----------------------------------------------
-            config.setTempDir(new File(xml.getString(
-                    "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
-
-            //--- File Mem Cache Size ------------------------------------------
-            config.setFileMemCacheSize(xml.getInt("fileMemCacheSize", 
-                    ImporterConfig.DEFAULT_FILE_MEM_CACHE_SIZE));
-            
-            //--- Pre-Import Handlers ------------------------------------------
-            config.setPreParseHandlers(
-                    loadImportHandlers(xml, "preParseHandlers"));
-
-            //--- Document Parser Factory --------------------------------------
-            config.setParserFactory(ConfigurationUtil.newInstance(
-                    xml, "documentParserFactory", config.getParserFactory()));
-
-            //--- Post-Import Handlers -----------------------------------------
-            config.setPostParseHandlers(
-                    loadImportHandlers(xml, "postParseHandlers"));
+            config.loadFromXML(ConfigurationUtil.newReader(xml));
         } catch (Exception e) {
             throw new ConfigurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
         }
         return config;
-    }
-    
-    private static IImporterHandler[] loadImportHandlers(
-            XMLConfiguration xml, String xmlPath) {
-        List<IImporterHandler> handlers = new ArrayList<IImporterHandler>();
-
-        ExpressionEngine originalEngine = xml.getExpressionEngine();
-        xml.setExpressionEngine(new XPathExpressionEngine());
-        List<HierarchicalConfiguration> xmlHandlers = 
-                xml.configurationsAt(xmlPath + "/*");
-        xml.setExpressionEngine(originalEngine);
-        for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
-            xmlHandler.setExpressionEngine(originalEngine);
-            handlers.add(
-                    (IImporterHandler) ConfigurationUtil.newInstance(xmlHandler));
-        }
-        return handlers.toArray(new IImporterHandler[]{});
     }
 }

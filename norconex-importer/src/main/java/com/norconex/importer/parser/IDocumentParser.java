@@ -23,8 +23,8 @@ import java.io.Writer;
 import java.util.List;
 
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 
 /**
  * Implementations are responsible for parsing a document (InputStream) to 

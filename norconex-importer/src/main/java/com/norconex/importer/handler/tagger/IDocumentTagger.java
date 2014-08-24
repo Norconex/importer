@@ -19,7 +19,7 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 

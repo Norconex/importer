@@ -25,7 +25,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.ImporterMetadata;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.impl.KeepOnlyTagger;
 
 public class KeepOnlyTaggerTest {

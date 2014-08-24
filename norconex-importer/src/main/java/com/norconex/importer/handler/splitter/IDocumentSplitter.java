@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.apache.xmlbeans.impl.xb.xsdschema.ImportDocument;
 
-import com.norconex.importer.ImporterMetadata;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
