@@ -70,6 +70,8 @@ public class ImporterMetadata extends Properties {
         super(map);
     }
     
+    //TODO remove content type and content family method to avoid
+    // conflicts with HTTP Collector?
     public ContentType getContentType() {
         return ContentType.valueOf(getString(DOC_CONTENT_TYPE));
     }
