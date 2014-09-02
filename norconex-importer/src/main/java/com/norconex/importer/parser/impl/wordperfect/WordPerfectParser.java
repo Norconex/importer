@@ -28,9 +28,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 
-import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -83,19 +81,29 @@ public class WordPerfectParser implements IDocumentParser {
 
     
     @Override
-    public List<ImporterDocument> parseDocument(
-            String reference,
-            InputStream inputStream, ContentType contentType,
-            Writer outputStream, ImporterMetadata metadata)
-            throws DocumentParserException {
+    public List<ImporterDocument> parseDocument(ImporterDocument doc,
+            Writer output) throws DocumentParserException {
         try {
-            outputStream.write(extract(inputStream).trim());
+            output.write(extract(doc.getContent().getInputStream()).trim());
         } catch (IOException e) {
             throw new DocumentParserException(e);
         }
         return null;
-
     }
+    
+//    @Override
+//    public List<ImporterDocument> parseDocument(
+//            String reference,
+//            InputStream inputStream, ContentType contentType,
+//            Writer outputStream, ImporterMetadata metadata)
+//            throws DocumentParserException {
+//        try {
+//            outputStream.write(extract(inputStream).trim());
+//        } catch (IOException e) {
+//            throw new DocumentParserException(e);
+//        }
+//        return null;
+//    }
     
     /**
      * Wraps the specified InputStream in a WPFilterInputStream.
@@ -298,4 +306,6 @@ public class WordPerfectParser implements IDocumentParser {
         }
         return result;
     }
+
+
 }

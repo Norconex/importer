@@ -47,7 +47,7 @@ public class TextBetweenTaggerTest {
         FileInputStream is = new FileInputStream(htmlFile);
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setContentType("text/html");
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

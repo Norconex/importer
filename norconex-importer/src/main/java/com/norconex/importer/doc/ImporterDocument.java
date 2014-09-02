@@ -15,10 +15,14 @@ public class ImporterDocument implements Serializable {
 
     private static final long serialVersionUID = 7098788330064549944L;
 
-    private final String reference;
+    
+    //TODO add parent reference info here???
+    
+    private String reference;
     private Content content;
     private final ImporterMetadata metadata;
     private ContentType contentType;
+    private String contentEncoding;
     
     public ImporterDocument(String reference) {
         this(reference, (Content) null);
@@ -58,6 +62,9 @@ public class ImporterDocument implements Serializable {
     public String getReference() {
         return reference;
     }
+    public void setReference(String reference) {
+        this.reference = reference;
+    }
 
     public Content getContent() {
         return content;
@@ -66,6 +73,12 @@ public class ImporterDocument implements Serializable {
         this.content = content;
     }
     
+    public String getContentEncoding() {
+        return contentEncoding;
+    }
+    public void setContentEncoding(String contentEncoding) {
+        this.contentEncoding = contentEncoding;
+    }
     public ImporterMetadata getMetadata() {
         return metadata;
     }

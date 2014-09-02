@@ -36,7 +36,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationLoader;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -109,7 +109,7 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
 
     @Override
     public void loadFromXML(Reader in) {
-        XMLConfiguration xml = ConfigurationLoader.loadXML(in);
+        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         String fieldsStr = xml.getString("[@properties]");
         String[] props = StringUtils.split(fieldsStr, ",");
         if (ArrayUtils.isEmpty(props)) {

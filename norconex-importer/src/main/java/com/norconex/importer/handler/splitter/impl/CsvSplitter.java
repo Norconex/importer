@@ -37,7 +37,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationLoader;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
@@ -286,7 +286,7 @@ public class CsvSplitter extends AbstractCharStreamSplitter
 
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationLoader.loadXML(in);
+        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         setSeparatorCharacter(loadCharacter(
                 xml, "[@separatorCharacter]", separatorCharacter));
         setQuoteCharacter(loadCharacter(

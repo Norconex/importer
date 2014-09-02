@@ -31,14 +31,14 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationLoader;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.importer.ImporterResponse;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.HTMLParser;
 import com.norconex.importer.parser.impl.PDFParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
+import com.norconex.importer.response.ImporterResponse;
 
 /**
  * Default document parser factory.  It uses Apacke Tika for <i>most</i> of its 
@@ -195,7 +195,7 @@ public class DefaultDocumentParserFactory
     @Override
     public void loadFromXML(Reader in) throws IOException {
         try {
-            XMLConfiguration xml = ConfigurationLoader.loadXML(in);
+            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
             setIgnoredContentTypesRegex(xml.getString(
                     "ignoredContentTypes", getIgnoredContentTypesRegex()));
             setSplitEmbedded(xml.getBoolean(

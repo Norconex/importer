@@ -40,6 +40,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
+import com.norconex.importer.response.ImporterResponse;
 
 public class ImporterTest {
 
@@ -126,7 +127,7 @@ public class ImporterTest {
                 "Content-Type", "application/pdf", OnMatch.EXCLUDE));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, 
+                TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
                         new ImporterMetadata(), "n/a");
         System.out.println("Reject desc: "
                         + result.getImporterStatus().getDescription());

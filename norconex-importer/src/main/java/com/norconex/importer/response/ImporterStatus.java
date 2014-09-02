@@ -15,10 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer;
+package com.norconex.importer.response;
 
 import java.io.Serializable;
 
+import com.norconex.importer.ImporterException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 
 /**

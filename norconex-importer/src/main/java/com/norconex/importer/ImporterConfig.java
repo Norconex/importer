@@ -33,6 +33,8 @@ import org.apache.commons.configuration.tree.ExpressionEngine;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationUtil;
@@ -42,6 +44,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.DefaultDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
+import com.norconex.importer.response.IImporterResponseProcessor;
 
 /**
  * Importer configuration.
@@ -50,7 +53,9 @@ import com.norconex.importer.parser.IDocumentParserFactory;
 public class ImporterConfig implements IXMLConfigurable {
 
     private static final long serialVersionUID = -7110188100703942075L;
-
+    private static final Logger LOG = 
+            LogManager.getLogger(ImporterConfig.class);
+    
     public static final String DEFAULT_TEMP_DIR_PATH = 
             FileUtils.getTempDirectoryPath();
     public static final int DEFAULT_FILE_MEM_CACHE_SIZE = 
@@ -61,6 +66,7 @@ public class ImporterConfig implements IXMLConfigurable {
 
     private IImporterHandler[] preParseHandlers;
     private IImporterHandler[] postParseHandlers;
+    private IImporterResponseProcessor[] responseProcessors;
 
     private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
     private int fileMemCacheSize = DEFAULT_FILE_MEM_CACHE_SIZE;
@@ -91,6 +97,14 @@ public class ImporterConfig implements IXMLConfigurable {
     }
     public IImporterHandler[] getPostParseHandlers() {
         return postParseHandlers;
+    }
+    
+    public IImporterResponseProcessor[] getResponseProcessors() {
+        return responseProcessors;
+    }
+    public void setResponseProcessors(
+            IImporterResponseProcessor... responseProcessors) {
+        this.responseProcessors = responseProcessors;
     }
 
     public int getFileMemCacheSize() {
@@ -124,6 +138,10 @@ public class ImporterConfig implements IXMLConfigurable {
     
             //--- Post-Import Handlers -----------------------------------------
             setPostParseHandlers(loadImportHandlers(xml, "postParseHandlers"));
+                        
+            //--- Response Processors ------------------------------------------
+            setResponseProcessors(loadResponseProcessors(
+                    xml, "responseProcessors.responseProcessor"));
         } catch (Exception e) {
             throw new ConfigurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
@@ -132,7 +150,7 @@ public class ImporterConfig implements IXMLConfigurable {
     
     private IImporterHandler[] loadImportHandlers(
             XMLConfiguration xml, String xmlPath) {
-        List<IImporterHandler> handlers = new ArrayList<IImporterHandler>();
+        List<IImporterHandler> handlers = new ArrayList<>();
     
         ExpressionEngine originalEngine = xml.getExpressionEngine();
         xml.setExpressionEngine(new XPathExpressionEngine());
@@ -145,6 +163,27 @@ public class ImporterConfig implements IXMLConfigurable {
                     ConfigurationUtil.newInstance(xmlHandler));
         }
         return handlers.toArray(new IImporterHandler[]{});
+    }
+    
+
+    private IImporterResponseProcessor[] loadResponseProcessors(
+            XMLConfiguration xml, String xmlPath) {
+        List<IImporterResponseProcessor> processors = new ArrayList<>();
+    
+        List<HierarchicalConfiguration> procNodes = 
+                xml.configurationsAt(xmlPath);
+        for (HierarchicalConfiguration procNode : procNodes) {
+            IImporterResponseProcessor proc = 
+                    ConfigurationUtil.newInstance(procNode);
+            if (proc != null) {
+                processors.add(proc);
+                LOG.info("Reponse processor loaded: " + proc);
+            } else {
+                LOG.error("Problem loading reponse processors, "
+                        + "please check for other log messages.");
+            }
+        }
+        return processors.toArray(new IImporterResponseProcessor[] {});
     }
     
     @Override
@@ -160,13 +199,27 @@ public class ImporterConfig implements IXMLConfigurable {
             writeHandlers(out, "preParseHandlers", getPreParseHandlers());
             writeObject(out, "documentParserFactory", getParserFactory());
             writeHandlers(out, "postParseHandlers", getPostParseHandlers());
+            writeResponseProcessors(
+                    out, "responseProcessors", getResponseProcessors());
             
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             throw new IOException("Could not save importer config.", e);
         }
     }
-    
+
+    private void writeResponseProcessors(Writer out, String listTagName, 
+            IImporterResponseProcessor[] processors) throws IOException {
+        if (ArrayUtils.isEmpty(processors)) {
+            return;
+        }
+        out.write("<" + listTagName + ">"); 
+        for (IImporterResponseProcessor processor: processors) {
+            writeObject(out, null, processor);
+        }
+        out.write("</" + listTagName + ">"); 
+        out.flush();
+    }
     private void writeHandlers(Writer out, String listTagName, 
             IImporterHandler[] handlers) throws IOException {
         if (ArrayUtils.isEmpty(handlers)) {

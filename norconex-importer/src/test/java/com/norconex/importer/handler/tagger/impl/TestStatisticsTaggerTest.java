@@ -56,7 +56,7 @@ public class TestStatisticsTaggerTest {
         InputStream is = IOUtils.toInputStream(txt);
 
         ImporterMetadata meta = new ImporterMetadata();
-        meta.setContentType("text/html");
+        meta.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument("n/a", is, meta, false);
 
         is.close();

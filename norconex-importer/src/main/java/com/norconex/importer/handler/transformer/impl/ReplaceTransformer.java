@@ -34,7 +34,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.norconex.commons.lang.config.ConfigurationLoader;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -122,7 +122,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
 
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationLoader.loadXML(in);
+        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
         List<HierarchicalConfiguration> nodes = 

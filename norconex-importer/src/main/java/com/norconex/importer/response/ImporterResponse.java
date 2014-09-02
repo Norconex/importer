@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer;
+package com.norconex.importer.response;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,17 +35,17 @@ public class ImporterResponse implements Serializable {
             new ImporterResponse[] {};
     
     private final String reference;
-    private final ImporterStatus status;
+    private ImporterStatus status;
     private final ImporterDocument doc;
     private final List<ImporterResponse> nestedResponses = new ArrayList<>();
     private ImporterResponse parentResponse;
     
-    /*default*/ ImporterResponse(String reference, ImporterStatus status) {
+    public ImporterResponse(String reference, ImporterStatus status) {
         this.reference = reference;
         this.status = status;
         this.doc = null;
     }
-    /*default*/ ImporterResponse(ImporterDocument doc) {
+    public ImporterResponse(ImporterDocument doc) {
         this.reference = doc.getReference();
         this.doc = doc;
         this.status = new ImporterStatus();
@@ -57,6 +57,9 @@ public class ImporterResponse implements Serializable {
 
     public ImporterStatus getImporterStatus() {
         return status;
+    }
+    public void setImporterStatus(ImporterStatus status) {
+        this.status = status;
     }
     
     public boolean isSuccess() {

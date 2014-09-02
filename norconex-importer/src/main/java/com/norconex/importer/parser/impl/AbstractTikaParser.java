@@ -65,7 +65,6 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         this.parser = parser;
     }
     
-    //TODO have an argument to split or merge archive docs and embedded items.
     //TODO have an argument to ignore embedded items (but can still split or merge archives).  
     //      Detected based whether there is a name for the item.
     //TODO have a maximum recursivity setting somewhere???
@@ -75,25 +74,31 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     
 
     @Override
+//    public final List<ImporterDocument> parseDocument(
+//            String reference,
+//            InputStream inputStream, ContentType contentType,
+//            Writer output, ImporterMetadata metadata)
+//            throws DocumentParserException {
     public final List<ImporterDocument> parseDocument(
-            String reference,
-            InputStream inputStream, ContentType contentType,
-            Writer output, ImporterMetadata metadata)
+            ImporterDocument doc, Writer output)
             throws DocumentParserException {
 
         Metadata tikaMetadata = new Metadata();
         tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
-                contentType.toString());
+                doc.getContentType().toString());
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
-                metadata.getReference());
+                doc.getReference());
+        tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
+        
         try {
-            RecursiveParser recursiveParser = 
-                    createRecursiveParser(reference, output, metadata);
+            RecursiveParser recursiveParser = createRecursiveParser(
+                    doc.getReference(), output, doc.getMetadata());
             
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
             ContentHandler handler = new BodyContentHandler(output);
-            recursiveParser.parse(inputStream, handler, tikaMetadata, context);
+            recursiveParser.parse(doc.getContent().getInputStream(), 
+                    handler, tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
@@ -113,7 +118,16 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         String[]  names = tikaMeta.names();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            metadata.addString(name, tikaMeta.getValues(name));
+            if (TikaMetadataKeys.RESOURCE_NAME_KEY.equals(name)) {
+                continue;
+            }
+            List<String> nxValues = metadata.getStrings(name);
+            String[] tikaValues = tikaMeta.getValues(name);
+            for (String tikaValue : tikaValues) {
+                if (!nxValues.contains(tikaValue)) {
+                    metadata.addString(name, tikaValue);
+                }
+            }
         }
     }
 

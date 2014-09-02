@@ -35,7 +35,7 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationLoader;
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -219,7 +219,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     @Override
     public void loadFromXML(Reader in) throws IOException {
         try {
-            XMLConfiguration xml = ConfigurationLoader.loadXML(in);
+            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
             setFieldName(xml.getString("[@fieldName]", getFieldName()));
             super.loadFromXML(xml);
         } catch (ConfigurationException e) {

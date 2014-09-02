@@ -36,6 +36,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -46,7 +47,6 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ImporterStatus.Status;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.ImporterDocument;
@@ -62,6 +62,10 @@ import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
+import com.norconex.importer.response.IImporterResponseProcessor;
+import com.norconex.importer.response.ImporterResponse;
+import com.norconex.importer.response.ImporterStatus;
+import com.norconex.importer.response.ImporterStatus.Status;
 
 /**
  * Principal class responsible for importing documents.
@@ -74,6 +78,7 @@ public class Importer {
 	private static final String ARG_INPUTFILE = "inputFile";
     private static final String ARG_OUTPUTFILE = "outputFile";
     private static final String ARG_CONTENTTYPE = "contentType";
+    private static final String ARG_CONTENTENCODING = "contentEncoding";
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
 
@@ -117,6 +122,7 @@ public class Importer {
         File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
         ContentType contentType = 
                 ContentType.valueOf(cmd.getOptionValue(ARG_CONTENTTYPE));
+        String contentEncoding = cmd.getOptionValue(ARG_CONTENTENCODING);
         String output = cmd.getOptionValue(ARG_OUTPUTFILE);
         if (StringUtils.isBlank(output)) {
             output = cmd.getOptionValue(ARG_INPUTFILE) + "-imported.txt";
@@ -130,7 +136,8 @@ public class Importer {
                         new File(cmd.getOptionValue(ARG_CONFIG)), null);
             }
             ImporterResponse response = new Importer(config).importDocument(
-                    inputFile, contentType, metadata, reference);
+                    inputFile, contentType, contentEncoding, 
+                    metadata, reference);
             writeResponse(response, output, 0, 0);
         } catch (Exception e) {
             System.err.println(
@@ -205,7 +212,7 @@ public class Importer {
     public ImporterResponse importDocument(
             InputStream input, Properties metadata, String reference)
             throws ImporterException {
-        return importDocument(input, null, metadata, reference);
+        return importDocument(input, null, null, metadata, reference);
     }
 
     /**
@@ -217,13 +224,14 @@ public class Importer {
      */
     public ImporterResponse importDocument(
             File input, Properties metadata) throws ImporterException {
-        return importDocument(input, null, metadata, null);
+        return importDocument(input, null, null, metadata, null);
     }
     
     /**
      * Imports a document according to the importer configuration.
      * @param file document input
      * @param contentType document content-type
+     * @param contentEncoding document content encoding
      * @param metadata the document starting metadata
      * @param reference document reference (e.g. URL, file path, etc)
      * @return importer output
@@ -231,7 +239,7 @@ public class Importer {
      */    
     //TODO return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
     public ImporterResponse importDocument(
-            final File file, ContentType contentType, 
+            final File file, ContentType contentType, String contentEncoding,
             Properties metadata, String reference) throws ImporterException {
 
         //--- Validate File ---
@@ -251,25 +259,28 @@ public class Importer {
         InputStream is = null;
         try {
             is = new BufferedInputStream(new FileInputStream(file));
-            return importDocument(is, contentType, metadata, finalReference);
+            return importDocument(is, contentType, 
+                    contentEncoding, metadata, finalReference);
         } catch (FileNotFoundException e) {
             throw new ImporterException("Could not import file.", e);
         }
     }
 
-    public ImporterResponse importDocument(
-            final InputStream input, ContentType contentType, 
+    public ImporterResponse importDocument(final InputStream input, 
+            ContentType contentType, String charEncoding,
             Properties metadata, String reference) {        
         try {
-            return doImportDocument(input, contentType, metadata, reference);
+            return doImportDocument(input, contentType, 
+                    charEncoding, metadata, reference);
         } catch (ImporterException e) {
             LOG.debug("Could not import " + reference, e);
             return new ImporterResponse(reference, new ImporterStatus(e));
         }
     }
 
-    private ImporterResponse doImportDocument(
-            final InputStream input, ContentType contentType, 
+    //TODO pass ImportDocument instead?   Accept one as argument?
+    private ImporterResponse doImportDocument(final InputStream input, 
+            ContentType contentType, String contentEncoding,
             Properties metadata, String reference) throws ImporterException {           
         
         //--- Input ---
@@ -307,21 +318,24 @@ public class Importer {
         } else {
             meta = new ImporterMetadata(metadata);
         }
-        meta.setReference(reference); 
-        meta.setContentType(safeContentType); 
+        meta.setReference(reference);
+        meta.setString(ImporterMetadata.DOC_CONTENT_TYPE, 
+                safeContentType.toString()); 
         ContentFamily contentFamily = 
                 ContentFamily.forContentType(safeContentType.toString());
         if (contentFamily != null) {
-            meta.setContentFamily(contentFamily);
+            meta.setString(ImporterMetadata.DOC_CONTENT_FAMILY, 
+                    contentFamily.toString());
         }
         
         //--- Document Handling ---
-        List<ImporterDocument> nestedDocs = new ArrayList<>();
-        ImporterDocument document;
         try {
+            List<ImporterDocument> nestedDocs = new ArrayList<>();
             Content content = new Content(bufInput);
-            document = new ImporterDocument(reference, content, meta);
+            ImporterDocument document = 
+                    new ImporterDocument(reference, content, meta);
             document.setContentType(safeContentType);
+            document.setContentEncoding(contentEncoding);
             
             ImporterStatus filterStatus = importDocument(document, nestedDocs);
             
@@ -335,12 +349,18 @@ public class Importer {
                 ImporterResponse nestedResponse = importDocument(
                                 childDoc.getContent().getInputStream(),
                         childDoc.getContentType(), 
+                        childDoc.getContentEncoding(),
                         childDoc.getMetadata(), 
                         childDoc.getReference());
                 if (nestedResponse != null) {
                     response.addNestedResponse(nestedResponse);
                 }
             }
+            
+            //--- Response Processor ---
+            if (ArrayUtils.isNotEmpty(importerConfig.getResponseProcessors())) {
+                processResponse(response);
+            }            
             return response;
         } catch (IOException e) {
             throw new ImporterException(
@@ -371,7 +391,17 @@ public class Importer {
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
+        
         return PASSING_FILTER_STATUS;
+    }
+    
+    
+    private void processResponse(ImporterResponse response) {
+        IImporterResponseProcessor[] procs = 
+                importerConfig.getResponseProcessors();
+        for (IImporterResponseProcessor proc : procs) {
+            proc.processImporterResponse(response);
+        }
     }
     
     private ImporterStatus executeHandlers(
@@ -481,8 +511,8 @@ public class Importer {
             return;
         }
         
-        CachedInputStream  in = doc.getContent().getInputStream();
-        InputStream bufInput = new BufferedInputStream(in);
+//        CachedInputStream  in = doc.getContent().getInputStream();
+//        InputStream bufInput = new BufferedInputStream(in);
 
         CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
@@ -490,13 +520,27 @@ public class Importer {
 
         try {
             List<ImporterDocument> nestedDocs = 
-                    parser.parseDocument(doc.getReference(), bufInput, 
-                            doc.getContentType(), output, doc.getMetadata());
+                    parser.parseDocument(doc, output);
+//                    parser.parseDocument(doc.getReference(), bufInput, 
+//                            doc.getContentType(), output, doc.getMetadata());
+            
+            if (doc.getContentType() == null) {
+                String ct = doc.getMetadata().getString(
+                                ImporterMetadata.DOC_CONTENT_TYPE);
+                if (StringUtils.isNotBlank(ct)) {
+                    doc.setContentType(ContentType.valueOf(ct));
+                }
+            }
+            if (StringUtils.isBlank(doc.getContentEncoding())) {
+                doc.setContentEncoding(doc.getMetadata().getString(
+                        ImporterMetadata.DOC_CONTENT_ENCODING));
+            }
+            
             if (nestedDocs != null) {
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
-            IOUtils.closeQuietly(bufInput);
+//            IOUtils.closeQuietly(bufInput);
             IOUtils.closeQuietly(out);
             throw e;
         }
@@ -508,10 +552,12 @@ public class Importer {
                         + doc.getReference());
             }
             IOUtils.closeQuietly(out);
-            in.dispose();
+            doc.getContent().getInputStream().dispose();
+            //in.dispose();
             doc.setContent(new Content());
         } else {
-            in.dispose();
+            doc.getContent().getInputStream().dispose();
+            //in.dispose();
             CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();

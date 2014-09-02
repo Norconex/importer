@@ -2,6 +2,8 @@
 MUST for 2.0.0 release:
 ==============
 
+- Handle dates properly, supporting several formats.
+
 - Be consistant in the way metadata fields are named.  Use the term 
   metadata "field" all across.  SEE BELOW: may not be necessary if condition
   is set on all handlers.  Or use a base class for all taggers?

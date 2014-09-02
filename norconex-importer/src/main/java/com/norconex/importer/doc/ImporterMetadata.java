@@ -20,8 +20,6 @@ package com.norconex.importer.doc;
 import java.util.List;
 import java.util.Map;
 
-import com.norconex.commons.lang.file.ContentFamily;
-import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
 
 /**
@@ -40,6 +38,9 @@ public class ImporterMetadata extends Properties {
     public static final String DOC_REFERENCE = DOC_META_PREFIX + "reference";
     public static final String DOC_CONTENT_TYPE = 
             DOC_META_PREFIX + "contentType";
+    public static final String DOC_CONTENT_ENCODING = 
+            DOC_META_PREFIX + "contentEncoding";
+    
     public static final String DOC_CONTENT_FAMILY = 
             DOC_META_PREFIX + "contentFamily";
     public static final String DOC_LANGUAGE = 
@@ -72,33 +73,33 @@ public class ImporterMetadata extends Properties {
     
     //TODO remove content type and content family method to avoid
     // conflicts with HTTP Collector?
-    public ContentType getContentType() {
-        return ContentType.valueOf(getString(DOC_CONTENT_TYPE));
-    }
-    public void setContentType(ContentType contentType) {
-        if (contentType == null) {
-            setString(DOC_CONTENT_TYPE, (String) null);
-        } else {
-            setString(DOC_CONTENT_TYPE, contentType.toString());
-        }
-    }
-    public void setContentType(String contentType) {
-        setString(DOC_CONTENT_TYPE, contentType);
-    }
+//    public ContentType getContentType() {
+//        return ContentType.valueOf(getString(DOC_CONTENT_TYPE));
+//    }
+//    public void setContentType(ContentType contentType) {
+//        if (contentType == null) {
+//            setString(DOC_CONTENT_TYPE, (String) null);
+//        } else {
+//            setString(DOC_CONTENT_TYPE, contentType.toString());
+//        }
+//    }
+//    public void setContentType(String contentType) {
+//        setString(DOC_CONTENT_TYPE, contentType);
+//    }
 
-    public ContentFamily getContentFamily() {
-        return ContentFamily.valueOf(getString(DOC_CONTENT_FAMILY));
-    }
-    public void setContentFamily(ContentFamily contentFamily) {
-        if (contentFamily == null) {
-            setString(DOC_CONTENT_FAMILY, (String) null);
-        } else {
-            setString(DOC_CONTENT_FAMILY, contentFamily.toString());
-        }
-    }
-    public void setContentFamily(String contentFamily) {
-        setString(DOC_CONTENT_FAMILY, contentFamily);
-    }
+//    public ContentFamily getContentFamily() {
+//        return ContentFamily.valueOf(getString(DOC_CONTENT_FAMILY));
+//    }
+//    public void setContentFamily(ContentFamily contentFamily) {
+//        if (contentFamily == null) {
+//            setString(DOC_CONTENT_FAMILY, (String) null);
+//        } else {
+//            setString(DOC_CONTENT_FAMILY, contentFamily.toString());
+//        }
+//    }
+//    public void setContentFamily(String contentFamily) {
+//        setString(DOC_CONTENT_FAMILY, contentFamily);
+//    }
     
     public String getLanguage() {
         return getString(DOC_LANGUAGE);
