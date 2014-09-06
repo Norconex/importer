@@ -69,7 +69,6 @@ public class StripBetweenTransformerTest {
         t.setInclusive(true);
         t.addStripEndpoints("<!-- NO INDEX", "/NOINDEX -->");
         t.addStripEndpoints("<!-- HEADER START", "HEADER END -->");
-        t.setContentTypeRegex("application/xml");
         System.out.println("Writing/Reading this: " + t);
         ConfigurationUtil.assertWriteRead(t);
     }

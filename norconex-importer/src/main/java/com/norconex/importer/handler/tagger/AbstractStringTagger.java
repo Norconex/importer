@@ -48,15 +48,14 @@ import com.norconex.importer.util.MemoryUtil;
  * Implementors should be conscious about memory when dealing with the string
  * builder.
  * </p>
- * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
- * configuration:</p>
+ * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
  *  &lt;contentTypeRegex&gt;
  *      (regex to identify text content-types, overridding default)
  *  &lt;/contentTypeRegex&gt;
  *  &lt;restrictTo
  *          caseSensitive="[false|true]" &gt;
- *          property="(name of header/metadata name to match)"
+ *          field="(name of header/metadata name to match)"
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
  * </pre>

@@ -19,15 +19,11 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
@@ -37,12 +33,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * A utility tagger to help with troubleshooting of document importing.
@@ -67,13 +61,20 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
  *          logFields="(CSV list of fields to log)"
  *          logContent="(false|true)"
- *          logLevel="(ERROR|WARN|INFO|DEBUG)" /&gt;
+ *          logLevel="(ERROR|WARN|INFO|DEBUG)" &gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 @SuppressWarnings("nls")
-public class DebugTagger implements IDocumentTagger, IXMLConfigurable {
+public class DebugTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 2008414745944904813L;
     private static final Logger LOG = 
@@ -84,10 +85,11 @@ public class DebugTagger implements IDocumentTagger, IXMLConfigurable {
     private String logLevel;
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
+
         Level level = Level.toLevel(logLevel);
 
         if (ArrayUtils.isEmpty(logFields)) {
@@ -143,41 +145,28 @@ public class DebugTagger implements IDocumentTagger, IXMLConfigurable {
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            setLogContent(xml.getBoolean("[@logContent]", isLogContent()));
-            String csvFields = xml.getString("[@logFields]", null);
-            if (StringUtils.isNotBlank(csvFields)) {
-                setLogFields(StringUtils.split(csvFields, ','));
-            }
-            setLogLevel(xml.getString("[@logLevel]", getLogLevel()));
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        setLogContent(xml.getBoolean("[@logContent]", isLogContent()));
+        String csvFields = xml.getString("[@logFields]", null);
+        if (StringUtils.isNotBlank(csvFields)) {
+            setLogFields(StringUtils.split(csvFields, ','));
         }
+        setLogLevel(xml.getString("[@logLevel]", getLogLevel()));
     }
-
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeStartElement("tagger");
+        writer.writeAttribute("class", getClass().getCanonicalName());
+        writer.writeAttribute(
+                "logContent", Boolean.toString(isLogContent()));
+        if (ArrayUtils.isNotEmpty(getLogFields())) {
             writer.writeAttribute(
-                    "logContent", Boolean.toString(isLogContent()));
-            if (ArrayUtils.isNotEmpty(getLogFields())) {
-                writer.writeAttribute(
-                        "logFields", StringUtils.join(getLogFields(), ','));
-            }
-            if (StringUtils.isNotBlank(getLogLevel())) {
-                writer.writeAttribute("logLevel", getLogLevel());
-            }
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+                    "logFields", StringUtils.join(getLogFields(), ','));
+        }
+        if (StringUtils.isNotBlank(getLogLevel())) {
+            writer.writeAttribute("logLevel", getLogLevel());
         }
     }
 

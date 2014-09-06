@@ -19,14 +19,10 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -34,11 +30,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * Copies metadata fields. If a target field already
@@ -53,6 +48,12 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
  *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple copy tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * 
@@ -60,7 +61,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * @author Pascal Essiembre
  * @since 1.3.0
  */
-public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
+public class CopyTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = -1880560826072410359L;
 
@@ -125,9 +126,10 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     private final List<CopyDetails> list = new ArrayList<CopyDetails>();
 
     @Override
-    public void tagDocument(String reference, InputStream document,
+    public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
+
         for (CopyDetails details : list) {
             for (String value : metadata.getStrings(details.fromField)) {
                 if (details.overwrite) {
@@ -154,8 +156,7 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         List<HierarchicalConfiguration> nodes =
                 xml.configurationsAt("copy");
         for (HierarchicalConfiguration node : nodes) {
@@ -166,29 +167,18 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            
-            for (CopyDetails details : list) {
-                writer.writeStartElement("copy");
-                writer.writeAttribute("fromField", details.fromField);
-                writer.writeAttribute("toField", details.toField);
-                writer.writeAttribute("overwrite", 
-                        Boolean.toString(details.overwrite));
-                writer.writeEndElement();
-            }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (CopyDetails details : list) {
+            writer.writeStartElement("copy");
+            writer.writeAttribute("fromField", details.fromField);
+            writer.writeAttribute("toField", details.toField);
+            writer.writeAttribute("overwrite", 
+                    Boolean.toString(details.overwrite));
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;

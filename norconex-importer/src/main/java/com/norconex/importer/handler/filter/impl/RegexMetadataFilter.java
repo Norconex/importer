@@ -45,7 +45,7 @@ import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * Accepts or rejects a document based on its property values using 
+ * Accepts or rejects a document based on its field values using 
  * regular expression.  
  * <p>
  * XML configuration usage:
@@ -54,7 +54,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
- *          property="(name of metadata name to match)" &gt;
+ *          field="(name of metadata name to match)" &gt;
  *      (regular expression of value to match)
  *  &lt;/filter&gt;
  * </pre>
@@ -66,25 +66,25 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     private static final long serialVersionUID = -8029862304058855686L;
 
     private boolean caseSensitive;
-    private String property;
+    private String field;
     private String regex;
     private Pattern pattern;
 
     public RegexMetadataFilter() {
         this(null, null, OnMatch.INCLUDE);
     }
-    public RegexMetadataFilter(String property, String regex) {
-        this(property, regex, OnMatch.INCLUDE);
+    public RegexMetadataFilter(String field, String regex) {
+        this(field, regex, OnMatch.INCLUDE);
     }
-    public RegexMetadataFilter(String property, String regex, OnMatch onMatch) {
-        this(property, regex, onMatch, false);
+    public RegexMetadataFilter(String field, String regex, OnMatch onMatch) {
+        this(field, regex, onMatch, false);
     }
     public RegexMetadataFilter(
             String property, String regex, 
             OnMatch onMatch, boolean caseSensitive) {
         super();
         this.caseSensitive = caseSensitive;
-        this.property = property;
+        this.field = property;
         setOnMatch(onMatch);
         setRegex(regex);
     }
@@ -95,14 +95,14 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
-    public String getProperty() {
-        return property;
+    public String getField() {
+        return field;
     }
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
-    public void setProperty(String property) {
-        this.property = property;
+    public void setField(String property) {
+        this.field = property;
     }
     public final void setRegex(String regex) {
         this.regex = regex;
@@ -124,7 +124,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         if (StringUtils.isBlank(regex)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }
-        Collection<String> values =  metadata.getStrings(property);
+        Collection<String> values =  metadata.getStrings(field);
         for (Object value : values) {
             String strVal = ObjectUtils.toString(value);
             if (pattern.matcher(strVal).matches()) {
@@ -137,7 +137,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     @Override
     public void loadFromXML(Reader in) {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-        setProperty(xml.getString("[@property]"));
+        setField(xml.getString("[@field]"));
         setRegex(xml.getString(""));
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         super.loadFromXML(xml);
@@ -175,7 +175,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         return new HashCodeBuilder()
             .appendSuper(super.hashCode())
             .append(caseSensitive)
-            .append(property)
+            .append(field)
             .append(regex)
             .toHashCode();
     }
@@ -195,7 +195,7 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
         return new EqualsBuilder()
             .appendSuper(super.equals(obj))
             .append(caseSensitive, other.caseSensitive)
-            .append(property, other.property)
+            .append(field, other.field)
             .append(regex, other.regex)
             .isEquals();
     }

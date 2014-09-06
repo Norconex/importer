@@ -18,24 +18,19 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
@@ -54,17 +49,14 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
  *          caseSensitive="[false|true]" &gt;
- *      &lt;contentTypeRegex&gt;
- *          (regex to identify text content-types for pre-import, 
- *           overriding default)
- *      &lt;/contentTypeRegex&gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
- *              property="(name of header/metadata name to match)"
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
  *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
  *      &lt;!-- multiple reduce tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/transformer&gt;
  * </pre>
  * You can specify these special characters in your XML:
@@ -77,8 +69,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * @author Pascal Essiembre
  * @since 1.2.0
  */
-public class ReduceConsecutivesTransformer extends AbstractStringTransformer
-        implements IXMLConfigurable {
+public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     private static final long serialVersionUID = -5797391183198827565L;
 
@@ -134,8 +125,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
         List<HierarchicalConfiguration> nodes =
@@ -148,39 +138,27 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer
             text = text.replaceAll("\\\\r", "\r");
             addReductions(text);
         }
-        super.loadFromXML(xml);
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("transformer");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.writeAttribute(
-                    "caseSensitive", Boolean.toString(isCaseSensitive()));
-            super.saveToXML(writer);
-            for (String reduction : reductions) {
-                if (reduction != null) {
-                    writer.writeStartElement("reduce");
-                    String text = reduction;
-                    text = text.replaceAll(" ", "\\\\s");
-                    text = text.replaceAll("\t", "\\\\t");
-                    text = text.replaceAll("\n", "\\\\n");
-                    text = text.replaceAll("\r", "\\\\r");
-                    writer.writeCharacters(text);
-                    writer.writeEndElement();
-                }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute(
+                "caseSensitive", Boolean.toString(isCaseSensitive()));
+        for (String reduction : reductions) {
+            if (reduction != null) {
+                writer.writeStartElement("reduce");
+                String text = reduction;
+                text = text.replaceAll(" ", "\\\\s");
+                text = text.replaceAll("\t", "\\\\t");
+                text = text.replaceAll("\n", "\\\\n");
+                text = text.replaceAll("\r", "\\\\r");
+                writer.writeCharacters(text);
+                writer.writeEndElement();
             }
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
-
+    
     @Override
     public int hashCode() {
         return new HashCodeBuilder()

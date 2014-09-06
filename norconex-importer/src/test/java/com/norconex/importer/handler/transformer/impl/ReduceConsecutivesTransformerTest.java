@@ -78,7 +78,6 @@ public class ReduceConsecutivesTransformerTest {
         Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
         t.loadFromXML(reader);
         reader.close();
-        t.setContentTypeRegex("text/plain");
         System.out.println("Writing/Reading this: " + t);
         ConfigurationUtil.assertWriteRead(t);
     }

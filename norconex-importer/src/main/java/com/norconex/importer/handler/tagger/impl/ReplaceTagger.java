@@ -19,30 +19,24 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 
 /**
@@ -61,24 +55,29 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *          &lt;toValue&gtTarget Value&lt;/toValue&gt
  *      &lt;/replace&gt
  *      &lt;!-- multiple replace tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  *
  */
 @SuppressWarnings("nls")
-public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
+public class ReplaceTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = -6062036871216739761L;
     
     private final List<Replacement> replacements = new ArrayList<>();
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
         
         for (Replacement repl : replacements) {
             if (metadata.containsKey(repl.getFromField())) {
@@ -256,56 +255,39 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            List<HierarchicalConfiguration> nodes = 
-                    xml.configurationsAt("replace");
-            for (HierarchicalConfiguration node : nodes) {
-                addReplacement(
-                        node.getString("fromValue"),
-                        node.getString("toValue"),
-                        node.getString("[@fromField]"),
-                        node.getString("[@toField]", null),
-                        node.getBoolean("[@regex]", false));
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        List<HierarchicalConfiguration> nodes = 
+                xml.configurationsAt("replace");
+        for (HierarchicalConfiguration node : nodes) {
+            addReplacement(
+                    node.getString("fromValue"),
+                    node.getString("toValue"),
+                    node.getString("[@fromField]"),
+                    node.getString("[@toField]", null),
+                    node.getBoolean("[@regex]", false));
         }
     }
-
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-
-            for (Replacement replacement : replacements) {
-                writer.writeStartElement("replace");
-                writer.writeAttribute("fromField", replacement.getFromField());
-                if (replacement.getToField() != null) {
-                    writer.writeAttribute("toField", replacement.getToField());
-                }
-                writer.writeAttribute("regex", 
-                        Boolean.toString(replacement.isRegex()));
-                writer.writeStartElement("fromValue");
-                writer.writeCharacters(replacement.getFromValue());
-                writer.writeEndElement();
-                writer.writeStartElement("toValue");
-                writer.writeCharacters(replacement.getToValue());
-                writer.writeEndElement();
-                writer.writeEndElement();
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (Replacement replacement : replacements) {
+            writer.writeStartElement("replace");
+            writer.writeAttribute("fromField", replacement.getFromField());
+            if (replacement.getToField() != null) {
+                writer.writeAttribute("toField", replacement.getToField());
             }
+            writer.writeAttribute("regex", 
+                    Boolean.toString(replacement.isRegex()));
+            writer.writeStartElement("fromValue");
+            writer.writeCharacters(replacement.getFromValue());
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+            writer.writeStartElement("toValue");
+            writer.writeCharacters(replacement.getToValue());
+            writer.writeEndElement();
+            writer.writeEndElement();
         }
     }
-
 
     @Override
     public String toString() {

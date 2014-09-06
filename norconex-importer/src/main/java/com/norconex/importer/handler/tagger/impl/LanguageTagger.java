@@ -19,20 +19,16 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.util.Arrays;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
@@ -367,14 +363,12 @@ import com.norconex.language.detector.LanguageDetector;
  *      &lt;languages&gt
  *        (CSV list of language tag candidates. Defaults to the above list.)
  *      &lt;/languages&gt
- *      &lt;contentTypeRegex&gt;
- *          (regex to identify text content-types, overridding default)
- *      &lt;/contentTypeRegex&gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
- *              property="(name of header/metadata name to match)"
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -502,53 +496,34 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            setShortText(xml.getBoolean("[@shortText]", isShortText()));
-            setKeepProbabilities(xml.getBoolean(
-                    "[@keepProbabilities]", isKeepProbabilities()));
-            setFallbackLanguage(xml.getString(
-                    "[@fallbackLanguage]", getFallbackLanguage()));
-            String languages = xml.getString("languages");
-            if (StringUtils.isNotEmpty(languages)) {
-                String[] langArray = languages.split("[\\s,]+");
-                setLanguages(langArray);
-            }
-            super.loadFromXML(xml);
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        setShortText(xml.getBoolean("[@shortText]", isShortText()));
+        setKeepProbabilities(xml.getBoolean(
+                "[@keepProbabilities]", isKeepProbabilities()));
+        setFallbackLanguage(xml.getString(
+                "[@fallbackLanguage]", getFallbackLanguage()));
+        String languages = xml.getString("languages");
+        if (StringUtils.isNotEmpty(languages)) {
+            String[] langArray = languages.split("[\\s,]+");
+            setLanguages(langArray);
         }
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.writeAttribute("shortText", Boolean.toString(shortText));
-            writer.writeAttribute(
-                    "keepProbabilities", Boolean.toString(keepProbabilities));
-            writer.writeAttribute("fallbackLanguage", fallbackLanguage);
-            
-            if (ArrayUtils.isNotEmpty(languages)) {
-                writer.writeStartElement("languages");
-                writer.writeCharacters(StringUtils.join(languages, ','));
-                writer.writeEndElement();
-            }
-
-            super.saveToXML(writer);
-
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute("shortText", Boolean.toString(shortText));
+        writer.writeAttribute(
+                "keepProbabilities", Boolean.toString(keepProbabilities));
+        writer.writeAttribute("fallbackLanguage", fallbackLanguage);
+        
+        if (ArrayUtils.isNotEmpty(languages)) {
+            writer.writeStartElement("languages");
+            writer.writeCharacters(StringUtils.join(languages, ','));
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;

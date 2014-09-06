@@ -19,8 +19,6 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,12 +35,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * Formats a date from any given format to a format of choice, as per the 
@@ -65,13 +61,20 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
  *      fromField="(from field)" toField="(to field)" 
  *      fromFormat="(date format)" toFormat="(date format)"
- *      keepBadDates="(false|true)" overwrite="[false|true]" /&gt
+ *      keepBadDates="(false|true)" overwrite="[false|true]" &gt
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
  * </pre>
  * 
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class DateFormatTagger implements IDocumentTagger, IXMLConfigurable {
+public class DateFormatTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = -3380117073554862363L;
 
@@ -93,7 +96,7 @@ public class DateFormatTagger implements IDocumentTagger, IXMLConfigurable {
     }
 
     @Override
-    public void tagDocument(String reference, InputStream document,
+    public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         validateArguments();
@@ -213,8 +216,7 @@ public class DateFormatTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         fromField = xml.getString("[@fromField]", fromField);
         toField = xml.getString("[@toField]", toField);
         fromFormat = xml.getString("[@fromFormat]", fromFormat);
@@ -224,27 +226,16 @@ public class DateFormatTagger implements IDocumentTagger, IXMLConfigurable {
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-
-            writer.writeAttributeString("fromField", fromField);
-            writer.writeAttributeString("toField", toField);
-            writer.writeAttributeString("fromFormat", fromFormat);
-            writer.writeAttributeString("toFormat", toFormat);
-            writer.writeAttributeBoolean("overwrite", overwrite);
-            writer.writeAttributeBoolean("keepBadDates", keepBadDates);
-            
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttributeString("fromField", fromField);
+        writer.writeAttributeString("toField", toField);
+        writer.writeAttributeString("fromFormat", fromFormat);
+        writer.writeAttributeString("toFormat", toFormat);
+        writer.writeAttributeBoolean("overwrite", overwrite);
+        writer.writeAttributeBoolean("keepBadDates", keepBadDates);
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;

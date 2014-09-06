@@ -68,7 +68,6 @@ public class TextBetweenTaggerTest {
         TextBetweenTagger tagger = new TextBetweenTagger();
         tagger.addTextEndpoints("headings", "<h1>", "</h1>");
         tagger.addTextEndpoints("headings", "<h2>", "</h2>");
-        tagger.setContentTypeRegex("fakeRegex");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }

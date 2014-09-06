@@ -66,7 +66,6 @@ public class StripAfterTransformerTest {
         StripAfterTransformer t = new StripAfterTransformer();
         t.setInclusive(true);
         t.setStripAfterRegex("<p>");
-        t.setContentTypeRegex("application/xml");
         System.out.println("Writing/Reading this: " + t);
         ConfigurationUtil.assertWriteRead(t);
     }

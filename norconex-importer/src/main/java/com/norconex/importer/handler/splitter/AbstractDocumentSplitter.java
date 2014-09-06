@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -15,78 +15,79 @@
  * You should have received a copy of the GNU General Public License
  * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
-package com.norconex.importer.handler.tagger;
+package com.norconex.importer.handler.splitter;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.io.OutputStream;
+import java.util.List;
 
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * <p>Base class for taggers dealing with the body of text documents only.  
- * Subclasses can safely be used as either pre-parse or post-parse handlers
- * restricted to text documents only (see {@link AbstractImporterHandler}).
- * </p>
+ * Base class for splitters .
+ * 
+ * <p/>Sub-classes can be used safely as post-parse handlers 
+ * (assumed to be text).   
+ * Add a restriction to text-documents only when using as a 
+ * pre-handler (see {@link AbstractImporterHandler}).
+ * 
+ * <p />
+ * 
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
- *  &lt;restrictTo
- *          caseSensitive="[false|true]" &gt;
+ *  &lt;restrictTo caseSensitive="[false|true]" &gt;
  *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
  *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
-public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger
-            implements IDocumentTagger {
+public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
+            implements IDocumentSplitter {
 
-    private static final long serialVersionUID = 7733519110785336458L;
+    private static final long serialVersionUID = -6511725137481907345L;
+
+    public AbstractDocumentSplitter() {
+        super("splitter");
+    }
 
     @Override
-    protected final void tagApplicableDocument(
-            String reference, InputStream document,
+    public final List<ImporterDocument> splitDocument(
+            String reference, InputStream input, OutputStream output, 
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
         
-        String contentType = metadata.getString("Content-Type", "");
-        contentType = contentType.replaceAll(".*charset=", "");
-        if (StringUtils.isBlank(contentType)) {
-            contentType = CharEncoding.UTF_8;
+        if (!isApplicable(reference, metadata, parsed)) {
+            return null;
         }
-        try {
-            InputStreamReader is = new InputStreamReader(document, contentType);
-            tagTextDocument(reference, is, metadata, parsed);
-        } catch (UnsupportedEncodingException e) {
-            throw new ImporterHandlerException(e);
-        }
+        return splitApplicableDocument(
+                reference, input, output, metadata, parsed);
     }
 
-    protected abstract void tagTextDocument(
-            String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException;
+    protected abstract List<ImporterDocument> splitApplicableDocument(
+            String reference, InputStream input, OutputStream output, 
+            ImporterMetadata metadata, boolean parsed) 
+                    throws ImporterHandlerException;
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamTagger)) {
+        if (!(other instanceof AbstractDocumentSplitter)) {
             return false;
         }
         return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();
     }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder().appendSuper(super.hashCode()).toHashCode();
     } 
-
 }

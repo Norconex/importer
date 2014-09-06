@@ -17,15 +17,9 @@
  */
 package com.norconex.importer.handler.transformer;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -35,15 +29,10 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * Base class for transformers dealing with text documents only.
- * Subclasses can safely be used as either pre-parse or post-parse handlers
- * restricted to text documents only (see {@link AbstractImporterHandler}).
+ * Base class for transformers.
  * <p/>
- * Sub-classes can restrict to which document to apply this transformation
- * based on document metadata (see {@link AbstractImporterHandler}).
- * <p/>
- * Subclasses implementing {@link IXMLConfigurable} should allow this inner 
- * configuration:
+ * 
+ * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
  *      &lt;restrictTo caseSensitive="[false|true]" &gt;
  *              field="(name of header/metadata field name to match)"&gt;
@@ -52,38 +41,37 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
-public abstract class AbstractCharStreamTransformer 
-            extends AbstractDocumentTransformer {
+public abstract class AbstractDocumentTransformer 
+            extends AbstractImporterHandler
+            implements IDocumentTransformer {
 
-    private static final long serialVersionUID = -7465364282740091371L;
-    
+    private static final long serialVersionUID = 7035943850607201617L;
+
+    public AbstractDocumentTransformer() {
+        super("transformer");
+    }
+
     @Override
-    protected final void transformApplicableDocument(
-            String reference, InputStream input,
+    public final void transformDocument(String reference, InputStream input,
             OutputStream output, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
-        try {
-            InputStreamReader is = new InputStreamReader(input, CharEncoding.UTF_8);
-            OutputStreamWriter os = 
-                    new OutputStreamWriter(output, CharEncoding.UTF_8);
-            transformTextDocument(reference, is, os, metadata, parsed);
-            os.flush();
-        } catch (IOException e) {
-            throw new ImporterHandlerException(
-                    "Cannot transform character stream.", e);
+        if (!isApplicable(reference, metadata, parsed)) {
+            return;
         }
+        transformApplicableDocument(reference, input, output, metadata, parsed);
     }
 
-    protected abstract void transformTextDocument(
-            String reference, Reader input,
-            Writer output, ImporterMetadata metadata, boolean parsed)
-            throws IOException;
+    protected abstract void transformApplicableDocument(
+            String reference, InputStream input,
+            OutputStream output, ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException;
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamTransformer)) {
+        if (!(other instanceof AbstractDocumentTransformer)) {
             return false;
         }
         return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();

@@ -19,27 +19,21 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 /**
  * <p>
  * Forces a metadata field to be single-value.  The action can be one of the 
@@ -63,13 +57,18 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SingleValueTagger"&gt;
  *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt
  *      &lt;-- multiple single value fields allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class ForceSingleValueTagger 
-        implements IDocumentTagger, IXMLConfigurable {
+public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = -430885800148300053L;
 
@@ -77,10 +76,11 @@ public class ForceSingleValueTagger
             new HashMap<String, String>();
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document, 
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+        
         for (String name : singleFields.keySet()) {
             List<String> values = metadata.getStrings(name);  
             String action = singleFields.get(name);
@@ -117,43 +117,27 @@ public class ForceSingleValueTagger
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            List<HierarchicalConfiguration> nodes = 
-                    xml.configurationsAt("singleValue");
-            for (HierarchicalConfiguration node : nodes) {
-                String name = node.getString("[@field]");
-                String action = node.getString("[@action]");
-                addSingleValueField(name, action);
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        List<HierarchicalConfiguration> nodes = 
+                xml.configurationsAt("singleValue");
+        for (HierarchicalConfiguration node : nodes) {
+            String name = node.getString("[@field]");
+            String action = node.getString("[@action]");
+            addSingleValueField(name, action);
         }
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-
-            for (String name : singleFields.keySet()) {
-                String action = singleFields.get(name);
-                if (action != null) {
-                    writer.writeStartElement("singleValue");
-                    writer.writeAttribute("field", name);
-                    writer.writeAttribute("action", action);
-                    writer.writeEndElement();
-                }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (String name : singleFields.keySet()) {
+            String action = singleFields.get(name);
+            if (action != null) {
+                writer.writeStartElement("singleValue");
+                writer.writeAttribute("field", name);
+                writer.writeAttribute("action", action);
+                writer.writeEndElement();
             }
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
     

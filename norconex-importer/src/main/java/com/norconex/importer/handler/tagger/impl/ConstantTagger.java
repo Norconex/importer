@@ -17,29 +17,22 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * <p>Define and add constant values to documents.  To add multiple constant 
@@ -54,13 +47,18 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
  *      &lt;constant name="CONSTANT_NAME"&gtConstant Value&lt;/constant&gt
  *      &lt;!-- multiple constant tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class ConstantTagger 
-        implements IDocumentTagger, IXMLConfigurable {
+public class ConstantTagger extends AbstractDocumentTagger{
 
     private static final long serialVersionUID = -6062036871216739761L;
     
@@ -68,10 +66,11 @@ public class ConstantTagger
             new HashMap<String, List<String>>();
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document, 
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+        
         for (String name : constants.keySet()) {
             List<String> values = constants.get(name);
             if (values != null) {
@@ -101,45 +100,29 @@ public class ConstantTagger
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            List<HierarchicalConfiguration> nodes =
-                    xml.configurationsAt("constant");
-            for (HierarchicalConfiguration node : nodes) {
-                String name = node.getString("[@name]");
-                String value = node.getString("");
-                addConstant(name, value);
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) {
+        List<HierarchicalConfiguration> nodes =
+                xml.configurationsAt("constant");
+        for (HierarchicalConfiguration node : nodes) {
+            String name = node.getString("[@name]");
+            String value = node.getString("");
+            addConstant(name, value);
         }
     }
-
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            
-            for (String name : constants.keySet()) {
-                List<String> values = constants.get(name);
-                for (String value : values) {
-                    if (value != null) {
-                        writer.writeStartElement("constant");
-                        writer.writeAttribute("name", name);
-                        writer.writeCharacters(value);
-                        writer.writeEndElement();
-                    }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (String name : constants.keySet()) {
+            List<String> values = constants.get(name);
+            for (String value : values) {
+                if (value != null) {
+                    writer.writeStartElement("constant");
+                    writer.writeAttribute("name", name);
+                    writer.writeCharacters(value);
+                    writer.writeEndElement();
                 }
             }
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
     

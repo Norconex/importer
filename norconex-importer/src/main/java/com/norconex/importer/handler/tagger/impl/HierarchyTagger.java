@@ -19,14 +19,10 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -35,11 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * Given a separator, split a field string into multiple segments 
@@ -68,13 +63,19 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *                 fromSeparator="(original separator)" toSeparator="(new separator)"
  *                 overwrite="[false|true]" /&gt
  *      &lt;-- multiple hierarchy tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * 
  * @author Pascal Essiembre
  * @since 1.3.0
  */
-public class HierarchyTagger implements IDocumentTagger, IXMLConfigurable {
+public class HierarchyTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 3040227993725399299L;
 
@@ -162,9 +163,10 @@ public class HierarchyTagger implements IDocumentTagger, IXMLConfigurable {
             new ArrayList<HierarchyDetails>();
 
     @Override
-    public void tagDocument(String reference, InputStream document,
+    public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
+
         for (HierarchyDetails details : list) {
             breakSegments(metadata, details);
         }
@@ -221,8 +223,7 @@ public class HierarchyTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         List<HierarchicalConfiguration> nodes =
                 xml.configurationsAt("hierarchy");
         for (HierarchicalConfiguration node : nodes) {
@@ -234,42 +235,31 @@ public class HierarchyTagger implements IDocumentTagger, IXMLConfigurable {
                     node.getBoolean("[@overwrite]", false));
         }
     }
-    
+
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            
-            for (HierarchyDetails details : list) {
-                writer.writeStartElement("hierarchy");
-                if (StringUtils.isNotBlank(details.fromField)) {
-                    writer.writeAttribute("fromField", details.fromField);
-                }
-                if (StringUtils.isNotBlank(details.toField)) {
-                    writer.writeAttribute("toField", details.toField);
-                }
-                if (StringUtils.isNotBlank(details.fromSeparator)) {
-                    writer.writeAttribute(
-                            "fromSeparator", details.fromSeparator);
-                }
-                if (StringUtils.isNotBlank(details.toSeparator)) {
-                    writer.writeAttribute("toSeparator", details.toSeparator);
-                }
-                writer.writeAttribute("overwrite", 
-                        Boolean.toString(details.overwrite));
-                writer.writeEndElement();
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (HierarchyDetails details : list) {
+            writer.writeStartElement("hierarchy");
+            if (StringUtils.isNotBlank(details.fromField)) {
+                writer.writeAttribute("fromField", details.fromField);
             }
+            if (StringUtils.isNotBlank(details.toField)) {
+                writer.writeAttribute("toField", details.toField);
+            }
+            if (StringUtils.isNotBlank(details.fromSeparator)) {
+                writer.writeAttribute(
+                        "fromSeparator", details.fromSeparator);
+            }
+            if (StringUtils.isNotBlank(details.toSeparator)) {
+                writer.writeAttribute("toSeparator", details.toSeparator);
+            }
+            writer.writeAttribute("overwrite", 
+                    Boolean.toString(details.overwrite));
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
-
+    
     @Override
     public int hashCode() {
         final int prime = 31;

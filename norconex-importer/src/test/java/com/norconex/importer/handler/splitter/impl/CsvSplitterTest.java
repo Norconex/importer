@@ -116,11 +116,10 @@ public class CsvSplitterTest {
     @Test
     public void testWriteRead() throws IOException {
         CsvSplitter splitter = new CsvSplitter();
-        splitter.setContentTypeRegex("blah");
         splitter.setEscapeCharacter('.');
         splitter.setLinesToSkip(10);
         splitter.setQuoteCharacter('!');
-        splitter.setRestriction("key", "value", true);
+        splitter.addRestriction("key", "value", true);
         splitter.setSeparatorCharacter('@');
         splitter.setUseFirstRowAsFields(true);
         System.out.println("Writing/Reading this: " + splitter);

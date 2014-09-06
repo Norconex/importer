@@ -18,14 +18,10 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -33,8 +29,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
@@ -50,16 +46,13 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
- *      &lt;contentTypeRegex&gt;
- *          (regex to identify text content-types for pre-import, 
- *           overriding default)
- *      &lt;/contentTypeRegex&gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
- *              property="(name of header/metadata name to match)"
+ *      &lt;stripAfterRegex&gt;(regex)&lt;/stripAfterRegex&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
- *      &lt;stripAfterRegex&gt;(regex)&lt;/stripAfterRegex&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -129,36 +122,22 @@ public class StripAfterTransformer extends AbstractStringTransformer
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         setInclusive(xml.getBoolean("[@inclusive]", false));
-        super.loadFromXML(xml);
         setStripAfterRegex(xml.getString("stripAfterRegex", null));
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("transformer");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.writeAttribute(
-                    "caseSensitive", Boolean.toString(isCaseSensitive()));
-            writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
-            super.saveToXML(writer);
-            writer.writeStartElement("stripAfterRegex");
-            writer.writeCharacters(stripAfterRegex);
-            writer.writeEndElement();
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute(
+                "caseSensitive", Boolean.toString(isCaseSensitive()));
+        writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
+        writer.writeStartElement("stripAfterRegex");
+        writer.writeCharacters(stripAfterRegex);
+        writer.writeEndElement();
     }
-
     
 
     @Override

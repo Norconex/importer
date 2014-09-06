@@ -83,7 +83,6 @@ public class TestStatisticsTaggerTest {
     public void testWriteRead() throws IOException {
         TextStatisticsTagger tagger = new TextStatisticsTagger();
         tagger.setFieldName("afield");
-        tagger.setContentTypeRegex("fakeRegex");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }

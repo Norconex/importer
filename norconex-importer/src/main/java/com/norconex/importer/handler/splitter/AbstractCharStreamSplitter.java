@@ -33,60 +33,40 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
-import com.norconex.importer.handler.AbstractRestrictiveHandler;
-import com.norconex.importer.handler.AbstractTextRestrictiveHandler;
+import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * <p>Base class for splitters dealing with text documents only.  Subclasses
- * can safely be used as either pre-parse or post-parse handlers.
- * </p>
- * <p>
- * For pre-parsing, non-text documents will simply be ignored and no
- * transformation will occur.  To find out if a document is a text-one, the
- * metadata {@link ImporterMetadata#DOC_CONTENT_TYPE} value is used. By default
- * any content type starting with "text/" is considered text.  This default
- * behavior can be changed with the {@link #setContentTypeRegex(String)} method.
- * One must make sure to only match text documents to avoid parsing exceptions.
- * </p>
- * <p>
- * For post-parsing, all documents are assumed to be text.
- * </p>
- * <p>
- * Sub-classes can restrict to which document to apply this split
- * based on document metadata (see {@link AbstractRestrictiveHandler}).
- * </p>
- * <p>
- * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
- * configuration:</p>
+ * Base class for splitters dealing with text documents only.
+ * 
+ * <p/>Sub-classes can be used safely as post-parse handlers 
+ * (assumed to be text).   
+ * Add a restriction to text-documents only when using as a 
+ * pre-handler (see {@link AbstractImporterHandler}).
+ * 
+ * <p />
+ * 
+ * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
- *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overriding default)
- *  &lt;/contentTypeRegex&gt;
- *  &lt;restrictTo
- *          caseSensitive="[false|true]" &gt;
- *          property="(name of header/metadata name to match)"
+ *  &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
+ *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public abstract class AbstractCharStreamSplitter 
-            extends AbstractTextRestrictiveHandler
-            implements IDocumentSplitter {
+        extends AbstractDocumentSplitter {
 
     private static final long serialVersionUID = -2595121808885491325L;
 
     @Override
-    public final List<ImporterDocument> splitDocument(
+    protected final List<ImporterDocument> splitApplicableDocument(
             String reference, InputStream input, OutputStream output, 
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
-        
-        if (!documentAccepted(reference, metadata, parsed)) {
-            return null;
-        }
 
         List<ImporterDocument> children = null;
         try {

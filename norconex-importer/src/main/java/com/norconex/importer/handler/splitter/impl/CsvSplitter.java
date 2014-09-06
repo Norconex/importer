@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
@@ -37,8 +35,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import au.com.bytecode.opencsv.CSVReader;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -62,15 +60,12 @@ import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
  *          linesToSkip="(integer)"
  *          referenceColumn="(column name or position from 1)"
  *          contentColumns="(csv list of column/position to use as content)" &gt;
- *      &lt;contentTypeRegex&gt;
- *          (regex to identify text content-types for pre-import, 
- *           overriding default)
- *      &lt;/contentTypeRegex&gt;
  *      &lt;restrictTo
  *              caseSensitive="[false|true]" &gt;
- *              property="(name of header/metadata name to match)"
+ *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -283,9 +278,10 @@ public class CsvSplitter extends AbstractCharStreamSplitter
         this.contentColumns = contentColumns;
     }
 
+    
+
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) {
         setSeparatorCharacter(loadCharacter(
                 xml, "[@separatorCharacter]", separatorCharacter));
         setQuoteCharacter(loadCharacter(
@@ -301,42 +297,27 @@ public class CsvSplitter extends AbstractCharStreamSplitter
         if (StringUtils.isNotBlank(contentCols)) {
             setContentColumns(contentCols.split(","));
         }
-        
-        super.loadFromXML(xml);
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("splitter");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            
-            writer.writeAttribute(
-                    "separatorCharacter", String.valueOf(separatorCharacter));
-            writer.writeAttribute(
-                    "quoteCharacter", String.valueOf(quoteCharacter));
-            writer.writeAttribute(
-                    "escapeCharacter", String.valueOf(escapeCharacter));
-            writer.writeAttribute(
-                    "useFirstRowAsFields", String.valueOf(useFirstRowAsFields));
-            writer.writeAttribute("linesToSkip", String.valueOf(linesToSkip));
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute(
+                "separatorCharacter", String.valueOf(separatorCharacter));
+        writer.writeAttribute(
+                "quoteCharacter", String.valueOf(quoteCharacter));
+        writer.writeAttribute(
+                "escapeCharacter", String.valueOf(escapeCharacter));
+        writer.writeAttribute(
+                "useFirstRowAsFields", String.valueOf(useFirstRowAsFields));
+        writer.writeAttribute("linesToSkip", String.valueOf(linesToSkip));
 
-            if (StringUtils.isNotBlank(referenceColumn)) {
-                writer.writeAttribute("referenceColumn", referenceColumn);
-            }
-            if (ArrayUtils.isNotEmpty(contentColumns)) {
-                writer.writeAttribute("contentColumns", 
-                        StringUtils.join(contentColumns, ","));
-            }
-            super.saveToXML(writer);
-            
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+        if (StringUtils.isNotBlank(referenceColumn)) {
+            writer.writeAttribute("referenceColumn", referenceColumn);
+        }
+        if (ArrayUtils.isNotEmpty(contentColumns)) {
+            writer.writeAttribute("contentColumns", 
+                    StringUtils.join(contentColumns, ","));
         }
     }
 
@@ -353,4 +334,5 @@ public class CsvSplitter extends AbstractCharStreamSplitter
         }
         return character.charAt(0);
     }
+
 }

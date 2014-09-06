@@ -19,15 +19,11 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -35,12 +31,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * <p>Rename metadata fields to different names.  If the target name already
@@ -55,12 +49,18 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
  *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple rename tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
+public class RenameTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 5747497256472060081L;
 
@@ -68,10 +68,11 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
             new HashMap<String, RenameDetails>();
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document, 
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+        
         for (String from : renames.keySet()) {
             RenameDetails details = renames.get(from);
             List<String> fromValues = metadata.get(from);
@@ -96,43 +97,27 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            List<HierarchicalConfiguration> nodes =
-                    xml.configurationsAt("rename");
-            for (HierarchicalConfiguration node : nodes) {
-                addRename(node.getString("[@fromField]", null),
-                          node.getString("[@toField]", null),
-                          node.getBoolean("[@overwrite]", false));
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        List<HierarchicalConfiguration> nodes =
+                xml.configurationsAt("rename");
+        for (HierarchicalConfiguration node : nodes) {
+            addRename(node.getString("[@fromField]", null),
+                      node.getString("[@toField]", null),
+                      node.getBoolean("[@overwrite]", false));
         }
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            
-            for (String fromField : renames.keySet()) {
-                RenameDetails details = renames.get(fromField);
-                writer.writeStartElement("rename");
-                writer.writeAttribute("fromField", details.fromField);
-                writer.writeAttribute("toField", details.toField);
-                writer.writeAttribute(
-                        "overwrite", Boolean.toString(details.overwrite));
-                writer.writeEndElement();
-            }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (String fromField : renames.keySet()) {
+            RenameDetails details = renames.get(fromField);
+            writer.writeStartElement("rename");
+            writer.writeAttribute("fromField", details.fromField);
+            writer.writeAttribute("toField", details.toField);
+            writer.writeAttribute(
+                    "overwrite", Boolean.toString(details.overwrite));
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
     

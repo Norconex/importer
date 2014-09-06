@@ -51,14 +51,11 @@ import com.norconex.importer.util.MemoryUtil;
  * <p>Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:</p>
  * <pre>
- *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overridding default)
- *  &lt;/contentTypeRegex&gt;
- *  &lt;restrictTo
- *          caseSensitive="[false|true]" &gt;
- *          property="(name of header/metadata name to match)"
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
  */

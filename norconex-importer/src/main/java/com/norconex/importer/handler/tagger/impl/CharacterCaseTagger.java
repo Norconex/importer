@@ -17,18 +17,13 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -38,12 +33,10 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 //TODO offer sentences and words capitalizations?
 
@@ -67,13 +60,19 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  *      &lt;characterCase type="(upper|lower|words)" 
  *                     fieldName="(field to change)" /&gt
  *      &lt;!-- multiple characterCase tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 @SuppressWarnings("nls")
-public class CharacterCaseTagger implements IDocumentTagger, IXMLConfigurable {
+public class CharacterCaseTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 2008414745944904813L;
     private static final Logger LOG = 
@@ -86,11 +85,11 @@ public class CharacterCaseTagger implements IDocumentTagger, IXMLConfigurable {
     private final Map<String, String> fieldCases = new HashMap<>();
     
     @Override
-    public void tagDocument(
+    public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
-        
+
         for (String fieldName : fieldCases.keySet()) {
             String type = fieldCases.get(fieldName);
             List<String> values = metadata.getStrings(fieldName);
@@ -124,45 +123,28 @@ public class CharacterCaseTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            List<HierarchicalConfiguration> nodes = 
-                    xml.configurationsAt("characterCase");
-            fieldCases.clear();
-            for (HierarchicalConfiguration node : nodes) {
-                addFieldCase(
-                        node.getString("[@fieldName]"),
-                        node.getString("[@type]"));
-            }
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+    protected void loadHandlerFromXML(XMLConfiguration xml) {
+        List<HierarchicalConfiguration> nodes = 
+                xml.configurationsAt("characterCase");
+        fieldCases.clear();
+        for (HierarchicalConfiguration node : nodes) {
+            addFieldCase(
+                    node.getString("[@fieldName]"),
+                    node.getString("[@type]"));
         }
     }
-
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-
-            for (String fieldName : fieldCases.keySet()) {
-                writer.writeStartElement("characterCase");
-                writer.writeAttribute("fieldName", fieldName);
-                writer.writeAttribute("type", fieldCases.get(fieldName)); 
-                writer.writeEndElement();
-            }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        for (String fieldName : fieldCases.keySet()) {
+            writer.writeStartElement("characterCase");
+            writer.writeAttribute("fieldName", fieldName);
+            writer.writeAttribute("type", fieldCases.get(fieldName)); 
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
         }
     }
-
-
+    
     @Override
     public String toString() {
         return "CharacterCaseTagger [fieldCases=" + fieldCases + "]";

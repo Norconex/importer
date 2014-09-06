@@ -19,24 +19,20 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.BreakIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
@@ -108,7 +104,14 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * <p />
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
- *          fieldName="(optional field name instead of using content)" /&gt;
+ *          fieldName="(optional field name instead of using content)" &gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
@@ -215,35 +218,16 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         this.fieldName = fieldName;
     }
 
-
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-            setFieldName(xml.getString("[@fieldName]", getFieldName()));
-            super.loadFromXML(xml);
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
-        }
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        setFieldName(xml.getString("[@fieldName]", getFieldName()));
     }
 
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            if (StringUtils.isNotBlank(fieldName)) {
-                writer.writeAttribute("fieldName", fieldName);
-            }
-            super.saveToXML(writer);
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        if (StringUtils.isNotBlank(fieldName)) {
+            writer.writeAttribute("fieldName", fieldName);
         }
     }
-
 }

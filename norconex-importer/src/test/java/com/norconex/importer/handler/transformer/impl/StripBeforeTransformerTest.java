@@ -65,7 +65,6 @@ public class StripBeforeTransformerTest {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setInclusive(false);
         t.setStripBeforeRegex("So she set to work");
-        t.setContentTypeRegex("application/xml");
         System.out.println("Writing/Reading this: " + t);
         ConfigurationUtil.assertWriteRead(t);
     }

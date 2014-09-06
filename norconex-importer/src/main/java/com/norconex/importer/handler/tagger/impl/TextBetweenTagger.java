@@ -18,9 +18,7 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -28,9 +26,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -42,8 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -69,7 +65,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/contentTypeRegex&gt;
  *      &lt;restrictTo
  *              caseSensitive="[false|true]" &gt;
- *              property="(name of header/metadata name to match)"
+ *              field="(name of header/metadata name to match)"
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;textBetween name="targetFieldName"&gt
@@ -77,6 +73,12 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *          &lt;end&gt(regex)&lt;/end&gt
  *      &lt;/textBetween&gt
  *      &lt;-- multiple textBetween tags allowed --&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Khalid AlHomoud
@@ -166,12 +168,11 @@ public class TextBetweenTagger
         }
         betweens.add(new TextBetween(name, fromText, toText));
     }
+    
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         setInclusive(xml.getBoolean("[@inclusive]", false));
-        super.loadFromXML(xml);
         List<HierarchicalConfiguration> nodes = 
                 xml.configurationsAt("textBetween");
         for (HierarchicalConfiguration node : nodes) {
@@ -181,37 +182,26 @@ public class TextBetweenTagger
                     node.getString("end", null));
         }
     }
-
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("tagger");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            writer.writeAttribute(
-                    "caseSensitive", Boolean.toString(isCaseSensitive()));
-            writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
-            super.saveToXML(writer);
-            for (TextBetween between : betweens) {
-                writer.writeStartElement("textBetween");
-                writer.writeAttribute("name", between.name);
-                writer.writeStartElement("start");
-                writer.writeCharacters(between.start);
-                writer.writeEndElement();
-                writer.writeStartElement("end");
-                writer.writeCharacters(between.end);
-                writer.writeEndElement();
-                writer.writeEndElement();
-            }
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute(
+                "caseSensitive", Boolean.toString(isCaseSensitive()));
+        writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
+        for (TextBetween between : betweens) {
+            writer.writeStartElement("textBetween");
+            writer.writeAttribute("name", between.name);
+            writer.writeStartElement("start");
+            writer.writeCharacters(between.start);
             writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+            writer.writeStartElement("end");
+            writer.writeCharacters(between.end);
+            writer.writeEndElement();
+            writer.writeEndElement();
         }
     }
-
+    
     private class TextBetween implements Comparable<TextBetween>, Serializable {
         private static final long serialVersionUID = 1L;
         private final String name;
