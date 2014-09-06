@@ -44,9 +44,10 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
  * further, make sure to filter it out using an {@link IDocumentFilter}
  * implementation.
  * <p/>
- * If using the default importer parser, keep it mind it will by default
- * split most files with embedded content in them (zip, word processor document
- * with embedded documents, etc).  A typical usage for this interface is 
+ * If using the default importer parser, keep it mind you can configure it
+ * to split most files with embedded content in them (zip, 
+ * word processor document with embedded documents, etc).  A typical usage for 
+ * this interface is 
  * to break a records-type document into a single document per record. For
  * example, to break some entities from XML data files into separate documents.
  * 

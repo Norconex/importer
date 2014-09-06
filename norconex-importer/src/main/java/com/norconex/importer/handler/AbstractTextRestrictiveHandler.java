@@ -69,6 +69,7 @@ import com.norconex.importer.doc.ImporterMetadata;
  *          property="(name of header/metadata name to match)"
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
+ *  
  * </pre>
  * @author Pascal Essiembre
  */

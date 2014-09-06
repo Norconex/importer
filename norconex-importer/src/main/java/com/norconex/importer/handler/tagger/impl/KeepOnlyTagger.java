@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -43,13 +43,18 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 
 /**
- * <p>
  * Keep only the metadata fields provided, delete all other ones.
- * </p>
- * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
+ * <p />
+ * <b>Note:</b> Unless you have good reasons for doing otherwise, it is 
+ * recommended to use this handler as one of the last ones to be executed.
+ * This is a good practice to ensure all metadata fields are available
+ * to other handlers that may require them even if they are not otherwise
+ * required.
+ * <p />
+ * Can be used both as a pre-parse or post-parse handler.
+ * <p />
  * XML configuration usage:
- * </p>
+ * <p />
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"
  *      fields="[coma-separated list of fields to keep]"/&gt

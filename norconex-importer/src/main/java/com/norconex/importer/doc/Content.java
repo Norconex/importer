@@ -40,9 +40,9 @@ import com.norconex.importer.ImporterRuntimeException;
  * @since 2.0.0
  */
 public class Content {
-    //TODO make this a unique representation of content, which can be 
-    // a file, an inputstream and maybe others.
-    // Provide utility methods too.
+    //TODO Have max cache size being JVM/classloader scope.  Check every 
+    // x changes if we can still use memory before deciding to swap to file.
+    // Maybe make have a few cache scope options.
     
     public static final int DEFAULT_MAX_MEMORY_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(1);

@@ -41,8 +41,8 @@ import com.norconex.language.detector.DetectedLanguages;
 import com.norconex.language.detector.LanguageDetector;
 
 /**
- * Detects a document language and adds it to a metadata field called
- * "<code>document.language</code>".  
+ * Detects a document language and adds it to the 
+ * "<code>document.language</code>" metadata field.  
  * Optionally adds all potential languages detected with their 
  * probability score as well as additional fields following this pattern:
  * <pre>
@@ -353,7 +353,7 @@ import com.norconex.language.detector.LanguageDetector;
  *  </tr>
  * </table>
  * <p />
- * If you do not restrict the list of candidate languages to detect, the default
+ * If you do not restrict the list of language candidates to detect, the default
  * behavior is to try match all languages currently supported for your 
  * selected long/short text optimization.
  * <p />
@@ -378,6 +378,7 @@ import com.norconex.language.detector.LanguageDetector;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 @SuppressWarnings("nls")
 public class LanguageTagger extends AbstractCharStreamTagger

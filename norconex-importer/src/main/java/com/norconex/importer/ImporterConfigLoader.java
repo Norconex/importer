@@ -58,7 +58,6 @@ public final class ImporterConfigLoader {
                     "Could not load configuration file: " + configFile, e);
         }
     }    
-    
 
     /**
      * Loads importer configuration.
@@ -75,7 +74,6 @@ public final class ImporterConfigLoader {
                     "Could not load configuration file from Reader.", e);
         }
     }
-    
     
     /**
      * Loads importer configuration.

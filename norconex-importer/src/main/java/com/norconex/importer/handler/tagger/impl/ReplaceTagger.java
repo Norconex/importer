@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -46,16 +46,16 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
 
 
 /**
- * Replaces an existing metadata value with another one.  The "toName" argument
+ * Replaces an existing metadata value with another one.  The "toField" argument
  * is optional (the same field will be used for the replacement if no
- * "toName" is specified").
+ * "toField" is specified").
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
- *      &lt;replace fromName="sourceFieldName" toName="targetFieldName" 
+ *      &lt;replace fromField="sourceFieldName" toField="targetFieldName" 
  *               regex="[false|true]"&gt
  *          &lt;fromValue&gtSource Value&lt;/fromValue&gt
  *          &lt;toValue&gtTarget Value&lt;/toValue&gt
@@ -81,8 +81,8 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         
         
         for (Replacement repl : replacements) {
-            if (metadata.containsKey(repl.getFromName())) {
-                String[] metaValues = metadata.getStrings(repl.getFromName())
+            if (metadata.containsKey(repl.getFromField())) {
+                String[] metaValues = metadata.getStrings(repl.getFromField())
                         .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
                 for (int i = 0; i < metaValues.length; i++) {
                     String metaValue = metaValues[i];
@@ -95,11 +95,11 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
                                 repl.getFromValue(), repl.getToValue());
                     }
                     if (!Objects.equals(metaValue, newValue)) {
-                        if (StringUtils.isNotBlank(repl.getToName())) {
-                            metadata.addString(repl.getToName(), newValue);
+                        if (StringUtils.isNotBlank(repl.getToField())) {
+                            metadata.addString(repl.getToField(), newValue);
                         } else {
                             metaValues[i] = newValue;
-                            metadata.setString(repl.getFromName(), metaValues);
+                            metadata.setString(repl.getFromField(), metaValues);
                         }
                     }
                 }
@@ -125,10 +125,10 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         return Collections.unmodifiableList(replacements);
     }
 
-    public void removeReplacement(String fromName) {
+    public void removeReplacement(String fromField) {
         List<Replacement> toRemove = new ArrayList<>();
         for (Replacement replacement : replacements) {
-            if (Objects.equals(replacement.getFromName(), fromName)) {
+            if (Objects.equals(replacement.getFromField(), fromField)) {
                 toRemove.add(replacement);
             }
         }
@@ -138,48 +138,48 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     public void addReplacement(
-            String fromValue, String toValue, String fromName) {
-        addReplacement(fromValue, toValue, fromName, null, false);
+            String fromValue, String toValue, String fromField) {
+        addReplacement(fromValue, toValue, fromField, null, false);
     }
     public void addReplacement(
-            String fromValue, String toValue, String fromName, boolean regex) {
-        addReplacement(fromValue, toValue, fromName, null, regex);
+            String fromValue, String toValue, String fromField, boolean regex) {
+        addReplacement(fromValue, toValue, fromField, null, regex);
     }
     public void addReplacement(String fromValue, String toValue, 
-            String fromName, String toName) {
-        addReplacement(fromValue, toValue, fromName, toName, false);
+            String fromField, String toField) {
+        addReplacement(fromValue, toValue, fromField, toField, false);
     }
     public void addReplacement(String fromValue, String toValue, 
-            String fromName, String toName, boolean regex) {
+            String fromField, String toField, boolean regex) {
         replacements.add(new Replacement(
-                fromName, fromValue, toName, toValue, regex));
+                fromField, fromValue, toField, toValue, regex));
     }
 
     
     public class Replacement implements Serializable {
         private static final long serialVersionUID = 9206061804991938873L;
-        private final String fromName;
+        private final String fromField;
         private final String fromValue;
-        private final String toName;
+        private final String toField;
         private final String toValue;
         private final boolean regex;
-        public Replacement(String fromName, String fromValue, String toName,
+        public Replacement(String fromField, String fromValue, String toField,
                 String toValue, boolean regex) {
             super();
-            this.fromName = fromName;
+            this.fromField = fromField;
             this.fromValue = fromValue;
-            this.toName = toName;
+            this.toField = toField;
             this.toValue = toValue;
             this.regex = regex;
         }
-        public String getFromName() {
-            return fromName;
+        public String getFromField() {
+            return fromField;
         }
         public String getFromValue() {
             return fromValue;
         }
-        public String getToName() {
-            return toName;
+        public String getToField() {
+            return toField;
         }
         public String getToValue() {
             return toValue;
@@ -192,12 +192,12 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             final int prime = 31;
             int result = 1;
             result = prime * result
-                    + ((fromName == null) ? 0 : fromName.hashCode());
+                    + ((fromField == null) ? 0 : fromField.hashCode());
             result = prime * result
                     + ((fromValue == null) ? 0 : fromValue.hashCode());
             result = prime * result + (regex ? 1231 : 1237);
             result = prime * result
-                    + ((toName == null) ? 0 : toName.hashCode());
+                    + ((toField == null) ? 0 : toField.hashCode());
             result = prime * result
                     + ((toValue == null) ? 0 : toValue.hashCode());
             return result;
@@ -214,11 +214,11 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
                 return false;
             }
             Replacement other = (Replacement) obj;
-            if (fromName == null) {
-                if (other.fromName != null) {
+            if (fromField == null) {
+                if (other.fromField != null) {
                     return false;
                 }
-            } else if (!fromName.equals(other.fromName)) {
+            } else if (!fromField.equals(other.fromField)) {
                 return false;
             }
             if (fromValue == null) {
@@ -231,11 +231,11 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
             if (regex != other.regex) {
                 return false;
             }
-            if (toName == null) {
-                if (other.toName != null) {
+            if (toField == null) {
+                if (other.toField != null) {
                     return false;
                 }
-            } else if (!toName.equals(other.toName)) {
+            } else if (!toField.equals(other.toField)) {
                 return false;
             }
             if (toValue == null) {
@@ -249,8 +249,8 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
         }
         @Override
         public String toString() {
-            return "Replacement [fromName=" + fromName + ", fromValue="
-                    + fromValue + ", toName=" + toName + ", toValue=" + toValue
+            return "Replacement [fromField=" + fromField + ", fromValue="
+                    + fromValue + ", toField=" + toField + ", toValue=" + toValue
                     + ", regex=" + regex + "]";
         }
     }
@@ -265,8 +265,8 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
                 addReplacement(
                         node.getString("fromValue"),
                         node.getString("toValue"),
-                        node.getString("[@fromName]"),
-                        node.getString("[@toName]", null),
+                        node.getString("[@fromField]"),
+                        node.getString("[@toField]", null),
                         node.getBoolean("[@regex]", false));
             }
         } catch (ConfigurationException e) {
@@ -284,9 +284,9 @@ public class ReplaceTagger implements IDocumentTagger, IXMLConfigurable {
 
             for (Replacement replacement : replacements) {
                 writer.writeStartElement("replace");
-                writer.writeAttribute("fromName", replacement.getFromName());
-                if (replacement.getToName() != null) {
-                    writer.writeAttribute("toName", replacement.getToName());
+                writer.writeAttribute("fromField", replacement.getFromField());
+                if (replacement.getToField() != null) {
+                    writer.writeAttribute("toField", replacement.getToField());
                 }
                 writer.writeAttribute("regex", 
                         Boolean.toString(replacement.isRegex()));

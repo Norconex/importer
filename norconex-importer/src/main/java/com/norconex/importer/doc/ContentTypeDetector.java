@@ -37,6 +37,7 @@ import com.norconex.commons.lang.file.ContentType;
 /**
  * Detects content types.  This class is thread-safe.
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public class ContentTypeDetector {
 
@@ -50,9 +51,6 @@ public class ContentTypeDetector {
     public ContentTypeDetector() {
         super();
     }
-    /*default*/ ContentTypeDetector(TikaConfig tikaConfig) {
-        this.tikaConfig = tikaConfig;
-    }    
     
     public ContentType detect(File file) throws IOException {
         return detect(file, file.getName());
@@ -83,6 +81,7 @@ public class ContentTypeDetector {
     private TikaConfig getTikaConfig() throws IOException {
         if (tikaConfig == null) {
             try {
+                initTikaConfig();
                 this.tikaConfig = new TikaConfig();
             } catch (TikaException | IOException e) {
                 throw new IOException("Could not create Tika Configuration "
@@ -90,6 +89,17 @@ public class ContentTypeDetector {
             }
         }
         return tikaConfig;
+    }
+    private synchronized void initTikaConfig() throws IOException {
+        if (tikaConfig != null) {
+            return;
+        }
+        try {
+            this.tikaConfig = new TikaConfig();
+        } catch (TikaException | IOException e) {
+            throw new IOException("Could not create Tika Configuration "
+                    + "for content type detector.", e);
+        }
     }
     
     private ContentType doDetect(

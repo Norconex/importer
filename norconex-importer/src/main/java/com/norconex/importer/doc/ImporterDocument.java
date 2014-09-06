@@ -8,8 +8,9 @@ import java.io.Serializable;
 import com.norconex.commons.lang.file.ContentType;
 
 /**
- * A document.
+ * A document being imported.
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public class ImporterDocument implements Serializable {
 

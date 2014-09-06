@@ -51,7 +51,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
- *      &lt;copy from="(from field)" to="(to field)" overwrite="[false|true]" /&gt
+ *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple copy tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
@@ -65,13 +65,13 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     private static final long serialVersionUID = -1880560826072410359L;
 
     private static class CopyDetails {
-        private String from;
-        private String to;
+        private String fromField;
+        private String toField;
         private boolean overwrite;
         
         CopyDetails(String from, String to, boolean overwrite) {
-            this.from = from;
-            this.to = to;
+            this.fromField = from;
+            this.toField = to;
             this.overwrite = overwrite;
         }
 
@@ -79,9 +79,9 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((from == null) ? 0 : from.hashCode());
+            result = prime * result + ((fromField == null) ? 0 : fromField.hashCode());
             result = prime * result + (overwrite ? 1231 : 1237);
-            result = prime * result + ((to == null) ? 0 : to.hashCode());
+            result = prime * result + ((toField == null) ? 0 : toField.hashCode());
             return result;
         }
 
@@ -94,17 +94,17 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
             if (getClass() != obj.getClass())
                 return false;
             CopyDetails other = (CopyDetails) obj;
-            if (from == null) {
-                if (other.from != null)
+            if (fromField == null) {
+                if (other.fromField != null)
                     return false;
-            } else if (!from.equals(other.from))
+            } else if (!fromField.equals(other.fromField))
                 return false;
             if (overwrite != other.overwrite)
                 return false;
-            if (to == null) {
-                if (other.to != null)
+            if (toField == null) {
+                if (other.toField != null)
                     return false;
-            } else if (!to.equals(other.to))
+            } else if (!toField.equals(other.toField))
                 return false;
             return true;
         }
@@ -113,8 +113,8 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
         public String toString() {
             ToStringBuilder builder = new ToStringBuilder(
                     this, ToStringStyle.SHORT_PREFIX_STYLE);
-            builder.append("from", from);
-            builder.append("to", to);
+            builder.append("fromField", fromField);
+            builder.append("toField", toField);
             builder.append("overwrite", overwrite);
             return builder.toString();
         }
@@ -129,11 +129,11 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
         for (CopyDetails details : list) {
-            for (String value : metadata.getStrings(details.from)) {
+            for (String value : metadata.getStrings(details.fromField)) {
                 if (details.overwrite) {
-                    metadata.setString(details.to, value);
+                    metadata.setString(details.toField, value);
                 } else {
-                    metadata.addString(details.to, value);
+                    metadata.addString(details.toField, value);
                 }
             }
         }
@@ -141,15 +141,15 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
     
     /**
      * Adds copy instructions.
-     * @param from source field name 
-     * @param to target field name
-     * @param overwrite whether to overwrite target field if it exists
+     * @param fromField source field name 
+     * @param toField target field name
+     * @param overwrite whether toField overwrite target field if it exists
      */
     public void addCopyDetails(
-            String from, String to, boolean overwrite) {
-        if (StringUtils.isNotBlank(from) 
-                && StringUtils.isNotBlank(to)) {
-            list.add(new CopyDetails(from, to, overwrite));
+            String fromField, String toField, boolean overwrite) {
+        if (StringUtils.isNotBlank(fromField) 
+                && StringUtils.isNotBlank(toField)) {
+            list.add(new CopyDetails(fromField, toField, overwrite));
         }
     }
     
@@ -159,8 +159,8 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
         List<HierarchicalConfiguration> nodes =
                 xml.configurationsAt("copy");
         for (HierarchicalConfiguration node : nodes) {
-            addCopyDetails(node.getString("[@from]", null),
-                      node.getString("[@to]", null),
+            addCopyDetails(node.getString("[@fromField]", null),
+                      node.getString("[@toField]", null),
                       node.getBoolean("[@overwrite]", false));
         }
     }
@@ -175,8 +175,8 @@ public class CopyTagger implements IDocumentTagger, IXMLConfigurable {
             
             for (CopyDetails details : list) {
                 writer.writeStartElement("copy");
-                writer.writeAttribute("from", details.from);
-                writer.writeAttribute("to", details.to);
+                writer.writeAttribute("fromField", details.fromField);
+                writer.writeAttribute("toField", details.toField);
                 writer.writeAttribute("overwrite", 
                         Boolean.toString(details.overwrite));
                 writer.writeEndElement();

@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -48,16 +48,16 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
 
 /**
  * Splits an existing metadata value into multiple values based on a given
- * value separator.  The "toName" argument
+ * value separator.  The "toField" argument
  * is optional (the same field will be used to store the splits if no
- * "toName" is specified").
+ * "toField" is specified").
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
- *      &lt;split fromName="sourceFieldName" toName="targetFieldName" 
+ *      &lt;split fromField="sourceFieldName" toField="targetFieldName" 
  *               regex="[false|true]"&gt
  *          &lt;separator&gt(separator value)&lt;/separator&gt
  *      &lt;/split&gt
@@ -81,8 +81,8 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
             throws ImporterHandlerException {
         
         for (Split split : splits) {
-            if (metadata.containsKey(split.getFromName())) {
-                String[] metaValues = metadata.getStrings(split.getFromName())
+            if (metadata.containsKey(split.getFromField())) {
+                String[] metaValues = metadata.getStrings(split.getFromField())
                         .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
                 List<String> sameFieldValues = 
                         SetUniqueList.setUniqueList(new ArrayList<String>());
@@ -97,15 +97,15 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
                                 metaValue, split.getSeparator());
                     }
                     if (ArrayUtils.isNotEmpty(splitValues)) {
-                        if (StringUtils.isNotBlank(split.getToName())) {
-                            metadata.addString(split.getToName(), splitValues);
+                        if (StringUtils.isNotBlank(split.getToField())) {
+                            metadata.addString(split.getToField(), splitValues);
                         } else {
                             sameFieldValues.addAll(Arrays.asList(splitValues));
                         }
                     }
                 }
-                if (StringUtils.isBlank(split.getToName())) {
-                    metadata.setString(split.getFromName(), 
+                if (StringUtils.isBlank(split.getToField())) {
+                    metadata.setString(split.getFromField(), 
                             sameFieldValues.toArray(
                                     ArrayUtils.EMPTY_STRING_ARRAY));
                 }
@@ -132,10 +132,10 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
         return Collections.unmodifiableList(splits);
     }
 
-    public void removeSplit(String fromName) {
+    public void removeSplit(String fromField) {
         List<Split> toRemove = new ArrayList<>();
         for (Split split : splits) {
-            if (Objects.equals(split.getFromName(), fromName)) {
+            if (Objects.equals(split.getFromField(), fromField)) {
                 toRemove.add(split);
             }
         }
@@ -145,34 +145,34 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
     }
     
     public void addSplit(
-            String fromName, String separator, boolean regex) {
-        splits.add(new Split(fromName, null, separator, regex));
+            String fromField, String separator, boolean regex) {
+        splits.add(new Split(fromField, null, separator, regex));
     }
     public void addSplit(
-            String fromName, String toName, String separator, boolean regex) {
-        splits.add(new Split(fromName, toName, separator, regex));
+            String fromField, String toField, String separator, boolean regex) {
+        splits.add(new Split(fromField, toField, separator, regex));
     }
 
     
     public class Split implements Serializable {
         private static final long serialVersionUID = 9206061804991938873L;
-        private final String fromName;
-        private final String toName;
+        private final String fromField;
+        private final String toField;
         private final String separator;
         private final boolean regex;
-        public Split(String fromName, String toName,
+        public Split(String fromField, String toField,
                 String separator, boolean regex) {
             super();
-            this.fromName = fromName;
-            this.toName = toName;
+            this.fromField = fromField;
+            this.toField = toField;
             this.separator = separator;
             this.regex = regex;
         }
-        public String getFromName() {
-            return fromName;
+        public String getFromField() {
+            return fromField;
         }
-        public String getToName() {
-            return toName;
+        public String getToField() {
+            return toField;
         }
         public String getSeparator() {
             return separator;
@@ -185,10 +185,10 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
             final int prime = 31;
             int result = 1;
             result = prime * result
-                    + ((fromName == null) ? 0 : fromName.hashCode());
+                    + ((fromField == null) ? 0 : fromField.hashCode());
             result = prime * result + (regex ? 1231 : 1237);
             result = prime * result
-                    + ((toName == null) ? 0 : toName.hashCode());
+                    + ((toField == null) ? 0 : toField.hashCode());
             result = prime * result
                     + ((separator == null) ? 0 : separator.hashCode());
             return result;
@@ -205,21 +205,21 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
                 return false;
             }
             Split other = (Split) obj;
-            if (fromName == null) {
-                if (other.fromName != null) {
+            if (fromField == null) {
+                if (other.fromField != null) {
                     return false;
                 }
-            } else if (!fromName.equals(other.fromName)) {
+            } else if (!fromField.equals(other.fromField)) {
                 return false;
             }
             if (regex != other.regex) {
                 return false;
             }
-            if (toName == null) {
-                if (other.toName != null) {
+            if (toField == null) {
+                if (other.toField != null) {
                     return false;
                 }
-            } else if (!toName.equals(other.toName)) {
+            } else if (!toField.equals(other.toField)) {
                 return false;
             }
             if (separator == null) {
@@ -233,8 +233,8 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
         }
         @Override
         public String toString() {
-            return "Split [fromName=" + fromName
-                    + ", toName=" + toName + ", separator=" + separator
+            return "Split [fromField=" + fromField
+                    + ", toField=" + toField + ", separator=" + separator
                     + ", regex=" + regex + "]";
         }
     }
@@ -247,8 +247,8 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
                     xml.configurationsAt("split");
             for (HierarchicalConfiguration node : nodes) {
                 addSplit(
-                        node.getString("[@fromName]"),
-                        node.getString("[@toName]", null),
+                        node.getString("[@fromField]"),
+                        node.getString("[@toField]", null),
                         node.getString("separator"),
                         node.getBoolean("[@regex]", false));
             }
@@ -267,9 +267,9 @@ public class SplitTagger implements IDocumentTagger, IXMLConfigurable {
 
             for (Split split : splits) {
                 writer.writeStartElement("split");
-                writer.writeAttribute("fromName", split.getFromName());
-                if (split.getToName() != null) {
-                    writer.writeAttribute("toName", split.getToName());
+                writer.writeAttribute("fromField", split.getFromField());
+                if (split.getToField() != null) {
+                    writer.writeAttribute("toField", split.getToField());
                 }
                 writer.writeAttribute("regex", 
                         Boolean.toString(split.isRegex()));

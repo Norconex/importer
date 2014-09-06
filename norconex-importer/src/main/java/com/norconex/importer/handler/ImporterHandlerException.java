@@ -23,6 +23,7 @@ import com.norconex.importer.ImporterException;
  * Exception thrown by several handler classes upon encountering
  * issues.
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public class ImporterHandlerException extends ImporterException {
 

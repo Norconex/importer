@@ -21,20 +21,12 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
@@ -75,13 +67,6 @@ public class Importer {
 
 	private static final Logger LOG = LogManager.getLogger(Importer.class);
 
-	private static final String ARG_INPUTFILE = "inputFile";
-    private static final String ARG_OUTPUTFILE = "outputFile";
-    private static final String ARG_CONTENTTYPE = "contentType";
-    private static final String ARG_CONTENTENCODING = "contentEncoding";
-    private static final String ARG_REFERENCE = "reference";
-    private static final String ARG_CONFIG = "config";
-
     private static final ImporterStatus PASSING_FILTER_STATUS = 
             new ImporterStatus();
     
@@ -117,88 +102,7 @@ public class Importer {
      *    list of command-line options.
      */
     public static void main(String[] args) {
-        
-        CommandLine cmd = parseCommandLineArguments(args);
-        File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
-        ContentType contentType = 
-                ContentType.valueOf(cmd.getOptionValue(ARG_CONTENTTYPE));
-        String contentEncoding = cmd.getOptionValue(ARG_CONTENTENCODING);
-        String output = cmd.getOptionValue(ARG_OUTPUTFILE);
-        if (StringUtils.isBlank(output)) {
-            output = cmd.getOptionValue(ARG_INPUTFILE) + "-imported.txt";
-        }
-        String reference = cmd.getOptionValue(ARG_REFERENCE);
-        Properties metadata = new Properties();
-        try {
-            ImporterConfig config = null;
-            if (cmd.hasOption(ARG_CONFIG)) {
-                config = ImporterConfigLoader.loadImporterConfig(
-                        new File(cmd.getOptionValue(ARG_CONFIG)), null);
-            }
-            ImporterResponse response = new Importer(config).importDocument(
-                    inputFile, contentType, contentEncoding, 
-                    metadata, reference);
-            writeResponse(response, output, 0, 0);
-        } catch (Exception e) {
-            System.err.println(
-                    "A problem occured while importing " + inputFile);
-            e.printStackTrace(System.err);
-        }
-    }
-    
-    private static void writeResponse(
-            ImporterResponse response, String outputPath, int depth, int index) 
-                    throws IOException {
-        if (!response.isSuccess()) {
-            String statusLabel = "REJECTED: ";
-            if (response.getImporterStatus().isError()) {
-                statusLabel = "   ERROR: ";
-            }
-            System.out.println(statusLabel + response.getReference() + " (" 
-                    + response.getImporterStatus().getDescription() + ")");
-        } else {
-            ImporterDocument doc = response.getDocument();
-            StringBuilder path = new StringBuilder(outputPath);
-            if (depth > 0) {
-                int pathLength = outputPath.length();
-                int extLength = FilenameUtils.getExtension(outputPath).length();
-                if (extLength > 0) {
-                    extLength++;
-                }
-                String nameSuffix = "_" + depth + "-" + index;
-                path.insert(pathLength - extLength, nameSuffix);
-            }
-            File docfile = new File(path.toString());
-            File metafile = new File(path.toString() + ".meta");
-
-            // Write document file
-            FileOutputStream docOutStream = new FileOutputStream(docfile);
-            CachedInputStream docInStream = doc.getContent().getInputStream();
-            
-            try {
-                IOUtils.copy(docInStream, docOutStream);
-                IOUtils.closeQuietly(docOutStream);
-                IOUtils.closeQuietly(docInStream);
-
-                // Write metadata file
-                FileOutputStream metaOut = new FileOutputStream(metafile);
-                doc.getMetadata().store(metaOut, null);
-                IOUtils.closeQuietly(metaOut);
-                System.out.println("IMPORTED: " + response.getReference());
-            } catch (IOException e) {
-                System.err.println(
-                        "Could not write: " + doc.getReference());
-                e.printStackTrace(System.err);
-                System.err.println();
-                System.err.flush();
-            }
-        }
-
-        ImporterResponse[] nextedResponses = response.getNestedResponses();
-        for (int i = 0; i < nextedResponses.length; i++) {
-            ImporterResponse nextedResponse = nextedResponses[i];
-            writeResponse(nextedResponse, outputPath, depth + 1, i + 1);
-        }
+        ImporterLauncher.launch(args);
     }
     
     /**
@@ -237,7 +141,6 @@ public class Importer {
      * @return importer output
      * @throws ImporterException problem importing document
      */    
-    //TODO return ImporterOutput instead, which will hold: isRejected, rejectedCause, ImportDocument
     public ImporterResponse importDocument(
             final File file, ContentType contentType, String contentEncoding,
             Properties metadata, String reference) throws ImporterException {
@@ -358,7 +261,8 @@ public class Importer {
             }
             
             //--- Response Processor ---
-            if (ArrayUtils.isNotEmpty(importerConfig.getResponseProcessors())) {
+            if (response.getParentResponse() == null && ArrayUtils.isNotEmpty(
+                    importerConfig.getResponseProcessors())) {
                 processResponse(response);
             }            
             return response;
@@ -465,39 +369,6 @@ public class Importer {
                 && OnMatch.INCLUDE == filter.getOnMatch();
     }
     
-    private static CommandLine parseCommandLineArguments(String[] args) {
-        Options options = new Options();
-        options.addOption("i", "inputFile", true, 
-                "Required: File to be imported.");
-        options.addOption("o", "outputFile", true, 
-                "Optional: File where the imported content will be stored.");
-        options.addOption("t", "contentType", true, 
-                "Optional: The MIME Content-type of the input file.");
-        options.addOption("r", "reference", true, 
-                "Optional: Alternate unique qualifier for the input file "
-              + "(e.g. URL).");
-        options.addOption("c", "config", true, 
-                "Optional: Importer XML configuration file.");
-   
-        CommandLineParser parser = new PosixParser();
-        CommandLine cmd = null;
-        try {
-            cmd = parser.parse( options, args);
-            if(!cmd.hasOption("inputFile")) {
-                HelpFormatter formatter = new HelpFormatter();
-                formatter.printHelp( "importer[.bat|.sh]", options );
-                System.exit(-1);
-            }
-        } catch (ParseException e) {
-            System.err.println("A problem occured while parsing arguments.");
-            e.printStackTrace(System.err);
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp( "importer[.bat|.sh]", options );
-            System.exit(-1);
-        }
-        return cmd;
-    }
-    
     private void parseDocument(
             ImporterDocument doc, List<ImporterDocument> embeddedDocs)
             throws IOException, ImporterException {
@@ -511,9 +382,6 @@ public class Importer {
             return;
         }
         
-//        CachedInputStream  in = doc.getContent().getInputStream();
-//        InputStream bufInput = new BufferedInputStream(in);
-
         CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
                 out, CharEncoding.UTF_8);
@@ -521,9 +389,6 @@ public class Importer {
         try {
             List<ImporterDocument> nestedDocs = 
                     parser.parseDocument(doc, output);
-//                    parser.parseDocument(doc.getReference(), bufInput, 
-//                            doc.getContentType(), output, doc.getMetadata());
-            
             if (doc.getContentType() == null) {
                 String ct = doc.getMetadata().getString(
                                 ImporterMetadata.DOC_CONTENT_TYPE);
@@ -535,12 +400,10 @@ public class Importer {
                 doc.setContentEncoding(doc.getMetadata().getString(
                         ImporterMetadata.DOC_CONTENT_ENCODING));
             }
-            
             if (nestedDocs != null) {
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
-//            IOUtils.closeQuietly(bufInput);
             IOUtils.closeQuietly(out);
             throw e;
         }
@@ -553,11 +416,9 @@ public class Importer {
             }
             IOUtils.closeQuietly(out);
             doc.getContent().getInputStream().dispose();
-            //in.dispose();
             doc.setContent(new Content());
         } else {
             doc.getContent().getInputStream().dispose();
-            //in.dispose();
             CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();

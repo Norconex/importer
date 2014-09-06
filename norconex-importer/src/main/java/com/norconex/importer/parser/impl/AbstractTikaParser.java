@@ -65,20 +65,16 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         this.parser = parser;
     }
     
-    //TODO have an argument to ignore embedded items (but can still split or merge archives).  
-    //      Detected based whether there is a name for the item.
+    //TODO distinguish between archives and other embedded docs and offer
+    //     a flag for each whether to split them (as opposed to the generic
+    //     splitEmbedded variable). Detected based whether there is a name for 
+    //     the item.
     //TODO have a maximum recursivity setting somewhere???
-    
     //TODO have a flag that says whether to process archive/package files only
     //     or also embedded objects in documents (e.g. image in MS-word).
     
 
     @Override
-//    public final List<ImporterDocument> parseDocument(
-//            String reference,
-//            InputStream inputStream, ContentType contentType,
-//            Writer output, ImporterMetadata metadata)
-//            throws DocumentParserException {
     public final List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output)
             throws DocumentParserException {

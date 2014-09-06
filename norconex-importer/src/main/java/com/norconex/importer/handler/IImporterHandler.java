@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -20,6 +20,7 @@ package com.norconex.importer.handler;
 import java.io.Serializable;
 
 import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
 
@@ -32,6 +33,7 @@ import com.norconex.importer.handler.transformer.IDocumentTransformer;
  *   <li>{@link IDocumentFilter}: accepts or reject an incoming document.</li>
  *   <li>{@link IDocumentTagger}: modifies a document metadata.</li>
  *   <li>{@link IDocumentTransformer}: modifies a document content.</li>
+ *   <li>{@link IDocumentSplitter}: slipts a document into multiple ones.</li>
  * </ul>
  * @author Pascal Essiembre
  */

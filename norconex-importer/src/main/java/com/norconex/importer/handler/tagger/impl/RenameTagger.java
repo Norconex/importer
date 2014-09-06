@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -53,7 +53,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
- *      &lt;rename fromName="(from field)" toName="(to field)" overwrite="[false|true]" /&gt
+ *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
  *      &lt;-- multiple rename tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
@@ -87,11 +87,11 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
         }
     }
 
-    public void addRename(String fromName, String toName, boolean overwrite) {
-        if (StringUtils.isNotBlank(fromName) 
-                && StringUtils.isNotBlank(toName)) {
-            renames.put(fromName, 
-                    new RenameDetails(fromName, toName, overwrite));
+    public void addRename(String fromField, String toField, boolean overwrite) {
+        if (StringUtils.isNotBlank(fromField) 
+                && StringUtils.isNotBlank(toField)) {
+            renames.put(fromField, 
+                    new RenameDetails(fromField, toField, overwrite));
         }
     }
 
@@ -102,8 +102,8 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
             List<HierarchicalConfiguration> nodes =
                     xml.configurationsAt("rename");
             for (HierarchicalConfiguration node : nodes) {
-                addRename(node.getString("[@fromName]", null),
-                          node.getString("[@toName]", null),
+                addRename(node.getString("[@fromField]", null),
+                          node.getString("[@toField]", null),
                           node.getBoolean("[@overwrite]", false));
             }
         } catch (ConfigurationException e) {
@@ -119,11 +119,11 @@ public class RenameTagger implements IDocumentTagger, IXMLConfigurable {
             writer.writeStartElement("tagger");
             writer.writeAttribute("class", getClass().getCanonicalName());
             
-            for (String fromName : renames.keySet()) {
-                RenameDetails details = renames.get(fromName);
+            for (String fromField : renames.keySet()) {
+                RenameDetails details = renames.get(fromField);
                 writer.writeStartElement("rename");
-                writer.writeAttribute("fromName", details.fromField);
-                writer.writeAttribute("toName", details.toField);
+                writer.writeAttribute("fromField", details.fromField);
+                writer.writeAttribute("toField", details.toField);
                 writer.writeAttribute(
                         "overwrite", Boolean.toString(details.overwrite));
                 writer.writeEndElement();

@@ -2,7 +2,6 @@
 MUST for 2.0.0 release:
 ==============
 
-- Handle dates properly, supporting several formats.
 
 - Be consistant in the way metadata fields are named.  Use the term 
   metadata "field" all across.  SEE BELOW: may not be necessary if condition
@@ -13,6 +12,8 @@ MUST for 2.0.0 release:
 
 - Compare files with previous release and update changes.xml accordingly
 - Compare files with pervious release and add @since where appropriate
+
+++ Handle dates properly, supporting several formats.
 
 ++ DONE: Have the CsvSplitter offer to provide which column has the 
    reference field (for each child docs), and which fields should make up 

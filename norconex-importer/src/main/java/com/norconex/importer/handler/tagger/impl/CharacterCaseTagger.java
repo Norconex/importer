@@ -34,6 +34,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -53,6 +54,8 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * <ul>
  *   <li>uppper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
+ *   <li>words: Converts the first letter of each words to upper case, and the
+ *              rest to lowercase.</li>
  * </ul>
  * <p />
  * Can be used both as a pre-parse or post-parse handler.
@@ -61,7 +64,7 @@ import com.norconex.importer.handler.tagger.IDocumentTagger;
  * <p />
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
- *      &lt;characterCase type="(upper|lower)" 
+ *      &lt;characterCase type="(upper|lower|words)" 
  *                     fieldName="(field to change)" /&gt
  *      &lt;!-- multiple characterCase tags allowed --&gt;
  *  &lt;/tagger&gt;
@@ -76,6 +79,7 @@ public class CharacterCaseTagger implements IDocumentTagger, IXMLConfigurable {
     private static final Logger LOG = 
             LogManager.getLogger(CharacterCaseTagger.class);
     
+    public static final String CASE_WORDS = "words";
     public static final String CASE_UPPER = "upper";
     public static final String CASE_LOWER = "lower";
     
@@ -97,6 +101,8 @@ public class CharacterCaseTagger implements IDocumentTagger, IXMLConfigurable {
                         values.set(i, StringUtils.upperCase(value));
                     } else if (CASE_LOWER.equals(type)) {
                         values.set(i, StringUtils.lowerCase(value));
+                    } else if (CASE_WORDS.equals(type)) {
+                        values.set(i, WordUtils.capitalizeFully(value));
                     } else {
                         LOG.warn("Unsupported character case type: " + type);
                     }

@@ -101,7 +101,6 @@ public class CsvSplitter extends AbstractCharStreamSplitter
     private boolean useFirstRowAsFields;
     private int linesToSkip;
     
-    //TODO ***** DOCUMENT THESE and ADD TO save/load ********
     // These can be either column names or position, starting at 1
     private String referenceColumn;
     private String[] contentColumns;
