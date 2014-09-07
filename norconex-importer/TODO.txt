@@ -2,16 +2,15 @@
 MUST for 2.0.0 release:
 ==============
 
-
-- Be consistant in the way metadata fields are named.  Use the term 
-  metadata "field" all across.  SEE BELOW: may not be necessary if condition
-  is set on all handlers.  Or use a base class for all taggers?
-  
-- Make field regex filtering a lib core feature (the framework
-  would check if it passes before invoking the handler).
-
 - Compare files with previous release and update changes.xml accordingly
 - Compare files with pervious release and add @since where appropriate
+
+++ DONE: (almost like that) Make field regex filtering a lib core feature 
+   (the framework would check if it passes before invoking the handler).
+
+++ DONE: Be consistant in the way metadata fields are named.  Use the term 
+   metadata "field" all across.  SEE BELOW: may not be necessary if condition
+   is set on all handlers.  Or use a base class for all taggers?
 
 ++ Handle dates properly, supporting several formats.
 

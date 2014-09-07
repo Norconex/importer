@@ -38,7 +38,7 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
-//TODO offer sentences and words capitalizations?
+//TODO offer sentences and capitalizations?
 
 /**
  * Changes the character case of a field value according to one of the following

@@ -25,7 +25,7 @@ import com.norconex.importer.doc.ImporterDocument;
 
 /**
  * @author Pascal Essiembre
- *
+ * @since 2.0.0
  */
 public class ImporterResponse implements Serializable {
 

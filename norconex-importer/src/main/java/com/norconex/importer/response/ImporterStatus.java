@@ -24,7 +24,7 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
 
 /**
  * @author Pascal Essiembre
- *
+ * @since 2.0.0
  */
 public class ImporterStatus implements Serializable {
 

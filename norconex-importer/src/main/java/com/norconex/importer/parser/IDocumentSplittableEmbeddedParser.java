@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -24,6 +24,7 @@ package com.norconex.importer.parser;
  * embedded documents into individual documents.
  * @author Pascal Essiembre
  * @see IDocumentParserFactory
+ * @since 2.0.0
  */
 @SuppressWarnings("nls")
 public interface IDocumentSplittableEmbeddedParser extends IDocumentParser {

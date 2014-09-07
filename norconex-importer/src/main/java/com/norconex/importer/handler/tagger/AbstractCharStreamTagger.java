@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -48,8 +48,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * </pre>
  * @author Pascal Essiembre
  */
-public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger
-            implements IDocumentTagger {
+public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 7733519110785336458L;
 

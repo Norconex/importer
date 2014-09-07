@@ -19,7 +19,7 @@ package com.norconex.importer.response;
 
 /**
  * @author Pascal Essiembre
- *
+ * @since 2.0.0
  */
 public interface IImporterResponseProcessor {
 

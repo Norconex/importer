@@ -1,4 +1,4 @@
-/* Copyright 2010-2013 Norconex Inc.
+/* Copyright 2010-2014 Norconex Inc.
  * 
  * This file is part of Norconex Importer.
  * 
@@ -49,7 +49,7 @@ import com.norconex.importer.response.ImporterResponse;
  * As of version 2.0.0, you can "ignore" content-types so they do not get
  * parsed.  Unparsed documents will be sent as is to the post handlers 
  * and the calling application.   Use caution when using that feature since
- * many post-parsing handlers or applications expect text-only content for 
+ * post-parsing handlers (or applications) usually expect text-only content for 
  * them to execute properly.  Unless you really know what you are doing, <b> 
  * avoid excluding binary content types from parsing.</b>
  * <p />
