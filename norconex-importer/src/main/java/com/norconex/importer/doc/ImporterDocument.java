@@ -5,6 +5,7 @@ package com.norconex.importer.doc;
 
 import java.io.Serializable;
 
+import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentType;
 
 /**

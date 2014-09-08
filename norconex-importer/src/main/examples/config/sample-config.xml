@@ -27,6 +27,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
 <!-- 
         <transformer class="..." />
         <filter class="..." />
+        <splitter class="..." />
  -->    
     </preParseHandlers>
 

@@ -34,12 +34,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentFamily;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;

@@ -26,8 +26,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.LanguageTagger;

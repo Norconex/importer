@@ -36,10 +36,10 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
-import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;

@@ -34,10 +34,10 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
+import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
-import com.norconex.importer.doc.Content;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;

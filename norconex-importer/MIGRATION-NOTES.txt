@@ -1,22 +1,24 @@
 
-!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!
+To migrate your code from 1.x to 2.0.0, read the following:
 
+* New package locations for handlers:
 
-Some notes to help migrate from 1.x to 2.0.0:
+    *.importer.filter.*      --> *.importer.handler.filter.*
+    *.importer.tagger.*      --> *.importer.handler.tagger.*
+    *.importer.transformer.* --> *.importer.handler.transformer.*
 
-* com.norconex.importer.ContentType has been replaced with 
-  com.norconex.commons.lang.file.ContentType.
+* Importing a document previously returned a boolean value, whether the
+  document could be imported properly or not.   It now returns a 
+  IImporterResponse, which hold one or more imported document (in case of 
+  nested documents), along with an ImporterStatus.
+
+* Signature methods on importDocument methods of the Importer class have 
+  changed.  It now accepts an optional character encoding value and it no 
+  longer accepts an output stream/file.
   
-* These classes were moved from com.norconex.importer to 
-  com.norconex.importer.handler:
-    - AbstractRestrictiveHandler
-    - AbstractTextRestrictiveHandler
-    - IImportHandler
-    
-    
-    
-    
-* New fileMemCacheSize
-* New TempDirPath
-* New ability to skip parsing for specific content types
-* New CsvSplitter
+* References to com.norconex.importer.ContentType were replaced with 
+  com.norconex.commons.lang.file.ContentType.
+
+* For consistency, several references to metadata field names were 
+  renamed to use the term "field" (instead of property or else). 
+  

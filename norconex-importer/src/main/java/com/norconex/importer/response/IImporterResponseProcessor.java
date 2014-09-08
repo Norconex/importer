@@ -18,10 +18,17 @@
 package com.norconex.importer.response;
 
 /**
+ * Processes an importer response to modify it or perform other actions
+ * as required before it is returned.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public interface IImporterResponseProcessor {
 
+    /**
+     * Processes the importer response.
+     * @param response the importer response
+     * @return new response status
+     */
     ImporterStatus processImporterResponse(ImporterResponse response);
 }

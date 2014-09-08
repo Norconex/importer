@@ -23,7 +23,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
      It contains all core features offered in this release.  Sometimes
      multiple implementations are available for a given feature. Refer 
      to site documentation for more options and complete description of 
-     each features.
+     each features, with their specific configuration options.
      -->
 <importer>
 
@@ -35,6 +35,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
         <tagger class="..." />
         <transformer class="..." />
         <filter class="..." />
+        <splitter class="..." />
     </preParseHandlers>
 
     <documentParserFactory class="..." />
@@ -44,6 +45,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
         <tagger class="..." />
         <transformer class="..." />
         <filter class="..." />
+        <splitter class="..." />
     </postParseHandlers>
 
 </importer>
