@@ -30,8 +30,6 @@ import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.LanguageTagger;
-import com.norconex.language.detector.LanguageDetectorException;
 
 public class LanguageTaggerTest {
 
@@ -52,23 +50,6 @@ public class LanguageTaggerTest {
         sampleTexts = null;
     }
 
-    @Test
-    public void testUnsupportedCandiate() throws ImporterHandlerException {
-        LanguageTagger tagger = new LanguageTagger();
-        tagger.setLanguages("zqzq", "zvzv");
-        ImporterDocument doc = new ImporterDocument(
-                "n/a", new Content(sampleTexts.get("en")));
-        try {
-            tagger.tagDocument(doc.getReference(), 
-                    doc.getContent().getInputStream(), doc.getMetadata(), true);
-            Assert.fail("Should have thrown an exception due to specified "
-                    + "languages being invalid.");
-        } catch (LanguageDetectorException e) {
-            // exception expected
-        }
-    }
-    
-    
     @Test
     public void testNonMatchingDocLanguage() throws ImporterHandlerException {
         LanguageTagger tagger = new LanguageTagger();
