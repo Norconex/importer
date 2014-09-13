@@ -44,7 +44,7 @@ import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * Accepts or rejects a document based on whether specified metadata properties
+ * Accepts or rejects a document based on whether specified metadata fields
  * are empty or not.  Any control characters (char < 32) are removed 
  * before evaluating if a property is empty or not.
  * <p>
@@ -53,7 +53,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="[include|exclude]" 
- *          properties="(coma separated list of properties to match)" /&gt;
+ *          fields="(coma separated list of fields to match)" /&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.2
@@ -63,7 +63,7 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
 
     private static final long serialVersionUID = -8029862304058855686L;
 
-    private String[] properties;
+    private String[] fields;
     
 
     public EmptyMetadataFilter() {
@@ -72,25 +72,25 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
     public EmptyMetadataFilter(
             OnMatch onMatch, String... properties) {
         super();
-        this.properties = properties;
+        this.fields = properties;
         setOnMatch(onMatch);
     }
 
-    public String[] getProperties() {
-        return properties;
+    public String[] getFields() {
+        return fields;
     }
-    public void setProperties(String... properties) {
-        this.properties = properties;
+    public void setFields(String... properties) {
+        this.fields = properties;
     }
 
     @Override
     public final boolean acceptDocument(
             InputStream document, Properties metadata, boolean parsed)
             throws ImporterHandlerException {
-        if (ArrayUtils.isEmpty(properties)) {
+        if (ArrayUtils.isEmpty(fields)) {
             return getOnMatch() == OnMatch.INCLUDE;
         }
-        for (String prop : properties) {
+        for (String prop : fields) {
             Collection<String> values =  metadata.getStrings(prop);
             
             boolean isPropEmpty = true;
@@ -110,12 +110,12 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
     @Override
     public void loadFromXML(Reader in) {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
-        String fieldsStr = xml.getString("[@properties]");
+        String fieldsStr = xml.getString("[@fields]");
         String[] props = StringUtils.split(fieldsStr, ",");
         if (ArrayUtils.isEmpty(props)) {
             props = ArrayUtils.EMPTY_STRING_ARRAY;
         }
-        setProperties(props);
+        setFields(props);
         super.loadFromXML(xml);
 
     }
@@ -128,7 +128,7 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
             writer.writeAttribute("class", getClass().getCanonicalName());
             super.saveToXML(writer);
             writer.writeAttribute(
-                    "properties", StringUtils.join(properties, ","));
+                    "fields", StringUtils.join(fields, ","));
             writer.writeEndElement();
             writer.flush();
             writer.close();
@@ -141,14 +141,14 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
             .appendSuper(super.toString())
-            .append("properties", properties)
+            .append("fields", fields)
             .toString();
     }
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
             .appendSuper(super.hashCode())
-            .append(properties)
+            .append(fields)
             .toHashCode();
     }
 
@@ -166,7 +166,7 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
         EmptyMetadataFilter other = (EmptyMetadataFilter) obj;
         return new EqualsBuilder()
             .appendSuper(super.equals(obj))
-            .append(properties, other.properties)
+            .append(fields, other.fields)
             .isEquals();
     }
 

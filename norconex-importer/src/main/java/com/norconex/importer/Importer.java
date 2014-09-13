@@ -235,6 +235,7 @@ public class Importer {
         try {
             List<ImporterDocument> nestedDocs = new ArrayList<>();
             Content content = new Content(bufInput);
+            
             ImporterDocument document = 
                     new ImporterDocument(reference, content, meta);
             document.setContentType(safeContentType);
@@ -493,11 +494,12 @@ public class Importer {
         List<ImporterDocument> childDocs = h.splitDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
         try {
-            //For splitters, not writing to output stream means to blank the
-            //parent content, so we always obtain input from CachedOutputStream.
-            doc.setContent(new Content(out.getInputStream()));
+            // If writing was performed, get new content
+            if (!out.isCacheEmpty()) {
+                doc.setContent(new Content(out.getInputStream()));
+                in.dispose();
+            }
         } finally {
-            in.dispose();
             IOUtils.closeQuietly(out);
         }
         

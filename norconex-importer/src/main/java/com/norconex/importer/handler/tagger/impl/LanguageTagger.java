@@ -26,6 +26,8 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -35,6 +37,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 import com.norconex.language.detector.DetectedLanguage;
 import com.norconex.language.detector.DetectedLanguages;
 import com.norconex.language.detector.LanguageDetector;
+import com.norconex.language.detector.LanguageDetectorException;
 
 /**
  * Detects a document language and adds it to the 
@@ -385,6 +388,8 @@ public class LanguageTagger extends AbstractCharStreamTagger
     // in this tagger configuration?
     
     private static final long serialVersionUID = -7893789801356890263L;
+    private static final Logger LOG = 
+            LogManager.getLogger(LanguageTagger.class);
     
     private LanguageDetector detector;
     private boolean shortText;
@@ -397,28 +402,38 @@ public class LanguageTagger extends AbstractCharStreamTagger
             String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
-        LanguageDetector detector = getInitializedDetector();
-        DetectedLanguages langs = detector.detect(input);
 
+        
         String languageTag = null;
-        if (!langs.isEmpty()) {
-            languageTag = langs.getBestLanguage().getTag();
-        }
-        if (StringUtils.isBlank(languageTag)) {
-            languageTag = fallbackLanguage;
-        }
-        if (StringUtils.isNotBlank(languageTag)) {
-            metadata.setLanguage(languageTag);
-        }
-        if (keepProbabilities) {
-            int count = 0;
-            for (DetectedLanguage lang : langs) {
-                count++;
-                String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
-                metadata.setString(prefix + ".tag", lang.getTag());
-                metadata.setDouble(
-                        prefix + ".probability", lang.getProbability());
+
+        try {
+            LanguageDetector detector = getInitializedDetector();
+            DetectedLanguages langs = detector.detect(input);
+            if (!langs.isEmpty()) {
+                languageTag = langs.getBestLanguage().getTag();
+            }
+            if (StringUtils.isBlank(languageTag)) {
+                languageTag = fallbackLanguage;
+            }
+            if (StringUtils.isNotBlank(languageTag)) {
+                metadata.setLanguage(languageTag);
+            }
+            if (keepProbabilities) {
+                int count = 0;
+                for (DetectedLanguage lang : langs) {
+                    count++;
+                    String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
+                    metadata.setString(prefix + ".tag", lang.getTag());
+                    metadata.setDouble(
+                            prefix + ".probability", lang.getProbability());
+                }
+            }
+        } catch (LanguageDetectorException e) {
+            LOG.warn("Could not detect language. Using fallback language \""
+                    + fallbackLanguage + "\" for: " + reference);
+            LOG.debug("", e);
+            if (StringUtils.isNotBlank(fallbackLanguage)) {
+                metadata.setLanguage(fallbackLanguage);
             }
         }
     }

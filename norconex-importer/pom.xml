@@ -92,12 +92,12 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     <dependency>
     	<groupId>org.apache.tika</groupId>
     	<artifactId>tika-core</artifactId>
-    	<version>1.5</version>
+    	<version>1.6</version>
     </dependency>
     <dependency>
     	<groupId>org.apache.tika</groupId>
     	<artifactId>tika-parsers</artifactId>
-    	<version>1.5</version>
+    	<version>1.6</version>
     	<exclusions>
     	    <!-- Excluded for GPL licensing incompatibilities -->
     		<exclusion>
