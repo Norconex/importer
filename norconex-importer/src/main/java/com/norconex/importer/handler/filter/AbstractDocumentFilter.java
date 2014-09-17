@@ -54,7 +54,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see abstracto
+ * @see AbstractOnMatchFilter
  */
 public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             implements IDocumentFilter, IOnMatchFilter {
