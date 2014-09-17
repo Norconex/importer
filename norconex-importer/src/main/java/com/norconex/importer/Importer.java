@@ -490,7 +490,7 @@ public class Importer {
                     throws ImporterHandlerException, IOException {
 
         CachedInputStream  in = doc.getContent().getInputStream();
-        CachedOutputStream out = createOutputStream();
+        CachedOutputStream out = createOutputStream(0);
         
         List<ImporterDocument> childDocs = h.splitDocument(
                 doc.getReference(), in, out, doc.getMetadata(), parsed);
@@ -511,8 +511,18 @@ public class Importer {
     }
     
     private CachedOutputStream createOutputStream() {
+        //TODO find out why we get OOM exception sometimes.
+//        return createOutputStream(-1);
+        return createOutputStream(0);
+    }
+    private CachedOutputStream createOutputStream(int cacheSize) {
+        if (cacheSize == -1) {
+            return new CachedOutputStream(
+                    importerConfig.getFileMemCacheSize(), 
+                    importerConfig.getTempDir());
+        }
         return new CachedOutputStream(
-                importerConfig.getFileMemCacheSize(), 
+                cacheSize,
                 importerConfig.getTempDir());
     }
 }
