@@ -71,7 +71,7 @@ public class StripBeforeTransformer extends AbstractStringTransformer
     private String stripBeforeRegex;
 
     @Override
-    protected void transformStringDocument(String reference,
+    protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         if (stripBeforeRegex == null) {

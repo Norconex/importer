@@ -70,7 +70,7 @@ public class StripAfterTransformer extends AbstractStringTransformer
     private String stripAfterRegex;
 
     @Override
-    protected void transformStringDocument(String reference,
+    protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         if (stripAfterRegex == null) {

@@ -87,7 +87,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     private boolean caseSensitive;
 
     @Override
-    protected void transformStringDocument(String reference,
+    protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;

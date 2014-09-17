@@ -49,6 +49,10 @@
         multiple records/documents to be indexed.
       </action>
       <action dev="essiembp" type="add">
+        New RegexContentFilter for accepting/rejecting documents based
+        on a successful regular expression match on their content.
+      </action>
+      <action dev="essiembp" type="add">
         New CharacterCaseTagger for modifying the character case of a metadata 
         field value.
       </action>

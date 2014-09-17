@@ -74,7 +74,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
             new ListOrderedMap<String, String>();
 
     @Override
-    protected void transformStringDocument(String reference,
+    protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
 

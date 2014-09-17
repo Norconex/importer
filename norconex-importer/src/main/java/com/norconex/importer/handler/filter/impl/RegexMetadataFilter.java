@@ -20,14 +20,10 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.ObjectUtils;
@@ -37,12 +33,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
-import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
  * Accepts or rejects a document based on its field values using 
@@ -60,8 +54,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </pre>
  * @author Pascal Essiembre
  */
-public class RegexMetadataFilter extends AbstractOnMatchFilter
-        implements IDocumentFilter, IXMLConfigurable {
+public class RegexMetadataFilter extends AbstractDocumentFilter {
 
     private static final long serialVersionUID = -8029862304058855686L;
 
@@ -118,54 +111,44 @@ public class RegexMetadataFilter extends AbstractOnMatchFilter
     }
 
     @Override
-    public final boolean acceptDocument(
-            InputStream document, Properties metadata, boolean parsed)
+    protected boolean isDocumentMatched(String reference, InputStream input,
+            ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+
         if (StringUtils.isBlank(regex)) {
-            return getOnMatch() == OnMatch.INCLUDE;
+            return true;
         }
         Collection<String> values =  metadata.getStrings(field);
         for (Object value : values) {
             String strVal = ObjectUtils.toString(value);
             if (pattern.matcher(strVal).matches()) {
-                return getOnMatch() == OnMatch.INCLUDE;
+                return true;
             }
         }
-        return getOnMatch() == OnMatch.EXCLUDE;
+        return false;
     }
 
     @Override
-    public void loadFromXML(Reader in) {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setField(xml.getString("[@field]"));
         setRegex(xml.getString(""));
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-        super.loadFromXML(xml);
-
     }
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("filter");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            super.saveToXML(writer);
-            writer.writeAttribute("caseSensitive", 
-                    Boolean.toString(caseSensitive));
-            writer.writeCharacters(regex == null ? "" : regex);
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute("field", field);
+        writer.writeAttribute("caseSensitive", 
+                Boolean.toString(caseSensitive));
+        writer.writeCharacters(regex == null ? "" : regex);
     }
     
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
             .appendSuper(super.toString())
+            .append(field)
             .append("regex", regex)
             .append("caseSensitive", caseSensitive)
             .toString();

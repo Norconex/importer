@@ -442,6 +442,7 @@ public class Importer {
             throws ImporterHandlerException {
         
         boolean accepted = filter.acceptDocument(
+                doc.getReference(),
                 doc.getContent().getInputStream(), doc.getMetadata(), parsed);
         doc.getContent().getInputStream().rewind();
         if (!accepted) {

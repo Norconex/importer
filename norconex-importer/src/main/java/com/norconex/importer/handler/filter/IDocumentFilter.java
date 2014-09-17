@@ -19,21 +19,19 @@ package com.norconex.importer.handler.filter;
 
 import java.io.InputStream;
 
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * Filters documents. Before
- * import has occurred, the properties are limited (e.g. HTTP headers, if 
- * coming from HTTP Collector).  After import, all document properties should
- * be available.
+ * Filters documents.  Rejected documents are no longer processed.
  * @author Pascal Essiembre
  */
 public interface IDocumentFilter extends IImporterHandler {
 
     /**
      * Whether to accepts a document.
+     * @param reference document reference
      * @param document the document to evaluate
      * @param metadata document metadata
      * @param parsed whether the document has been parsed already or not (a 
@@ -41,8 +39,8 @@ public interface IDocumentFilter extends IImporterHandler {
      * @return <code>true</code> if document is accepted
      * @throws ImporterHandlerException problem reading the document
      */
-    boolean acceptDocument(
-            InputStream document, Properties metadata, boolean parsed)
+    boolean acceptDocument(String reference,
+            InputStream document, ImporterMetadata metadata, boolean parsed)
         throws ImporterHandlerException;
 
    //TODO have a RejectionCause returned instead of boolean?

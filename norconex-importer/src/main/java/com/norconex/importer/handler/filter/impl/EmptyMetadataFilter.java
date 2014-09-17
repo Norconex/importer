@@ -20,13 +20,9 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.Collection;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,12 +32,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractOnMatchFilter;
-import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
  * Accepts or rejects a document based on whether specified metadata fields
@@ -58,8 +52,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * @author Pascal Essiembre
  * @since 1.2
  */
-public class EmptyMetadataFilter extends AbstractOnMatchFilter
-        implements IDocumentFilter, IXMLConfigurable {
+public class EmptyMetadataFilter extends AbstractDocumentFilter {
 
     private static final long serialVersionUID = -8029862304058855686L;
 
@@ -84,11 +77,12 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
     }
 
     @Override
-    public final boolean acceptDocument(
-            InputStream document, Properties metadata, boolean parsed)
+    protected boolean isDocumentMatched(String reference, InputStream input,
+            ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+
         if (ArrayUtils.isEmpty(fields)) {
-            return getOnMatch() == OnMatch.INCLUDE;
+            return true;
         }
         for (String prop : fields) {
             Collection<String> values =  metadata.getStrings(prop);
@@ -101,40 +95,27 @@ public class EmptyMetadataFilter extends AbstractOnMatchFilter
                 }
             }
             if (isPropEmpty) {
-                return getOnMatch() == OnMatch.INCLUDE;
+                return true;
             }
         }
-        return getOnMatch() == OnMatch.EXCLUDE;
+        return false;
     }
-
+    
     @Override
-    public void loadFromXML(Reader in) {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         String fieldsStr = xml.getString("[@fields]");
         String[] props = StringUtils.split(fieldsStr, ",");
         if (ArrayUtils.isEmpty(props)) {
             props = ArrayUtils.EMPTY_STRING_ARRAY;
         }
         setFields(props);
-        super.loadFromXML(xml);
-
     }
+    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        try {
-            XMLStreamWriter writer = factory.createXMLStreamWriter(out);
-            writer.writeStartElement("filter");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-            super.saveToXML(writer);
-            writer.writeAttribute(
-                    "fields", StringUtils.join(fields, ","));
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
-        }
+    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttribute(
+                "fields", StringUtils.join(fields, ","));
     }
     
     @Override

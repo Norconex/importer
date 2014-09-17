@@ -109,7 +109,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             return true;
         }
         for (RegexMetadataFilter restriction : restrictions) {
-            if (restriction.acceptDocument(null, metadata, parsed)) {
+            if (restriction.acceptDocument(reference, null, metadata, parsed)) {
                 return true;
             }
         }

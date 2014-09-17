@@ -95,12 +95,12 @@ public abstract class AbstractStringTagger
                 b.append(ch);
                 if (b.length() * 2 % READ_CHUNK_SIZE == 0
                         && isTakingTooMuchMemory(b)) {
-                    tagStringDocument(reference, b, metadata, parsed, true);
+                    tagStringContent(reference, b, metadata, parsed, true);
                     BufferUtil.flushBuffer(b, null, true);
                 }
             }
             if (b.length() > 0) {
-                tagStringDocument(reference, b, metadata, parsed, false);
+                tagStringContent(reference, b, metadata, parsed, false);
                 BufferUtil.flushBuffer(b, null, false);
             }
             b.setLength(0);
@@ -112,7 +112,7 @@ public abstract class AbstractStringTagger
     }
     
     
-    protected abstract void tagStringDocument(
+    protected abstract void tagStringContent(
            String reference, StringBuilder content, ImporterMetadata metadata,
            boolean parsed, boolean partialContent) 
                    throws ImporterHandlerException;

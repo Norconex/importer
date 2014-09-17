@@ -77,7 +77,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     private final List<String> reductions = new ArrayList<String>();
 
     @Override
-    protected void transformStringDocument(String reference,
+    protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             boolean partialContent) {
 

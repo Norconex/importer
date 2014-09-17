@@ -95,7 +95,7 @@ public class TextBetweenTagger
     private boolean caseSensitive;
 
     @Override
-    protected void tagStringDocument(String reference, StringBuilder content,
+    protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, boolean partialContent) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
         if (!caseSensitive) {
