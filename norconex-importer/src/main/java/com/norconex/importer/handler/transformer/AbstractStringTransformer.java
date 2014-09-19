@@ -29,10 +29,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.MemoryUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.util.BufferUtil;
-import com.norconex.importer.util.MemoryUtil;
 
 /**
  * <p>Base class to facilitate creating transformers on text content, loading
