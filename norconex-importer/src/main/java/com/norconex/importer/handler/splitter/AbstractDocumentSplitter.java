@@ -17,7 +17,6 @@
  */
 package com.norconex.importer.handler.splitter;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
@@ -25,8 +24,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -57,20 +56,21 @@ public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
 
     @Override
     public final List<ImporterDocument> splitDocument(
-            String reference, InputStream input, OutputStream output, 
-            ImporterMetadata metadata, boolean parsed) 
+            SplittableDocument doc, 
+            OutputStream docOutput,
+            CachedStreamFactory streamFactory, boolean parsed) 
                     throws ImporterHandlerException {
         
-        if (!isApplicable(reference, metadata, parsed)) {
+        if (!isApplicable(doc.getReference(), doc.getMetadata(), parsed)) {
             return null;
         }
         return splitApplicableDocument(
-                reference, input, output, metadata, parsed);
+                doc, docOutput, streamFactory, parsed);
     }
 
     protected abstract List<ImporterDocument> splitApplicableDocument(
-            String reference, InputStream input, OutputStream output, 
-            ImporterMetadata metadata, boolean parsed) 
+            SplittableDocument doc, OutputStream output, 
+            CachedStreamFactory streamFactory, boolean parsed) 
                     throws ImporterHandlerException;
 
     @Override

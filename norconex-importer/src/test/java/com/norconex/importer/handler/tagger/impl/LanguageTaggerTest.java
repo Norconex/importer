@@ -26,8 +26,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -52,24 +52,28 @@ public class LanguageTaggerTest {
 
     @Test
     public void testNonMatchingDocLanguage() throws ImporterHandlerException {
+        CachedStreamFactory factory = 
+                new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
         tagger.setLanguages("fr", "it");
         ImporterDocument doc = new ImporterDocument(
-                "n/a", new Content(sampleTexts.get("en")));
+                "n/a", factory.newInputStream(sampleTexts.get("en")));
         tagger.tagDocument(doc.getReference(), 
-                doc.getContent().getInputStream(), doc.getMetadata(), true);
+                doc.getContent(), doc.getMetadata(), true);
         Assert.assertNotEquals("en", doc.getMetadata().getLanguage());
     }
     
     @Test
     public void testDefaultLanguageDetection() throws ImporterHandlerException {
+        CachedStreamFactory factory = 
+                new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
         
         for (String lang : sampleTexts.keySet()) {
             ImporterDocument doc = new ImporterDocument(
-                    "n/a", new Content(sampleTexts.get(lang)));
+                    "n/a", factory.newInputStream(sampleTexts.get(lang)));
             tagger.tagDocument(doc.getReference(), 
-                    doc.getContent().getInputStream(), doc.getMetadata(), true);
+                    doc.getContent(), doc.getMetadata(), true);
             Assert.assertEquals(lang, doc.getMetadata().getLanguage());
         }
     }

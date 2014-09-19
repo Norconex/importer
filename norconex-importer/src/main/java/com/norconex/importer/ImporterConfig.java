@@ -58,8 +58,10 @@ public class ImporterConfig implements IXMLConfigurable {
     
     public static final String DEFAULT_TEMP_DIR_PATH = 
             FileUtils.getTempDirectoryPath();
-    public static final int DEFAULT_FILE_MEM_CACHE_SIZE = 
+    public static final int DEFAULT_MAX_FILE_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(1);
+    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
+            (int) DataUnit.MB.toBytes(10);
     
     private IDocumentParserFactory documentParserFactory = 
             new DefaultDocumentParserFactory();
@@ -69,7 +71,9 @@ public class ImporterConfig implements IXMLConfigurable {
     private IImporterResponseProcessor[] responseProcessors;
 
     private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
-    private int fileMemCacheSize = DEFAULT_FILE_MEM_CACHE_SIZE;
+    private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
+    private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
+    
     
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
@@ -107,13 +111,19 @@ public class ImporterConfig implements IXMLConfigurable {
         this.responseProcessors = responseProcessors;
     }
 
-    public int getFileMemCacheSize() {
-        return fileMemCacheSize;
+    public int getMaxFileCacheSize() {
+        return maxFileCacheSize;
     }
-    public void setFileMemCacheSize(int fileMemCacheSize) {
-        this.fileMemCacheSize = fileMemCacheSize;
+    public void setMaxFileCacheSize(int maxFileCacheSize) {
+        this.maxFileCacheSize = maxFileCacheSize;
     }
-
+    
+    public int getMaxFilePoolCacheSize() {
+        return maxFilePoolCacheSize;
+    }
+    public void setMaxFilePoolCacheSize(int maxFilePoolCacheSize) {
+        this.maxFilePoolCacheSize = maxFilePoolCacheSize;
+    }
     @Override
     public void loadFromXML(Reader in) throws IOException {
         if (in == null) {
@@ -126,8 +136,11 @@ public class ImporterConfig implements IXMLConfigurable {
                     "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
     
             //--- File Mem Cache Size ------------------------------------------
-            setFileMemCacheSize(xml.getInt("fileMemCacheSize", 
-                    ImporterConfig.DEFAULT_FILE_MEM_CACHE_SIZE));
+            setMaxFileCacheSize(xml.getInt("maxFileCacheSize", 
+                    ImporterConfig.DEFAULT_MAX_FILE_CACHE_SIZE));
+            //--- File Pool Mem Cache Size ------------------------------------------
+            setMaxFileCacheSize(xml.getInt("maxFilePoolCacheSize", 
+                    ImporterConfig.DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
             
             //--- Pre-Import Handlers ------------------------------------------
             setPreParseHandlers(loadImportHandlers(xml, "preParseHandlers"));
@@ -193,7 +206,9 @@ public class ImporterConfig implements IXMLConfigurable {
             writer.writeStartElement("importer");
             writer.writeElementString("tempdir", getTempDir().toString());
             writer.writeElementInteger(
-                    "fileMemCacheSize", getFileMemCacheSize());
+                    "maxFileCacheSize", getMaxFileCacheSize());
+            writer.writeElementInteger(
+                    "maxFilePoolCacheSize", getMaxFilePoolCacheSize());
             writer.flush();
             
             writeHandlers(out, "preParseHandlers", getPreParseHandlers());

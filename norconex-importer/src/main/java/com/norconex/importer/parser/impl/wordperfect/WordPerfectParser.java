@@ -84,7 +84,7 @@ public class WordPerfectParser implements IDocumentParser {
     public List<ImporterDocument> parseDocument(ImporterDocument doc,
             Writer output) throws DocumentParserException {
         try {
-            output.write(extract(doc.getContent().getInputStream()).trim());
+            output.write(extract(doc.getContent()).trim());
         } catch (IOException e) {
             throw new DocumentParserException(e);
         }

@@ -17,14 +17,13 @@
  */
 package com.norconex.importer.handler.splitter;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.xmlbeans.impl.xb.xsdschema.ImportDocument;
 
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
@@ -56,7 +55,10 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
  */
 public interface IDocumentSplitter extends IImporterHandler {
 
-    List<ImporterDocument> splitDocument(String reference, InputStream input, 
-            OutputStream output, ImporterMetadata metadata, boolean parsed)
+    List<ImporterDocument> splitDocument(
+            SplittableDocument doc, 
+            OutputStream docOutput,
+            CachedStreamFactory streamFactory, 
+            boolean parsed)
                     throws ImporterHandlerException;
 }

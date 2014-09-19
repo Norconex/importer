@@ -139,7 +139,7 @@ public class ImporterTest {
     private void writeToFile(ImporterDocument doc, File file)
             throws IOException {
         FileOutputStream out = new FileOutputStream(file);
-        IOUtils.copy(doc.getContent().getInputStream(), out);
+        IOUtils.copy(doc.getContent(), out);
         out.close();
     }
     

@@ -34,11 +34,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentFamily;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.ImporterDocument;
@@ -49,6 +49,7 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.splitter.IDocumentSplitter;
+import com.norconex.importer.handler.splitter.SplittableDocument;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.DocumentParserException;
@@ -73,6 +74,7 @@ public class Importer {
 	private final ImporterConfig importerConfig;
 	private final ContentTypeDetector contentTypeDetector =
 	        new ContentTypeDetector();
+	private final CachedStreamFactory streamFactory;
     
     /**
      * Creates a new importer with default configuration.
@@ -94,6 +96,10 @@ public class Importer {
         if (!this.importerConfig.getTempDir().exists()) {
             this.importerConfig.getTempDir().mkdirs();
         }
+        streamFactory = new CachedStreamFactory(
+                this.importerConfig.getMaxFilePoolCacheSize(),
+                this.importerConfig.getMaxFileCacheSize(),
+                this.importerConfig.getTempDir());
     }
 
     /**
@@ -103,6 +109,10 @@ public class Importer {
      */
     public static void main(String[] args) {
         ImporterLauncher.launch(args);
+    }
+    
+    public CachedStreamFactory getStreamFactory() {
+        return streamFactory;
     }
     
     /**
@@ -234,8 +244,7 @@ public class Importer {
         //--- Document Handling ---
         try {
             List<ImporterDocument> nestedDocs = new ArrayList<>();
-            Content content = new Content(bufInput);
-            
+            CachedInputStream content = streamFactory.newInputStream(bufInput);
             ImporterDocument document = 
                     new ImporterDocument(reference, content, meta);
             document.setContentType(safeContentType);
@@ -251,7 +260,7 @@ public class Importer {
             }
             for (ImporterDocument childDoc : nestedDocs) {
                 ImporterResponse nestedResponse = importDocument(
-                                childDoc.getContent().getInputStream(),
+                        childDoc.getContent(),
                         childDoc.getContentType(), 
                         childDoc.getContentEncoding(),
                         childDoc.getMetadata(), 
@@ -416,25 +425,25 @@ public class Importer {
                         + doc.getReference());
             }
             IOUtils.closeQuietly(out);
-            doc.getContent().getInputStream().dispose();
-            doc.setContent(new Content());
+            doc.getContent().dispose();
+            doc.setContent(streamFactory.newInputStream());
         } else {
-            doc.getContent().getInputStream().dispose();
+            doc.getContent().dispose();
             CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();
             } finally {
                 IOUtils.closeQuietly(out);
             }
-            doc.setContent(new Content(newInputStream));
+            doc.setContent(newInputStream);
         }
     }
 
     private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(), 
-                doc.getContent().getInputStream(), doc.getMetadata(), parsed);
-        doc.getContent().getInputStream().rewind();
+                doc.getContent(), doc.getMetadata(), parsed);
+//        doc.getContent().rewind();
     }
     
     private boolean acceptDocument(
@@ -443,8 +452,8 @@ public class Importer {
         
         boolean accepted = filter.acceptDocument(
                 doc.getReference(),
-                doc.getContent().getInputStream(), doc.getMetadata(), parsed);
-        doc.getContent().getInputStream().rewind();
+                doc.getContent(), doc.getMetadata(), parsed);
+        doc.getContent().rewind();
         if (!accepted) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document import rejected. Filter=" + filter);
@@ -458,7 +467,7 @@ public class Importer {
             IDocumentTransformer transformer, boolean parsed) 
                     throws ImporterHandlerException, IOException {
         
-        CachedInputStream  in = doc.getContent().getInputStream();
+        CachedInputStream  in = doc.getContent();
         CachedOutputStream out = createOutputStream();
         
         transformer.transformDocument(
@@ -481,23 +490,26 @@ public class Importer {
                 IOUtils.closeQuietly(out);
             }
         }
-        newInputStream.rewind();
-        doc.setContent(new Content(newInputStream));
+//        newInputStream.rewind();
+        doc.setContent(newInputStream);
     }
     
     private List<ImporterDocument> splitDocument(
             ImporterDocument doc, IDocumentSplitter h, boolean parsed)
                     throws ImporterHandlerException, IOException {
 
-        CachedInputStream  in = doc.getContent().getInputStream();
-        CachedOutputStream out = createOutputStream(0);
+        CachedInputStream  in = doc.getContent();
+        CachedOutputStream out = createOutputStream();
+        
+        SplittableDocument sdoc = new SplittableDocument(
+                doc.getReference(), in, doc.getMetadata());
         
         List<ImporterDocument> childDocs = h.splitDocument(
-                doc.getReference(), in, out, doc.getMetadata(), parsed);
+                sdoc, out, streamFactory, parsed);
         try {
             // If writing was performed, get new content
             if (!out.isCacheEmpty()) {
-                doc.setContent(new Content(out.getInputStream()));
+                doc.setContent(out.getInputStream());
                 in.dispose();
             }
         } finally {
@@ -511,18 +523,6 @@ public class Importer {
     }
     
     private CachedOutputStream createOutputStream() {
-        //TODO find out why we get OOM exception sometimes.
-//        return createOutputStream(-1);
-        return createOutputStream(0);
-    }
-    private CachedOutputStream createOutputStream(int cacheSize) {
-        if (cacheSize == -1) {
-            return new CachedOutputStream(
-                    importerConfig.getFileMemCacheSize(), 
-                    importerConfig.getTempDir());
-        }
-        return new CachedOutputStream(
-                cacheSize,
-                importerConfig.getTempDir());
+        return streamFactory.newOuputStream();
     }
 }

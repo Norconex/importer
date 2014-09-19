@@ -36,10 +36,10 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
@@ -88,12 +88,13 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         
         try {
             RecursiveParser recursiveParser = createRecursiveParser(
-                    doc.getReference(), output, doc.getMetadata());
+                    doc.getReference(), output, doc.getMetadata(), 
+                    doc.getContent().getStreamFactory());
             
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
             ContentHandler handler = new BodyContentHandler(output);
-            recursiveParser.parse(doc.getContent().getInputStream(), 
+            recursiveParser.parse(doc.getContent(), 
                     handler, tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
@@ -128,9 +129,11 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     }
 
     protected RecursiveParser createRecursiveParser(
-            String reference, Writer writer, ImporterMetadata metadata) {
+            String reference, Writer writer, 
+            ImporterMetadata metadata, CachedStreamFactory streamFactory) {
         if (splitEmbedded) {
-            return new SplitEmbbededParser(reference, this.parser, metadata);
+            return new SplitEmbbededParser(
+                    reference, this.parser, metadata, streamFactory);
         } else {
             return new MergeEmbeddedParser(this.parser, writer, metadata);
         }
@@ -141,12 +144,14 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
         private static final long serialVersionUID = -5011890258694908887L;
         private final String reference;
         private final ImporterMetadata metadata;
+        private final CachedStreamFactory streamFactory;
         private boolean isMasterDoc = true;
         private int embedCount;
         private List<ImporterDocument> embeddedDocs;
-        public SplitEmbbededParser(
-                String reference, Parser parser, ImporterMetadata metadata) {
+        public SplitEmbbededParser(String reference, Parser parser, 
+                ImporterMetadata metadata, CachedStreamFactory streamFactory) {
             super(parser);
+            this.streamFactory = streamFactory;
             this.reference = reference;
             this.metadata = metadata;
         }
@@ -172,13 +177,13 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
 
                 // Read the steam into cache for reuse since Tika will
                 // close the original stream on us causing exceptions later.
-                CachedOutputStream embedOutput = new CachedOutputStream(0);
+                CachedOutputStream embedOutput = streamFactory.newOuputStream();
                 IOUtils.copy(stream, embedOutput);
                 CachedInputStream embedInput = embedOutput.getInputStream();
                 embedOutput.close();
                 
                 ImporterDocument embedDoc = new ImporterDocument(
-                        embedRef, new Content(embedInput), embedMeta); 
+                        embedRef, embedInput, embedMeta); 
                 embedMeta.setReference(embedRef);
                 embedMeta.setEmbeddedParentReference(reference);
                 

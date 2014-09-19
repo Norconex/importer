@@ -18,8 +18,7 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,13 +33,16 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
 
-import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
-import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
+import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
  * Split files with Coma-Separated values (or any other characters, like tab) 
@@ -71,7 +73,7 @@ import com.norconex.importer.handler.splitter.AbstractCharStreamSplitter;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class CsvSplitter extends AbstractCharStreamSplitter
+public class CsvSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
     private static final long serialVersionUID = 1818346309740398828L;
@@ -101,27 +103,40 @@ public class CsvSplitter extends AbstractCharStreamSplitter
     private String[] contentColumns;
     
     @Override
-    protected List<ImporterDocument> splitTextDocument(
-            String reference, Reader input, Writer output, 
-            ImporterMetadata metadata, boolean parsed) 
-                    throws IOException {
+    protected List<ImporterDocument> splitApplicableDocument(
+            SplittableDocument doc, OutputStream output,
+            CachedStreamFactory streamFactory, boolean parsed)
+            throws ImporterHandlerException {
+        try {
+            return doSplitApplicableDocument(doc, output, streamFactory, parsed);
+        } catch (IOException e) {
+            throw new ImporterHandlerException(
+                    "Could not split document: " + doc.getReference(), e);
+        }
+    }
 
+    private List<ImporterDocument> doSplitApplicableDocument(
+            SplittableDocument doc, OutputStream output,
+            CachedStreamFactory streamFactory, boolean parsed)
+            throws IOException {
+        
+        
         List<ImporterDocument> rows = new ArrayList<>();
 
         //TODO by default (or as an option), try to detect the format of the 
         // file (read first few lines and count number of tabs vs coma, 
         // quotes per line, etc.
-        CSVReader cvsreader = new CSVReader(input, separatorCharacter, 
+        CSVReader cvsreader = new CSVReader(doc.getReader(), separatorCharacter, 
                 quoteCharacter, escapeCharacter, linesToSkip);
         
         String [] cols;
         String[] colNames = null;
         int count = 0;
-        StringBuilder content = new StringBuilder();
+        StringBuilder contentStr = new StringBuilder();
         while ((cols = cvsreader.readNext()) != null) {
             count++;
             ImporterMetadata childMeta = new ImporterMetadata();
-            childMeta.load(metadata);
+            childMeta.load(doc.getMetadata());
             String childEmbedRef = "row-" + count;
             if (count == 1 && useFirstRowAsFields) {
                 colNames = cols;
@@ -142,24 +157,28 @@ public class CsvSplitter extends AbstractCharStreamSplitter
                     }
                     // If a content column, add it to content
                     if (isColumnMatching(colName, colPos, contentColumns)) {
-                        if (content.length() > 0) {
-                            content.append(" ");
+                        if (contentStr.length() > 0) {
+                            contentStr.append(" ");
                         }
-                        content.append(colValue);
+                        contentStr.append(colValue);
                     }
                     childMeta.setString(colName, colValue);
                 }
-                String childDocRef = reference + "!" + childEmbedRef;
+                String childDocRef = doc.getReference() + "!" + childEmbedRef;
+                CachedInputStream content = null;
+                if (contentStr.length() > 0) {
+                    content = streamFactory.newInputStream(
+                            contentStr.toString());
+                    contentStr.setLength(0);
+                } else {
+                    content = streamFactory.newInputStream();
+                }
                 ImporterDocument childDoc = 
-                        new ImporterDocument(childDocRef, childMeta); 
+                        new ImporterDocument(childDocRef, content, childMeta); 
                 childMeta.setReference(childDocRef);
                 childMeta.setEmbeddedReference(childEmbedRef);
-                childMeta.setEmbeddedParentReference(reference);
-                childMeta.setEmbeddedParentRootReference(reference);
-                if (content.length() > 0) {
-                    childDoc.setContent(new Content(content.toString()));
-                    content.setLength(0);
-                }
+                childMeta.setEmbeddedParentReference(doc.getReference());
+                childMeta.setEmbeddedParentRootReference(doc.getReference());
                 rows.add(childDoc);
             }
         }

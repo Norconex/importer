@@ -51,7 +51,7 @@ public class DefaultDocumentParserFactoryTest {
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
                         metadata, "n/a").getDocument();
         
-        try (InputStream is = doc.getContent().getInputStream()) {
+        try (InputStream is = doc.getContent()) {
             String output = IOUtils.toString(is).substring(0, 100);
             output = StringUtils.remove(output, '\n');
             Assert.assertTrue("Non-parsed output expected to be binary.",

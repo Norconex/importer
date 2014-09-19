@@ -19,20 +19,21 @@ package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
  * @author Pascal Essiembre
@@ -40,13 +41,12 @@ import com.norconex.importer.doc.ImporterMetadata;
  */
 public class CsvSplitterTest {
 
-    private Reader input;
+    private InputStream input;
     
     @Before
     public void setup() throws IOException {
-        InputStream is = CsvSplitterTest.class.getResourceAsStream(
+        input = CsvSplitterTest.class.getResourceAsStream(
                  CsvSplitterTest.class.getSimpleName() + ".csv");
-        input = new InputStreamReader(is);
     }
 
     @After
@@ -55,7 +55,8 @@ public class CsvSplitterTest {
     }
 
     @Test
-    public void testReferenceColumnByName() throws IOException {
+    public void testReferenceColumnByName() 
+            throws IOException, ImporterHandlerException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         splitter.setReferenceColumn("clientPhone");
@@ -66,7 +67,8 @@ public class CsvSplitterTest {
     }
 
     @Test
-    public void testReferenceColumnByPosition() throws IOException {
+    public void testReferenceColumnByPosition() 
+            throws IOException, ImporterHandlerException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(false);
         splitter.setReferenceColumn("2");
@@ -78,19 +80,21 @@ public class CsvSplitterTest {
     
     
     @Test
-    public void testContentColumn() throws IOException {
+    public void testContentColumn() 
+            throws ImporterHandlerException, IOException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         splitter.setContentColumns("clientName", "3");
 
         List<ImporterDocument> docs = split(splitter);
         Assert.assertEquals("William Dalton 654-0987", 
-                IOUtils.toString(docs.get(2).getContent().getInputStream()));
+                IOUtils.toString(docs.get(2).getContent()));
     }
     
     
     @Test
-    public void testFirstRowHeader() throws IOException {
+    public void testFirstRowHeader() 
+            throws ImporterHandlerException, IOException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         List<ImporterDocument> docs = split(splitter);
@@ -104,11 +108,15 @@ public class CsvSplitterTest {
     }
     
     private List<ImporterDocument> split(CsvSplitter splitter) 
-            throws IOException {
-        StringWriter output = new StringWriter();
+            throws IOException, ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
-        List<ImporterDocument> docs = splitter.splitTextDocument(
-                "n/a", input, output, metadata, false);
+        SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
+        
+        CachedStreamFactory factory = new CachedStreamFactory(
+                100 * 1024,  100 * 1024);
+        
+        List<ImporterDocument> docs = splitter.splitApplicableDocument(
+                doc, new NullOutputStream(), factory, false);
         return docs;
         
     }

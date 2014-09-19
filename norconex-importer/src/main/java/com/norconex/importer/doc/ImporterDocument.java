@@ -5,8 +5,8 @@ package com.norconex.importer.doc;
 
 import java.io.Serializable;
 
-import com.norconex.commons.lang.Content;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.io.CachedInputStream;
 
 /**
  * A document being imported.
@@ -21,31 +21,26 @@ public class ImporterDocument implements Serializable {
     //TODO add parent reference info here???
     
     private String reference;
-    private Content content;
+    private CachedInputStream content;
     private final ImporterMetadata metadata;
     private ContentType contentType;
     private String contentEncoding;
     
-    public ImporterDocument(String reference) {
-        this(reference, (Content) null);
-    }
-    public ImporterDocument(String reference, Content content) {
+//    public ImporterDocument(String reference) {
+//        this(reference, (CachedInputStream) null);
+//    }
+    public ImporterDocument(String reference, CachedInputStream content) {
         this(reference, content, null);
     }
-    public ImporterDocument(String reference, ImporterMetadata metadata) {
-        this(reference, null, metadata);
-    }
-    public ImporterDocument(
-            String reference, Content content, ImporterMetadata metadata) {
+//    public ImporterDocument(String reference, ImporterMetadata metadata) {
+//        this(reference, null, metadata);
+//    }
+    public ImporterDocument(String reference, CachedInputStream content, 
+            ImporterMetadata metadata) {
         super();
-        if (reference == null) {
-            throw new IllegalArgumentException(
-                    "'reference' argument cannot be null.");
-        }
+        validateContent(content);
+        validateReference(reference);
         this.reference = reference;
-        if (content == null) {
-            content = new Content();
-        }
         this.content = content;
         if (metadata == null) {
             this.metadata = new ImporterMetadata();
@@ -65,13 +60,16 @@ public class ImporterDocument implements Serializable {
         return reference;
     }
     public void setReference(String reference) {
+        validateReference(reference);
         this.reference = reference;
     }
 
-    public Content getContent() {
+    public CachedInputStream getContent() {
+        content.rewind();
         return content;
     }
-    public void setContent(Content content) {
+    public void setContent(CachedInputStream content) {
+        validateContent(content);
         this.content = content;
     }
     
@@ -83,5 +81,18 @@ public class ImporterDocument implements Serializable {
     }
     public ImporterMetadata getMetadata() {
         return metadata;
+    }
+    
+    private void validateContent(CachedInputStream content) {
+        if (content == null) {
+            throw new IllegalArgumentException(
+                    "'content' argument cannot be null.");
+        }
+    }
+    private void validateReference(String reference) {
+        if (reference == null) {
+            throw new IllegalArgumentException(
+                    "'reference' argument cannot be null.");
+        }
     }
 }

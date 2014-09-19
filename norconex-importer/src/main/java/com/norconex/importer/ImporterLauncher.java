@@ -123,7 +123,7 @@ public final class ImporterLauncher {
 
             // Write document file
             FileOutputStream docOutStream = new FileOutputStream(docfile);
-            CachedInputStream docInStream = doc.getContent().getInputStream();
+            CachedInputStream docInStream = doc.getContent();
             
             try {
                 IOUtils.copy(docInStream, docOutStream);
