@@ -41,7 +41,7 @@ import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
- * Default document parser factory.  It uses Apacke Tika for <i>most</i> of its 
+ * Generic document parser factory.  It uses Apacke Tika for <i>most</i> of its 
  * supported content types.  For unknown
  * content types, it falls back to Tika generic media detector/parser.
  * <p />
@@ -70,7 +70,7 @@ import com.norconex.importer.response.ImporterResponse;
  * <p />
  * <pre>
  *  &lt;documentParserFactory 
- *          class="com.norconex.importer.parser.DefaultDocumentParserFactory" 
+ *          class="com.norconex.importer.parser.GenericDocumentParserFactory" 
  *          splitEmbedded="(false|true)" &gt;
  *      &lt;ignoredContentTypes&gt;
  *          (optional regex matching content types to ignore for parsing, 
@@ -81,7 +81,7 @@ import com.norconex.importer.response.ImporterResponse;
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")
-public class DefaultDocumentParserFactory 
+public class GenericDocumentParserFactory 
         implements IDocumentParserFactory, 
                    IXMLConfigurable {
 
@@ -98,7 +98,7 @@ public class DefaultDocumentParserFactory
     /**
      * Creates a new document parser factory of the given format.
      */
-    public DefaultDocumentParserFactory() {
+    public GenericDocumentParserFactory() {
         super();
         registerNamedParsers();
         registerFallbackParser();

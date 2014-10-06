@@ -28,6 +28,8 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -58,7 +60,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 public class DeleteTagger extends AbstractDocumentTagger {
 
     private static final long serialVersionUID = 8705987779553672659L;
-    private final List<String> fields = new ArrayList<String>();
+    private static final Logger LOG = LogManager.getLogger(DeleteTagger.class);
+    
+    private final List<String> fieldsToRemove = new ArrayList<String>();
     
     @Override
     public void tagApplicableDocument(
@@ -66,18 +70,26 @@ public class DeleteTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
-        String[] names = metadata.keySet().toArray(
+        String[] metaFields = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
-        for (String name : names) {
-            if (exists(name)) {
-                metadata.remove(name);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("All meta fields: " + ArrayUtils.toString(metaFields));
+            LOG.debug("All fields to remove: "
+                    + ArrayUtils.toString(fieldsToRemove.toArray()));
+        }
+        for (String metaField : metaFields) {
+            if (exists(metaField)) {
+                metadata.remove(metaField);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Removed field: " + metaField);
+                }
             }
         }
     }
 
-    private boolean exists(String fieldToMatch) {
-        for (String field : fields) {
-            if (field.equalsIgnoreCase(fieldToMatch)) {
+    private boolean exists(String metaField) {
+        for (String fieldToRemove : fieldsToRemove) {
+            if (fieldToRemove.trim().equalsIgnoreCase(metaField.trim())) {
                 return true;
             }
         }
@@ -86,14 +98,14 @@ public class DeleteTagger extends AbstractDocumentTagger {
     
     
     public List<String> getFields() {
-        return Collections.unmodifiableList(fields);
+        return Collections.unmodifiableList(fieldsToRemove);
     }
 
     public void addField(String field) {
-        fields.add(field);
+        fieldsToRemove.add(field);
     }
     public void removeField(String field) {
-        fields.remove(field);
+        fieldsToRemove.remove(field);
     }
 
     @Override
@@ -108,14 +120,14 @@ public class DeleteTagger extends AbstractDocumentTagger {
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute("fields", StringUtils.join(fields, ","));
+        writer.writeAttribute("fields", StringUtils.join(fieldsToRemove, ","));
     }
     
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("DeleteTagger [{");
-        builder.append(StringUtils.join(fields, ","));
+        builder.append(StringUtils.join(fieldsToRemove, ","));
         builder.append("}]");
         return builder.toString();
     }
@@ -124,7 +136,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+        result = prime * result + ((fieldsToRemove == null) ? 0 : fieldsToRemove.hashCode());
         return result;
     }
 
@@ -140,11 +152,11 @@ public class DeleteTagger extends AbstractDocumentTagger {
             return false;
         }
         DeleteTagger other = (DeleteTagger) obj;
-        if (fields == null) {
-            if (other.fields != null) {
+        if (fieldsToRemove == null) {
+            if (other.fieldsToRemove != null) {
                 return false;
             }
-        } else if (!fields.equals(other.fields)) {
+        } else if (!fieldsToRemove.equals(other.fieldsToRemove)) {
             return false;
         }
         return true;

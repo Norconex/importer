@@ -42,7 +42,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.handler.IImporterHandler;
-import com.norconex.importer.parser.DefaultDocumentParserFactory;
+import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
 import com.norconex.importer.response.IImporterResponseProcessor;
 
@@ -64,7 +64,7 @@ public class ImporterConfig implements IXMLConfigurable {
             (int) DataUnit.MB.toBytes(10);
     
     private IDocumentParserFactory documentParserFactory = 
-            new DefaultDocumentParserFactory();
+            new GenericDocumentParserFactory();
 
     private IImporterHandler[] preParseHandlers;
     private IImporterHandler[] postParseHandlers;

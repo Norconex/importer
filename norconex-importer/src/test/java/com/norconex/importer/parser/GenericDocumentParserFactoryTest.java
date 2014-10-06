@@ -33,14 +33,14 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 
-public class DefaultDocumentParserFactoryTest {
+public class GenericDocumentParserFactoryTest {
 
     @Test
     public void testIgnoringContentTypes() 
             throws IOException, ImporterException {
         
-        DefaultDocumentParserFactory factory = 
-                new DefaultDocumentParserFactory();
+        GenericDocumentParserFactory factory = 
+                new GenericDocumentParserFactory();
         factory.setIgnoredContentTypesRegex("application/pdf");
         ImporterMetadata metadata = new ImporterMetadata();
 

@@ -90,9 +90,6 @@
         metadata values (configurable).
       </action>
       <action dev="essiembp" type="update">
-        Now uses com.norconex.lang.Content to hold the document content.
-      </action>
-      <action dev="essiembp" type="update">
         *.tagger, *.filter, and *.transformer handlers were move to 
         *.handler.tagger, *.handler.filter, and *.handler.transformer.
       </action>
@@ -103,6 +100,10 @@
       <action dev="essiembp" type="update">
         For consistency, several references to metadata field names were 
         renamed to use the term "field" (instead of property or else). 
+      </action>
+      <action dev="essiembp" type="update">
+        DefaultDocumentParserFactory was renamed to 
+        GenericDocumentParserFactory.
       </action>
       <action dev="essiembp" type="remove">
         Handler "contentTypeRegex" tag was removed from handlers that 
