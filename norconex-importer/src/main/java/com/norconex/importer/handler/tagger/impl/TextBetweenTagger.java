@@ -223,14 +223,10 @@ public class TextBetweenTagger
                     .append(start, castOther.start).append(end, castOther.end)
                     .isEquals();
         }
-        private transient int hashCode;
         @Override
         public int hashCode() {
-            if (hashCode == 0) {
-                hashCode = new HashCodeBuilder().append(name).append(start)
+            return new HashCodeBuilder().append(name).append(start)
                         .append(end).toHashCode();
-            }
-            return hashCode;
         }
         private transient String toString;
         @Override

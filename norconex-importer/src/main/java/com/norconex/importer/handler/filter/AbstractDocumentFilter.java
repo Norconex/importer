@@ -126,14 +126,10 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
         return new EqualsBuilder().append(onMatch, castOther.onMatch)
                 .isEquals();
     }
-    private transient int hashCode;
 
     @Override
     public int hashCode() {
-        if (hashCode == 0) {
-            hashCode = new HashCodeBuilder().append(onMatch).toHashCode();
-        }
-        return hashCode;
+        return new HashCodeBuilder().append(onMatch).toHashCode();
     }
 
     
