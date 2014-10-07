@@ -75,9 +75,6 @@ public class CopyTagger extends AbstractDocumentTagger {
             this.toField = to;
             this.overwrite = overwrite;
         }
-
-
-        
         
         @Override
         public String toString() {

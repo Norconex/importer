@@ -17,8 +17,6 @@
  */
 package com.norconex.importer.handler.filter;
 
-import java.io.Serializable;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -32,10 +30,7 @@ import com.norconex.commons.lang.config.ConfigurationException;
  * "onmatch" option.  Default behavior on match is to include.
  * @author Pascal Essiembre
  */
-public abstract class AbstractOnMatchFilter 
-        implements IOnMatchFilter, Serializable {
-
-	private static final long serialVersionUID = 1331075301806204015L;
+public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
 
 	private OnMatch onMatch = OnMatch.INCLUDE;
 

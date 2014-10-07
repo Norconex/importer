@@ -60,11 +60,8 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             implements IDocumentFilter, IOnMatchFilter {
 
     private final AbstractOnMatchFilter onMatch = new AbstractOnMatchFilter() {
-        private static final long serialVersionUID = 1075825339565726500L;
     };
     
-    private transient String toString;
-
     public AbstractDocumentFilter() {
         super("filter");
     }
@@ -116,29 +113,29 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     protected abstract void loadFilterFromXML(
             XMLConfiguration xml) throws IOException;
 
+
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this).appendSuper(super.toString())
+                .append("onMatch", onMatch).toString();
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof AbstractDocumentFilter))
             return false;
         AbstractDocumentFilter castOther = (AbstractDocumentFilter) other;
-        return new EqualsBuilder().append(onMatch, castOther.onMatch)
-                .isEquals();
+        return new EqualsBuilder().appendSuper(super.equals(other))
+                .append(onMatch, castOther.onMatch).isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(onMatch).toHashCode();
+        return new HashCodeBuilder().appendSuper(super.hashCode())
+                .append(onMatch).toHashCode();
     }
 
-    
-    @Override
-    public String toString() {
-        if (toString == null) {
-            toString = new ToStringBuilder(this).append("onMatch", onMatch)
-                    .toString();
-        }
-        return toString;
-    }
 
     
 }
