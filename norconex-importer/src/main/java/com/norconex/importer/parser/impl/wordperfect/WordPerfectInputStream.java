@@ -33,11 +33,13 @@ import org.apache.commons.lang.ArrayUtils;
  * WordPerfect parsing code.
  * @since 1.2.0
  */
+//NOTE: Excluded from Sonar coverage calculations.
 public class WordPerfectInputStream extends FilterInputStream {
 
-	protected final static int[] INT_ARRAY = new int[] {
+	private final static int[] INT_ARRAY = new int[] {
 	        0x05, 0x06, 0x1a, 0x1b, 0x1c, 0x1d
     };
+	private final static int STREAM_PUSHBACK_BUFFER_SIZE = 4;
 
 	// The contents of this class was reverse engineered from example
 	// WordPerfect documents.
@@ -46,7 +48,7 @@ public class WordPerfectInputStream extends FilterInputStream {
 	// helpful: http://www.wotsit.org/download.asp?f=wp51ref
 
 	public WordPerfectInputStream(InputStream in) {
-		super(new PushbackInputStream(in, 4));
+		super(new PushbackInputStream(in, STREAM_PUSHBACK_BUFFER_SIZE));
 	}
 
 	/**

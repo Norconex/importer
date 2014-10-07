@@ -17,35 +17,28 @@
  */
 package com.norconex.importer.parser;
 
-import java.io.Serializable;
 import java.io.Writer;
 import java.util.List;
 
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
- * Implementations are responsible for parsing a document (InputStream) to 
- * extract its text and metadata.
+ * Implementations are responsible for parsing a document to 
+ * extract its text and metadata, as well as any embedded documents.
  * @author Pascal Essiembre
  * @see IDocumentParserFactory
  */
 @SuppressWarnings("nls")
-public interface IDocumentParser extends Serializable {
+public interface IDocumentParser {
 
-//    /**
-//     * Parses a document.
-//     * @param reference document reference
-//     * @param inputStream the document to parse
-//     * @param contentType the content type of the document
-//     * @param writer where to save the extracted text
-//     * @param metadata where to store the metadata
-//     * @return a list of first-level embedded documents, if any
-//     * @throws DocumentParserException
-//     */
-//    List<ImporterDocument> parseDocument(
-//            String reference,
-//            InputStream inputStream, ContentType contentType,
-//            Writer writer, ImporterMetadata metadata)
-//        throws DocumentParserException;
-    List<ImporterDocument> parseDocument(ImporterDocument doc, Writer output) throws DocumentParserException;
+    /**
+     * Parses a document.
+     * @param doc importer document to parse
+     * @param output where to store extracted or modified content of the 
+     *        supplied document
+     * @return a list of first-level embedded documents, if any
+     * @throws DocumentParserException
+     */
+    List<ImporterDocument> parseDocument(
+            ImporterDocument doc, Writer output) throws DocumentParserException;
 }

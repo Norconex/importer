@@ -66,10 +66,10 @@ import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
  * </p>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
-    private static final long serialVersionUID = 2115842279928499496L;
     private static final Logger LOG = 
             LogManager.getLogger(AbstractImporterHandler.class);
     

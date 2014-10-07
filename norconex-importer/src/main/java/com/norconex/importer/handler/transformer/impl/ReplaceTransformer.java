@@ -67,8 +67,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 public class ReplaceTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private static final long serialVersionUID = -8066239974517286505L;
-
     private boolean caseSensitive;
     private final Map<String, String> replacements = 
             new ListOrderedMap<String, String>();

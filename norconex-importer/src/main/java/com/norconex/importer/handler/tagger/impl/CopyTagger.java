@@ -34,6 +34,8 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Copies metadata fields. If a target field already
@@ -63,8 +65,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class CopyTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = -1880560826072410359L;
-
     private static class CopyDetails {
         private String fromField;
         private String toField;
@@ -76,40 +76,9 @@ public class CopyTagger extends AbstractDocumentTagger {
             this.overwrite = overwrite;
         }
 
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((fromField == null) ? 0 : fromField.hashCode());
-            result = prime * result + (overwrite ? 1231 : 1237);
-            result = prime * result + ((toField == null) ? 0 : toField.hashCode());
-            return result;
-        }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            CopyDetails other = (CopyDetails) obj;
-            if (fromField == null) {
-                if (other.fromField != null)
-                    return false;
-            } else if (!fromField.equals(other.fromField))
-                return false;
-            if (overwrite != other.overwrite)
-                return false;
-            if (toField == null) {
-                if (other.toField != null)
-                    return false;
-            } else if (!toField.equals(other.toField))
-                return false;
-            return true;
-        }
-
+        
+        
         @Override
         public String toString() {
             ToStringBuilder builder = new ToStringBuilder(
@@ -118,6 +87,22 @@ public class CopyTagger extends AbstractDocumentTagger {
             builder.append("toField", toField);
             builder.append("overwrite", overwrite);
             return builder.toString();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof CopyDetails)) {
+                return false;
+            }
+            CopyDetails castOther = (CopyDetails) other;
+            return new EqualsBuilder().append(fromField, castOther.fromField)
+                    .append(toField, castOther.toField)
+                    .append(overwrite, castOther.overwrite).isEquals();
+        }
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(fromField).append(toField)
+                    .append(overwrite).toHashCode();
         }
         
     }

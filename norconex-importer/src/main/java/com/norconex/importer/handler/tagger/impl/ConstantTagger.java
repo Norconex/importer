@@ -60,8 +60,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class ConstantTagger extends AbstractDocumentTagger{
 
-    private static final long serialVersionUID = -6062036871216739761L;
-    
     private final Map<String, List<String>> constants = 
             new HashMap<String, List<String>>();
     

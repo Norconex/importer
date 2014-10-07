@@ -27,6 +27,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
@@ -76,7 +78,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class DebugTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 2008414745944904813L;
     private static final Logger LOG = 
             LogManager.getLogger(DebugTagger.class);
     
@@ -124,7 +125,7 @@ public class DebugTagger extends AbstractDocumentTagger {
     }
     
     public String[] getLogFields() {
-        return logFields;
+        return ArrayUtils.clone(logFields);
     }
     public void setLogFields(String... logFields) {
         this.logFields = logFields;
@@ -170,44 +171,8 @@ public class DebugTagger extends AbstractDocumentTagger {
         }
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (logContent ? 1231 : 1237);
-        result = prime * result + Arrays.hashCode(logFields);
-        result = prime * result
-                + ((logLevel == null) ? 0 : logLevel.hashCode());
-        return result;
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof DebugTagger)) {
-            return false;
-        }
-        DebugTagger other = (DebugTagger) obj;
-        if (logContent != other.logContent) {
-            return false;
-        }
-        if (!Arrays.equals(logFields, other.logFields)) {
-            return false;
-        }
-        if (logLevel == null) {
-            if (other.logLevel != null) {
-                return false;
-            }
-        } else if (!logLevel.equals(other.logLevel)) {
-            return false;
-        }
-        return true;
-    }
+    
 
     @Override
     public String toString() {
@@ -216,6 +181,25 @@ public class DebugTagger extends AbstractDocumentTagger {
                 + (logFields != null ? Arrays.asList(logFields).subList(0,
                         Math.min(logFields.length, maxLen)) : null)
                 + ", logContent=" + logContent + ", logLevel=" + logLevel + "]";
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DebugTagger)) {
+            return false;
+        }
+        DebugTagger castOther = (DebugTagger) other;
+        return new EqualsBuilder().appendSuper(super.equals(other))
+                .append(logFields, castOther.logFields)
+                .append(logContent, castOther.logContent)
+                .append(logLevel, castOther.logLevel).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().appendSuper(super.hashCode())
+                .append(logFields).append(logContent).append(logLevel)
+                .toHashCode();
     }
 
 }

@@ -17,7 +17,6 @@
  */
 package com.norconex.importer.response;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,9 +26,7 @@ import com.norconex.importer.doc.ImporterDocument;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class ImporterResponse implements Serializable {
-
-    private static final long serialVersionUID = -103736468554516603L;
+public class ImporterResponse {
 
     public static final ImporterResponse[] EMPTY_RESPONSES = 
             new ImporterResponse[] {};

@@ -26,8 +26,6 @@ import org.apache.tika.parser.html.HtmlParser;
 //TODO keep this class since default Tika parser covers it?
 public class HTMLParser extends AbstractTikaParser {
 
-    private static final long serialVersionUID = -231116566033729542L;
-
     public HTMLParser() {
         super(new HtmlParser());
     }

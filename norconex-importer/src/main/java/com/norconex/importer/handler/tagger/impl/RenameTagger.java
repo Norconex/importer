@@ -62,8 +62,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class RenameTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 5747497256472060081L;
-
     private final Map<String, RenameDetails> renames = 
             new HashMap<String, RenameDetails>();
     
@@ -121,7 +119,7 @@ public class RenameTagger extends AbstractDocumentTagger {
         }
     }
     
-    public class RenameDetails {
+    public static class RenameDetails {
         private String fromField;
         private String toField;
         private boolean overwrite;

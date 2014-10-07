@@ -120,8 +120,6 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 public class TextStatisticsTagger extends AbstractCharStreamTagger 
         implements IXMLConfigurable {
 
-    private static final long serialVersionUID = -8403612827025724376L;
-
     private static final Pattern PATTERN_WORD = Pattern.compile(
             "\\w+\\-{0,1}\\w*", Pattern.UNICODE_CHARACTER_CLASS);
 

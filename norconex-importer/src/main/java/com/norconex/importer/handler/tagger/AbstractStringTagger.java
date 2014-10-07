@@ -71,7 +71,6 @@ public abstract class AbstractStringTagger
     // as opposed to have one big file take all the memory so other big files
     // are forced to do smaller chunks at a time.
     
-    private static final long serialVersionUID = 3690322812995015872L;
     private static final Logger LOG = 
             LogManager.getLogger(AbstractStringTagger.class);
 

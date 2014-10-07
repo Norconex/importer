@@ -71,8 +71,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  */
 public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
-    private static final long serialVersionUID = -5797391183198827565L;
-
     private boolean caseSensitive;
     private final List<String> reductions = new ArrayList<String>();
 

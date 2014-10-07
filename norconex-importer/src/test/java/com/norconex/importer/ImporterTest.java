@@ -50,8 +50,7 @@ public class ImporterTest {
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
         config.setPostParseHandlers(new IDocumentTransformer[] {
-                new IDocumentTransformer() {        
-            private static final long serialVersionUID = -4814791150728184883L;
+                new IDocumentTransformer() {
             @Override
             public void transformDocument(String reference, InputStream input,
                     OutputStream output, ImporterMetadata metadata, 

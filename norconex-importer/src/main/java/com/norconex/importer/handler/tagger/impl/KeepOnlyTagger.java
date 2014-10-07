@@ -67,7 +67,6 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = 
             LogManager.getLogger(KeepOnlyTagger.class);
-    private static final long serialVersionUID = -4075527874358712815L;
 
     private final List<String> fields = new ArrayList<String>();
     

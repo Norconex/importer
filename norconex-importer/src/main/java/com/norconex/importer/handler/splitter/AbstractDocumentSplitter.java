@@ -48,8 +48,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
             implements IDocumentSplitter {
 
-    private static final long serialVersionUID = -6511725137481907345L;
-
     public AbstractDocumentSplitter() {
         super("splitter");
     }

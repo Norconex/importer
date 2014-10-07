@@ -19,7 +19,6 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +29,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,8 +70,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class ReplaceTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = -6062036871216739761L;
-    
     private final List<Replacement> replacements = new ArrayList<>();
     
     @Override
@@ -155,8 +154,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
     }
 
     
-    public class Replacement implements Serializable {
-        private static final long serialVersionUID = 9206061804991938873L;
+    public static class Replacement {
         private final String fromField;
         private final String fromValue;
         private final String toField;
@@ -186,72 +184,37 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         public boolean isRegex() {
             return regex;
         }
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((fromField == null) ? 0 : fromField.hashCode());
-            result = prime * result
-                    + ((fromValue == null) ? 0 : fromValue.hashCode());
-            result = prime * result + (regex ? 1231 : 1237);
-            result = prime * result
-                    + ((toField == null) ? 0 : toField.hashCode());
-            result = prime * result
-                    + ((toValue == null) ? 0 : toValue.hashCode());
-            return result;
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            Replacement other = (Replacement) obj;
-            if (fromField == null) {
-                if (other.fromField != null) {
-                    return false;
-                }
-            } else if (!fromField.equals(other.fromField)) {
-                return false;
-            }
-            if (fromValue == null) {
-                if (other.fromValue != null) {
-                    return false;
-                }
-            } else if (!fromValue.equals(other.fromValue)) {
-                return false;
-            }
-            if (regex != other.regex) {
-                return false;
-            }
-            if (toField == null) {
-                if (other.toField != null) {
-                    return false;
-                }
-            } else if (!toField.equals(other.toField)) {
-                return false;
-            }
-            if (toValue == null) {
-                if (other.toValue != null) {
-                    return false;
-                }
-            } else if (!toValue.equals(other.toValue)) {
-                return false;
-            }
-            return true;
-        }
+
+        
+        
         @Override
         public String toString() {
             return "Replacement [fromField=" + fromField + ", fromValue="
                     + fromValue + ", toField=" + toField + ", toValue=" + toValue
                     + ", regex=" + regex + "]";
         }
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof Replacement))
+                return false;
+            Replacement castOther = (Replacement) other;
+            return new EqualsBuilder().append(fromField, castOther.fromField)
+                    .append(fromValue, castOther.fromValue)
+                    .append(toField, castOther.toField)
+                    .append(toValue, castOther.toValue)
+                    .append(regex, castOther.regex).isEquals();
+        }
+        private transient int hashCode;
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                hashCode = new HashCodeBuilder().append(fromField)
+                        .append(fromValue).append(toField).append(toValue)
+                        .append(regex).toHashCode();
+            }
+            return hashCode;
+        }
+
     }
     
     @Override

@@ -26,8 +26,6 @@ package com.norconex.importer.parser.impl;
 //TODO keep this class since default Tika parser covers it?
 public class PDFParser extends AbstractTikaParser {
 
-    private static final long serialVersionUID = 1L;
-
     public PDFParser() {
         super(new org.apache.tika.parser.pdf.PDFParser());
     }

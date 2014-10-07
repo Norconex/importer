@@ -23,15 +23,15 @@ import java.io.InputStream;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
  * Base class for document filters.  Subclasses can be set an attribute
@@ -58,8 +58,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
  */
 public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             implements IDocumentFilter, IOnMatchFilter {
-
-    private static final long serialVersionUID = -8588335655642900736L;
 
     private final AbstractOnMatchFilter onMatch = new AbstractOnMatchFilter() {
         private static final long serialVersionUID = 1075825339565726500L;

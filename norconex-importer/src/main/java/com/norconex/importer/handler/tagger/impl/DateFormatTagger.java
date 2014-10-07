@@ -39,6 +39,8 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Formats a date from any given format to a format of choice, as per the 
@@ -75,8 +77,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * @since 2.0.0
  */
 public class DateFormatTagger extends AbstractDocumentTagger {
-
-    private static final long serialVersionUID = -3380117073554862363L;
 
     private static final Logger LOG = 
             LogManager.getLogger(CharacterCaseTagger.class);
@@ -235,71 +235,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         writer.writeAttributeBoolean("overwrite", overwrite);
         writer.writeAttributeBoolean("keepBadDates", keepBadDates);
     }
-    
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((fromField == null) ? 0 : fromField.hashCode());
-        result = prime * result
-                + ((fromFormat == null) ? 0 : fromFormat.hashCode());
-        result = prime * result + (keepBadDates ? 1231 : 1237);
-        result = prime * result + (overwrite ? 1231 : 1237);
-        result = prime * result + ((toField == null) ? 0 : toField.hashCode());
-        result = prime * result
-                + ((toFormat == null) ? 0 : toFormat.hashCode());
-        return result;
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof DateFormatTagger)) {
-            return false;
-        }
-        DateFormatTagger other = (DateFormatTagger) obj;
-        if (fromField == null) {
-            if (other.fromField != null) {
-                return false;
-            }
-        } else if (!fromField.equals(other.fromField)) {
-            return false;
-        }
-        if (fromFormat == null) {
-            if (other.fromFormat != null) {
-                return false;
-            }
-        } else if (!fromFormat.equals(other.fromFormat)) {
-            return false;
-        }
-        if (keepBadDates != other.keepBadDates) {
-            return false;
-        }
-        if (overwrite != other.overwrite) {
-            return false;
-        }
-        if (toField == null) {
-            if (other.toField != null) {
-                return false;
-            }
-        } else if (!toField.equals(other.toField)) {
-            return false;
-        }
-        if (toFormat == null) {
-            if (other.toFormat != null) {
-                return false;
-            }
-        } else if (!toFormat.equals(other.toFormat)) {
-            return false;
-        }
-        return true;
-    }
+    
 
     @Override
     public String toString() {
@@ -311,6 +248,28 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         builder.append("overwrite", overwrite);
         builder.append("keepBadDates", keepBadDates);
         return builder.toString();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DateFormatTagger))
+            return false;
+        DateFormatTagger castOther = (DateFormatTagger) other;
+        return new EqualsBuilder().appendSuper(super.equals(other))
+                .append(fromField, castOther.fromField)
+                .append(toField, castOther.toField)
+                .append(fromFormat, castOther.fromFormat)
+                .append(toFormat, castOther.toFormat)
+                .append(overwrite, castOther.overwrite)
+                .append(keepBadDates, castOther.keepBadDates).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().appendSuper(super.hashCode())
+                .append(fromField).append(toField).append(fromFormat)
+                .append(toFormat).append(overwrite).append(keepBadDates)
+                .toHashCode();
     }
     
     

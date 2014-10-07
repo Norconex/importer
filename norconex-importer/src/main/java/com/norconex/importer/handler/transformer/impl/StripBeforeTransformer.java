@@ -61,8 +61,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 public class StripBeforeTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private static final long serialVersionUID = 1755678509630926102L;
-
     private static final Logger LOG = 
             LogManager.getLogger(StripBeforeTransformer.class);    
 

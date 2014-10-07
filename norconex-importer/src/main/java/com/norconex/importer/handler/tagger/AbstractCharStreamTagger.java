@@ -50,8 +50,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
  */
 public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 7733519110785336458L;
-
     @Override
     protected final void tagApplicableDocument(
             String reference, InputStream document,

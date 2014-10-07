@@ -52,7 +52,6 @@ import com.norconex.importer.response.IImporterResponseProcessor;
  */
 public class ImporterConfig implements IXMLConfigurable {
 
-    private static final long serialVersionUID = -7110188100703942075L;
     private static final Logger LOG = 
             LogManager.getLogger(ImporterConfig.class);
     
@@ -93,18 +92,18 @@ public class ImporterConfig implements IXMLConfigurable {
         preParseHandlers = handlers;
     }
     public IImporterHandler[] getPreParseHandlers() {
-        return preParseHandlers;
+        return ArrayUtils.clone(preParseHandlers);
     }
 
     public void setPostParseHandlers(IImporterHandler... handlers) {
         postParseHandlers = handlers;
     }
     public IImporterHandler[] getPostParseHandlers() {
-        return postParseHandlers;
+        return ArrayUtils.clone(postParseHandlers);
     }
     
     public IImporterResponseProcessor[] getResponseProcessors() {
-        return responseProcessors;
+        return ArrayUtils.clone(responseProcessors);
     }
     public void setResponseProcessors(
             IImporterResponseProcessor... responseProcessors) {
@@ -267,10 +266,12 @@ public class ImporterConfig implements IXMLConfigurable {
             w.write("<" + tagName + " class=\"" 
                     + object.getClass().getCanonicalName() + "\" />");
         }
+        String xml = w.toString();
         if (ignore) {
-            w.toString().replace("<" + tagName + " class=\"" , 
+            xml = xml.replace("<" + tagName + " class=\"" , 
                     "<" + tagName + " ignore=\"true\" class=\"" );
         }
+        out.write(xml);
         out.flush();
     }
 }

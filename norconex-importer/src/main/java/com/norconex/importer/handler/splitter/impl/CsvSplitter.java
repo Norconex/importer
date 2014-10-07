@@ -76,8 +76,6 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
 public class CsvSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
-    private static final long serialVersionUID = 1818346309740398828L;
-
     public static final char DEFAULT_SEPARATOR_CHARACTER = ',';
     public static final char DEFAULT_QUOTE_CHARACTER = '"';
     public static final char DEFAULT_ESCAPE_CHARACTER = '\\';
@@ -108,7 +106,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
         try {
-            return doSplitApplicableDocument(doc, output, streamFactory, parsed);
+            return doSplitApplicableDocument(doc, streamFactory);
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Could not split document: " + doc.getReference(), e);
@@ -116,8 +114,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
     }
 
     private List<ImporterDocument> doSplitApplicableDocument(
-            SplittableDocument doc, OutputStream output,
-            CachedStreamFactory streamFactory, boolean parsed)
+            SplittableDocument doc, CachedStreamFactory streamFactory)
             throws IOException {
         
         
@@ -291,7 +288,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
     }
 
     public String[] getContentColumns() {
-        return contentColumns;
+        return ArrayUtils.clone(contentColumns);
     }
     public void setContentColumns(String... contentColumns) {
         this.contentColumns = contentColumns;

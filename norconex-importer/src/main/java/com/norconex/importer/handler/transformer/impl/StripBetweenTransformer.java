@@ -73,8 +73,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 public class StripBetweenTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private static final long serialVersionUID = 9192256155691565491L;
-    
     private Set<Pair<String, String>> stripPairs = 
             new TreeSet<Pair<String,String>>(
                     new Comparator<Pair<String,String>>() {

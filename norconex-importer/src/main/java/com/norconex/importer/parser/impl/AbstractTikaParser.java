@@ -51,8 +51,6 @@ import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
  */
 public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
 
-    private static final long serialVersionUID = -6183461314335335495L;
-
     private final Parser parser;
     private boolean splitEmbedded;
 

@@ -43,9 +43,8 @@ import com.norconex.importer.parser.IDocumentParser;
  * @author Pascal Essiembre 
  * @since 1.2.0
  */
+//NOTE: Excluded from Sonar coverage calculations.
 public class WordPerfectParser implements IDocumentParser {
-
-    private static final long serialVersionUID = 1926860067071091570L;
 
     private static final String END_OF_LINE = 
             System.getProperty("line.separator", "\n");

@@ -47,10 +47,9 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @since 2.0.0
  */
 public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
-
-    private static final long serialVersionUID = 7733519110785336458L;
 
     @Override
     protected final boolean isDocumentMatched(

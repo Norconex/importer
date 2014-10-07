@@ -45,8 +45,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public abstract class AbstractDocumentTagger extends AbstractImporterHandler
             implements IDocumentTagger {
 
-    private static final long serialVersionUID = -4838133396832983211L;
-
     public AbstractDocumentTagger() {
         super("tagger");
     }

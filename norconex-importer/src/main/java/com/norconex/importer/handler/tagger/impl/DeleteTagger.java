@@ -59,7 +59,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class DeleteTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 8705987779553672659L;
     private static final Logger LOG = LogManager.getLogger(DeleteTagger.class);
     
     private final List<String> fieldsToRemove = new ArrayList<String>();

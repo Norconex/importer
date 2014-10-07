@@ -1,20 +1,19 @@
 /* Copyright 2014 Norconex Inc.
  * 
- * This file is part of Norconex Collector Core.
+ * This file is part of Norconex Importer.
  * 
- * Norconex Collector Core is free software: you can redistribute it and/or 
- * modify it under the terms of the GNU General Public License as published by
+ * Norconex Importer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  * 
- * Norconex Collector Core is distributed in the hope that it will be useful, 
+ * Norconex Importer is distributed in the hope that it will be useful, 
  * but WITHOUT ANY WARRANTY; without even the implied warranty of 
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with Norconex Collector Core. If not, 
- * see <http://www.gnu.org/licenses/>.
+ * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
  */
 package com.norconex.importer;
 
@@ -125,15 +124,15 @@ public final class ImporterLauncher {
             FileOutputStream docOutStream = new FileOutputStream(docfile);
             CachedInputStream docInStream = doc.getContent();
             
+            FileOutputStream metaOut = null;
             try {
                 IOUtils.copy(docInStream, docOutStream);
                 IOUtils.closeQuietly(docOutStream);
                 IOUtils.closeQuietly(docInStream);
 
                 // Write metadata file
-                FileOutputStream metaOut = new FileOutputStream(metafile);
+                metaOut = new FileOutputStream(metafile);
                 doc.getMetadata().store(metaOut, null);
-                IOUtils.closeQuietly(metaOut);
                 System.out.println("IMPORTED: " + response.getReference());
             } catch (IOException e) {
                 System.err.println(
@@ -141,6 +140,8 @@ public final class ImporterLauncher {
                 e.printStackTrace(System.err);
                 System.err.println();
                 System.err.flush();
+            } finally {
+                IOUtils.closeQuietly(metaOut);
             }
         }
 

@@ -74,7 +74,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class CharacterCaseTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 2008414745944904813L;
     private static final Logger LOG = 
             LogManager.getLogger(CharacterCaseTagger.class);
     
@@ -106,9 +105,9 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
                         LOG.warn("Unsupported character case type: " + type);
                     }
                 }
+                metadata.setString(fieldName, 
+                        values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
             }
-            metadata.setString(
-                    fieldName, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
     }
 

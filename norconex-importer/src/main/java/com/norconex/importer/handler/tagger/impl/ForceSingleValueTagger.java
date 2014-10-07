@@ -70,8 +70,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = -430885800148300053L;
-
     private final Map<String, String> singleFields = 
             new HashMap<String, String>();
     

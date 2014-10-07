@@ -28,6 +28,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -77,8 +79,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class HierarchyTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = 3040227993725399299L;
-
     private static class HierarchyDetails {
         private String fromField;
         private String toField;
@@ -95,55 +95,6 @@ public class HierarchyTagger extends AbstractDocumentTagger {
             this.overwrite = overwrite;
         }
 
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((fromField == null) ? 0 : fromField.hashCode());
-            result = prime * result
-                    + ((fromSeparator == null) ? 0 : fromSeparator.hashCode());
-            result = prime * result + (overwrite ? 1231 : 1237);
-            result = prime * result
-                    + ((toField == null) ? 0 : toField.hashCode());
-            result = prime * result
-                    + ((toSeparator == null) ? 0 : toSeparator.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            HierarchyDetails other = (HierarchyDetails) obj;
-            if (fromField == null) {
-                if (other.fromField != null)
-                    return false;
-            } else if (!fromField.equals(other.fromField))
-                return false;
-            if (fromSeparator == null) {
-                if (other.fromSeparator != null)
-                    return false;
-            } else if (!fromSeparator.equals(other.fromSeparator))
-                return false;
-            if (overwrite != other.overwrite)
-                return false;
-            if (toField == null) {
-                if (other.toField != null)
-                    return false;
-            } else if (!toField.equals(other.toField))
-                return false;
-            if (toSeparator == null) {
-                if (other.toSeparator != null)
-                    return false;
-            } else if (!toSeparator.equals(other.toSeparator))
-                return false;
-            return true;
-        }
 
         @Override
         public String toString() {
@@ -155,6 +106,28 @@ public class HierarchyTagger extends AbstractDocumentTagger {
             builder.append("toSeparator", toSeparator);
             builder.append("overwrite", overwrite);
             return builder.toString();
+        }
+
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof HierarchyDetails)) {
+                return false;
+            }
+            HierarchyDetails castOther = (HierarchyDetails) other;
+            return new EqualsBuilder().append(fromField, castOther.fromField)
+                    .append(toField, castOther.toField)
+                    .append(fromSeparator, castOther.fromSeparator)
+                    .append(toSeparator, castOther.toSeparator)
+                    .append(overwrite, castOther.overwrite).isEquals();
+        }
+
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(fromField).append(toField)
+                    .append(fromSeparator).append(toSeparator)
+                    .append(overwrite).toHashCode();
         }
         
     }

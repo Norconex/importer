@@ -27,6 +27,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
@@ -93,8 +94,16 @@ public class Importer {
         } else {
             this.importerConfig = new ImporterConfig();
         }
-        if (!this.importerConfig.getTempDir().exists()) {
-            this.importerConfig.getTempDir().mkdirs();
+        File tempDir = this.importerConfig.getTempDir();
+        
+        if (!tempDir.exists()) {
+            try {
+                FileUtils.forceMkdir(tempDir);
+            } catch (IOException e) {
+                throw new ImporterRuntimeException(
+                        "Cannot create importer temporary directory: " 
+                                + tempDir, e);
+            }
         }
         streamFactory = new CachedStreamFactory(
                 this.importerConfig.getMaxFilePoolCacheSize(),
@@ -362,7 +371,7 @@ public class Importer {
         return PASSING_FILTER_STATUS;
     }
     
-    private class IncludeMatchResolver {
+    private static class IncludeMatchResolver {
         private boolean hasIncludes = false;
         private boolean atLeastOneIncludeMatch = false;
         public boolean passes() {
@@ -375,8 +384,7 @@ public class Importer {
     
     
     private boolean isMatchIncludeFilter(IOnMatchFilter filter) {
-        return filter instanceof IOnMatchFilter
-                && OnMatch.INCLUDE == filter.getOnMatch();
+        return OnMatch.INCLUDE == filter.getOnMatch();
     }
     
     private void parseDocument(
@@ -443,7 +451,6 @@ public class Importer {
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(), 
                 doc.getContent(), doc.getMetadata(), parsed);
-//        doc.getContent().rewind();
     }
     
     private boolean acceptDocument(
@@ -490,7 +497,6 @@ public class Importer {
                 IOUtils.closeQuietly(out);
             }
         }
-//        newInputStream.rewind();
         doc.setContent(newInputStream);
     }
     

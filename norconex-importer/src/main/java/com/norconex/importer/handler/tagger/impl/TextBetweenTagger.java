@@ -18,7 +18,6 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -86,8 +85,6 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  */
 public class TextBetweenTagger 
         extends AbstractStringTagger implements IXMLConfigurable {
-
-    private static final long serialVersionUID = 7202856816087407447L;
 
     private Set<TextBetween> betweens = new TreeSet<TextBetween>();
 
@@ -202,8 +199,7 @@ public class TextBetweenTagger
         }
     }
     
-    private class TextBetween implements Comparable<TextBetween>, Serializable {
-        private static final long serialVersionUID = 1L;
+    private static class TextBetween implements Comparable<TextBetween> {
         private final String name;
         private final String start;
         private final String end;

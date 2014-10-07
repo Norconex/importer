@@ -47,8 +47,6 @@ public abstract class AbstractDocumentTransformer
             extends AbstractImporterHandler
             implements IDocumentTransformer {
 
-    private static final long serialVersionUID = 7035943850607201617L;
-
     public AbstractDocumentTransformer() {
         super("transformer");
     }

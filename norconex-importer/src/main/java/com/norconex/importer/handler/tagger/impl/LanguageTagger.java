@@ -19,13 +19,15 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Arrays;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -387,7 +389,6 @@ public class LanguageTagger extends AbstractCharStreamTagger
     //TODO provide ways to overwrite or specify custom language profiles 
     // in this tagger configuration?
     
-    private static final long serialVersionUID = -7893789801356890263L;
     private static final Logger LOG = 
             LogManager.getLogger(LanguageTagger.class);
     
@@ -491,7 +492,7 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
 
     public String[] getLanguages() {
-        return languages;
+        return ArrayUtils.clone(languages);
     }
     /**
      * Sets the language candidates for the language detection.
@@ -538,72 +539,34 @@ public class LanguageTagger extends AbstractCharStreamTagger
             writer.writeEndElement();
         }
     }
-    
+
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-                + ((detector == null) ? 0 : detector.hashCode());
-        result = prime * result + ((fallbackLanguage == null) 
-                ? 0 : fallbackLanguage.hashCode());
-        result = prime * result + (keepProbabilities ? 1231 : 1237);
-        result = prime * result + Arrays.hashCode(languages);
-        result = prime * result + (shortText ? 1231 : 1237);
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof LanguageTagger))
+            return false;
+        LanguageTagger castOther = (LanguageTagger) other;
+        return new EqualsBuilder().appendSuper(super.equals(other))
+                .append(detector, castOther.detector)
+                .append(shortText, castOther.shortText)
+                .append(keepProbabilities, castOther.keepProbabilities)
+                .append(languages, castOther.languages)
+                .append(fallbackLanguage, castOther.fallbackLanguage)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof LanguageTagger)) {
-            return false;
-        }
-        LanguageTagger other = (LanguageTagger) obj;
-        if (detector == null) {
-            if (other.detector != null) {
-                return false;
-            }
-        } else if (!detector.equals(other.detector)) {
-            return false;
-        }
-        if (fallbackLanguage == null) {
-            if (other.fallbackLanguage != null) {
-                return false;
-            }
-        } else if (!fallbackLanguage.equals(other.fallbackLanguage)) {
-            return false;
-        }
-        if (keepProbabilities != other.keepProbabilities) {
-            return false;
-        }
-        if (!Arrays.equals(languages, other.languages)) {
-            return false;
-        }
-        if (shortText != other.shortText) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder().appendSuper(super.hashCode())
+                .append(detector).append(shortText).append(keepProbabilities)
+                .append(languages).append(fallbackLanguage).toHashCode();
     }
 
     @Override
     public String toString() {
-        final int maxLen = 10;
-        return "LanguageTagger [detector="
-                + detector
-                + ", shortText="
-                + shortText
-                + ", keepProbabilities="
-                + keepProbabilities
-                + ", languages="
-                + (languages != null ? Arrays.asList(languages).subList(0,
-                        Math.min(languages.length, maxLen)) : null)
-                + ", fallbackLanguage=" + fallbackLanguage + "]";
+        return new ToStringBuilder(this).appendSuper(super.toString())
+                .append("detector", detector).append("shortText", shortText)
+                .append("keepProbabilities", keepProbabilities)
+                .append("languages", languages)
+                .append("fallbackLanguage", fallbackLanguage).toString();
     }
-    
 }

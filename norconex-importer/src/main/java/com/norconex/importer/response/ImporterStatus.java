@@ -17,8 +17,6 @@
  */
 package com.norconex.importer.response;
 
-import java.io.Serializable;
-
 import com.norconex.importer.ImporterException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 
@@ -26,9 +24,7 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class ImporterStatus implements Serializable {
-
-    private static final long serialVersionUID = -3523165366348084626L;
+public class ImporterStatus {
 
     public enum Status { SUCCESS, REJECTED, ERROR };
     

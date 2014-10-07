@@ -1,3 +1,20 @@
+/* Copyright 2014 Norconex Inc.
+ * 
+ * This file is part of Norconex Importer.
+ * 
+ * Norconex Importer is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Norconex Importer is distributed in the hope that it will be useful, 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
+ */
 package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
@@ -7,6 +24,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -14,7 +32,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
 import com.norconex.importer.handler.filter.OnMatch;
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * Filters a document based on a pattern matching in its content.  Based
@@ -37,8 +54,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  * @since 2.0.0
  */
 public class RegexContentFilter extends AbstractStringFilter {
-
-    private static final long serialVersionUID = 3023809851512790391L;
 
     private boolean caseSensitive;
     private String regex;

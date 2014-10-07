@@ -82,11 +82,8 @@ import com.norconex.importer.response.ImporterResponse;
  */
 @SuppressWarnings("nls")
 public class GenericDocumentParserFactory 
-        implements IDocumentParserFactory, 
-                   IXMLConfigurable {
+        implements IDocumentParserFactory, IXMLConfigurable {
 
-    private static final long serialVersionUID = 6639928288252330105L;
-    
     private final Map<ContentType, IDocumentParser> namedParsers = 
             new HashMap<ContentType, IDocumentParser>();
     private IDocumentParser fallbackParser;
@@ -182,8 +179,7 @@ public class GenericDocumentParserFactory
                             .setSplitEmbedded(splitEmbedded);
                 }
             }
-            if (fallbackParser != null && fallbackParser 
-                    instanceof IDocumentSplittableEmbeddedParser) {
+            if (fallbackParser instanceof IDocumentSplittableEmbeddedParser) {
                 ((IDocumentSplittableEmbeddedParser) fallbackParser)
                         .setSplitEmbedded(splitEmbedded);
             }

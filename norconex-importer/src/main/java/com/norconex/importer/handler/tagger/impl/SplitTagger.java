@@ -19,7 +19,6 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +32,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -70,8 +71,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class SplitTagger extends AbstractDocumentTagger {
 
-    private static final long serialVersionUID = -6062036871216739761L;
-    
     private final List<Split> splits = new ArrayList<>();
     
     @Override
@@ -154,8 +153,7 @@ public class SplitTagger extends AbstractDocumentTagger {
     }
 
     
-    public class Split implements Serializable {
-        private static final long serialVersionUID = 9206061804991938873L;
+    public static class Split {
         private final String fromField;
         private final String toField;
         private final String separator;
@@ -180,62 +178,32 @@ public class SplitTagger extends AbstractDocumentTagger {
         public boolean isRegex() {
             return regex;
         }
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((fromField == null) ? 0 : fromField.hashCode());
-            result = prime * result + (regex ? 1231 : 1237);
-            result = prime * result
-                    + ((toField == null) ? 0 : toField.hashCode());
-            result = prime * result
-                    + ((separator == null) ? 0 : separator.hashCode());
-            return result;
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            Split other = (Split) obj;
-            if (fromField == null) {
-                if (other.fromField != null) {
-                    return false;
-                }
-            } else if (!fromField.equals(other.fromField)) {
-                return false;
-            }
-            if (regex != other.regex) {
-                return false;
-            }
-            if (toField == null) {
-                if (other.toField != null) {
-                    return false;
-                }
-            } else if (!toField.equals(other.toField)) {
-                return false;
-            }
-            if (separator == null) {
-                if (other.separator != null) {
-                    return false;
-                }
-            } else if (!separator.equals(other.separator)) {
-                return false;
-            }
-            return true;
-        }
+
         @Override
         public String toString() {
             return "Split [fromField=" + fromField
                     + ", toField=" + toField + ", separator=" + separator
                     + ", regex=" + regex + "]";
+        }
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof Split))
+                return false;
+            Split castOther = (Split) other;
+            return new EqualsBuilder().append(fromField, castOther.fromField)
+                    .append(toField, castOther.toField)
+                    .append(separator, castOther.separator)
+                    .append(regex, castOther.regex).isEquals();
+        }
+        private transient int hashCode;
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                hashCode = new HashCodeBuilder().append(fromField)
+                        .append(toField).append(separator).append(regex)
+                        .toHashCode();
+            }
+            return hashCode;
         }
     }
     

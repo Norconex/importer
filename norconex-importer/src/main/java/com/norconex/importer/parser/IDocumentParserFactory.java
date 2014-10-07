@@ -17,15 +17,13 @@
  */
 package com.norconex.importer.parser;
 
-import java.io.Serializable;
-
 import com.norconex.commons.lang.file.ContentType;
 
 /**
  * Factory providing document parsers for documents.
  * @author Pascal Essiembre
  */
-public interface IDocumentParserFactory extends Serializable{
+public interface IDocumentParserFactory {
 
     /**
      * Gets a document parser, optionally based on its reference or content

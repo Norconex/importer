@@ -56,8 +56,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public abstract class AbstractCharStreamTransformer 
             extends AbstractDocumentTransformer {
 
-    private static final long serialVersionUID = -7465364282740091371L;
-    
     @Override
     protected final void transformApplicableDocument(
             String reference, InputStream input,

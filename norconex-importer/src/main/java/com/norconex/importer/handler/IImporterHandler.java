@@ -17,8 +17,6 @@
  */
 package com.norconex.importer.handler;
 
-import java.io.Serializable;
-
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
@@ -37,6 +35,6 @@ import com.norconex.importer.handler.transformer.IDocumentTransformer;
  * </ul>
  * @author Pascal Essiembre
  */
-public interface IImporterHandler extends Serializable {
+public interface IImporterHandler {
     // Act as a marker only for now.
 }

@@ -68,7 +68,6 @@ public abstract class AbstractStringTransformer
     // as opposed to have one big file take all the memory so other big files
     // are forced to do smaller chunks at a time.
     
-    private static final long serialVersionUID = -2401917724782923656L;
     private static final Logger LOG = 
             LogManager.getLogger(AbstractStringTransformer.class);
 
