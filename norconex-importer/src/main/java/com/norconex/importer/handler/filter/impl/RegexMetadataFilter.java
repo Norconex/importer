@@ -20,13 +20,13 @@ package com.norconex.importer.handler.filter.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -117,7 +117,7 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
         }
         Collection<String> values =  metadata.getStrings(field);
         for (Object value : values) {
-            String strVal = ObjectUtils.toString(value);
+            String strVal = Objects.toString(value, StringUtils.EMPTY);
             if (pattern.matcher(strVal).matches()) {
                 return true;
             }
