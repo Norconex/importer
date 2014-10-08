@@ -3,3 +3,4 @@ TODO:
 ==============
 
 - Have DeleteTracker optionally take a regex.
+- Add a translation API, probably leveraging Tika translation API.
