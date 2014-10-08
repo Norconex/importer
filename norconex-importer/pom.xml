@@ -148,7 +148,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
 
     <dependency>
       <groupId>com.norconex.language</groupId>
-      <artifactId>language-detector</artifactId>
+      <artifactId>norconex-language-detector</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
