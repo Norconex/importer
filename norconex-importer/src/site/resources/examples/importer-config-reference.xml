@@ -30,6 +30,14 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     <!-- Path to temporary directory. Defaults to system temp directory. -->
     <tempDir></tempDir>
 
+    <!-- Maximum size (bytes) a file content can take in memory before 
+         being written to disk instead. Default 1MB. -->
+    <maxFileCacheSize></maxFileCacheSize>
+
+    <!-- Maximum total size the combined files content can take in memory before
+         being written to disk instead. Default 10MB. -->
+    <maxFilePoolCacheSize></maxFilePoolCacheSize>
+
     <preParseHandlers>
         <!-- These tags can be mixed, in the desired order of execution. -->
         <tagger class="..." />
@@ -47,5 +55,10 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
         <filter class="..." />
         <splitter class="..." />
     </postParseHandlers>
+
+    <responseProcessors>
+        <!-- Can process the importer reponse before it is returned. -->
+        <responseProcessor class="..." />
+    </responseProcessors>
 
 </importer>
