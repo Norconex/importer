@@ -138,7 +138,7 @@ public class ImporterConfig implements IXMLConfigurable {
             setMaxFileCacheSize(xml.getInt("maxFileCacheSize", 
                     ImporterConfig.DEFAULT_MAX_FILE_CACHE_SIZE));
             //--- File Pool Mem Cache Size ------------------------------------------
-            setMaxFileCacheSize(xml.getInt("maxFilePoolCacheSize", 
+            setMaxFilePoolCacheSize(xml.getInt("maxFilePoolCacheSize", 
                     ImporterConfig.DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
             
             //--- Pre-Import Handlers ------------------------------------------
@@ -203,7 +203,7 @@ public class ImporterConfig implements IXMLConfigurable {
         try {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("importer");
-            writer.writeElementString("tempdir", getTempDir().toString());
+            writer.writeElementString("tempDir", getTempDir().toString());
             writer.writeElementInteger(
                     "maxFileCacheSize", getMaxFileCacheSize());
             writer.writeElementInteger(
