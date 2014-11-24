@@ -8,205 +8,211 @@
   <body>
 
     <release version="2.0.0-SNAPSHOT" date="2014-??-??" description="Major release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Importing now returns an ImporterResponse, which may hold the imported
         document, along with nested documents, and and ImporterStatus.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New IDocumentSplitter handler and related classes, allowing 
         implementations to split documents into more documents.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         DefaultDocumentParserFactory can now be configured to treat embedded 
         documents as distinct documents (committed separately).  
         Parsers can now implement IDocumentSplittableEmbeddedParser to 
         indicate they are supporting document splitting. 
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         DefaultDocumentParserFactory can now ignore parsing specified 
         content-types.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New IImporterResponseProcessor to process the import response.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Document encoding can now be explicitly specified when importing and 
         the value get stored as a metadata field.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ContentTypeDetector for detecting the content-type from documents.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ImporterDocument, holding all objects related to a document being
         imported.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New ImporterMetadata, extending Properties to provide additional
         import-related convenience methods and constants.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New CsvSplitter class for splitting coma-separated value files into
         multiple records/documents to be indexed.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New RegexContentFilter for accepting/rejecting documents based
         on a successful regular expression match on their content.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New CharacterCaseTagger for modifying the character case of a metadata 
         field value.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New DateFormatTagger for parsing/formatting date from specified
         metadata fields.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New DebugTagger for logging document content and/or metadata to 
         help with implementation and troubleshooting.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New LanguageTagger which analyzes a document content to automatically
         detect and store as metadata the document language.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New TextStatisticsTagger that stores as metadata statistical information
         about a document content (word count, average words per sentences, 
         etc.).
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New AbstractDocument* class for each types of handlers, facilitating
         handler implementation.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Directory where temporary files are created is now configurable.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="add">
+        Added support for parsing .iso files.
+      </action>
+      <action dev="essiembre" type="update">
+        Now licensed under The Apache License, Version 2.0.
+      </action>
+      <action dev="essiembre" type="update">
         Document content reads and writes are now performed in memory up to 
         a configurable maximum size, after which the filesystem gets used.
         This reduces I/O and improves performance.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Now every handlers except filters can be restricted to matching
         metadata values (configurable).
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         *.tagger, *.filter, and *.transformer handlers were move to 
         *.handler.tagger, *.handler.filter, and *.handler.transformer.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         com.norconex.importer.ContentType has been replaced with 
         com.norconex.commons.lang.file.ContentType.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         For consistency, several references to metadata field names were 
         renamed to use the term "field" (instead of property or else). 
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         DefaultDocumentParserFactory was renamed to 
         GenericDocumentParserFactory.
       </action>
-      <action dev="essiembp" type="remove">
+      <action dev="essiembre" type="remove">
         Handler "contentTypeRegex" tag was removed from handlers that 
         supported it in favor of the more flexible "restrictTo" tag(s).
       </action>
     </release>
 
     <release version="1.3.0" date="2014-08-18" description="Feature release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Now stores the content "family" for each documents as 
         "importer.contentFamily".  This is a higher level representation
         of a file content types.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New SplitTagger: Split values into multiple-values using a separator
         of choice.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New CopyTagger: copies document metadata fields to other fields.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New HierarchyTagger: splits a field string into multiple segments 
         representing each node of a hierarchical branch.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Improved detection of certain mime types, such as those previously 
         appearing as application/x-tika-*.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         ReplaceTagger now supports regular expressions (via a new "regex" flag).
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Can now detect these MS Viso mime-types properly: vsdx, vstc, vssx, 
         vsdm, vstm, vssm.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         AbstractCharStreamTransformer now enforces streaming as UTF8.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Now requires Java 7 or higher.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         RelpaceTagger regular matching now only replaces matching "fromValue".
       </action>
     </release>
 
     <release version="1.2.0" date="2014-03-09" description="Feature release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Now extracts text from WordPerfect documents 
         (new WordPerfectParser class).
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New transformer "ReduceConsecutivesTransformer" to reduce consecutive
         instances of the same string to only one instance.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New transformer "ReplaceTransformer" to perform search and replace
         on document content using regular expression.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New filter "EmptyMetadataFilter" to exclude/include documents with
         no data for one or more specified metadata properties.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Library updates: Tika 1.5, Norconex Commons Lang 1.3.0.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Now attempts to detect the character encoding from a character stream
         by looking at a Content-Type metadata.  If none is present, defaults
         to UTF-8.
       </action>
-      <action dev="essiembp" type="fix">
+      <action dev="essiembre" type="fix">
         Fixed NPE in AbstractTextRestrictiveHandler when
         no content-type is found when used before parsing.
       </action>
     </release>
 
     <release version="1.1.0" date="2013-08-20" description="Minor release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New tagger "TextBetweenTagger" to extract strings from a document
         and store them into document meta data fields.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New AbstractRestrictiveHandler and AbstractTextRestrictiveHandler
         abstract classes to facilitate re-use of common capabilities in 
         handlers.
       </action>
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         New BufferUtil and Memory Util classes.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         AbstractRestrictiveTransformer now deprecated.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Upgraded norconex-commons-lang to 1.1.0.
       </action>
     </release>
 
     <release version="1.0.1" date="2013-08-02" description="Maintenance release">
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Upgraded Apache Tika from 1.3 to 1.4.
       </action>
-      <action dev="essiembp" type="update">
+      <action dev="essiembre" type="update">
         Removed dependency on aspectjrt due to GPL licencing incompatibility.
         If you need .iso parsing, you can manually download and add to the
         classpath.
@@ -214,7 +220,7 @@
     </release>
 
     <release version="1.0.0" date="2013-06-04" description="Open Source release">
-      <action dev="essiembp" type="add">
+      <action dev="essiembre" type="add">
         Starting with this release, Norconex Importer is open-source under GPL.
       </action>
     </release>

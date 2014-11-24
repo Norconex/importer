@@ -29,24 +29,13 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <currentStableVersion>1.2.0</currentStableVersion>
   </properties>
   <inceptionYear>2009</inceptionYear>
 
   <licenses>
     <license>
-      <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
-      <url>http://www.gnu.org/licenses/gpl-3.0.txt</url>
-    </license>
-    <license>
-      <comments>
-        Norconex provides commercial licenses for all its open-source
-        products, designed to meet the development and distribution 
-        needs of commercial distributors
-        (such as OEMs, ISVs and VARs).  Please contact Norconex
-        for a commercial license at sales@norconex.com.
-      </comments>
-      <name>Commercial License</name>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
 
@@ -98,14 +87,6 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
     	<groupId>org.apache.tika</groupId>
     	<artifactId>tika-parsers</artifactId>
     	<version>1.6</version>
-    	<exclusions>
-    	    <!-- Excluded for GPL licensing incompatibilities -->
-    		<exclusion>
-    		    <!-- Used by Tika isoparser -->
-    			<artifactId>aspectjrt</artifactId>
-    			<groupId>org.aspectj</groupId>
-    		</exclusion>
-    	</exclusions>
     </dependency>
     <dependency>
     	<groupId>commons-cli</groupId>
@@ -163,7 +144,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
         </resource>
         <resource>
             <filtering>false</filtering>
-            <directory>src/main/java</directory>
+            <directory>${project.build.sourceDirectory}</directory>
             <includes>
                 <include>**</include>
             </includes>
@@ -234,7 +215,27 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           <source>1.7</source>
           <target>1.7</target>
         </configuration>
-      </plugin> 
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>create-license-list</id>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+            <phase>generate-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -289,24 +290,37 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           <execution>
             <id>attach-sources</id>
             <goals>
-              <goal>jar</goal>
+              <goal>jar-no-fork</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
       <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-jar-plugin</artifactId>
-       <version>2.2</version>
-       <executions>
-         <execution>
-           <goals>
-             <goal>test-jar</goal>
-           </goals>
-         </execution>
-       </executions>
-     </plugin>
-     
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -373,7 +387,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="http://www.norconex.com/product/importer">Norconex Importer</a>
+              <a target="_top" href="http://www.norconex.com/collectors/importer">Norconex Importer</a>
             </span>
             ]]>
           </header>
@@ -417,7 +431,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
   	<name>Norconex Inc.</name>
   	<url>http://www.norconex.com</url>
   </organization>
-  <url>http://norconex.com/product/importer</url>
+  <url>http://norconex.com/collectors/importer</url>
   <description>Norconex Importer is a Java library and command-line application meant to &quot;parse&quot; and &quot;extract&quot; content out of a computer file as plain text, whatever its format (HTML, PDF, Word, etc). In addition, it allows you to perform any manipulation on the extracted text before importing/using it in your own service or application.</description>
   <issueManagement>
   	<system>GitHub</system>
@@ -431,7 +445,7 @@ along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
 
   <developers>
     <developer>
-        <id>essiembp</id>
+        <id>essiembre</id>
         <name>Pascal Essiembre</name>
         <email>pascal.essiembre@norconex.com</email>
         <organization>Norconex Inc.</organization>

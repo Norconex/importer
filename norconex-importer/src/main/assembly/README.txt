@@ -1,33 +1,25 @@
+Norconex Importer
+Copyright 2010-2014 Norconex Inc.
+
 General Information:
 ====================
 
-For any inquiries about Norconex Importer, please contact Norconex Inc. at
-info@norconex.com.
+For any inquiries about Norconex Importer, 
+please contact Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-http://www.norconex.com/product/importer/
-
-Source code can be obtained at:
-https://github.com/Norconex/collectors
-
+http://www.norconex.com/collectors/importer/
 
 Norconex licenses:
 ==================
 
 Unless explicitly stated, all Norconex libraries delivered with this 
-product are licensed under the GPL v.3.0.  See LICENSE.txt for a copy of the
-GPL3 license.
+product are licensed under The Apache Software License, Version 2.0
+See LICENSE.txt for a copy of that license.
 
 Third-party licenses:
 =====================
 
-For thrid-party licenses, read the third-party/LICENSE-POINTERS.txt file.
-
-License notes:
---------------
-Due to license incompatibility, the ability to parse .iso files have been
-disabled from the list of file types supported out-of-the-box by Tika 
-(which this importer library uses).  If you require this feature, you can
-download the aspectj-rt.jar library and add it to this product Classpath.
-You can find it here: http://repo1.maven.org/maven2/org/aspectj/aspectjrt/
-
+For third-party licenses, read the third-party/THIRD-PARTY.txt file.
+A copy of third-party license files can be found under the "third-party"
+directory.
