@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.0.0-SNAPSHOT" date="2014-??-??" description="Major release">
+    <release version="2.0.0" date="2014-11-25" description="Major release">
       <action dev="essiembre" type="add">
         Importing now returns an ImporterResponse, which may hold the imported
         document, along with nested documents, and and ImporterStatus.
