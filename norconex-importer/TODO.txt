@@ -1,10 +1,6 @@
 
-- Add language detection
+TODO:
+==============
 
-- Add document splitting in multiple docs, with option to keep the parent
-  document or not and offer options what the document reference should be
-  (default: parentref!childref).
-
-- Add CharacterCaseTransformer (upper, lower, sentence, word)
-
-- Allow to break documents into smaller documents.
+- Have DeleteTracker optionally take a regex.
+- Add a translation API, probably leveraging Tika translation API.

@@ -1,19 +1,16 @@
-/* Copyright 2010-2013 Norconex Inc.
- * 
- * This file is part of Norconex Importer.
- * 
- * Norconex Importer is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Norconex Importer is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
+/* Copyright 2010-2014 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.norconex.importer.parser.impl.wordperfect;
 
@@ -22,13 +19,13 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ContentType;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -43,9 +40,8 @@ import com.norconex.importer.parser.IDocumentParser;
  * @author Pascal Essiembre 
  * @since 1.2.0
  */
+//NOTE: Excluded from Sonar coverage calculations.
 public class WordPerfectParser implements IDocumentParser {
-
-    private static final long serialVersionUID = 1926860067071091570L;
 
     private static final String END_OF_LINE = 
             System.getProperty("line.separator", "\n");
@@ -81,16 +77,29 @@ public class WordPerfectParser implements IDocumentParser {
 
     
     @Override
-    public void parseDocument(InputStream inputStream, ContentType contentType,
-            Writer outputStream, Properties metadata)
-            throws DocumentParserException {
+    public List<ImporterDocument> parseDocument(ImporterDocument doc,
+            Writer output) throws DocumentParserException {
         try {
-            outputStream.write(extract(inputStream).trim());
+            output.write(extract(doc.getContent()).trim());
         } catch (IOException e) {
             throw new DocumentParserException(e);
         }
-
+        return null;
     }
+    
+//    @Override
+//    public List<ImporterDocument> parseDocument(
+//            String reference,
+//            InputStream inputStream, ContentType contentType,
+//            Writer outputStream, ImporterMetadata metadata)
+//            throws DocumentParserException {
+//        try {
+//            outputStream.write(extract(inputStream).trim());
+//        } catch (IOException e) {
+//            throw new DocumentParserException(e);
+//        }
+//        return null;
+//    }
     
     /**
      * Wraps the specified InputStream in a WPFilterInputStream.
@@ -293,4 +302,6 @@ public class WordPerfectParser implements IDocumentParser {
         }
         return result;
     }
+
+
 }

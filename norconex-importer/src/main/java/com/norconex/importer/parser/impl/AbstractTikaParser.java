@@ -1,34 +1,30 @@
-/* Copyright 2010-2013 Norconex Inc.
- * 
- * This file is part of Norconex Importer.
- * 
- * Norconex Importer is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Norconex Importer is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
+/* Copyright 2010-2014 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.norconex.importer.parser.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
+import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -37,101 +33,234 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
-import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.ContentType;
-import com.norconex.importer.Importer;
+import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
-import com.norconex.importer.parser.IDocumentParser;
+import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
 
 /**
  * Base class wrapping Apache Tika parser for use by the importer.
  * @author Pascal Essiembre
  */
-public class AbstractTikaParser implements IDocumentParser {
-
-    private static final long serialVersionUID = -6183461314335335495L;
+public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
 
     private final Parser parser;
-    private final String format;
+    private boolean splitEmbedded;
 
     /**
      * Creates a new Tika-based parser.
      * @param parser Tika parser
-     * @param format one of Tika parser supported format
      */
-    public AbstractTikaParser(Parser parser, String format) {
+    public AbstractTikaParser(Parser parser) {
         super();
         this.parser = parser;
-        this.format = format;
     }
+    
+    //TODO distinguish between archives and other embedded docs and offer
+    //     a flag for each whether to split them (as opposed to the generic
+    //     splitEmbedded variable). Detected based whether there is a name for 
+    //     the item.
+    //TODO have a maximum recursivity setting somewhere???
+    //TODO have a flag that says whether to process archive/package files only
+    //     or also embedded objects in documents (e.g. image in MS-word).
+    
 
     @Override
-    public final void parseDocument(
-            InputStream inputStream, ContentType contentType,
-            Writer output, Properties metadata)
+    public final List<ImporterDocument> parseDocument(
+            ImporterDocument doc, Writer output)
             throws DocumentParserException {
 
-        org.apache.tika.metadata.Metadata tikaMetadata = 
-                new org.apache.tika.metadata.Metadata();
+        Metadata tikaMetadata = new Metadata();
         tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
-                contentType.toString());
+                doc.getContentType().toString());
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
-                metadata.getString(Importer.DOC_REFERENCE));
-        SAXTransformerFactory factory = (SAXTransformerFactory)
-                TransformerFactory.newInstance();
-
-        TransformerHandler handler;
+                doc.getReference());
+        tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
+        
         try {
-            handler = factory.newTransformerHandler();
-            handler.getTransformer().setOutputProperty(
-                    OutputKeys.METHOD, format);
-            handler.getTransformer().setOutputProperty(
-                    OutputKeys.INDENT, "yes");
+            RecursiveParser recursiveParser = createRecursiveParser(
+                    doc.getReference(), output, doc.getMetadata(), 
+                    doc.getContent().getStreamFactory());
             
-
-            handler.setResult(new StreamResult(output));
-            
-            Parser recursiveParser = new RecursiveMetadataParser(
-                    this.parser, output, metadata);
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
-
-            recursiveParser.parse(inputStream, handler, tikaMetadata, context);
+            ContentHandler handler = new BodyContentHandler(output);
+            recursiveParser.parse(doc.getContent(), 
+                    handler, tikaMetadata, context);
+            return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
         }
     }
-    
+
+    public boolean isSplitEmbedded() {
+        return splitEmbedded;
+    }
+    @Override
+    public void setSplitEmbedded(boolean splitEmbedded) {
+        this.splitEmbedded = splitEmbedded;
+    }
+
     protected void addTikaMetadata(
-            org.apache.tika.metadata.Metadata tikaMeta, Properties metadata) {
+            Metadata tikaMeta, ImporterMetadata metadata) {
         String[]  names = tikaMeta.names();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            metadata.addString(name, tikaMeta.getValues(name));
+            if (TikaMetadataKeys.RESOURCE_NAME_KEY.equals(name)) {
+                continue;
+            }
+            List<String> nxValues = metadata.getStrings(name);
+            String[] tikaValues = tikaMeta.getValues(name);
+            for (String tikaValue : tikaValues) {
+                if (!nxValues.contains(tikaValue)) {
+                    metadata.addString(name, tikaValue);
+                }
+            }
+        }
+    }
+
+    protected RecursiveParser createRecursiveParser(
+            String reference, Writer writer, 
+            ImporterMetadata metadata, CachedStreamFactory streamFactory) {
+        if (splitEmbedded) {
+            return new SplitEmbbededParser(
+                    reference, this.parser, metadata, streamFactory);
+        } else {
+            return new MergeEmbeddedParser(this.parser, writer, metadata);
         }
     }
     
-    protected class RecursiveMetadataParser extends ParserDecorator {
+    protected class SplitEmbbededParser 
+            extends ParserDecorator implements RecursiveParser {
+        private static final long serialVersionUID = -5011890258694908887L;
+        private final String reference;
+        private final ImporterMetadata metadata;
+        private final CachedStreamFactory streamFactory;
+        private boolean isMasterDoc = true;
+        private int embedCount;
+        private List<ImporterDocument> embeddedDocs;
+        public SplitEmbbededParser(String reference, Parser parser, 
+                ImporterMetadata metadata, CachedStreamFactory streamFactory) {
+            super(parser);
+            this.streamFactory = streamFactory;
+            this.reference = reference;
+            this.metadata = metadata;
+        }
+        @Override
+        public void parse(InputStream stream, ContentHandler handler,
+                Metadata tikaMeta, ParseContext context)
+                throws IOException, SAXException, TikaException {
+            
+            if (isMasterDoc) {
+                isMasterDoc = false;
+                super.parse(stream, handler, tikaMeta, context);
+                addTikaMetadata(tikaMeta, metadata);
+            } else {
+                embedCount++;
+                if (embeddedDocs == null) {
+                    embeddedDocs = new ArrayList<>();
+                }
+
+                ImporterMetadata embedMeta = new ImporterMetadata();
+
+                String embedRef = reference + "!" + resolveEmbeddedResourceName(
+                        tikaMeta, embedMeta, embedCount);
+
+                // Read the steam into cache for reuse since Tika will
+                // close the original stream on us causing exceptions later.
+                CachedOutputStream embedOutput = streamFactory.newOuputStream();
+                IOUtils.copy(stream, embedOutput);
+                CachedInputStream embedInput = embedOutput.getInputStream();
+                embedOutput.close();
+                
+                ImporterDocument embedDoc = new ImporterDocument(
+                        embedRef, embedInput, embedMeta); 
+                embedMeta.setReference(embedRef);
+                embedMeta.setEmbeddedParentReference(reference);
+                
+                String rootRef = metadata.getEmbeddedParentRootReference();
+                if (StringUtils.isBlank(rootRef)) {
+                    rootRef = reference;
+                }
+                embedMeta.setEmbeddedParentRootReference(rootRef);
+                
+                embeddedDocs.add(embedDoc);
+            }
+        }
+        
+        public List<ImporterDocument> getEmbeddedDocuments() {
+            return embeddedDocs;
+        }
+    }
+    
+    private String resolveEmbeddedResourceName(
+            Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {
+        String name = null;
+        
+        // Package item file name (e.g. a file in a zip)
+        name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
+        if (StringUtils.isNotBlank(name)) {
+            embedMeta.setEmbeddedReference(name);
+            embedMeta.setEmbeddedType("package-file");
+            return name;
+        }
+
+        // Name of Embedded file in regular document 
+        // (e.g. excel file in a word doc)
+        name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
+        if (StringUtils.isNotBlank(name)) {
+            embedMeta.setEmbeddedReference(name);
+            embedMeta.setEmbeddedType("file-file");
+            return name;
+        }
+        
+        // Name of embedded content in regular document 
+        // (e.g. image with no name in a word doc)
+        // Make one up with content type (which should be OK most of the time).
+        name = tikaMeta.get(Metadata.CONTENT_TYPE);
+        if (StringUtils.isNotBlank(name)) {
+            ContentType ct = ContentType.valueOf(name);
+            if (ct != null) {
+                embedMeta.setEmbeddedType("file-object");
+                return "embedded-" + embedCount + "." + ct.getExtension();
+            }
+        }
+        
+        // Default... we could not find any name so make a unique one.
+        embedMeta.setEmbeddedType("unknown");
+        return "embedded-" + embedCount + ".unknown";
+    }
+    
+    protected class MergeEmbeddedParser 
+            extends ParserDecorator implements RecursiveParser  {
         private static final long serialVersionUID = -5011890258694908887L;
         private final Writer writer;
-        private final Properties metadata;
-        public RecursiveMetadataParser(
-                Parser parser, Writer writer, Properties metadata) {
+        private final ImporterMetadata metadata;
+        public MergeEmbeddedParser(Parser parser, 
+                Writer writer, ImporterMetadata metadata) {
             super(parser);
             this.writer = writer;
             this.metadata = metadata;
         }
         @Override
         public void parse(InputStream stream, ContentHandler handler,
-                org.apache.tika.metadata.Metadata tikaMeta, 
-                ParseContext context)
+                Metadata tikaMeta, ParseContext context)
                 throws IOException, SAXException, TikaException {
-
-            //TODO Make it a file writer somehow?? storing it as new document
-            //TODO so we can have a zip and its containing files separate.
             ContentHandler content = new BodyContentHandler(writer);
             super.parse(stream, content, tikaMeta, context);
             addTikaMetadata(tikaMeta, metadata);
         }
+        @Override
+        public List<ImporterDocument> getEmbeddedDocuments() {
+            return null;
+        }
+    }
+    
+    protected interface RecursiveParser extends Parser {
+        List<ImporterDocument> getEmbeddedDocuments();
     }
 }

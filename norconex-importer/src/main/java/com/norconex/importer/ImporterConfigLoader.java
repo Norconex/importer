@@ -1,31 +1,23 @@
-/* Copyright 2010-2013 Norconex Inc.
- * 
- * This file is part of Norconex Importer.
- * 
- * Norconex Importer is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * Norconex Importer is distributed in the hope that it will be useful, 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with Norconex Importer. If not, see <http://www.gnu.org/licenses/>.
+/* Copyright 2010-2014 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.norconex.importer;
 
 import java.io.File;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ExpressionEngine;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
@@ -63,7 +55,6 @@ public final class ImporterConfigLoader {
                     "Could not load configuration file: " + configFile, e);
         }
     }    
-    
 
     /**
      * Loads importer configuration.
@@ -73,14 +64,13 @@ public final class ImporterConfigLoader {
      */    
     public static ImporterConfig loadImporterConfig(Reader config)  {
         try {
-            XMLConfiguration xml = ConfigurationLoader.loadXML(config);
+            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(config);
             return loadImporterConfig(xml);
         } catch (Exception e) {
             throw new ConfigurationException(
                     "Could not load configuration file from Reader.", e);
         }
     }
-    
     
     /**
      * Loads importer configuration.
@@ -95,38 +85,11 @@ public final class ImporterConfigLoader {
         }
         ImporterConfig config = new ImporterConfig();
         try {
-            //--- Pre-Import Handlers ------------------------------------------
-            config.setPreParseHandlers(
-                    loadImportHandlers(xml, "preParseHandlers"));
-
-            //--- Document Parser Factory --------------------------------------
-            config.setParserFactory(ConfigurationUtil.newInstance(
-                    xml, "documentParserFactory", config.getParserFactory()));
-
-            //--- Post-Import Handlers -----------------------------------------
-            config.setPostParseHandlers(
-                    loadImportHandlers(xml, "postParseHandlers"));
+            config.loadFromXML(ConfigurationUtil.newReader(xml));
         } catch (Exception e) {
             throw new ConfigurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
         }
         return config;
-    }
-    
-    private static IImportHandler[] loadImportHandlers(
-            XMLConfiguration xml, String xmlPath) {
-        List<IImportHandler> handlers = new ArrayList<IImportHandler>();
-
-        ExpressionEngine originalEngine = xml.getExpressionEngine();
-        xml.setExpressionEngine(new XPathExpressionEngine());
-        List<HierarchicalConfiguration> xmlHandlers = 
-                xml.configurationsAt(xmlPath + "/*");
-        xml.setExpressionEngine(originalEngine);
-        for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
-            xmlHandler.setExpressionEngine(originalEngine);
-            handlers.add(
-                    (IImportHandler) ConfigurationUtil.newInstance(xmlHandler));
-        }
-        return handlers.toArray(new IImportHandler[]{});
     }
 }
