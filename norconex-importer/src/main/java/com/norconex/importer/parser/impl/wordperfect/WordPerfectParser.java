@@ -33,7 +33,7 @@ import com.norconex.importer.parser.IDocumentParser;
 /**
  * Parser for WordPerfect documents.  Only text from the body is extracted,
  * and no metadata is added.
- * <p/>
+ * <br><br>
  * Implementation is derived from 
  * <a href="http://sourceforge.net/projects/logicaldoc/">LogicalDoc</a> (LPGL3)
  * WordPerfect parsing code.

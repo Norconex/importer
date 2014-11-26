@@ -24,7 +24,7 @@ import org.apache.commons.lang3.ArrayUtils;
 /**
  * An input stream that wraps a WordPerfect stream to filter binary characters 
  * out and leave only textual ones.
- * <p/>
+ * <br><br>
  * The code for this class originally comes form 
  * <a href="http://sourceforge.net/projects/logicaldoc/">LogicalDoc</a> (LPGL3)
  * WordPerfect parsing code.

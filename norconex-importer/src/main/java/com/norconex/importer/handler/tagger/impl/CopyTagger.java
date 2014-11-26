@@ -38,9 +38,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  * Copies metadata fields. If a target field already
  * exists, the values of the original field name will be <i>added</i>, unless
  * "overwrite" is set to <code>true</code>. 
- * <p/>
+ * <br><br>
  * Can be used both as a pre-parse or post-parse handler.
- * <p/>
+ * <br><br>
  * XML configuration usage:
  * </p>
  * <pre>

@@ -51,9 +51,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  * If the <code>toField</code> already
  * exists, the newly formatted date will be <i>added</i> to the list of 
  * existing values, unless "overwrite" is set to <code>true</code>. 
- * <p/>
+ * <br><br>
  * Can be used both as a pre-parse or post-parse handler.
- * <p/>
+ * <br><br>
  * XML configuration usage:
  * </p>
  * <pre>

@@ -27,7 +27,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * Base class for transformers.
- * <p/>
+ * <br><br>
  * 
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>

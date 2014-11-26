@@ -51,9 +51,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   /vegetable/potato
  *   /vegetable/potato/sweet
  * </pre>
- * <p/>
+ * <br><br>
  * Can be used both as a pre-parse or post-parse handler.
- * <p/>
+ * <br><br>
  * XML configuration usage:
  * </p>
  * <pre>

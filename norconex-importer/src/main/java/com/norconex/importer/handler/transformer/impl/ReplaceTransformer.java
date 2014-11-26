@@ -35,13 +35,13 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 /**
  * Replaces every occurrences of the given replacements
  * (document content only).
- * <p/>
+ * <br><br>
  * 
  * This class can be used as a pre-parsing (text content-types only) 
  * or post-parsing handlers.
- * <p/>
+ * <br><br>
  * XML configuration usage:
- * <p/>
+ * <br><br>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
  *          caseSensitive="[false|true]" &gt;

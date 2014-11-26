@@ -33,13 +33,13 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
  * necessary.  Each document returned will also go through the same
  * pre-handler/parse/post-handler cycle as defined in the importer 
  * configuration.
- * <p/>
+ * <br><br>
  * To blank values form a parent, you do not write to the output stream
  * and blank metadata values as desired.  The parent document will still get
  * processed as usual.  To prevent the parent from being processed
  * further, make sure to filter it out using an {@link IDocumentFilter}
  * implementation.
- * <p/>
+ * <br><br>
  * If using the default importer parser, keep it mind you can configure it
  * to split most files with embedded content in them (zip, 
  * word processor document with embedded documents, etc).  A typical usage for 
