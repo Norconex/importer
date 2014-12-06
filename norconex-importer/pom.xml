@@ -326,7 +326,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/importer/latest</url>
+      <url>${site.baseurl}/collectors/importer/latest</url>
     </site>
     <snapshotRepository>
       <id>ossrh</id>
