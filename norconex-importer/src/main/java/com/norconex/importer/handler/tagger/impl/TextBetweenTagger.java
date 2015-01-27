@@ -60,8 +60,8 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *           overriding default)
  *      &lt;/contentTypeRegex&gt;
  *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
- *              field="(name of header/metadata name to match)"
+ *              caseSensitive="[false|true]"
+ *              field="(name of header/metadata name to match)" &gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;textBetween name="targetFieldName"&gt
@@ -70,7 +70,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/textBetween&gt
  *      &lt;-- multiple textBetween tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

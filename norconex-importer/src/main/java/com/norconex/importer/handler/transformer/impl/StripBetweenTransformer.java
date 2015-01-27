@@ -58,7 +58,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      &lt;/stripBetween&gt
  *      &lt;-- multiple strignBetween tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -49,7 +49,7 @@ import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * 
  * <pre>
- *  &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;

@@ -60,7 +60,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          referenceColumn="(column name or position from 1)"
  *          contentColumns="(csv list of column/position to use as content)" &gt;
  *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
+ *              caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

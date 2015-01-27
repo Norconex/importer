@@ -51,8 +51,8 @@ import com.norconex.importer.util.BufferUtil;
  *      (regex to identify text content-types, overridding default)
  *  &lt;/contentTypeRegex&gt;
  *  &lt;restrictTo
- *          caseSensitive="[false|true]" &gt;
- *          field="(name of header/metadata name to match)"
+ *          caseSensitive="[false|true]"
+ *          field="(name of header/metadata name to match)" &gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
  * </pre>

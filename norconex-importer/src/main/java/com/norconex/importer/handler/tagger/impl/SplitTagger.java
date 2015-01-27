@@ -55,7 +55,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/split&gt
  *      &lt;!-- multiple split tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

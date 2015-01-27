@@ -54,7 +54,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/replace&gt
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -366,7 +366,7 @@ import com.norconex.language.detector.LanguageDetectorException;
  *        (CSV list of language tag candidates. Defaults to the above list.)
  *      &lt;/languages&gt
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

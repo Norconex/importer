@@ -63,7 +63,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *                 overwrite="[false|true]" /&gt
  *      &lt;-- multiple hierarchy tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

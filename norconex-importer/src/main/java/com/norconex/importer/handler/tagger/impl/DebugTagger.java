@@ -62,7 +62,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *          logContent="(false|true)"
  *          logLevel="(ERROR|WARN|INFO|DEBUG)" &gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -62,7 +62,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  *      fromFormat="(date format)" toFormat="(date format)"
  *      keepBadDates="(false|true)" overwrite="[false|true]" &gt
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

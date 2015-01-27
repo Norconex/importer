@@ -103,7 +103,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          fieldName="(optional field name instead of using content)" &gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

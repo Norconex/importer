@@ -42,7 +42,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:
  * <pre>
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
