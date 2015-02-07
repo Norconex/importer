@@ -202,6 +202,10 @@ public class Importer {
             ContentType contentType, String contentEncoding,
             Properties metadata, String reference) throws ImporterException {           
         
+        if (input == null && LOG.isDebugEnabled()) {
+            LOG.debug("Input is null. Won't import much. Was it intentional?");
+        }
+        
         //--- Input ---
         BufferedInputStream bufInput = null;
         if (input instanceof BufferedInputStream) {
