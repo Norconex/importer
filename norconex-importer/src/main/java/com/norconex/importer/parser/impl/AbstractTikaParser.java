@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -29,6 +30,8 @@ import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
+import org.apache.tika.parser.ocr.TesseractOCRConfig;
+import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -40,17 +43,22 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
-import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
+import com.norconex.importer.parser.IDocumentParser;
+import com.norconex.importer.parser.OCRConfig;
+
 
 /**
  * Base class wrapping Apache Tika parser for use by the importer.
  * @author Pascal Essiembre
  */
-public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
+public class AbstractTikaParser implements IDocumentParser {
 
     private final Parser parser;
     private boolean splitEmbedded;
-
+    private OCRConfig ocrConfig;
+    private TesseractOCRConfig ocrTesseractConfig;
+    private List<String> ocrContentTypes;
+    
     /**
      * Creates a new Tika-based parser.
      * @param parser Tika parser
@@ -58,6 +66,30 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     public AbstractTikaParser(Parser parser) {
         super();
         this.parser = parser;
+    }
+    
+    /**
+     * Sets the OCR configuration.
+     * @param ocrConfig the ocrConfig to set
+     * @since 2.1.0
+     */
+    public synchronized void setOCRConfig(OCRConfig ocrConfig) {
+        this.ocrConfig = ocrConfig;
+        if (ocrConfig == null) {
+            this.ocrConfig = new OCRConfig();
+        } else {
+            this.ocrConfig = ocrConfig;
+        }
+        this.ocrTesseractConfig = toTesseractConfig(this.ocrConfig);
+        this.ocrContentTypes = toContentTypeList(ocrConfig);
+    }
+    /**
+     * Gets the OCR configuration (never null).
+     * @return the OCR configuration
+     * @since 2.1.0
+     */
+    public OCRConfig getOCRConfig() {
+        return ocrConfig;
     }
     
     //TODO distinguish between archives and other embedded docs and offer
@@ -73,10 +105,9 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     public final List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output)
             throws DocumentParserException {
-
+        String contentType = doc.getContentType().toString();
         Metadata tikaMetadata = new Metadata();
-        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
-                doc.getContentType().toString());
+        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, contentType);
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
                 doc.getReference());
         tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
@@ -85,22 +116,42 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
             RecursiveParser recursiveParser = createRecursiveParser(
                     doc.getReference(), output, doc.getMetadata(), 
                     doc.getContent().getStreamFactory());
-            
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
+
+            if (StringUtils.isNotBlank(ocrConfig.getPath())
+                    && (ocrContentTypes == null 
+                        || ocrContentTypes.contains(contentType))) {
+                context.set(TesseractOCRConfig.class, ocrTesseractConfig);
+                //TODO cache this?
+                PDFParserConfig pdfConfig = new PDFParserConfig();
+                pdfConfig.setExtractInlineImages(true);
+                context.set(PDFParserConfig.class, pdfConfig);
+            }
+            
             ContentHandler handler = new BodyContentHandler(output);
             recursiveParser.parse(doc.getContent(), 
-                    handler, tikaMetadata, context);
+                    handler,  tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
-        }
+        }        
     }
-
+    
+    /**
+     * Gets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @return <code>true</code> if parser should split embedded documents.
+     */
     public boolean isSplitEmbedded() {
         return splitEmbedded;
     }
-    @Override
+    /**
+     * Sets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @param splitEmbedded <code>true</code> if parser should split 
+     *                      embedded documents.
+     */
     public void setSplitEmbedded(boolean splitEmbedded) {
         this.splitEmbedded = splitEmbedded;
     }
@@ -196,6 +247,38 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
             return embeddedDocs;
         }
     }
+    
+    private List<String> toContentTypeList(OCRConfig ocrConfig) {
+        if (ocrConfig == null) {
+            return null;
+        }
+        String contentTypes = ocrConfig.getContentTypes();
+        if (StringUtils.isBlank(contentTypes)) {
+            return null;
+        }
+        List<String> types = new ArrayList<>();
+        types.addAll(Arrays.asList(
+                StringUtils.split(StringUtils.remove(contentTypes, ' '), ',')));
+        return types;
+    }
+    private TesseractOCRConfig toTesseractConfig(OCRConfig ocrConfig) {
+        if (StringUtils.isBlank(ocrConfig.getPath())) {
+            return null;
+        }
+        TesseractOCRConfig tc = new TesseractOCRConfig();
+        String path = ocrConfig.getPath();
+        if (StringUtils.isNotBlank(path)) {
+            tc.setTesseractPath(path);
+        }
+        String langs = ocrConfig.getLanguages();
+        if (StringUtils.isNotBlank(langs)) {
+            langs = StringUtils.remove(langs, ' ');
+            langs = langs.replace(',', '+');
+            tc.setLanguage(langs);
+        }
+        return tc;
+    }
+    
     
     private String resolveEmbeddedResourceName(
             Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {

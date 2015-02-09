@@ -7,6 +7,27 @@
   </properties>
   <body>
 
+    <release version="2.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        Added OCR support using Tesseract open-source product. Configured
+        by setting an OCRConfig to GenericDocumentParserFactory.
+      </action>
+      <action dev="essiembre" type="update">
+        Easier to extend GenericDocumentParserFactory to provide custom
+        parsers. Dropped "registerNamedParser", "registerFallbackParser",
+        and "getFallbackParser" methods in favor of new "createFallbackParser"
+        and "createNamedParsers" methods.
+      </action>
+      <action dev="essiembre" type="update">
+        HTMLParser and PDFParser are now deprecated. HTML and PDF are now 
+        handled by the fall-back parser (auto-detected).
+      </action>
+      <action dev="essiembre" type="update">
+        IDocumentSplittableEmbeddedParser is now deprecated and has no effect.
+        Will be deleted in a future release.
+      </action>
+    </release>
+
     <release version="2.0.0" date="2014-11-25" description="Major release">
       <action dev="essiembre" type="add">
         Importing now returns an ImporterResponse, which may hold the imported

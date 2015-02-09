@@ -2,6 +2,7 @@
 TODO:
 ==============
 
-- Have DeleteTracker optionally take a regex.
+- Have DeleteTragger optionally take a regex.
 - Add a translation API, probably leveraging Tika translation API.
-- Add OCR support
+- Add better defined Geospatial Data Abstraction Library (GDAL) support, 
+  leveraging Tika GDAL support.

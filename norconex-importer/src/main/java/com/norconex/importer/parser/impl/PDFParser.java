@@ -15,15 +15,18 @@
 package com.norconex.importer.parser.impl;
 
 
+
 /**
  * PDF parser based on Apache Tika
  * {@link org.apache.tika.parser.pdf.PDFParser}.
  * @author Pascal Essiembre
+ * @deprecated since 2.1.0.  Now handled by FallbackParser by default.
  */
-//TODO keep this class since default Tika parser covers it?
+@Deprecated
 public class PDFParser extends AbstractTikaParser {
 
     public PDFParser() {
         super(new org.apache.tika.parser.pdf.PDFParser());
     }
+    
 }
