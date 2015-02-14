@@ -22,6 +22,8 @@ import com.norconex.importer.ImporterRuntimeException;
 
 /**
  * Adds accessor methods to {@link Lingo24Translator} to access the user key.
+ * @author Pascal Essiembre
+ * @since 2.1.0
  */
 /*default*/ class FixedLingo24Translator extends GoogleTranslator {
 

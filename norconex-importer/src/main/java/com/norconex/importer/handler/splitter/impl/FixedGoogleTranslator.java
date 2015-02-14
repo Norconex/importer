@@ -21,6 +21,8 @@ import com.norconex.importer.ImporterRuntimeException;
 
 /**
  * Adds accessor methods to {@link GoogleTranslator} to access the API key.
+ * @author Pascal Essiembre
+ * @since 2.1.0
  */
 /*default*/ class FixedGoogleTranslator extends GoogleTranslator {
 
