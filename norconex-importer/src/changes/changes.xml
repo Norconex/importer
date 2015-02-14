@@ -12,6 +12,11 @@
         Added OCR support using Tesseract open-source product. Configured
         by setting an OCRConfig to GenericDocumentParserFactory.
       </action>
+      <action dev="essiembre" type="add">
+        Added document translation support with the new TranslatorSplitter.
+        Support these translation APIs: Microsoft, Google, Lingo24, and Moses.
+        Both the document content and/or chosen fields can be translated.
+      </action>
       <action dev="essiembre" type="update">
         Easier to extend GenericDocumentParserFactory to provide custom
         parsers. Dropped "registerNamedParser", "registerFallbackParser",
@@ -25,6 +30,12 @@
       <action dev="essiembre" type="update">
         IDocumentSplittableEmbeddedParser is now deprecated and has no effect.
         Will be deleted in a future release.
+      </action>
+      <action dev="essiembre" type="update">
+        Minor javadoc improvements and fixes.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Tika 1.7, Norconex Commons Lang 1.6.0.
       </action>
     </release>
 

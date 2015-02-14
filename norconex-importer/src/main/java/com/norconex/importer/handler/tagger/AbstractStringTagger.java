@@ -47,9 +47,6 @@ import com.norconex.importer.util.BufferUtil;
  * </p>
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
- *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overridding default)
- *  &lt;/contentTypeRegex&gt;
  *  &lt;restrictTo
  *          caseSensitive="[false|true]"
  *          field="(name of header/metadata name to match)" &gt;

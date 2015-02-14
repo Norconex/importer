@@ -308,13 +308,14 @@ public class GenericDocumentParserFactory
             setSplitEmbedded(xml.getBoolean(
                     "[@splitEmbedded]", isSplitEmbedded()));
             Configuration ocrXml = xml.subset("ocr");
+            OCRConfig ocrConfig = null;
             if (!ocrXml.isEmpty()) {
-                OCRConfig ocrConfig = new OCRConfig();
+                ocrConfig = new OCRConfig();
                 ocrConfig.setPath(ocrXml.getString("[@path]"));
                 ocrConfig.setLanguages(ocrXml.getString("languages"));
                 ocrConfig.setContentTypes(ocrXml.getString("contentTypes"));
-                setOCRConfig(ocrConfig);
             }
+            setOCRConfig(ocrConfig);
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
         }

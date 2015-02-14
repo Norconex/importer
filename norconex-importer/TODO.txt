@@ -2,7 +2,8 @@
 TODO:
 ==============
 
-- Have DeleteTragger optionally take a regex.
-- Add a translation API, probably leveraging Tika translation API.
+- Have DeleteTagger optionally take a regex.
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support.
+- Create a dynamic title generator and/or a handler that can read the X first
+  nuber of characters.

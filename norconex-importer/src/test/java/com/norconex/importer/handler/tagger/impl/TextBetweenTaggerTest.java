@@ -58,6 +58,26 @@ public class TextBetweenTaggerTest {
         Assert.assertTrue("Should have returned 17 <i> and <b> pairs",
                 strong.size() == 17);
     }
+
+    @Test
+    public void testExtractFirst100ContentChars() 
+            throws IOException, ImporterHandlerException {
+        TextBetweenTagger t = new TextBetweenTagger();
+        t.addTextEndpoints("mytitle", "^", ".{0,100}");
+        t.setCaseSensitive(false);
+        t.setInclusive(true);
+        File htmlFile = TestUtil.getAliceHtmlFile();
+        FileInputStream is = new FileInputStream(htmlFile);
+
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+
+        is.close();
+
+        String myTitle = metadata.getString("mytitle");
+        Assert.assertEquals(100, myTitle.length());
+    }
     
     @Test
     public void testWriteRead() throws IOException {

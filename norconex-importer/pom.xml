@@ -46,7 +46,7 @@
     <dependency>
     	<groupId>com.norconex.commons</groupId>
     	<artifactId>norconex-commons-lang</artifactId>
-    	<version>1.5.0</version>
+    	<version>1.6.0-SNAPSHOT</version>
     </dependency>
     <dependency>
     	<groupId>org.apache.tika</groupId>
@@ -57,6 +57,11 @@
     	<groupId>org.apache.tika</groupId>
     	<artifactId>tika-parsers</artifactId>
     	<version>1.7</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.tika</groupId>
+        <artifactId>tika-translate</artifactId>
+        <version>1.7</version>
     </dependency>
     <dependency>
     	<groupId>commons-cli</groupId>
