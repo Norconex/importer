@@ -8,6 +8,12 @@
   <body>
 
     <release version="2.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+
+      <action dev="essiembre" type="add">
+        KeepOnlyTagger and DeleteTagger now supports regular expression for 
+        identifying fields to keep/delete.  The field="" attribute has
+        been replaced by a &lt;field&gt; element.
+      </action>
       <action dev="essiembre" type="add">
         Added OCR support using Tesseract open-source product. Configured
         by setting an OCRConfig to GenericDocumentParserFactory.

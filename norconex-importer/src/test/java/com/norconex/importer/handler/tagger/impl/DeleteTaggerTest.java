@@ -56,6 +56,7 @@ public class DeleteTaggerTest {
         tagger.addField("potato");
         tagger.addField("potato");
         tagger.addField("carrot");
+        tagger.setFieldsRegex("document\\.*");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }
@@ -82,7 +83,7 @@ public class DeleteTaggerTest {
     }
     
     @Test
-    public void testDeleteViaXMLConfig() 
+    public void testDeleteFieldsViaXMLConfig() 
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("content-type", "blah");
@@ -97,8 +98,9 @@ public class DeleteTaggerTest {
         DeleteTagger tagger = new DeleteTagger();
         
         Reader r = new StringReader(
-                "<tagger fields=\"X-ACCESS-LEVEL,X-content-type-options,"
-              + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT\" />");
+                "<tagger><fields>X-ACCESS-LEVEL,X-content-type-options,"
+              + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT</fields>"
+              + "</tagger>");
         tagger.loadFromXML(r);
         
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
@@ -106,7 +108,29 @@ public class DeleteTaggerTest {
         Assert.assertEquals("Invalid field count", 3, meta.size());
     }
     
-
+    @Test
+    public void testDeleteFieldsRegexViaXMLConfig() 
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("content-type", "blah");
+        meta.addString("x-access-level", "blah");
+        meta.addString("X-CONTENT-TYPE-OPTIONS", "blah");
+        meta.addString("X-FRAME-OPTIONS", "blah");
+        meta.addString("X-PARSED-BY", "blah");
+        meta.addString("date", "blah");
+        meta.addString("X-RATE-LIMIT-LIMIT", "blah");
+        meta.addString("source", "blah");
+        
+        DeleteTagger tagger = new DeleteTagger();
+        
+        Reader r = new StringReader(
+                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
+        tagger.loadFromXML(r);
+        
+        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        
+        Assert.assertEquals("Invalid field count", 3, meta.size());
+    }
 
 
 }
