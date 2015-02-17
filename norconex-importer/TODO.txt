@@ -6,3 +6,5 @@ TODO:
   leveraging Tika GDAL support.
 - Create a dynamic title generator and/or a handler that can read the X first
   nuber of characters.
+- Add a counter as method argument to AbstractStringTagger so we know which 
+  "chunk" of text we are processing (1st, 2nd, etc).

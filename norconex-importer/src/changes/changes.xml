@@ -10,11 +10,6 @@
     <release version="2.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
 
       <action dev="essiembre" type="add">
-        KeepOnlyTagger and DeleteTagger now supports regular expression for 
-        identifying fields to keep/delete.  The field="" attribute has
-        been replaced by a &lt;field&gt; element.
-      </action>
-      <action dev="essiembre" type="add">
         Added OCR support using Tesseract open-source product. Configured
         by setting an OCRConfig to GenericDocumentParserFactory.
       </action>
@@ -22,6 +17,15 @@
         Added document translation support with the new TranslatorSplitter.
         Support these translation APIs: Microsoft, Google, Lingo24, and Moses.
         Both the document content and/or chosen fields can be translated.
+      </action>
+      <action dev="essiembre" type="add">
+        New TitleGeneratorTagger to dynamically generate titles out of 
+        documents, using Carrot2 to extract the best terms.
+      </action>
+      <action dev="essiembre" type="add">
+        KeepOnlyTagger and DeleteTagger now supports regular expression for 
+        identifying fields to keep/delete.  The field="" attribute has
+        been replaced by a &lt;field&gt; element.
       </action>
       <action dev="essiembre" type="update">
         Easier to extend GenericDocumentParserFactory to provide custom

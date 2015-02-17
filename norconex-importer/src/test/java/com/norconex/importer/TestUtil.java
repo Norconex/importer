@@ -42,6 +42,9 @@ public final class TestUtil {
     public static File getAliceHtmlFile() {
         return new File(BASE_PATH + ".html");
     }
+    public static File getAliceTextFile() {
+        return new File(BASE_PATH + ".txt");
+    }
     public static Importer getTestConfigImporter() {
         InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");
         Reader r = new InputStreamReader(is);
