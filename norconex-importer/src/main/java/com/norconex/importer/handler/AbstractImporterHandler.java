@@ -97,7 +97,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param metadata document metadata.
      * @param parsed if the document was parsed (i.e. imported) already
      * @return <code>true</code> if this handler is applicable to the document
-     * @throws ImporterHandlerException
+     * @throws ImporterHandlerException problem evaluating if applicable
      */
     protected boolean isApplicable(
             String reference, ImporterMetadata metadata, boolean parsed)
@@ -132,7 +132,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     /**
      * Loads configuration settings specific to the implementing class.
      * @param xml xml configuration
-     * @throws IOException 
+     * @throws IOException could not load from XML
      */
     protected abstract void loadHandlerFromXML(XMLConfiguration xml)
             throws IOException;
@@ -175,7 +175,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * Implementors must not close the writer.
      * 
      * @param writer the xml writer
-     * @throws XMLStreamException
+     * @throws XMLStreamException could not save to XML
      */
     protected abstract void saveHandlerToXML(EnhancedXMLStreamWriter writer) 
             throws XMLStreamException;

@@ -55,10 +55,10 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
- *      &lt;textBetween name="targetFieldName"&gt
- *          &lt;start&gt(regex)&lt;/start&gt
- *          &lt;end&gt(regex)&lt;/end&gt
- *      &lt;/textBetween&gt
+ *      &lt;textBetween name="targetFieldName"&gt;
+ *          &lt;start&gt;(regex)&lt;/start&gt;
+ *          &lt;end&gt;(regex)&lt;/end&gt;
+ *      &lt;/textBetween&gt;
  *      &lt;-- multiple textBetween tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

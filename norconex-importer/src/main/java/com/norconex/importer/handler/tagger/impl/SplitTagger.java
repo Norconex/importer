@@ -39,10 +39,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 
 /**
- * Splits an existing metadata value into multiple values based on a given
+ * <p>Splits an existing metadata value into multiple values based on a given
  * value separator.  The "toField" argument
  * is optional (the same field will be used to store the splits if no
- * "toField" is specified").
+ * "toField" is specified").</p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
@@ -50,9 +50,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
  *      &lt;split fromField="sourceFieldName" toField="targetFieldName" 
- *               regex="[false|true]"&gt
- *          &lt;separator&gt(separator value)&lt;/separator&gt
- *      &lt;/split&gt
+ *               regex="[false|true]"&gt;
+ *          &lt;separator&gt;(separator value)&lt;/separator&gt;
+ *      &lt;/split&gt;
  *      &lt;!-- multiple split tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

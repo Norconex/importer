@@ -35,23 +35,23 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * Keep only the metadata fields provided, delete all other ones.  
+ * <p>Keep only the metadata fields provided, delete all other ones.  
  * Exact field names (case-insensitive)
  * to keep can be provided as well as a regular expression that matches
- * one or many fields (since 2.1.0).
- * <p />
- * <b>Note:</b> Unless you have good reasons for doing otherwise, it is 
+ * one or many fields (since 2.1.0).</p>
+ * 
+ * <p><b>Note:</b> Unless you have good reasons for doing otherwise, it is 
  * recommended to use this handler as one of the last ones to be executed.
  * This is a good practice to ensure all metadata fields are available
  * to other handlers that may require them even if they are not otherwise
- * required.
- * <p />
- * Can be used both as a pre-parse or post-parse handler.
- * <p />
- * XML configuration usage:
- * <p />
+ * required.</p>
+ * 
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ * 
+ * <p>XML configuration usage:</p>
+ * 
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
  *      &lt;fields&gt;(coma-separated list of fields to keep)&lt;/fields&gt;
  *      &lt;fieldsRegex&gt;(regular expression matching fields to keep)&lt;/fieldsRegex&gt;
  *      

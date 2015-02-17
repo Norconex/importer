@@ -52,7 +52,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SingleValueTagger"&gt;
- *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt
+ *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
  *      &lt;-- multiple single value fields allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

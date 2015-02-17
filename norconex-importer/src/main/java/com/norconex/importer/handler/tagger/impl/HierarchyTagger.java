@@ -36,31 +36,30 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * Given a separator, split a field string into multiple segments 
+ * <p>Given a separator, split a field string into multiple segments 
  * representing each node of a hierarchical branch. This is useful
  * when mixed when faceting, to find out how much documents fall under each 
- * node of a hierarchy. For example, take this hierarchical string:
+ * node of a hierarchy. For example, take this hierarchical string:</p>
  * <pre>
  *   /vegetable/potato/sweet
  * </pre>
- * We specify a slash (/) separator and it will produce the folowing entries 
- * in the specified document metadata field:
+ * <p>We specify a slash (/) separator and it will produce the folowing entries 
+ * in the specified document metadata field:</p>
  * 
  * <pre>
  *   /vegetable
  *   /vegetable/potato
  *   /vegetable/potato/sweet
  * </pre>
- * <br><br>
+ * <p>
  * Can be used both as a pre-parse or post-parse handler.
- * <br><br>
- * XML configuration usage:
  * </p>
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
  *      &lt;hierarchy fromField="(from field)" toField="(to field)" 
  *                 fromSeparator="(original separator)" toSeparator="(new separator)"
- *                 overwrite="[false|true]" /&gt
+ *                 overwrite="[false|true]" /&gt;
  *      &lt;-- multiple hierarchy tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

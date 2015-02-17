@@ -52,9 +52,9 @@ import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
- * Translate documents using one of the supported translation API.  The 
+ * <p>Translate documents using one of the supported translation API.  The 
  * following lists the supported APIs, along with the authentication properties
- * required by each:
+ * required by each:</p>
  * <ul>
  *   <li><a href="http://blogs.msdn.com/b/translation/p/gettingstarted1.aspx">microsoft</a>
  *     <ul>
@@ -80,20 +80,19 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *   </li>
  * </ul>
  * 
- * <p/>
- * For example, the
+ * <p>For example, the
  * Microsoft Translation API requires a client ID and a client 
  * secret,
  * both obtained on Microsoft Azure Marketplace with your Microsoft account.
- * <p/>
+ * </p><p>
  * Translated documents will have the original document language stored in 
  * a field "document.translatedFrom".
- * <p/>
+ * </p><p>
  * This class is not a document "splitter" per se, but like regular splitters, 
  * the translation
  * will create children documents for each translation performed.  The parent
  * document will always remain the original document, while the children
- * will always be the translations.
+ * will always be the translations.</p>
  * <p>
  * XML configuration usage:
  * </p>

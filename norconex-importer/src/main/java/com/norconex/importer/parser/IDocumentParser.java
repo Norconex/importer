@@ -34,7 +34,7 @@ public interface IDocumentParser {
      * @param output where to store extracted or modified content of the 
      *        supplied document
      * @return a list of first-level embedded documents, if any
-     * @throws DocumentParserException
+     * @throws DocumentParserException problem parsing document
      */
     List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output) throws DocumentParserException;

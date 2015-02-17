@@ -40,27 +40,26 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
- * Formats a date from any given format to a format of choice, as per the 
+ * <p>Formats a date from any given format to a format of choice, as per the 
  * formatting options found on {@link SimpleDateFormat}.  The default format
  * for <code>fromFormat</code> or <code>toFormat</code> when not specified
- * is EPOCH.  
- * <p />
- * When omitting the <code>toField</code>, the value will replace the one
- * in the same field.
- * <p />
- * If the <code>toField</code> already
+ * is EPOCH.</p>
+ * 
+ * <p>When omitting the <code>toField</code>, the value will replace the one
+ * in the same field.</p>
+ * 
+ * <p>If the <code>toField</code> already
  * exists, the newly formatted date will be <i>added</i> to the list of 
- * existing values, unless "overwrite" is set to <code>true</code>. 
- * <br><br>
- * Can be used both as a pre-parse or post-parse handler.
- * <br><br>
- * XML configuration usage:
- * </p>
+ * existing values, unless "overwrite" is set to <code>true</code>.</p>
+ * 
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ * 
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
  *      fromField="(from field)" toField="(to field)" 
  *      fromFormat="(date format)" toFormat="(date format)"
- *      keepBadDates="(false|true)" overwrite="[false|true]" &gt
+ *      keepBadDates="(false|true)" overwrite="[false|true]" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;

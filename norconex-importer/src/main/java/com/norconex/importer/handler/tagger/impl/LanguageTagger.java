@@ -39,36 +39,37 @@ import com.norconex.language.detector.LanguageDetector;
 import com.norconex.language.detector.LanguageDetectorException;
 
 /**
- * Detects a document language and adds it to the 
+ * <p>Detects a document language and adds it to the 
  * "<code>document.language</code>" metadata field.  
  * Optionally adds all potential languages detected with their 
- * probability score as well as additional fields following this pattern:
+ * probability score as well as additional fields following this pattern:</p>
  * <pre>
  * document.language.&lt;rank&gt;.tag
  * document.language.&lt;rank&gt;.probability</pre>
- * <p />
+ * <p>
  * <code>&lt;rank&gt;</code> is to indicate the match order, based
  * on match probability score (starting at 1).
- * <p />
- * This tagger can be used both as a pre-parse (on text only) 
- * or post-parse handler.
- * <p />
+ * </p>
+ * <p>This tagger can be used both as a pre-parse (on text only) 
+ * or post-parse handler.</p>
+ * 
  * <h3>Short vs Long Text:</h3>
- * To obtain optimal detection, long enough text is expected.  The default
+ * <p>To obtain optimal detection, long enough text is expected.  The default
  * detection algorithm is optimized for document with lots of text.  
  * If you know the documents to 
  * be analyzed are primarily made of short text (e.g. tweets, comments, etc), 
  * you can try to get better detection by configuring this tagger to 
- * use short-text optimization.  
- * <p />
+ * use short-text optimization.</p>
+ * 
  * <h3>Supported Languages:</h3>
- * Languages are represented as 
+ * <p>Languages are represented as 
  * <a href="http://tools.ietf.org/html/bcp47">IETF BCP 47 language tags</a>.
  * The list of supported languages can vary
  * slightly depending on whether you chose long or short text optimization.
- * They are:
- * <p />
+ * They are:</p>
+ * 
  * <table>
+ *  <caption>Supported languages</caption>
  *  <tr>
  *   <td><b>Tag</b></td>
  *   <td><b>Name</b></td>
@@ -350,11 +351,11 @@ import com.norconex.language.detector.LanguageDetectorException;
  *   <td></td>
  *  </tr>
  * </table>
- * <p />
- * If you do not restrict the list of language candidates to detect, the default
+ * 
+ * <p>If you do not restrict the list of language candidates to detect, the default
  * behavior is to try match all languages currently supported for your 
- * selected long/short text optimization.
- * <p />
+ * selected long/short text optimization.</p>
+ * 
  * <h3>XML configuration usage:</h3>
  * 
  * <pre>
@@ -362,9 +363,9 @@ import com.norconex.language.detector.LanguageDetectorException;
  *          shortText="(false|true)"
  *          keepProbabilities="(false|true)"
  *          fallbackLanguage="" &gt;
- *      &lt;languages&gt
+ *      &lt;languages&gt;
  *        (CSV list of language tag candidates. Defaults to the above list.)
- *      &lt;/languages&gt
+ *      &lt;/languages&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;

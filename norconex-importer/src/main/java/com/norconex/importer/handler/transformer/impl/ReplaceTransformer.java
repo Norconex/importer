@@ -33,22 +33,20 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
- * Replaces every occurrences of the given replacements
- * (document content only).
- * <br><br>
+ * <p>Replaces every occurrences of the given replacements
+ * (document content only).</p>
  * 
- * This class can be used as a pre-parsing (text content-types only) 
- * or post-parsing handlers.
- * <br><br>
- * XML configuration usage:
- * <br><br>
+ * <p>This class can be used as a pre-parsing (text content-types only) 
+ * or post-parsing handlers.</p>
+ * 
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
  *          caseSensitive="[false|true]" &gt;
- *      &lt;replace&gt
- *          &lt;fromValue&gt(regex of value to replace)&lt;/fromValue&gt
- *          &lt;toValue&gt(replacement value)&lt;/toValue&gt
- *      &lt;/replace&gt
+ *      &lt;replace&gt;
+ *          &lt;fromValue&gt;(regex of value to replace)&lt;/fromValue&gt;
+ *          &lt;toValue&gt;(replacement value)&lt;/toValue&gt;
+ *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

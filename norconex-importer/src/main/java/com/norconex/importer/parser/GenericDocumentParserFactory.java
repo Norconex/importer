@@ -40,22 +40,20 @@ import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
- * Generic document parser factory.  It uses Apacke Tika for <i>most</i> of its 
- * supported content types.  For unknown
- * content types, it falls back to Tika generic media detector/parser.
- * <p />
+ * <p>Generic document parser factory.  It uses Apacke Tika for <i>most</i> of 
+ * its supported content types.  For unknown
+ * content types, it falls back to Tika generic media detector/parser.</p>
  * 
  * <h3>Ignoring content types:</h3>
- * As of version 2.0.0, you can "ignore" content-types so they do not get
+ * <p>As of version 2.0.0, you can "ignore" content-types so they do not get
  * parsed.  Unparsed documents will be sent as is to the post handlers 
  * and the calling application.   Use caution when using that feature since
  * post-parsing handlers (or applications) usually expect text-only content for 
  * them to execute properly.  Unless you really know what you are doing, <b> 
- * avoid excluding binary content types from parsing.</b>
- * <p />
+ * avoid excluding binary content types from parsing.</b></p>
  * 
  * <h3>Embedded documents:</h3>
- * For documents containing embedded documents (e.g. zip files), the default 
+ * <p>For documents containing embedded documents (e.g. zip files), the default 
  * behavior of this treat them as a single document, merging all
  * embedded documents content and metadata into the parent document.
  * As of version 2.0.0, you can tell this parser to "split" embedded
@@ -64,17 +62,16 @@ import com.norconex.importer.response.ImporterResponse;
  * going through your handlers and even this parser again
  * (just like any regular document would).  The resulting 
  * {@link ImporterResponse} should then contain nested documents, which in turn,
- * might contain some (tree-like structure). 
- * <p />
+ * might contain some (tree-like structure).</p>
  * 
  * <h3>Optical character recognition (OCR):</h3>
- * Starting with version 2.1.0, you can configure this parser to use the
+ * <p>Starting with version 2.1.0, you can configure this parser to use the
  * <b><a href="https://code.google.com/p/tesseract-ocr/">Tesseract</a></b> 
  * open-source OCR application to extract text out of images
  * or documents containing embedded images (e.g. PDF).  Supported image
- * formats are TIFF, PNG, JPEG, GIF, and BMP.
- * <p/>
- * To enable this feature, you must 
+ * formats are TIFF, PNG, JPEG, GIF, and BMP.</p>
+ * 
+ * <p>To enable this feature, you must 
  * first download and install a copy of Tesseract appropriate for 
  * your platform (supported are Linux, Windows, Mac and other platforms).  
  * It will only be activated once you configure the path to its install 
@@ -84,15 +81,13 @@ import com.norconex.importer.response.ImporterResponse;
  * you can provide a list of three-letter ISO language codes supported
  * by Tesseract. These languages must be part of your Tesseract installation.
  * You can <a href="https://code.google.com/p/tesseract-ocr/downloads/list">
- * download additional languages</a> form the Tesseract web site.
- * <p/>
- * When enabled, OCR is attempted on all supported image formats.  To
+ * download additional languages</a> form the Tesseract web site.</p>
+ * 
+ * <p>When enabled, OCR is attempted on all supported image formats.  To
  * limit OCR to a subset of document content types, configure the corresponding 
- * content-types (e.g. application/pdf, image/tiff, image/png, etc.).
- * <p />
+ * content-types (e.g. application/pdf, image/tiff, image/png, etc.).</p>
  * 
  * <h3>XML configuration usage:</h3>
- * <p />
  * <pre>
  *  &lt;documentParserFactory 
  *          class="com.norconex.importer.parser.GenericDocumentParserFactory" 

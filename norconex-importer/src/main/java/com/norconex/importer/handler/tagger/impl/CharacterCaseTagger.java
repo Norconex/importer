@@ -38,24 +38,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 //TODO offer sentences and capitalizations?
 
 /**
- * Changes the character case of a field value according to one of the following
- * methods:
- * <p />
+ * <p>Changes the character case of a field value according to one of the 
+ * following methods:</p>
  * <ul>
  *   <li>uppper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
  *   <li>words: Converts the first letter of each words to upper case, and the
  *              rest to lowercase.</li>
  * </ul>
- * <p />
- * Can be used both as a pre-parse or post-parse handler.
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
- * <p />
+ * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
  *      &lt;characterCase type="(upper|lower|words)" 
- *                     fieldName="(field to change)" /&gt
+ *                     fieldName="(field to change)" /&gt;
  *      &lt;!-- multiple characterCase tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
