@@ -152,6 +152,9 @@ public class ImporterConfig implements IXMLConfigurable {
             setResponseProcessors(loadResponseProcessors(
                     xml, "responseProcessors.responseProcessor"));
         } catch (Exception e) {
+            if (e instanceof ConfigurationException) {
+                throw (ConfigurationException) e;
+            }
             throw new ConfigurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
         }

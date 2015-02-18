@@ -51,7 +51,7 @@ public final class ImporterConfigLoader {
                     configFile, configVariables);
             return loadImporterConfig(xml);
         } catch (Exception e) {
-            throw new ConfigurationException(
+            throw configurationException(
                     "Could not load configuration file: " + configFile, e);
         }
     }    
@@ -67,7 +67,7 @@ public final class ImporterConfigLoader {
             XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(config);
             return loadImporterConfig(xml);
         } catch (Exception e) {
-            throw new ConfigurationException(
+            throw configurationException(
                     "Could not load configuration file from Reader.", e);
         }
     }
@@ -87,9 +87,17 @@ public final class ImporterConfigLoader {
         try {
             config.loadFromXML(ConfigurationUtil.newReader(xml));
         } catch (Exception e) {
-            throw new ConfigurationException("Could not load configuration "
+            throw configurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
         }
         return config;
+    }
+    
+    private static ConfigurationException configurationException(
+            String msg, Exception e) {
+        if (e instanceof ConfigurationException) {
+            return (ConfigurationException) e;
+        }
+        return new ConfigurationException(msg, e);
     }
 }

@@ -49,6 +49,9 @@
         failed for an handler).
       </action>
       <action dev="essiembre" type="update">
+        Improved exception handling for configuration loading.
+      </action>
+      <action dev="essiembre" type="update">
         Library updates: Tika 1.7, Norconex Commons Lang 1.6.0.
       </action>
     </release>
