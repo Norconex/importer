@@ -45,6 +45,10 @@
         Minor javadoc improvements and fixes.
       </action>
       <action dev="essiembre" type="update">
+        No longer add null handlers (possible when configuration loading 
+        failed for an handler).
+      </action>
+      <action dev="essiembre" type="update">
         Library updates: Tika 1.7, Norconex Commons Lang 1.6.0.
       </action>
     </release>

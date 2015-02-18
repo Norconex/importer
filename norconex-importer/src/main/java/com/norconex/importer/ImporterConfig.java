@@ -168,8 +168,12 @@ public class ImporterConfig implements IXMLConfigurable {
         xml.setExpressionEngine(originalEngine);
         for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
-            handlers.add((IImporterHandler) 
-                    ConfigurationUtil.newInstance(xmlHandler));
+            IImporterHandler handler = (IImporterHandler) 
+                    ConfigurationUtil.newInstance(xmlHandler);
+            if (handler != null) {
+                handlers.add(handler);
+                //TODO throw exception here?
+            }
         }
         return handlers.toArray(new IImporterHandler[]{});
     }
