@@ -23,6 +23,10 @@
         documents, using Carrot2 to extract the best terms.
       </action>
       <action dev="essiembre" type="add">
+        New QuattroPro parser for content type "application/x-quattro-pro".
+        Tested with QuattroPro version 9 files.
+      </action>
+      <action dev="essiembre" type="add">
         KeepOnlyTagger and DeleteTagger now supports regular expression for 
         identifying fields to keep/delete.  The field="" attribute has
         been replaced by a &lt;field&gt; element.

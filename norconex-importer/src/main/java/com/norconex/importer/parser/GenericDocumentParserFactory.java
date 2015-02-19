@@ -36,6 +36,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
+import com.norconex.importer.parser.impl.wordperfect.QuattroProParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -223,10 +224,13 @@ public class GenericDocumentParserFactory
         Map<ContentType, IDocumentParser> parsers = new HashMap<>();
         IDocumentParser wpParser = new WordPerfectParser();
         parsers.put(ContentType.valueOf("application/wordperfecet"), wpParser);
-        parsers.put(
-                ContentType.valueOf("application/wordperfect6.0"), wpParser);
-        parsers.put(
-                ContentType.valueOf("application/wordperfect6.1"), wpParser);
+        parsers.put(ContentType.valueOf(
+                "application/wordperfect6.0"), wpParser);
+        parsers.put(ContentType.valueOf(
+                "application/wordperfect6.1"), wpParser);
+        parsers.put(ContentType.valueOf(
+                "application/x-quattro-pro"), new QuattroProParser());
+        
         return parsers;
     }
     
