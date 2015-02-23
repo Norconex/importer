@@ -27,8 +27,11 @@
         support for PDF XFA (dynamic forms) text extraction.
       </action>
       <action dev="essiembre" type="add">
-        New QuattroPro parser for content type "application/x-quattro-pro".
-        Tested with QuattroPro version 9 files.
+        New WordPerfectOfficeBinAsciiParser class for parsing extra versions of
+        WordPerfect Office Suite files.   Currently adds support for 
+        content type "application/x-quattro-pro" and 
+        "application/x-corel-wordperfect" (both for version 9, and 
+        possibly higher).
       </action>
       <action dev="essiembre" type="add">
         New configuration "parseErrorsSaveDir" on importer configuration
@@ -69,6 +72,9 @@
       </action>
       <action dev="essiembre" type="update">
         Library updates: Tika 1.7, Norconex Commons Lang 1.6.0.
+      </action>
+      <action dev="essiembre" type="update">
+        Added Sonatype repository to pom.xml for snapshot releases.
       </action>
       <action dev="essiembre" type="fix">
         Fixed in valid mapping between "application/wordperfect" content type

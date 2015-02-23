@@ -33,14 +33,21 @@ import com.norconex.importer.parser.IDocumentParser;
 
 
 /**
- * Parser for Quattro Pro documents version 9 (and possibly others).
- * Only text from the body is extracted, and no metadata is added by this 
- * parser.
+ * Parser for WordPerfect Office documents for which no more formal parser
+ * exists.  This parser assumes the office file is binary but holds the
+ * text we are intersted in in plain ASCII. This approach is known to work
+ * for WordPerfect documents with content type
+ * <code>application/x-corel-wordperfect</code> and QuatroPro (version 9 and
+ * possibly higher) documents with
+ * content type <code>application/x-quattro-pro</code>.  Possibly more
+ * Corel WordPerfect Office Suite documents could be handled by this parser
+ * (would require enough samples to test).
+ * 
  * @author Pascal Essiembre 
  * @since 2.1.0
  */
 //NOTE: Excluded from Sonar coverage calculations.
-public class QuattroProParser implements IDocumentParser {
+public class WordPerfectOfficeBinAsciiParser implements IDocumentParser {
 
     private static final String[] QUATTRO_TERMS = {
         "ActivePagename", "PreviousCell", "SelectedVersion", "CurrentVersion",

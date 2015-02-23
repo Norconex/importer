@@ -36,7 +36,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
-import com.norconex.importer.parser.impl.wordperfect.QuattroProParser;
+import com.norconex.importer.parser.impl.wordperfect.WordPerfectOfficeBinAsciiParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -229,14 +229,20 @@ public class GenericDocumentParserFactory
         parsers.put(ContentType.valueOf(
                 "application/wordperfect6.1"), wpParser);
         
-        // No guaranty for these WordPerfect versions:
+        // Generic Corel WP Office bin/ascii parser seems to work for these:
+        IDocumentParser wpBinTextParser = new WordPerfectOfficeBinAsciiParser();
         parsers.put(ContentType.valueOf(
-                "application/x-corel-wordperfect"), wpParser);
+                "application/x-quattro-pro"), wpBinTextParser);
+        // WP 9 (and higher?)
         parsers.put(ContentType.valueOf(
-                "application/vnd.wordperfect"), wpParser);
+                "application/x-corel-wordperfect"), wpBinTextParser);
+        
+        // No guaranty for these WordPerfect versions (not tested):
+        parsers.put(ContentType.valueOf(
+                "application/wordperfect5.1"), wpParser);
+        parsers.put(ContentType.valueOf(
+                "application/vnd.wordperfect"), wpBinTextParser);
 
-        parsers.put(ContentType.valueOf(
-                "application/x-quattro-pro"), new QuattroProParser());
         
         return parsers;
     }

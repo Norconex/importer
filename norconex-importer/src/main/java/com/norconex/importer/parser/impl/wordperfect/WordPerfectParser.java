@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@ import com.norconex.importer.parser.IDocumentParser;
 
 
 /**
- * Parser for WordPerfect documents.  Only text from the body is extracted,
- * and no metadata is added.
+ * Parser for WordPerfect documents matching content types 
+ * <code>application/wordperfect*</code>  
  * <br><br>
  * Implementation is derived from 
  * <a href="http://sourceforge.net/projects/logicaldoc/">LogicalDoc</a> (LPGL3)
