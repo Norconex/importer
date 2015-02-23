@@ -128,6 +128,7 @@ public class AbstractTikaParser implements IDocumentParser {
                 pdfConfig.setExtractInlineImages(true);
                 context.set(PDFParserConfig.class, pdfConfig);
             }
+            modifyParseContext(context);
             
             ContentHandler handler = new BodyContentHandler(output);
             recursiveParser.parse(doc.getContent(), 
@@ -136,6 +137,17 @@ public class AbstractTikaParser implements IDocumentParser {
         } catch (Exception e) {
             throw new DocumentParserException(e);
         }        
+    }
+    
+    /**
+     * Override to apply your own settings on the Tika ParseContext.
+     * The ParseContext is already configured before calling this method.
+     * Changing existing settings may cause failure.  
+     * Only override if you know what you are doing.
+     * The default implementation does nothing.
+     * @param parseContext Tika parse context
+     */
+    protected void modifyParseContext(ParseContext parseContext) {
     }
     
     /**
