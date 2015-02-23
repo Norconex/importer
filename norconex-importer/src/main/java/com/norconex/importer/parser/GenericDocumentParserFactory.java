@@ -223,11 +223,18 @@ public class GenericDocumentParserFactory
     protected Map<ContentType, IDocumentParser> createNamedParsers() {
         Map<ContentType, IDocumentParser> parsers = new HashMap<>();
         IDocumentParser wpParser = new WordPerfectParser();
-        parsers.put(ContentType.valueOf("application/wordperfecet"), wpParser);
+        parsers.put(ContentType.valueOf("application/wordperfect"), wpParser);
         parsers.put(ContentType.valueOf(
                 "application/wordperfect6.0"), wpParser);
         parsers.put(ContentType.valueOf(
                 "application/wordperfect6.1"), wpParser);
+        
+        // No guaranty for these WordPerfect versions:
+        parsers.put(ContentType.valueOf(
+                "application/x-corel-wordperfect"), wpParser);
+        parsers.put(ContentType.valueOf(
+                "application/vnd.wordperfect"), wpParser);
+
         parsers.put(ContentType.valueOf(
                 "application/x-quattro-pro"), new QuattroProParser());
         
