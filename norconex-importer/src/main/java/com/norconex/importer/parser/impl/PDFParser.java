@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.norconex.importer.parser.impl;
 
 /**
  * PDF parser based on Apache Tika
- * {@link org.apache.tika.parser.pdf.PDFParser}.
+ * {@link org.apache.tika.parser.pdf.EnhancedPDFParser}.
  * @author Pascal Essiembre
  * @deprecated since 2.1.0.  Now handled by FallbackParser by default.
  */
@@ -26,7 +26,7 @@ package com.norconex.importer.parser.impl;
 public class PDFParser extends AbstractTikaParser {
 
     public PDFParser() {
-        super(new org.apache.tika.parser.pdf.PDFParser());
+        super(new org.apache.tika.parser.pdf.EnhancedPDFParser());
     }
     
 }
