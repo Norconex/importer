@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
@@ -424,6 +427,9 @@ public class Importer {
             }
         } catch (DocumentParserException e) {
             IOUtils.closeQuietly(out);
+            if (importerConfig.getParseErrorsSaveDir() != null) {
+                saveParseError(doc, e);
+            }
             throw e;
         }
         
@@ -448,6 +454,59 @@ public class Importer {
         }
     }
 
+    private void saveParseError(ImporterDocument doc, Exception e) {
+        File saveDir = importerConfig.getParseErrorsSaveDir();
+        if (!saveDir.exists()) {
+            saveDir.mkdirs();
+        }
+        
+        String uuid = UUID.randomUUID().toString();
+
+        // Save exception
+        try (PrintWriter exWriter = new PrintWriter(
+                new File(saveDir, uuid + "-error.txt"))) {
+            e.printStackTrace(exWriter);
+            IOUtils.closeQuietly(exWriter);
+        } catch (IOException e1) {
+            LOG.error("Cannot save parse exception.", e1);
+        }
+            
+        if (doc == null) {
+            LOG.error("The importer document that cause a parse error is "
+                    + "null. It is not possible to save it.  Only the "
+                    + "exception will be saved.");
+            return;
+        }
+
+        // Save metadata
+        try (PrintWriter metaWriter = new PrintWriter(
+                new File(saveDir, uuid + "-meta.txt"))) {
+            doc.getMetadata().store(metaWriter, null);
+            IOUtils.closeQuietly(metaWriter);
+        } catch (IOException e1) {
+            LOG.error("Cannot save parse error file metadata.", e1);
+        }
+            
+        // Save content
+        try {
+            String ext = FilenameUtils.getExtension(
+                    doc.getMetadata().getReference());
+            if (StringUtils.isBlank(ext)) {
+                ContentType ct = doc.getContentType();
+                if (ct != null) {
+                    ext = ct.getExtension();
+                }
+            }
+            if (StringUtils.isBlank(ext)) {
+                ext = "unknown";
+            }
+            File contentFile = new File(saveDir, uuid + "-content." + ext);
+            FileUtils.copyInputStreamToFile(doc.getContent(), contentFile);
+        } catch (IOException e1) {
+            LOG.error("Cannot save parse error file content.", e1);
+        }
+    }
+    
     private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(), 
