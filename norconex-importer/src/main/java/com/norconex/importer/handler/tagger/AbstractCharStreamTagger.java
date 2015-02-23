@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,12 +54,27 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
                     throws ImporterHandlerException {
         
         String contentType = metadata.getString("Content-Type", "");
-        contentType = contentType.replaceAll(".*charset=", "");
-        if (StringUtils.isBlank(contentType)) {
-            contentType = CharEncoding.UTF_8;
+        contentType = StringUtils.substringBefore(contentType, ";");
+        
+        String charset = metadata.getString("Content-Encoding", null);
+        if (charset == null) {
+            charset = metadata.getString("charset", null);
+        }
+        if (charset == null) {
+            for (String type : metadata.getStrings("Content-Type")) {
+                if (type.contains("charset")) {
+                    charset = StringUtils.trimToNull(StringUtils.substringAfter(
+                            type, "charset="));
+                    break;
+                }
+            }
+        }
+        if (StringUtils.isBlank(charset) 
+                || !CharEncoding.isSupported(charset)) {
+            charset = CharEncoding.UTF_8;
         }
         try {
-            InputStreamReader is = new InputStreamReader(document, contentType);
+            InputStreamReader is = new InputStreamReader(document, charset);
             tagTextDocument(reference, is, metadata, parsed);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);
