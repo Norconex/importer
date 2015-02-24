@@ -38,6 +38,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectOfficeBinAsciiParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
+import com.norconex.importer.parser.impl.xfdl.XFDLParser;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
@@ -228,7 +229,9 @@ public class GenericDocumentParserFactory
                 "application/wordperfect6.0"), wpParser);
         parsers.put(ContentType.valueOf(
                 "application/wordperfect6.1"), wpParser);
-        
+        parsers.put(ContentType.valueOf(
+                "application/vnd.xfdl"), new XFDLParser());
+              
         // Generic Corel WP Office bin/ascii parser seems to work for these:
         IDocumentParser wpBinTextParser = new WordPerfectOfficeBinAsciiParser();
         parsers.put(ContentType.valueOf(
