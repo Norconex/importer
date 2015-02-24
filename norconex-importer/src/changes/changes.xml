@@ -44,7 +44,11 @@
         been replaced by a &lt;field&gt; element.
       </action>
       <action dev="essiembre" type="update">
-        AbstractTikaParser can not be extended to modify Tika ParseContext.
+        AbstractTikaParser can now be extended to modify Tika ParseContext.
+      </action>
+      <action dev="essiembre" type="update">
+        importer.bat and importer.sh will now load the log4j.properties 
+        from the ./classes folder.
       </action>
       <action dev="essiembre" type="update">
         Easier to extend GenericDocumentParserFactory to provide custom

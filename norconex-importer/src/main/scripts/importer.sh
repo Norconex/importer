@@ -2,4 +2,4 @@
 
 cd $(dirname $0)
 
-java -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"
+java -Dlog4j.configuration="file:${ROOT_DIR}/classes/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"
