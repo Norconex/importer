@@ -27,6 +27,11 @@
         support for PDF XFA (dynamic forms) text extraction.
       </action>
       <action dev="essiembre" type="add">
+        New XFDLParser for parsing PureEdge Extensible Forms Description 
+        Language files (XFDL). Supports both Gzipped+Base64 and plain text
+        versions.
+      </action>
+      <action dev="essiembre" type="add">
         New WordPerfectOfficeBinAsciiParser class for parsing extra versions of
         WordPerfect Office Suite files.   Currently adds support for 
         content type "application/x-quattro-pro" and 
@@ -49,6 +54,10 @@
       <action dev="essiembre" type="update">
         importer.bat and importer.sh will now load the log4j.properties 
         from the ./classes folder.
+      </action>
+      <action dev="essiembre" type="add">
+        Now always flush output stream from parsers so implementors do not 
+        have to be concerned with this.
       </action>
       <action dev="essiembre" type="update">
         Easier to extend GenericDocumentParserFactory to provide custom

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info>
+
+  <!-- Microsoft Visio =========================================================
+    -->
   <mime-type type="application/vnd.ms-visio.drawing.main+xml">
     <_comment>Office Open XML Visio Drawing (macro-free)</_comment>
     <glob pattern="*.vsdx"/>
@@ -30,4 +33,41 @@
     <glob pattern="*.vssm"/>
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
+
+
+  <!-- XFDL ====================================================================
+    TODO: Find out if there is a better way to handle the two different
+    content for XFDL than having two mime-type entries defined. 
+        
+    TODO: Shall we add these aliases:
+        <alias type="application/uwi_form"/>
+        <alias type="application/vnd.ufdl"/>
+        <alias type="application/x-xfdl"/>
+
+    TODO: Shall we add the ".frm" extension, which conflicts with some
+    other mime-types?
+    -->
+  <mime-type type="application/vnd.xfdl">
+    <acronym>XFDL</acronym>
+    <_comment>PureEdge - Extensible Forms Description Language</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/Extensible_Forms_Description_Language</tika:link>
+    <tika:uti>public.xml</tika:uti>
+    <magic priority="50">
+      <match value="application/vnd.xfdl;" type="string" offset="0"></match>
+    </magic>
+    <glob pattern="*.xfdl"/>
+    <glob pattern="*.xfd"/>
+    <sub-class-of type="plain/text"/>
+  </mime-type>  
+  <mime-type type="application/vnd.xfdl">
+    <acronym>XFDL</acronym>
+    <_comment>PureEdge - Extensible Forms Description Language</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/Extensible_Forms_Description_Language</tika:link>
+    <tika:uti>public.xml</tika:uti>
+    <root-XML localName="xfdl" namespaceURI="http://www.PureEdge.com/XFDL/6.0"/>
+    <glob pattern="*.xfdl"/>
+    <glob pattern="*.xfd"/>
+    <sub-class-of type="application/xml"/>
+  </mime-type>  
+
 </mime-info>

@@ -411,6 +411,7 @@ public class Importer {
         try {
             List<ImporterDocument> nestedDocs = 
                     parser.parseDocument(doc, output);
+            output.flush();
             if (doc.getContentType() == null) {
                 String ct = doc.getMetadata().getString(
                                 ImporterMetadata.DOC_CONTENT_TYPE);
