@@ -47,27 +47,37 @@
     TODO: Shall we add the ".frm" extension, which conflicts with some
     other mime-types?
     -->
-  <mime-type type="application/vnd.xfdl">
-    <acronym>XFDL</acronym>
-    <_comment>PureEdge - Extensible Forms Description Language</_comment>
-    <tika:link>http://en.wikipedia.org/wiki/Extensible_Forms_Description_Language</tika:link>
-    <tika:uti>public.xml</tika:uti>
-    <magic priority="50">
-      <match value="application/vnd.xfdl;" type="string" offset="0"></match>
-    </magic>
-    <glob pattern="*.xfdl"/>
-    <glob pattern="*.xfd"/>
-    <sub-class-of type="plain/text"/>
-  </mime-type>  
+
   <mime-type type="application/vnd.xfdl">
     <acronym>XFDL</acronym>
     <_comment>PureEdge - Extensible Forms Description Language</_comment>
     <tika:link>http://en.wikipedia.org/wiki/Extensible_Forms_Description_Language</tika:link>
     <tika:uti>public.xml</tika:uti>
     <root-XML localName="xfdl" namespaceURI="http://www.PureEdge.com/XFDL/6.0"/>
-    <glob pattern="*.xfdl"/>
-    <glob pattern="*.xfd"/>
+    <magic priority="90">
+      <match value="application/vnd.xfdl;content-encoding=&quot;base64-gzip&quot;" type="string" offset="0"></match>
+      <match value="&lt;XFDL xmlns" type="string" offset="44:64"></match>
+    </magic>
+
+   	<glob pattern="*.xfdl" />
+   	<glob pattern="*.xfd" />
+  
     <sub-class-of type="application/xml"/>
+  </mime-type>  
+  
+  <mime-type type="application/vnd.wordperfect">
+        <alias type="application/wordperfect"/>
+    <acronym>WPD</acronym>
+    <_comment>Word Perfect - Corel Word Processing</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/WordPerfect</tika:link>
+    <tika:uti>com.corel.wordperfect.doc</tika:uti>
+    <magic priority="60">
+      <match value="0xFF575043" type="big32" offset="0"/>
+    </magic>
+    <magic priority="50">
+      <match value="application/vnd.wordperfect;" type="string" offset="0"></match>
+    </magic>
+    <glob pattern="*.wpd"/>
   </mime-type>  
 
 </mime-info>
