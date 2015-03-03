@@ -128,6 +128,8 @@ public class EnhancedPDFParser extends AbstractParser {
     //</NorconexCodeChange-0> --------------------------------------------------
     
     
+    private static final float PDF_AVG_CHAR_TOLERANCE = 0.2f;
+    
     public Set<MediaType> getSupportedTypes(ParseContext context) {
         return SUPPORTED_TYPES;
     }
@@ -142,6 +144,7 @@ public class EnhancedPDFParser extends AbstractParser {
         TemporaryResources tmp = new TemporaryResources();
         //config from context, or default if not set via context
         PDFParserConfig localConfig = context.get(PDFParserConfig.class, defaultConfig);
+        localConfig.setAverageCharTolerance(PDF_AVG_CHAR_TOLERANCE);
         String password = "";
         try {
             // PDFBox can process entirely in memory, or can use a temp file
