@@ -33,7 +33,7 @@ import com.norconex.importer.parser.IDocumentParser;
 
 
 /**
- * Parser for WordPerfect Office documents for which no more formal parser
+ * <p>Parser for WordPerfect Office documents for which no more formal parser
  * exists.  This parser assumes the office file is binary but holds the
  * text we are intersted in in plain ASCII. This approach is known to work
  * for WordPerfect documents with content type
@@ -41,13 +41,17 @@ import com.norconex.importer.parser.IDocumentParser;
  * possibly higher) documents with
  * content type <code>application/x-quattro-pro</code>.  Possibly more
  * Corel WordPerfect Office Suite documents could be handled by this parser
- * (would require enough samples to test).
+ * (would require enough samples to test).</p>
  * 
+ * <p><b>Note:</b> This parser should be considered as a "better than none"
+ * parser.  It will likely generate bad terms (e.g. font names) in several
+ * documents.  Ideally it should be phased out in favor of more formal
+ * parsers following the appropriate file format specifications.</p>
  * @author Pascal Essiembre 
  * @since 2.1.0
  */
 //NOTE: Excluded from Sonar coverage calculations.
-public class WordPerfectOfficeBinAsciiParser implements IDocumentParser {
+public class WPOfficeBinAsciiParser implements IDocumentParser {
 
     private static final String[] QUATTRO_TERMS = {
         "ActivePagename", "PreviousCell", "SelectedVersion", "CurrentVersion",
