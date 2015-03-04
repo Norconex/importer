@@ -48,6 +48,13 @@
         <enabled>true</enabled>
       </snapshots>
     </repository> 
+    
+    <!-- Test
+    <repository>
+        <id>openplanets</id>
+        <url>https://github.com/openplanets/mvn-repo/raw/master/releases</url>
+    </repository>    
+     -->
   </repositories>
 
   <dependencies>
@@ -131,6 +138,15 @@
       <artifactId>lucene-analyzers-common</artifactId>
       <version>4.10.3</version>
     </dependency>
+    
+    <!-- Tests
+    <dependency>
+      <groupId>nz.govt.natlib.metadata-extractor</groupId>
+      <artifactId>wordperfect_adapter</artifactId>    
+      <version>3.5</version>
+    </dependency>
+     -->
+    
   </dependencies>
   
   <build>

@@ -32,11 +32,12 @@
         versions.
       </action>
       <action dev="essiembre" type="add">
-        New WordPerfectOfficeBinAsciiParser class for parsing extra versions of
+        New WordPerfectParser class for parsing WordPerfect documents.
+      </action>
+      <action dev="essiembre" type="add">
+        New WPOfficeBinAsciiParser class for parsing extra versions of
         WordPerfect Office Suite files.   Currently adds support for 
-        content type "application/x-quattro-pro" and 
-        "application/x-corel-wordperfect" (both for version 9, and 
-        possibly higher).
+        content type "application/x-quattro-pro".
       </action>
       <action dev="essiembre" type="add">
         New configuration "parseErrorsSaveDir" on importer configuration

@@ -36,7 +36,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
-import com.norconex.importer.parser.impl.wordperfect.WordPerfectOfficeBinAsciiParser;
+import com.norconex.importer.parser.impl.wordperfect.WPOfficeBinAsciiParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.parser.impl.xfdl.XFDLParser;
 import com.norconex.importer.response.ImporterResponse;
@@ -223,29 +223,24 @@ public class GenericDocumentParserFactory
      */
     protected Map<ContentType, IDocumentParser> createNamedParsers() {
         Map<ContentType, IDocumentParser> parsers = new HashMap<>();
-        IDocumentParser wpParser = new WordPerfectParser();
-        parsers.put(ContentType.valueOf("application/wordperfect"), wpParser);
-        parsers.put(ContentType.valueOf(
-                "application/wordperfect6.0"), wpParser);
-        parsers.put(ContentType.valueOf(
-                "application/wordperfect6.1"), wpParser);
-        parsers.put(ContentType.valueOf(
-                "application/vnd.xfdl"), new XFDLParser());
-              
-        // Generic Corel WP Office bin/ascii parser seems to work for these:
-        IDocumentParser wpBinTextParser = new WordPerfectOfficeBinAsciiParser();
-        parsers.put(ContentType.valueOf(
-                "application/x-quattro-pro"), wpBinTextParser);
-        // WP 9 (and higher?)
-        parsers.put(ContentType.valueOf(
-                "application/x-corel-wordperfect"), wpBinTextParser);
         
-        // No guaranty for these WordPerfect versions (not tested):
+        // Word Perfect
+        IDocumentParser wp = new WordPerfectParser();
+        parsers.put(ContentType.valueOf("application/wordperfect"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect6.0"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect6.1"), wp);
+        parsers.put(ContentType.valueOf("application/x-corel-wordperfect"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect5.1"), wp);
+        parsers.put(ContentType.valueOf("application/vnd.wordperfect"), wp);
+        
+        // PureEdge XLDF
+        parsers.put(
+                ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
+              
+        // Quattro Pro:
+        IDocumentParser wpBinAsciiParser = new WPOfficeBinAsciiParser();
         parsers.put(ContentType.valueOf(
-                "application/wordperfect5.1"), wpParser);
-        parsers.put(ContentType.valueOf(
-                "application/vnd.wordperfect"), wpBinTextParser);
-
+                "application/x-quattro-pro"), wpBinAsciiParser);
         
         return parsers;
     }
