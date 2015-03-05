@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+    <release version="2.1.0-SNAPSHOT" date="2015-03-04" description="Feature release">
 
       <action dev="essiembre" type="add">
         Added OCR support using Tesseract open-source product. Configured
@@ -23,8 +23,10 @@
         documents, using Carrot2 to extract the best terms.
       </action>
       <action dev="essiembre" type="add">
-        New EnhancedPDFParser which modifies original Tika PDFParser to add
-        support for PDF XFA (dynamic forms) text extraction.
+        New EnhancedPDFParser and EnhancedPDF2XHTML classes modifying original 
+        Tika PDFParser to add support for PDF XFA (dynamic forms) text 
+        extraction as well as adding support for PDFBox 2.0.0 (which fixes 
+        the striping of space characters between words in many PDFs).
       </action>
       <action dev="essiembre" type="add">
         New XFDLParser for parsing PureEdge Extensible Forms Description 
@@ -32,7 +34,8 @@
         versions.
       </action>
       <action dev="essiembre" type="add">
-        New WordPerfectParser class for parsing WordPerfect documents.
+        New WordPerfectParser class for parsing WordPerfect documents
+        according to WordPerfect file specifications.
       </action>
       <action dev="essiembre" type="add">
         New WPOfficeBinAsciiParser class for parsing extra versions of
@@ -89,6 +92,9 @@
       </action>
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed embedded objects not always having the right content-type.
       </action>
       <action dev="essiembre" type="fix">
         Fixed in valid mapping between "application/wordperfect" content type

@@ -229,6 +229,7 @@ public class AbstractTikaParser implements IDocumentParser {
                 }
 
                 ImporterMetadata embedMeta = new ImporterMetadata();
+                addTikaMetadata(tikaMeta, embedMeta);
 
                 String embedRef = reference + "!" + resolveEmbeddedResourceName(
                         tikaMeta, embedMeta, embedCount);

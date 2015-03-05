@@ -16,7 +16,8 @@
  * -------------
  * This code is derived from the source file  
  * org.apache.tika.parser.pdf.PDFParser from Apache Tika 1.7,
- * to remove permissions before extracting the text.
+ * to remove permissions before extracting the text and to support
+ * PDFBox 2.0.0.
  */
 package org.apache.tika.parser.pdf;
 
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jempbox.xmp.XMPMetadata;
 import org.apache.jempbox.xmp.XMPSchema;
 import org.apache.jempbox.xmp.XMPSchemaDublinCore;
 import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
@@ -45,15 +47,11 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.io.RandomAccess;
-import org.apache.pdfbox.io.RandomAccessBuffer;
-import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
-import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDXFA;
+import org.apache.pdfbox.pdmodel.interactive.form.PDXFAResource;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.io.CloseShieldInputStream;
@@ -90,13 +88,16 @@ import org.xml.sax.SAXException;
  * {@link PDFParserConfig#setExtractInlineImages(boolean)}.
  * <p>
  * <h2>About this class:</h2>
- * This class is a copy of the PDFParser class from Apache Tika 1.7, modified
- * by Norconex to support PDF files created in Adobe LiveCycle, also called
+ * <p>This class is a copy of the PDFParser class from Apache Tika 1.7, modified
+ * by Norconex to:</p>
+ * <ul>
+ *   <li>support PDFBox 2.0.0 which better handles spaces between words</li>
+ *   <li>support PDF files created in Adobe LiveCycle, also called
  * dynamic XFA forms. The XFA standard can be found here:
  * <a href="http://partners.adobe.com/public/developer/xml/index_arch.html">
- * http://partners.adobe.com/public/developer/xml/index_arch.html</a>
+ * http://partners.adobe.com/public/developer/xml/index_arch.html</a></li>
+ * </ul>
  */
-@SuppressWarnings({"deprecation", "javadoc"})
 public class EnhancedPDFParser extends AbstractParser {
 
     private static final Logger LOG = 
@@ -119,16 +120,11 @@ public class EnhancedPDFParser extends AbstractParser {
     private static final Set<MediaType> SUPPORTED_TYPES =
         Collections.singleton(MEDIA_TYPE);
 
-    //<NorconexCodeChange-0> ---------------------------------------------------
     private static final Pattern PATTERN_TEXT = Pattern.compile(
             "<\\s*(speak|text|exData)\\b([^>]*)(?<!/)>(.*?)<\\s*/\\s*\\1\\s*>",
             Pattern.DOTALL | Pattern.MULTILINE);
     private static Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
             Pattern.DOTALL | Pattern.MULTILINE);
-    //</NorconexCodeChange-0> --------------------------------------------------
-    
-    
-    private static final float PDF_AVG_CHAR_TOLERANCE = 0.2f;
     
     public Set<MediaType> getSupportedTypes(ParseContext context) {
         return SUPPORTED_TYPES;
@@ -144,7 +140,6 @@ public class EnhancedPDFParser extends AbstractParser {
         TemporaryResources tmp = new TemporaryResources();
         //config from context, or default if not set via context
         PDFParserConfig localConfig = context.get(PDFParserConfig.class, defaultConfig);
-        localConfig.setAverageCharTolerance(PDF_AVG_CHAR_TOLERANCE);
         String password = "";
         try {
             // PDFBox can process entirely in memory, or can use a temp file
@@ -154,16 +149,15 @@ public class EnhancedPDFParser extends AbstractParser {
             password = getPassword(metadata, context);
             if (tstream != null && tstream.hasFile()) {
                 // File based, take that as a cue to use a temporary file
-                RandomAccess scratchFile = new RandomAccessFile(tmp.createTemporaryFile(), "rw");
                 if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.loadNonSeq(new CloseShieldInputStream(stream), scratchFile, password);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), password);
                 } else {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), scratchFile, true);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), true);
                 }
             } else {
                 // Go for the normal, stream based in-memory parsing
                 if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.loadNonSeq(new CloseShieldInputStream(stream), new RandomAccessBuffer(), password);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), password);
                 } else {
                     pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), true);
                 }
@@ -173,7 +167,7 @@ public class EnhancedPDFParser extends AbstractParser {
             //if using the classic parser and the doc is encrypted, we must manually decrypt
             if (! localConfig.getUseNonSequentialParser() && pdfDocument.isEncrypted()) {
                 try {
-                    pdfDocument.decrypt(password);
+//                    pdfDocument.decrypt(password);
 //pdfDocument.openProtection(new StandardDecryptionMaterial(password));
                 } catch (Exception e) {
                     String msg = "Could not decrypt PDF document content, "
@@ -207,7 +201,7 @@ public class EnhancedPDFParser extends AbstractParser {
                     }
                     metadata.set(Metadata.CONTENT_TYPE, "application/pdf");
                 } else {
-                    PDF2XHTML.process(pdfDocument, 
+                    EnhancedPDF2XHTML.process(pdfDocument, 
                             handler, context, metadata, localConfig);
                 }
                 //</NorconexCodeChange-2> --------------------------------------
@@ -218,7 +212,7 @@ public class EnhancedPDFParser extends AbstractParser {
             }
             tmp.dispose();
             //TODO: once we migrate to PDFBox 2.0, remove this (PDFBOX-2200)
-            PDFont.clearResources();
+//            PDFont.clearResources();
         }
     }
     
@@ -229,7 +223,8 @@ public class EnhancedPDFParser extends AbstractParser {
         if (catalog != null) {
             PDAcroForm acroForm = catalog.getAcroForm();
             if (acroForm != null) {
-                PDXFA xfa = acroForm.getXFA();
+//                PDXFA xfa = acroForm.getXFA();
+                PDXFAResource xfa = acroForm.getXFA();
                 if (xfa != null) {
                     //TODO consider streaming and writing as we read along
                     //to preserve memory.
@@ -300,14 +295,18 @@ public class EnhancedPDFParser extends AbstractParser {
     }
 
 
+    @SuppressWarnings("deprecation")
     private void extractMetadata(PDDocument document, Metadata metadata)
             throws TikaException {
 
-        org.apache.jempbox.xmp.XMPMetadata xmp = null;
+//        org.apache.jempbox.xmp.XMPMetadata xmp = null;
+        XMPMetadata xmp = null;
         XMPSchemaDublinCore dcSchema = null;
         try{
             if (document.getDocumentCatalog().getMetadata() != null) {
-                xmp = document.getDocumentCatalog().getMetadata().exportXMPMetadata();
+                xmp = XMPMetadata.load(document.getDocumentCatalog()
+                        .getMetadata().exportXMPMetadata());
+//                xmp = document.getDocumentCatalog().getMetadata().exportXMPMetadata();
             }
             if (xmp != null) {
                 dcSchema = xmp.getDublinCoreSchema();
@@ -328,20 +327,20 @@ public class EnhancedPDFParser extends AbstractParser {
         // TODO: Move to description in Tika 2.0
         addMetadata(metadata, TikaCoreProperties.TRANSITION_SUBJECT_TO_OO_SUBJECT, info.getSubject());
         addMetadata(metadata, "trapped", info.getTrapped());
-        try {
+//        try {
             // TODO Remove these in Tika 2.0
             addMetadata(metadata, "created", info.getCreationDate());
             addMetadata(metadata, TikaCoreProperties.CREATED, info.getCreationDate());
-        } catch (IOException e) {
+//        } catch (IOException e) {
             // Invalid date format, just ignore
-        }
-        try {
+//        }
+//        try {
             Calendar modified = info.getModificationDate();
             addMetadata(metadata, Metadata.LAST_MODIFIED, modified);
             addMetadata(metadata, TikaCoreProperties.MODIFIED, modified);
-        } catch (IOException e) {
+//        } catch (IOException e) {
             // Invalid date format, just ignore
-        }
+//        }
         
         // All remaining metadata is custom
         // Copy this over as-is
@@ -385,7 +384,8 @@ public class EnhancedPDFParser extends AbstractParser {
         }
         //TODO: Let's try to move this into PDFBox.
         //Attempt to determine Adobe extension level, if present:
-        COSDictionary root = document.getDocumentCatalog().getCOSDictionary();
+//        COSDictionary root = document.getDocumentCatalog().getCOSDictionary();
+        COSDictionary root = document.getDocumentCatalog().getCOSObject();
         COSDictionary extensions = (COSDictionary) root.getDictionaryObject(COSName.getPDFName("Extensions") );
         if( extensions != null ) {
             for( COSName extName : extensions.keySet() ) {
@@ -571,108 +571,108 @@ public class EnhancedPDFParser extends AbstractParser {
         return defaultConfig;
     }
     
-    /**
-     * If true, the parser will use the NonSequentialParser.  This may
-     * be faster than the full doc parser.
-     * If false (default), this will use the full doc parser.
-     * 
-     * @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
-     */
-    public void setUseNonSequentialParser(boolean v) {
-        defaultConfig.setUseNonSequentialParser(v);
-    }
-    
-    /** 
-     * @see #setUseNonSequentialParser(boolean) 
-     * @deprecated use {@link #getPDFParserConfig()}
-     */
-    public boolean getUseNonSequentialParser() {
-        return defaultConfig.getUseNonSequentialParser();
-    }
-    
-    /**
-     *  If true (the default), the parser should estimate
-     *  where spaces should be inserted between words.  For
-     *  many PDFs this is necessary as they do not include
-     *  explicit whitespace characters.
-     *
-     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
-     */
-    public void setEnableAutoSpace(boolean v) {
-        defaultConfig.setEnableAutoSpace(v);
-    }
-
-    /** 
-     * @see #setEnableAutoSpace(boolean) 
-     * @deprecated use {@link #getPDFParserConfig()}
-     */
-    public boolean getEnableAutoSpace() {
-        return defaultConfig.getEnableAutoSpace();
-    }
-
-    /**
-     * If true (the default), text in annotations will be
-     * extracted.
-     * @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
-     */
-    public void setExtractAnnotationText(boolean v) {
-        defaultConfig.setExtractAnnotationText(v);
-    }
-
-    /**
-     * If true, text in annotations will be extracted.
-     * 
-     * @deprecated use {@link #getPDFParserConfig()}
-     */
-    public boolean getExtractAnnotationText() {
-        return defaultConfig.getExtractAnnotationText();
-    }
-
-    /**
-     *  If true, the parser should try to remove duplicated
-     *  text over the same region.  This is needed for some
-     *  PDFs that achieve bolding by re-writing the same
-     *  text in the same area.  Note that this can
-     *  slow down extraction substantially (PDFBOX-956) and
-     *  sometimes remove characters that were not in fact
-     *  duplicated (PDFBOX-1155).  By default this is disabled.
-     *  
-     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
-     */
-    public void setSuppressDuplicateOverlappingText(boolean v) {
-        defaultConfig.setSuppressDuplicateOverlappingText(v);
-    }
-
-    /** 
-     * @see #setSuppressDuplicateOverlappingText(boolean) 
-     * 
-     * @deprecated use {@link #getPDFParserConfig()}
-     */
-    public boolean getSuppressDuplicateOverlappingText() {
-        return defaultConfig.getSuppressDuplicateOverlappingText();
-    }
-
-    /**
-     *  If true, sort text tokens by their x/y position
-     *  before extracting text.  This may be necessary for
-     *  some PDFs (if the text tokens are not rendered "in
-     *  order"), while for other PDFs it can produce the
-     *  wrong result (for example if there are 2 columns,
-     *  the text will be interleaved).  Default is false.
-     *  
-     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
-     */
-    public void setSortByPosition(boolean v) {
-        defaultConfig.setSortByPosition(v);
-    }
-
-    /** 
-     * @see #setSortByPosition(boolean) 
-     * 
-     * @deprecated use {@link #getPDFParserConfig()}
-     */
-    public boolean getSortByPosition() {
-        return defaultConfig.getSortByPosition();
-    }
+//    /**
+//     * If true, the parser will use the NonSequentialParser.  This may
+//     * be faster than the full doc parser.
+//     * If false (default), this will use the full doc parser.
+//     * 
+//     * @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
+//     */
+//    public void setUseNonSequentialParser(boolean v) {
+//        defaultConfig.setUseNonSequentialParser(v);
+//    }
+//    
+//    /** 
+//     * @see #setUseNonSequentialParser(boolean) 
+//     * @deprecated use {@link #getPDFParserConfig()}
+//     */
+//    public boolean getUseNonSequentialParser() {
+//        return defaultConfig.getUseNonSequentialParser();
+//    }
+//    
+//    /**
+//     *  If true (the default), the parser should estimate
+//     *  where spaces should be inserted between words.  For
+//     *  many PDFs this is necessary as they do not include
+//     *  explicit whitespace characters.
+//     *
+//     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
+//     */
+//    public void setEnableAutoSpace(boolean v) {
+//        defaultConfig.setEnableAutoSpace(v);
+//    }
+//
+//    /** 
+//     * @see #setEnableAutoSpace(boolean) 
+//     * @deprecated use {@link #getPDFParserConfig()}
+//     */
+//    public boolean getEnableAutoSpace() {
+//        return defaultConfig.getEnableAutoSpace();
+//    }
+//
+//    /**
+//     * If true (the default), text in annotations will be
+//     * extracted.
+//     * @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
+//     */
+//    public void setExtractAnnotationText(boolean v) {
+//        defaultConfig.setExtractAnnotationText(v);
+//    }
+//
+//    /**
+//     * If true, text in annotations will be extracted.
+//     * 
+//     * @deprecated use {@link #getPDFParserConfig()}
+//     */
+//    public boolean getExtractAnnotationText() {
+//        return defaultConfig.getExtractAnnotationText();
+//    }
+//
+//    /**
+//     *  If true, the parser should try to remove duplicated
+//     *  text over the same region.  This is needed for some
+//     *  PDFs that achieve bolding by re-writing the same
+//     *  text in the same area.  Note that this can
+//     *  slow down extraction substantially (PDFBOX-956) and
+//     *  sometimes remove characters that were not in fact
+//     *  duplicated (PDFBOX-1155).  By default this is disabled.
+//     *  
+//     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
+//     */
+//    public void setSuppressDuplicateOverlappingText(boolean v) {
+//        defaultConfig.setSuppressDuplicateOverlappingText(v);
+//    }
+//
+//    /** 
+//     * @see #setSuppressDuplicateOverlappingText(boolean) 
+//     * 
+//     * @deprecated use {@link #getPDFParserConfig()}
+//     */
+//    public boolean getSuppressDuplicateOverlappingText() {
+//        return defaultConfig.getSuppressDuplicateOverlappingText();
+//    }
+//
+//    /**
+//     *  If true, sort text tokens by their x/y position
+//     *  before extracting text.  This may be necessary for
+//     *  some PDFs (if the text tokens are not rendered "in
+//     *  order"), while for other PDFs it can produce the
+//     *  wrong result (for example if there are 2 columns,
+//     *  the text will be interleaved).  Default is false.
+//     *  
+//     *  @deprecated use {@link #setPDFParserConfig(PDFParserConfig)}
+//     */
+//    public void setSortByPosition(boolean v) {
+//        defaultConfig.setSortByPosition(v);
+//    }
+//
+//    /** 
+//     * @see #setSortByPosition(boolean) 
+//     * 
+//     * @deprecated use {@link #getPDFParserConfig()}
+//     */
+//    public boolean getSortByPosition() {
+//        return defaultConfig.getSortByPosition();
+//    }
 
 }
