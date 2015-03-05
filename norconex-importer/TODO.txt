@@ -6,3 +6,7 @@ TODO:
   leveraging Tika GDAL support.
 - Add a counter as method argument to AbstractStringTagger so we know which 
   "chunk" of text we are processing (1st, 2nd, etc).
+- Improve new parsers:
+    - Add unit tests for new parsers.
+    - Extract WordPerfect footnotes and maybe more valuable text?
+    - Create new QuatroPro parser based on official specs.
