@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.io.Writer;
 
 /**
- * Extracts text from a WordPerfect document according to WP6 File Format SDK.
+ * Extracts text from a WordPerfect document according to WP6 File Format.
  * This format appears to be compatible with more recent versions too.
  * @author Pascal Essiembre
  * @since 2.1.0
@@ -28,7 +28,7 @@ public class WP6TextExtractor {
 
     public void extract(InputStream input, Writer out) 
             throws IOException {
-        WP6InputStream in = new WP6InputStream(input);
+        WPInputStream in = new WPInputStream(input);
         WP6FileHeader header = parseFileHeader(in);
 
         // For text extraction we can safely ignore WP Index Area and
@@ -37,7 +37,7 @@ public class WP6TextExtractor {
     }
 
     private void extractDocumentText(
-            WP6InputStream in, long offset, Writer out) 
+            WPInputStream in, long offset, Writer out) 
                     throws IOException {
         
         // Move to offset (for some reason skip() did not work).
@@ -133,7 +133,7 @@ public class WP6TextExtractor {
     }
 
     // Skips until the given character is encountered.
-    private int skipUntilChar(WP6InputStream in, int targetChar)
+    private int skipUntilChar(WPInputStream in, int targetChar)
             throws IOException {
         int count = 0;
         int c;
@@ -146,7 +146,7 @@ public class WP6TextExtractor {
         return count;
     }
     
-    private WP6FileHeader parseFileHeader(WP6InputStream in) 
+    private WP6FileHeader parseFileHeader(WPInputStream in) 
             throws IOException {
         WP6FileHeader header = new WP6FileHeader();
 
@@ -171,16 +171,16 @@ public class WP6TextExtractor {
         //TODO header may be shared between corel products, so move validation
         //specific to each product elsewhere?
         //TODO convert to logs only, and let it fail elsewhere?
-        if (!WP6Constants.WP6_FILE_ID.equals(header.getFileId())) {
-            throw new IOException("Not a WordPerfect file. File must start "
-                    + "with " + WP6Constants.WP6_FILE_ID + " but was "
-                    + header.getFileId());
-        }
-        if (WP6Constants.WP6_PRODUCT_TYPE != header.getProductType()) {
-            throw new IOException("Not a WordPerfect file. Product type "
-                    + "must be " + WP6Constants.WP6_PRODUCT_TYPE + " but was "
-                    + header.getProductType());
-        }
+//        if (!WP6Constants.WP6_FILE_ID.equals(header.getFileId())) {
+//            throw new IOException("Not a WordPerfect file. File must start "
+//                    + "with " + WP6Constants.WP6_FILE_ID + " but was "
+//                    + header.getFileId());
+//        }
+//        if (WP6Constants.WP6_PRODUCT_TYPE != header.getProductType()) {
+//            throw new IOException("Not a WordPerfect file. Product type "
+//                    + "must be " + WP6Constants.WP6_PRODUCT_TYPE + " but was "
+//                    + header.getProductType());
+//        }
         //TODO perform file type validation?
         return header;
     }

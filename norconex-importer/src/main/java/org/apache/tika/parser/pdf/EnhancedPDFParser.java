@@ -86,7 +86,7 @@ import org.xml.sax.SAXException;
  * the potentially enormous number and size of inline images.  To
  * turn this feature on, see
  * {@link PDFParserConfig#setExtractInlineImages(boolean)}.
- * <p>
+ * </p>
  * <h2>About this class:</h2>
  * <p>This class is a copy of the PDFParser class from Apache Tika 1.7, modified
  * by Norconex to:</p>

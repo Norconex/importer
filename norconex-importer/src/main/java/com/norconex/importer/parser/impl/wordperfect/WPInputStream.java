@@ -19,6 +19,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.norconex.commons.lang.io.IOUtil;
 
 /**
@@ -26,7 +28,7 @@ import com.norconex.commons.lang.io.IOUtil;
  * @author Pascal Essiembre
  * @since 2.1.0
  */
-public class WP6InputStream extends InputStream {
+public class WPInputStream extends InputStream {
 
     private final DataInputStream in;
     
@@ -34,7 +36,7 @@ public class WP6InputStream extends InputStream {
      * Constructor.
      * @param in input stream
      */
-    public WP6InputStream(InputStream in) {
+    public WPInputStream(InputStream in) {
         this.in = new DataInputStream(IOUtil.toBufferedInputStream(in));
     }
 
@@ -80,6 +82,17 @@ public class WP6InputStream extends InputStream {
     }
 
     /**
+     * Skips the specified number of WordPerfect byte (8-bit).
+     * @param numOfBytes number of bytes to skip
+     * @throws IOException if not enough bytes remain
+     */
+    public void skipWPByte(int numOfBytes) throws IOException {
+        for (int i = 0; i < numOfBytes; i++) {
+            readWPByte();
+        }
+    }
+
+    /**
      * Reads a WordPerfect character (8-bit).
      * @return character
      * @throws IOException if not enough bytes remain
@@ -91,7 +104,7 @@ public class WP6InputStream extends InputStream {
     /**
      * Reads a WordPerfect string of specified length (1 byte per character).
      * @param length how many characters to read
-     * @return character
+     * @return a string 
      * @throws IOException if not enough bytes remain
      */
     public String readWPString(int length) throws IOException {
@@ -105,6 +118,32 @@ public class WP6InputStream extends InputStream {
         }
         return new String(chars);
     }
+
+    /**
+     * Reads a series of bytes of the specified length, converting
+     * each byte to its hexadecimal representation.
+     * converting each characters to .
+     * @param numOfBytes how many byte to read
+     * @return an hexadecimal string
+     * @throws IOException if not enough bytes remain
+     */
+    public String readWPHexString(int numOfBytes) throws IOException {
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < numOfBytes; i++) {
+            b.append(readWPHex());
+        }
+        return b.toString();
+    }
+
+    /**
+     * Reads the next byte and returns it as an hexadecimal value.
+     * @return hexadecimal string for a single byte
+     * @throws IOException if not enough bytes remain
+     */
+    public String readWPHex() throws IOException {
+        return StringUtils.leftPad(Integer.toString(read(), 16), 2, '0');
+    }
+    
     
     @Override
     public int read() throws IOException {

@@ -36,7 +36,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
-import com.norconex.importer.parser.impl.wordperfect.WPOfficeBinAsciiParser;
+import com.norconex.importer.parser.impl.quattro.QuattroProParser;
 import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.parser.impl.xfdl.XFDLParser;
 import com.norconex.importer.response.ImporterResponse;
@@ -238,9 +238,8 @@ public class GenericDocumentParserFactory
                 ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
               
         // Quattro Pro:
-        IDocumentParser wpBinAsciiParser = new WPOfficeBinAsciiParser();
         parsers.put(ContentType.valueOf(
-                "application/x-quattro-pro"), wpBinAsciiParser);
+                "application/x-quattro-pro"), new QuattroProParser());
         
         return parsers;
     }
