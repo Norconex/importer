@@ -49,11 +49,17 @@
       </snapshots>
     </repository> 
     
-    <!-- The following repo may no longer be needed once a version of 
+    <!-- The following repos may no longer be needed once a version of 
          Tika is released with PDBBox 2.0.0 support. -->
      <repository>
-        <id>apache</id>
+        <id>apache.groups.snapshots</id>
         <url>https://repository.apache.org/content/groups/snapshots/</url>
+     </repository>
+          
+     <repository>
+       <id>apache.snapshots</id>
+       <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
+       <!-- url>http://repository.apache.org/snapshots/</url -->
      </repository>
      
   </repositories>
@@ -151,6 +157,18 @@
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>jempbox</artifactId>
       <version>1.8.8</version>
+    </dependency>
+
+    <!-- Following deps are required by PDFBox 2.0.0 for JPEG2000 support -->
+    <dependency>
+      <groupId>net.java.dev.jai-imageio</groupId>
+      <artifactId>jai-imageio-core-standalone</artifactId>
+      <version>1.2-pre-dr-b04-2014-09-13</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jai-imageio</groupId>
+      <artifactId>jai-imageio-jpeg2000</artifactId>
+      <version>1.2-pre-dr-b04-2014-09-13</version>
     </dependency>
   </dependencies>
   
