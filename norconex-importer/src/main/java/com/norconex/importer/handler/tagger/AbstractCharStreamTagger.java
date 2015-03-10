@@ -20,7 +20,6 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -28,6 +27,9 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>Base class for taggers dealing with the body of text documents only.  
@@ -54,10 +56,15 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
                     throws ImporterHandlerException {
         
         String contentType = metadata.getString("Content-Type", "");
-        contentType = contentType.replaceAll(".*charset=", "");
-        if (StringUtils.isBlank(contentType)) {
+        Matcher hasCharEncoding = Pattern.compile(".*charset=([^;]+)").matcher(contentType);
+        
+        if (hasCharEncoding.matches()) {
+            contentType = hasCharEncoding.group(1);
+        }
+        else {
             contentType = CharEncoding.UTF_8;
         }
+        
         try {
             InputStreamReader is = new InputStreamReader(document, contentType);
             tagTextDocument(reference, is, metadata, parsed);
