@@ -38,6 +38,29 @@
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
 
+  <!-- Microsoft Word (.docx) ==================================================
+    -->
+  <mime-type type="application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <_comment>Office Open XML Document</_comment>
+    <glob pattern="*.docx"/>
+    <magic priority="90">
+      <match value="word/_rels/document.xml.rels" type="string" offset="0:40960"></match>
+    </magic>    
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>
+
+  <!-- Microsoft PowerPoint (.pptx) ============================================
+    -->
+  <mime-type type="application/vnd.openxmlformats-officedocument.presentationml.presentation">
+    <_comment>Office Open XML Presentation</_comment>
+    <glob pattern="*.pptx"/>
+    <glob pattern="*.thmx"/>
+    <magic priority="90">
+      <match value="ppt/_rels/presentation.xml.rels" type="string" offset="0:40960"></match>
+    </magic>    
+    <sub-class-of type="application/x-tika-ooxml"/>
+  </mime-type>  
+  
 
   <!-- XFDL ====================================================================
     TODO: Shall we add these aliases:

@@ -92,6 +92,10 @@
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
       </action>
+      <action dev="essiembre" type="update">
+        Improved mimetypes detection for .docx and .pptx (OOXML format)
+        when received as an input stream.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed embedded objects not always having the right content-type.
       </action>

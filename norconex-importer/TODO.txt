@@ -9,4 +9,3 @@ TODO:
 - Improve new parsers:
     - Add unit tests for new parsers.
     - Extract WordPerfect footnotes and maybe more valuable text?
-    - Create new QuatroPro parser based on official specs.
