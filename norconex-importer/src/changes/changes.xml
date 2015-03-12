@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.1.0-SNAPSHOT" date="2015-03-04" description="Feature release">
+    <release version="2.1.0-SNAPSHOT" date="2015-??-??" description="Feature release">
 
       <action dev="essiembre" type="add">
         Added OCR support using Tesseract open-source product. Configured
@@ -52,13 +52,17 @@
         been replaced by a &lt;field&gt; element.
       </action>
       <action dev="essiembre" type="update">
+        Improved content detection of MS Office and Corel Office documents
+        when importing an input stream with no specified extension.
+      </action>
+      <action dev="essiembre" type="update">
         AbstractTikaParser can now be extended to modify Tika ParseContext.
       </action>
       <action dev="essiembre" type="update">
         importer.bat and importer.sh will now load the log4j.properties 
         from the ./classes folder.
       </action>
-      <action dev="essiembre" type="add">
+      <action dev="essiembre" type="update">
         Now always flush output stream from parsers so implementors do not 
         have to be concerned with this.
       </action>
@@ -91,10 +95,6 @@
       </action>
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
-      </action>
-      <action dev="essiembre" type="update">
-        Improved mimetypes detection for .docx and .pptx (OOXML format)
-        when received as an input stream.
       </action>
       <action dev="essiembre" type="fix">
         Fixed embedded objects not always having the right content-type.
