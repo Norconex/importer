@@ -23,10 +23,13 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
@@ -36,6 +39,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Objects;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
@@ -58,6 +62,7 @@ public class AbstractTikaParser implements IDocumentParser {
     private OCRConfig ocrConfig;
     private TesseractOCRConfig ocrTesseractConfig;
     private List<String> ocrContentTypes;
+    private final ThreadSafeSpecificAutoDetectWrapper knownDetector;
     
     /**
      * Creates a new Tika-based parser.
@@ -66,6 +71,14 @@ public class AbstractTikaParser implements IDocumentParser {
     public AbstractTikaParser(Parser parser) {
         super();
         this.parser = parser;
+        if (parser instanceof AutoDetectParser) {
+            AutoDetectParser p = (AutoDetectParser) parser;
+            knownDetector = 
+                    new ThreadSafeSpecificAutoDetectWrapper(p.getDetector());
+            p.setDetector(knownDetector);
+        } else {
+            knownDetector = null;
+        }
     }
     
     /**
@@ -74,7 +87,6 @@ public class AbstractTikaParser implements IDocumentParser {
      * @since 2.1.0
      */
     public synchronized void setOCRConfig(OCRConfig ocrConfig) {
-        this.ocrConfig = ocrConfig;
         if (ocrConfig == null) {
             this.ocrConfig = new OCRConfig();
         } else {
@@ -105,21 +117,32 @@ public class AbstractTikaParser implements IDocumentParser {
     public final List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output)
             throws DocumentParserException {
-        String contentType = doc.getContentType().toString();
+        
+        
         Metadata tikaMetadata = new Metadata();
+        if (doc.getContentType() == null) {
+            throw new DocumentParserException(
+                    "ImporterDocument must have a content-type.");
+        }
+        String contentType = doc.getContentType().toString();
         tikaMetadata.set(HttpHeaders.CONTENT_TYPE, contentType);
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
                 doc.getReference());
         tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
         
         try {
+            if (knownDetector != null) {
+                knownDetector.setContentType(contentType);
+                knownDetector.setReference(doc.getReference());
+            }
             RecursiveParser recursiveParser = createRecursiveParser(
                     doc.getReference(), output, doc.getMetadata(), 
                     doc.getContent().getStreamFactory());
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
 
-            if (StringUtils.isNotBlank(ocrConfig.getPath())
+            if (ocrConfig != null 
+                    && StringUtils.isNotBlank(ocrConfig.getPath())
                     && (ocrContentTypes == null 
                         || ocrContentTypes.contains(contentType))) {
                 context.set(TesseractOCRConfig.class, ocrTesseractConfig);
@@ -131,8 +154,9 @@ public class AbstractTikaParser implements IDocumentParser {
             modifyParseContext(context);
             
             ContentHandler handler = new BodyContentHandler(output);
-            recursiveParser.parse(doc.getContent(), 
-                    handler,  tikaMetadata, context);
+
+            InputStream stream = doc.getContent();
+            recursiveParser.parse(stream, handler,  tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
@@ -358,5 +382,49 @@ public class AbstractTikaParser implements IDocumentParser {
     
     protected interface RecursiveParser extends Parser {
         List<ImporterDocument> getEmbeddedDocuments();
+    }
+    
+    /**
+     * This class prevents detecting the content type a second time when
+     * we already know what it is.  Only the content type for the root
+     * reference is not detected again. Any embedded documents will have 
+     * default detection behavior applied on them.
+     */
+    class ThreadSafeSpecificAutoDetectWrapper implements Detector {
+        private static final long serialVersionUID = 225979407457365951L;
+        private final Detector originalDetector; 
+        private final ThreadLocal<MediaType> mediaType = new ThreadLocal<>();
+        private final ThreadLocal<String> reference = new ThreadLocal<>();
+        public ThreadSafeSpecificAutoDetectWrapper(Detector originalDetector) {
+            super();
+            this.originalDetector = originalDetector;
+        }
+        @Override
+        public MediaType detect(InputStream input, Metadata metadata)
+                throws IOException {
+            MediaType type = mediaType.get();
+            String reference = this.reference.get();
+            if (type == null || !Objects.equal(
+                    reference, metadata.get(Metadata.RESOURCE_NAME_KEY))) {
+                type = originalDetector.detect(input, metadata);
+            }
+            return type;
+        }
+        public void setReference(String reference) {
+            if (StringUtils.isBlank(reference)) {
+                this.reference.set(null);
+            } else {
+                this.reference.set(reference);
+            }
+        }
+        public void setContentType(String contentType) {
+            if (StringUtils.isBlank(contentType)) {
+                mediaType.set(null);
+            } else {
+                mediaType.set(new MediaType(
+                        StringUtils.substringBefore(contentType, "/"),
+                        StringUtils.substringAfter(contentType, "/")));
+            }
+        }
     }
 }

@@ -205,18 +205,20 @@ public class Importer {
             ContentType contentType, String contentEncoding,
             Properties metadata, String reference) throws ImporterException {           
         
+        
         if (input == null && LOG.isDebugEnabled()) {
-            LOG.debug("Input is null. Won't import much. Was it intentional?");
+            LOG.debug("Content is null for " + reference 
+                    + ". Won't import much. Was it intentional?");
         }
         
         //--- Input ---
-        BufferedInputStream bufInput = null;
-        if (input instanceof BufferedInputStream) {
-            bufInput = (BufferedInputStream) input;
+        CachedInputStream content = null;
+        if (input instanceof CachedInputStream) {
+            content = (CachedInputStream) input;
         } else {
-            bufInput = new BufferedInputStream(input);
+            content = streamFactory.newInputStream(input);
         }
-
+        
         //--- Reference ---
         if (StringUtils.isBlank(reference)) {
             throw new ImporterException("The document reference was not set.");
@@ -228,7 +230,7 @@ public class Importer {
                 || StringUtils.isBlank(safeContentType.toString())) {
             try {
                 safeContentType = 
-                        contentTypeDetector.detect(bufInput, reference);
+                        contentTypeDetector.detect(content, reference);
             } catch (IOException e) {
                 LOG.error("Could not detect content type. Defaulting to "
                         + "\"application/octet-stream\".", e);
@@ -257,7 +259,6 @@ public class Importer {
         //--- Document Handling ---
         try {
             List<ImporterDocument> nestedDocs = new ArrayList<>();
-            CachedInputStream content = streamFactory.newInputStream(bufInput);
             ImporterDocument document = 
                     new ImporterDocument(reference, content, meta);
             document.setContentType(safeContentType);
