@@ -351,8 +351,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             } else if (object instanceof PDImageXObject) {
                 PDImageXObject image = (PDImageXObject) object;
 
-                System.out.println("SUFFIX:" + image.getSuffix());
-                
                 Metadata metadata = new Metadata();
                 String extension = "";
 
