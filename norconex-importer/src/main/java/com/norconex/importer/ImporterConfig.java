@@ -56,9 +56,9 @@ public class ImporterConfig implements IXMLConfigurable {
     public static final String DEFAULT_TEMP_DIR_PATH = 
             FileUtils.getTempDirectoryPath();
     public static final int DEFAULT_MAX_FILE_CACHE_SIZE = 
-            (int) DataUnit.MB.toBytes(1);
-    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(10);
+    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
+            (int) DataUnit.MB.toBytes(100);
     
     private IDocumentParserFactory documentParserFactory = 
             new GenericDocumentParserFactory();
