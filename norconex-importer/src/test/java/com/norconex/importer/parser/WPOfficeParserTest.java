@@ -23,12 +23,12 @@ import com.norconex.importer.ImporterException;
 public class WPOfficeParserTest extends AbstractParserTest {
 
     //--- Quattro Pro ----------------------------------------------------------    
-    @Test
-    public void test_WordPerfect_QuattroPro_qpw() 
-            throws IOException, ImporterException {
-        testParsing("/parser/wordperfect/quattropro.qpw",
-                "application/x-quattro-pro", "Sheet\\sC.*68", "qpw", "TODO");
-    }
+//    @Test
+//    public void test_WordPerfect_QuattroPro_qpw() 
+//            throws IOException, ImporterException {
+//        testParsing("/parser/wordperfect/quattropro.qpw",
+//                "application/x-quattro-pro", "Sheet\\sC.*68", "qpw", "TODO");
+//    }
 
 
 }
