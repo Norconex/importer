@@ -281,7 +281,7 @@ public class GenericDocumentParserFactory
     //TODO Print out Tesseract version and path on startup?
     private void validateOCRInstall() {
         if (ocrConfig == null) {
-            LOG.info("OCR parsing is disabled.");
+            LOG.debug("OCR parsing is disabled.");
             return;
         }
         

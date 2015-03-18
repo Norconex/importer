@@ -14,31 +14,16 @@
  */
 package com.norconex.importer.parser;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.junit.Before;
 import org.junit.Test;
 
 //TODO create a CSV file with all the test data?
-public class ParsersTest extends AbstractParserTest {
+public class MSOfficeParserTest extends AbstractParserTest {
 
     public static final String DEFAULT_CONTENT_REGEX = 
             "Hey Norconex, this is a test\\.";
     
 //    private static final Logger LOG = 
-//            LogManager.getLogger(ParsersTest.class);
-    
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//            LogManager.getLogger(MSOfficeParserTest.class);
     
     
 //    @Test
@@ -152,4 +137,80 @@ public class ParsersTest extends AbstractParserTest {
                 DEFAULT_CONTENT_REGEX, "ppt", "Presentation");
     }
     
+    //--- Microsoft Excel ------------------------------------------------------
+    // OOXML formats:
+    @Test
+    public void test_MSOffice_Excel_xlsx() throws Exception {
+        testParsing("/parser/msoffice/excel.xlsx",
+                "application/vnd.openxmlformats-officedocument"
+                        + ".spreadsheetml.sheet",
+                DEFAULT_CONTENT_REGEX, "xlsx", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xlam() throws Exception {
+        testParsing("/parser/msoffice/excel.xlam",
+                "application/vnd.ms-excel.addin.macroenabled.12",
+                DEFAULT_CONTENT_REGEX, "xlam", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xlsm() throws Exception {
+        testParsing("/parser/msoffice/excel.xlsm",
+                "application/vnd.ms-excel.sheet.macroenabled.12",
+                DEFAULT_CONTENT_REGEX, "xlsm", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xltm() throws Exception {
+        testParsing("/parser/msoffice/excel.xltm",
+                "application/vnd.ms-excel.template.macroenabled.12",
+                DEFAULT_CONTENT_REGEX, "xltm", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xltx() throws Exception {
+        testParsing("/parser/msoffice/excel.xltx",
+                "application/vnd.openxmlformats-officedocument"
+                        + ".spreadsheetml.template",
+                DEFAULT_CONTENT_REGEX, "xltx", "Spreadsheet");
+    }
+    
+    // OLE formats:
+    @Test
+    public void test_MSOffice_Excel_xls() throws Exception {
+        testParsing("/parser/msoffice/excel.xls",
+                "application/vnd.ms-excel",
+                DEFAULT_CONTENT_REGEX, "xls", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xla() throws Exception {
+        testParsing("/parser/msoffice/excel.xla",
+                "application/vnd.ms-excel",
+                DEFAULT_CONTENT_REGEX, "xls", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel_xlt() throws Exception {
+        testParsing("/parser/msoffice/excel.xlt",
+                "application/vnd.ms-excel",
+                DEFAULT_CONTENT_REGEX, "xls", "Spreadsheet");
+    }
+    @Test
+    public void test_MSOffice_Excel95_xls() throws Exception {
+        testParsing("/parser/msoffice/excel95.xls",
+                "application/vnd.ms-excel",
+                DEFAULT_CONTENT_REGEX, "xls", "Spreadsheet");
+    }
+
+    //--- Microsoft Publisher --------------------------------------------------
+    @Test
+    public void test_MSOffice_Publisher_pub() throws Exception {
+        testParsing("/parser/msoffice/publisher.pub",
+                "application/x-mspublisher",
+                DEFAULT_CONTENT_REGEX, "pub", "Publishing");
+    }
+
+    //--- Microsoft Visio ------------------------------------------------------
+    @Test
+    public void test_MSOffice_Visio_vsd() throws Exception {
+        testParsing("/parser/msoffice/visio.vsd",
+                "application/vnd.visio",
+                DEFAULT_CONTENT_REGEX, "vsd", "Vector Graphic");
+    }
 }

@@ -9,3 +9,10 @@ TODO:
 - Improve new parsers:
     - Add unit tests for new parsers.
     - Extract WordPerfect footnotes and maybe more valuable text?
+    
+- Based on demand, add full support for the following content-types:
+    - MS Excel binary format (.xlsb)
+    - MS Publisher 2000 format (this is an older format)
+    - MS Publisher 98 format (this is older format)
+    - MS Visio 2013 format (.vsdx)
+    - MS Access (.accdb)

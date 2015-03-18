@@ -23,7 +23,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
@@ -38,6 +43,17 @@ public abstract class AbstractParserTest {
 
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
+    
+    @Before
+    public void before() {
+        Logger logger = Logger.getRootLogger();
+        logger.setLevel(Level.DEBUG);
+        logger.setAdditivity(false);
+        logger.addAppender(new ConsoleAppender(
+                new PatternLayout("%-5p [%C{1}] %m%n"), 
+                ConsoleAppender.SYSTEM_OUT));
+    }
+    
     
     protected File getFile(String resourcePath) throws IOException {
         File file = folder.newFile(
@@ -86,6 +102,8 @@ public abstract class AbstractParserTest {
         Pattern p = Pattern.compile(
                 contentRegex, Pattern.DOTALL | Pattern.MULTILINE);
 
+        Assert.assertNotNull("Document is null", doc);
+        
         String content = IOUtils.toString(doc.getContent());
         Assert.assertEquals(testType + " content-type detection failed for \"" 
                 + resourcePath + "\".", ContentType.valueOf(contentType), 
