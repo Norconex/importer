@@ -41,6 +41,9 @@ import com.norconex.importer.response.ImporterResponse;
 
 public abstract class AbstractParserTest {
 
+    public static final String DEFAULT_CONTENT_REGEX = 
+            "Hey Norconex, this is a test\\.";
+    
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     
@@ -79,7 +82,7 @@ public abstract class AbstractParserTest {
         response = new Importer().importDocument(
                 getFile(resourcePath), metadata);
         doc = response.getDocument();
-        assertDefaults(doc, "File", 
+        assertDefaults(doc, "FILE", 
                 resourcePath, contentType, contentRegex, extension, family);
 
         // Test input stream
@@ -87,7 +90,7 @@ public abstract class AbstractParserTest {
         response = new Importer().importDocument(
                 getInputStream(resourcePath), metadata, "guess");
         doc = response.getDocument();
-        assertDefaults(doc, "Stream", 
+        assertDefaults(doc, "STREAM", 
                 resourcePath, contentType, contentRegex, extension, family);
     }
     

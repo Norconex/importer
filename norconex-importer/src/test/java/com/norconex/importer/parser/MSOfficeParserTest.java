@@ -19,20 +19,6 @@ import org.junit.Test;
 //TODO create a CSV file with all the test data?
 public class MSOfficeParserTest extends AbstractParserTest {
 
-    public static final String DEFAULT_CONTENT_REGEX = 
-            "Hey Norconex, this is a test\\.";
-    
-//    private static final Logger LOG = 
-//            LogManager.getLogger(MSOfficeParserTest.class);
-    
-    
-//    @Test
-//    public void test_WordPerfect_QuattroPro_qpw() 
-//            throws IOException, ImporterException {
-//        testParsing("/parser/wordperfect/quattropro.qpw",
-//                "application/x-quattro-pro", "Sheet\\sC.*68", "qpw", "TODO");
-//    }
-
     //--- Microsoft Word -------------------------------------------------------
     // OOXML formats:
     @Test
