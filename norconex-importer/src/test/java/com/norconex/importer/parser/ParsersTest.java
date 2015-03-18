@@ -105,10 +105,49 @@ public class ParsersTest extends AbstractParserTest {
                 "application/vnd.ms-powerpoint.presentation.macroenabled.12",
                 DEFAULT_CONTENT_REGEX, "pptm", "Presentation");
     }
+    @Test
+    public void test_MSOffice_PowerPoint_potm() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.potm",
+                "application/vnd.ms-powerpoint.template.macroenabled.12",
+                DEFAULT_CONTENT_REGEX, "potm", "Presentation");
+    }
+    @Test
+    public void test_MSOffice_PowerPoint_potx() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.potx",
+                "application/vnd.openxmlformats-officedocument"
+                        + ".presentationml.template",
+                DEFAULT_CONTENT_REGEX, "potx", "Presentation");
+    }
+    @Test
+    public void test_MSOffice_PowerPoint_ppsm() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.ppsm",
+                "application/vnd.ms-powerpoint.slideshow.macroenabled.12",
+                DEFAULT_CONTENT_REGEX, "ppsm", "Presentation");
+    }
+    @Test
+    public void test_MSOffice_PowerPoint_ppsx() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.ppsx",
+                "application/vnd.openxmlformats-officedocument"
+                        + ".presentationml.slideshow",
+                DEFAULT_CONTENT_REGEX, "ppsx", "Presentation");
+    }
+    
     // OLE formats:
     @Test
     public void test_MSOffice_PowerPoint_ppt() throws Exception {
         testParsing("/parser/msoffice/powerpoint.ppt",
+                "application/vnd.ms-powerpoint",
+                DEFAULT_CONTENT_REGEX, "ppt", "Presentation");
+    }
+    @Test
+    public void test_MSOffice_PowerPoint_pot() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.pot",
+                "application/vnd.ms-powerpoint",
+                DEFAULT_CONTENT_REGEX, "ppt", "Presentation");
+    }
+    @Test
+    public void test_MSOffice_PowerPoint_pps() throws Exception {
+        testParsing("/parser/msoffice/powerpoint.pps",
                 "application/vnd.ms-powerpoint",
                 DEFAULT_CONTENT_REGEX, "ppt", "Presentation");
     }
