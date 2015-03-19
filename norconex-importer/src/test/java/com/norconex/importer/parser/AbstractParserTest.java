@@ -34,6 +34,7 @@ import org.junit.rules.TemporaryFolder;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -69,29 +70,49 @@ public abstract class AbstractParserTest {
         return getClass().getResourceAsStream(resourcePath);
     }
 
-    protected void testParsing(
+    protected ImporterResponse[] testParsing(
             String resourcePath, String contentType, 
             String contentRegex, String extension, String family) 
                     throws IOException, ImporterException {
+        return testParsing(resourcePath, contentType, 
+                contentRegex, extension, family, false);
+    }
+    protected ImporterResponse[] testParsing(
+            String resourcePath, String contentType, 
+            String contentRegex, String extension, String family,
+            boolean splitEmbedded) 
+                    throws IOException, ImporterException {
+        
+        ImporterResponse[] responses = new ImporterResponse[2];
+        
         ImporterMetadata metadata = null;
         ImporterResponse response = null;
         ImporterDocument doc = null;
+        ImporterConfig config = new ImporterConfig();
+        if (splitEmbedded) {
+            GenericDocumentParserFactory f = new GenericDocumentParserFactory();
+            f.setSplitEmbedded(true);
+            config.setParserFactory(f);
+        }
         
         // Test file
         metadata = new ImporterMetadata();
-        response = new Importer().importDocument(
+        response = new Importer(config).importDocument(
                 getFile(resourcePath), metadata);
         doc = response.getDocument();
         assertDefaults(doc, "FILE", 
                 resourcePath, contentType, contentRegex, extension, family);
-
+        responses[0] = response;
+        
         // Test input stream
         metadata = new ImporterMetadata();
-        response = new Importer().importDocument(
+        response = new Importer(config).importDocument(
                 getInputStream(resourcePath), metadata, "guess");
         doc = response.getDocument();
         assertDefaults(doc, "STREAM", 
                 resourcePath, contentType, contentRegex, extension, family);
+        responses[1] = response;
+        return responses;
     }
     
     private void assertDefaults(

@@ -101,7 +101,9 @@ public class QPWTextExtractor {
             ctx.out.write(System.lineSeparator());
         }},
 
-
+//        SHEET_QUICK_FILTER_DATA { @Override public void extract(Context ctx) 
+//                throws IOException {
+//        }},
         
         DEBUG { @Override public void extract(Context ctx) throws IOException {
             System.out.println("REC:" + ctx.in.readWPString(ctx.bodyLength));
@@ -128,6 +130,9 @@ public class QPWTextExtractor {
         EXTRACTORS.put(0x0601, Extractor.BOS); // Beginning of sheet
         EXTRACTORS.put(0x0605, Extractor.SHEET_HEADFOOT); // Sheet header
         EXTRACTORS.put(0x0606, Extractor.SHEET_HEADFOOT); // Sheet footer
+
+        //EXTRACTORS.put(0x0C02, Extractor.DEBUG);
+        //EXTRACTORS.put(0x01401, Extractor.DEBUG);
     }
     
     class Context {

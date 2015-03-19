@@ -4,11 +4,17 @@ TODO:
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support.
+
 - Add a counter as method argument to AbstractStringTagger so we know which 
   "chunk" of text we are processing (1st, 2nd, etc).
+
 - Improve new parsers:
     - Add unit tests for new parsers.
     - Extract WordPerfect footnotes and maybe more valuable text?
+
+- Create an ImageConverterTransformer that would convert images from/to
+  format of choice. This could allow for instance to convert some 
+  formats non-supported by Tesseract OCR into some that are.
     
 - Based on demand, add full support for the following content-types:
     - MS Excel binary format (.xlsb)

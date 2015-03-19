@@ -14,11 +14,6 @@
  */
 package com.norconex.importer.parser;
 
-import java.io.IOException;
-
-import org.junit.Test;
-
-import com.norconex.importer.ImporterException;
 
 public class WPOfficeParserTest extends AbstractParserTest {
 

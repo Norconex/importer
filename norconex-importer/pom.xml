@@ -170,6 +170,13 @@
       <artifactId>jai-imageio-jpeg2000</artifactId>
       <version>1.2-pre-dr-b04-2014-09-13</version>
     </dependency>
+    
+    <!-- Following dep is required for PDF JBIG2 support -->
+    <dependency>
+      <groupId>de.intarsys.opensource</groupId>
+      <artifactId>jbig2</artifactId>
+      <version>5.5.1</version>
+    </dependency>
   </dependencies>
   
   <build>

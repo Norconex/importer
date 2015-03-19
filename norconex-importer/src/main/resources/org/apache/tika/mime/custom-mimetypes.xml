@@ -62,7 +62,6 @@
     TODO: Shall we add the ".frm" extension, which conflicts with some
     other mime-types?
     -->
-
   <mime-type type="application/vnd.xfdl">
     <acronym>XFDL</acronym>
     <_comment>PureEdge - Extensible Forms Description Language</_comment>
@@ -124,5 +123,26 @@
     <glob pattern="*.wb2"/>
     <glob pattern="*.wb3"/>
   </mime-type>
+
+  <!-- JBIG2 ===================================================================
+    -->
+  <mime-type type="image/x-jbig2">
+    <alias type="image/x-jb2"/>
+    <acronym>JBIG2</acronym>
+    <_comment>
+      A lossless image compression standard from the 
+      Joint Bi-level Image Experts Group.
+    </_comment>
+    <tika:link>http://www.itu.int/rec/T-REC-T.88/en</tika:link>
+    <magic priority="50">
+      <match value="0x974A42320D0A1A0A" type="string" offset="0"/>
+    </magic>
+    <magic priority="70">
+      <match value="0x0000000130000100" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.jb2"/>
+    <glob pattern="*.jbig2"/>
+    <glob pattern="*.jbig"/>
+  </mime-type>  
 
 </mime-info>
