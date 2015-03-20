@@ -80,8 +80,8 @@ public class QPWTextExtractor {
             ctx.in.readWPLong();  // Total saved
             for (int i = 0; i < entries; i++) {
                 ctx.out.write(getQstrLabel(ctx.in));
+                ctx.out.write(System.lineSeparator());
             }
-            ctx.out.write(System.lineSeparator());
         }},
         BOS { @Override public void extract(Context ctx) throws IOException {
             ctx.in.readWPShort(); // sheet #
@@ -100,13 +100,31 @@ public class QPWTextExtractor {
             ctx.out.write(getQstrLabel(ctx.in));
             ctx.out.write(System.lineSeparator());
         }},
-
-//        SHEET_QUICK_FILTER_DATA { @Override public void extract(Context ctx) 
-//                throws IOException {
-//        }},
-        
+        FORMULA_STRING_VALUE { @Override public void extract(Context ctx) 
+                throws IOException {
+            ctx.in.readWPShort(); // column
+            ctx.in.readWPLong();  // row
+            ctx.out.write(getQstrLabel(ctx.in));
+        }},
+        CGENERICLABEL { @Override public void extract(Context ctx) 
+                throws IOException {
+            ctx.in.readWPShort(); // column
+            ctx.in.readWPLong();  // row
+            ctx.in.readWPShort(); // format index
+            ctx.out.write(getQstrLabel(ctx.in));
+        }},
+        CCOMMENT { @Override public void extract(Context ctx) 
+                throws IOException {
+            ctx.in.readWPShort(); // column
+            ctx.in.readWPLong();  // row
+            ctx.in.readWPLong();  // flag
+            ctx.out.write(getQstrLabel(ctx.in));  // author name
+            ctx.out.write(getQstrLabel(ctx.in));  // comment
+        }},
         DEBUG { @Override public void extract(Context ctx) throws IOException {
-            System.out.println("REC:" + ctx.in.readWPString(ctx.bodyLength));
+            System.out.println("REC ("
+                    + Integer.toHexString(ctx.type) + "/" + ctx.bodyLength 
+                    + "):" + ctx.in.readWPString(ctx.bodyLength));
         }},
         
         ;
@@ -131,8 +149,10 @@ public class QPWTextExtractor {
         EXTRACTORS.put(0x0605, Extractor.SHEET_HEADFOOT); // Sheet header
         EXTRACTORS.put(0x0606, Extractor.SHEET_HEADFOOT); // Sheet footer
 
-        //EXTRACTORS.put(0x0C02, Extractor.DEBUG);
-        //EXTRACTORS.put(0x01401, Extractor.DEBUG);
+        //--- Cells ---
+        EXTRACTORS.put(0x0c02, Extractor.FORMULA_STRING_VALUE); 
+        EXTRACTORS.put(0x0c72, Extractor.CGENERICLABEL); 
+        EXTRACTORS.put(0x0c80, Extractor.CCOMMENT); 
     }
     
     class Context {
@@ -195,11 +215,10 @@ public class QPWTextExtractor {
         char[] text = new char[count+1];
         text[0] = in.readWPChar();
 
-        // QSTR
+        // QSTRLABEL
         for (int i = 0; i < count; i++) {
             text[i+1] = in.readWPChar();
         }
         return new String(text);
     }
-
 }

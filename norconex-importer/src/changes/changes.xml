@@ -110,7 +110,7 @@
         Fixed embedded objects not always having the right content-type.
       </action>
       <action dev="essiembre" type="fix">
-        Fixed in valid mapping between "application/wordperfect" content type
+        Fixed invalid mapping between "application/wordperfect" content type
         and WordPerfectParser.
       </action>
       <action dev="essiembre" type="fix">

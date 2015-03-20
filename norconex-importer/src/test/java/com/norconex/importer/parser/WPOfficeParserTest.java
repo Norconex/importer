@@ -14,16 +14,30 @@
  */
 package com.norconex.importer.parser;
 
+import java.io.IOException;
+
+import org.junit.Test;
+
+import com.norconex.importer.ImporterException;
+
 
 public class WPOfficeParserTest extends AbstractParserTest {
 
     //--- Quattro Pro ----------------------------------------------------------    
-//    @Test
-//    public void test_WordPerfect_QuattroPro_qpw() 
-//            throws IOException, ImporterException {
-//        testParsing("/parser/wordperfect/quattropro.qpw",
-//                "application/x-quattro-pro", "Sheet\\sC.*68", "qpw", "TODO");
-//    }
+    @Test
+    public void test_WPOffice_QuattroPro_qpw() 
+            throws IOException, ImporterException {
+        testParsing("/parser/wordperfect/quattropro.qpw",
+                "application/x-quattro-pro", 
+                "Misc\\. relative references", "qpw", "Spreadsheet");
+    }
 
-
+    //--- Word Perfect ---------------------------------------------------------    
+    @Test
+    public void test_WPOffice_WordPerfect_wpd() 
+            throws IOException, ImporterException {
+        testParsing("/parser/wordperfect/wordperfect.wpd",
+                "application/vnd.wordperfect", 
+                "test test", "wpd", "Word Processor");
+    }
 }
