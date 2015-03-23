@@ -136,7 +136,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             // handler.
             EnhancedPDF2XHTML pdf2XHTML = new EnhancedPDF2XHTML(handler, context, metadata, config);
             
-//            config.configure(pdf2XHTML);
             configure(config, pdf2XHTML);
 
             pdf2XHTML.writeText(document, new Writer() {
@@ -314,11 +313,9 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         } catch (SAXException e) {
             throw new IOExceptionWithCause("Unable to end a page", e);
         }
-//        page.clear();
     }
 
     public static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
-//        pdf2XHTML.setForceParsing(true);
         pdf2XHTML.setSortByPosition(config.getSortByPosition());
         if (config.getEnableAutoSpace()) {
             pdf2XHTML.setWordSeparator(" ");
@@ -409,7 +406,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
                 }
             }
         }
-//        resources.clear();
     }
 
     protected EmbeddedDocumentExtractor getEmbeddedDocumentExtractor() {
@@ -679,7 +675,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         }
         try {
             //getValue can throw an IOException if there is no value
-//            String value = field.getValue();
             String value = field.getValue().toString();
             if (value != null && ! value.equals("null")) {
                 sb.append(value);
