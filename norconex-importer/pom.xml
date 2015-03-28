@@ -1,5 +1,5 @@
 <!-- 
-   Copyright 2010-2014 Norconex Inc.
+   Copyright 2010-2015 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,26 +55,24 @@
         <id>apache.groups.snapshots</id>
         <url>https://repository.apache.org/content/groups/snapshots/</url>
      </repository>
-          
      <repository>
        <id>apache.snapshots</id>
        <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
        <!-- url>http://repository.apache.org/snapshots/</url -->
      </repository>
-     
   </repositories>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
     	<groupId>com.norconex.commons</groupId>
     	<artifactId>norconex-commons-lang</artifactId>
-    	<version>1.6.0-SNAPSHOT</version>
+    	<version>1.6.0</version>
     </dependency>
     <dependency>
     	<groupId>org.apache.tika</groupId>
@@ -114,22 +112,13 @@
     <dependency>
     	<groupId>commons-codec</groupId>
     	<artifactId>commons-codec</artifactId>
-    	<version>1.7</version>
+    	<version>1.10</version>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-collections4</artifactId>
-      <version>4.0</version>
-    </dependency>
-
-
     <dependency>
       <groupId>net.sf.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>2.0</version>
     </dependency>
-
     <dependency>
       <groupId>com.norconex.language</groupId>
       <artifactId>norconex-language-detector</artifactId>
@@ -143,7 +132,7 @@
     <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
-      <version>4.10.3</version>
+      <version>5.0.0</version>
     </dependency>
     
     <!-- The following may no longer be needed once a version of Tika
@@ -151,7 +140,10 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
+      <!-- 
       <version>2.0.0-SNAPSHOT</version>
+       -->
+      <version>2.0.0-20150328.180029-1201</version>
     </dependency>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
@@ -214,6 +206,11 @@
     </extensions>
     <pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -298,13 +295,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
+        <version>2.10.2</version>
         <configuration>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
           <detectLinks>true</detectLinks>
-          <link>http://junit.org/javadoc/4.11/</link>
-          <link>http://tika.apache.org/1.5/api/</link>
+          <link>http://junit.org/javadoc/4.12/</link>
+          <link>http://tika.apache.org/1.7/api/</link>
           <source>1.7</source>
         </configuration>
         <executions>
@@ -326,7 +323,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
+        <version>2.4</version>
         <executions>
           <execution>
             <id>attach-sources</id>
@@ -339,7 +336,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.2</version>
+        <version>2.6</version>
         <executions>
           <execution>
             <goals>
@@ -348,10 +345,11 @@
           </execution>
         </executions>
       </plugin>
+      <!--  Use VM argument -Dgpg.skip=true to disable GPG signing. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.5</version>
+        <version>1.6</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -419,7 +417,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.6</version>
+        <version>2.7</version>
         <reportSets>
           <reportSet>
             <reports>

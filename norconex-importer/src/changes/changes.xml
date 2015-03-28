@@ -51,6 +51,9 @@
         identifying fields to keep/delete.  The field="" attribute has
         been replaced by a &lt;field&gt; element.
       </action>
+      <action dev="essiembre" type="add">
+        Added support for JBIG2 and jpeg2000 image formats.
+      </action>
       <action dev="essiembre" type="update">
         Improved content detection of MS Office and Corel Office documents
         when importing an input stream with no specified extension.
@@ -98,7 +101,12 @@
         Improved exception handling for configuration loading.
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Tika 1.7, Norconex Commons Lang 1.6.0.
+        Library updates: Tika 1.7, Norconex Commons Lang 1.6.0, JUnit 4.12,
+        PDFBox 2.0.0 (SNAPSHOT-2015-03-28), Apache Commons Codec 1.10,
+        Lucene Analyzer Common 5.0.0.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated several maven plugins and added SonarQube maven plugin.
       </action>
       <action dev="essiembre" type="update">
         Added Sonatype repository to pom.xml for snapshot releases.
