@@ -85,6 +85,9 @@ import org.xml.sax.helpers.AttributesImpl;
  * modified by Norconex to support PDFBox 2.0.0 which better handles
  * spaces between words.
  */
+//TODO should probably delete once Tika supports PDFBox 2.0.0.
+// Ignored by Sonar.
+@SuppressWarnings("all")
 class EnhancedPDF2XHTML extends PDFTextStripper {
     
     /**
