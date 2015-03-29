@@ -117,7 +117,7 @@ public class EnhancedPDFParser extends AbstractParser {
     private static final Pattern PATTERN_TEXT = Pattern.compile(
             "<\\s*(speak|text|exData)\\b([^>]*)(?<!/)>(.*?)<\\s*/\\s*\\1\\s*>",
             Pattern.DOTALL | Pattern.MULTILINE);
-    private static Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
+    private static final Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
             Pattern.DOTALL | Pattern.MULTILINE);
     
     public Set<MediaType> getSupportedTypes(ParseContext context) {
@@ -386,7 +386,7 @@ public class EnhancedPDFParser extends AbstractParser {
 
             if (value != null && value.length() > 0) {
                 //if you're going to add it below in the baseline addition, don't add it now
-                if (pdfBoxBaseline != null && value.equals(pdfBoxBaseline)){
+                if (value.equals(pdfBoxBaseline)){
                     continue;
                 }
                 metadata.add(property, value); 

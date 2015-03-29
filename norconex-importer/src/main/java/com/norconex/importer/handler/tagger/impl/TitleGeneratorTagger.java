@@ -168,7 +168,7 @@ public class TitleGeneratorTagger
         // If text is too small to extract a title, get fallback title.
         if (text.length() < MIN_CONTENT_LENGTH && fallbackMaxLength > 0) {
             metadata.setString(
-                    getTargetField(), getFallbackTitle(text.toString()));
+                    getTargetField(), getFallbackTitle(text));
             return;
         }
 
@@ -183,7 +183,7 @@ public class TitleGeneratorTagger
 
         // No title, use fallback
         if (StringUtils.isBlank(title) && fallbackMaxLength > 0) {
-            title = getFallbackTitle(text.toString());
+            title = getFallbackTitle(text);
         }
         metadata.setString(getTargetField(), title);
     }
@@ -278,7 +278,7 @@ public class TitleGeneratorTagger
         
         List<Document> sections = new ArrayList<Document>();
         try (TextReader reader = new TextReader(new StringReader(
-                text.toString()), maxSectionSize)) {
+                text), maxSectionSize)) {
             String section = null;
             while((section = reader.readText()) != null) {
                 sections.add(new Document(section));
