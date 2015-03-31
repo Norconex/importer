@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,13 @@
  */
 package com.norconex.importer.parser.impl;
 
+import java.util.Map;
+
+import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.pdf.EnhancedPDFParser;
+
 
 /**
  * Parser using auto-detection of document content-type to figure out
@@ -29,7 +35,16 @@ public class FallbackParser extends AbstractTikaParser {
      * Creates a new parser.
      */
     public FallbackParser() {
-        super(new AutoDetectParser());
+        super(createAutoDetectParser());
     }
 
+    private static AutoDetectParser createAutoDetectParser() {
+        AutoDetectParser parser = new AutoDetectParser();
+        Map<MediaType, Parser> parsers = parser.getParsers();
+        parsers.put(
+                MediaType.application("pdf"), new EnhancedPDFParser());
+        //Tika returns a defensive copy so we have to reset the whole thing
+        parser.setParsers(parsers);
+        return parser;
+    }
 }

@@ -52,10 +52,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SingleValueTagger"&gt;
- *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt
+ *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
  *      &lt;-- multiple single value fields allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

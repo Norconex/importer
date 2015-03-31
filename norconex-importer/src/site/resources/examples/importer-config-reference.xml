@@ -35,6 +35,10 @@
          being written to disk instead. Default 10MB. -->
     <maxFilePoolCacheSize></maxFilePoolCacheSize>
 
+    <!-- Optional path to a directory where to save files causing parsing 
+         errors for investigation (default does not save). -->
+    <parseErrorsSaveDir></parseErrorsSaveDir>
+
     <preParseHandlers>
         <!-- These tags can be mixed, in the desired order of execution. -->
         <tagger class="..." />

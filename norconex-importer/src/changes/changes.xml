@@ -7,6 +7,126 @@
   </properties>
   <body>
 
+    <release version="2.1.0" date="2015-03-31" description="Feature release">
+
+      <action dev="essiembre" type="add">
+        Added OCR support using Tesseract open-source product. Configured
+        by setting an OCRConfig to GenericDocumentParserFactory.
+      </action>
+      <action dev="essiembre" type="add">
+        Added document translation support with the new TranslatorSplitter.
+        Support these translation APIs: Microsoft, Google, Lingo24, and Moses.
+        Both the document content and/or chosen fields can be translated.
+      </action>
+      <action dev="essiembre" type="add">
+        New TitleGeneratorTagger to dynamically generate titles out of 
+        documents, using Carrot2 to extract the best terms.
+      </action>
+      <action dev="essiembre" type="add">
+        New EnhancedPDFParser and EnhancedPDF2XHTML classes modifying original 
+        Tika PDFParser to add support for PDF XFA (dynamic forms) text 
+        extraction as well as adding support for PDFBox 2.0.0 (which fixes 
+        the striping of space characters between words in many PDFs).
+      </action>
+      <action dev="essiembre" type="add">
+        New XFDLParser for parsing PureEdge Extensible Forms Description 
+        Language files (XFDL). Supports both Gzipped+Base64 and plain text
+        versions.
+      </action>
+      <action dev="essiembre" type="add">
+        New WordPerfectParser class for parsing WordPerfect documents
+        according to WordPerfect file specifications.
+      </action>
+      <action dev="essiembre" type="add">
+        New QuattroProParser class for parsing QuattroPro documents
+        according to QuattroPro file specifications.
+      </action>
+      <action dev="essiembre" type="add">
+        New configuration "parseErrorsSaveDir" on importer configuration
+        for saving files that caused parsing errors along with their exception
+        and metadata if any.
+      </action>
+      <action dev="essiembre" type="add">
+        KeepOnlyTagger and DeleteTagger now supports regular expression for 
+        identifying fields to keep/delete.  The field="" attribute has
+        been replaced by a &lt;field&gt; element.
+      </action>
+      <action dev="essiembre" type="add">
+        Added support for JBIG2 and jpeg2000 image formats.
+      </action>
+      <action dev="essiembre" type="update">
+        Improved content detection of MS Office and Corel Office documents
+        when importing an input stream with no specified extension.
+      </action>
+      <action dev="essiembre" type="update">
+        Improved overall content detection accuracy and performance.
+      </action>
+      <action dev="essiembre" type="update">
+        Default allocated memory for caching of document content was increased
+        by a factor of 10 (10MB max per document, 100MB max total).
+      </action>
+      <action dev="essiembre" type="update">
+        AbstractTikaParser can now be extended to modify Tika ParseContext.
+      </action>
+      <action dev="essiembre" type="update">
+        importer.bat and importer.sh will now load the log4j.properties 
+        from the ./classes folder.
+      </action>
+      <action dev="essiembre" type="update">
+        Now always flush output stream from parsers so implementors do not 
+        have to be concerned with this.
+      </action>
+      <action dev="essiembre" type="update">
+        Easier to extend GenericDocumentParserFactory to provide custom
+        parsers. Dropped "registerNamedParser", "registerFallbackParser",
+        and "getFallbackParser" methods in favor of new "createFallbackParser"
+        and "createNamedParsers" methods.
+      </action>
+      <action dev="essiembre" type="update">
+        HTMLParser and PDFParser are now deprecated. HTML and PDF are now 
+        handled by the fall-back parser (auto-detected).
+      </action>
+      <action dev="essiembre" type="update">
+        IDocumentSplittableEmbeddedParser is now deprecated and has no effect.
+        Will be deleted in a future release.
+      </action>
+      <action dev="essiembre" type="update">
+        Minor javadoc improvements and fixes.
+      </action>
+      <action dev="essiembre" type="update">
+        No longer adds null handlers (possible when configuration loading 
+        failed for an handler).
+      </action>
+      <action dev="essiembre" type="update">
+        Improved exception handling for configuration loading.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Tika 1.7, Norconex Commons Lang 1.6.0, JUnit 4.12,
+        PDFBox 2.0.0 (SNAPSHOT-2015-03-28), Apache Commons Codec 1.10,
+        Lucene Analyzer Common 5.0.0.
+      </action>
+      <action dev="essiembre" type="update">
+        Updated several maven plugins and added SonarQube maven plugin.
+      </action>
+      <action dev="essiembre" type="update">
+        Added Sonatype repository to pom.xml for snapshot releases.
+      </action>
+      <action dev="essiembre" type="update">
+        Added more unit tests for various content type parsing.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed embedded objects not always having the right content-type.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed invalid mapping between "application/wordperfect" content type
+        and WordPerfectParser.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed AbstractCharStreamTagger subclasses badly detecting character
+        encoding and failing documents as a consequence.
+      </action>
+    </release>
+
     <release version="2.0.0" date="2014-11-25" description="Major release">
       <action dev="essiembre" type="add">
         Importing now returns an ImporterResponse, which may hold the imported

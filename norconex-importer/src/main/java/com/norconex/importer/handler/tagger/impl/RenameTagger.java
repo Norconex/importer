@@ -44,10 +44,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
- *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
+ *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
  *      &lt;-- multiple rename tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

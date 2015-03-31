@@ -27,13 +27,11 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * Base class for splitters .
+ * <p>Base class for splitters.</p>
  * 
- * <p />
- * 
- * Subclasses inherit this {@link IXMLConfigurable} configuration:
+ * <p>Subclasses inherit this {@link IXMLConfigurable} configuration:</p>
  * <pre>
- *  &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;

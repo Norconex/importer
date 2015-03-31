@@ -38,31 +38,31 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * A utility tagger to help with troubleshooting of document importing.
+ * <p>A utility tagger to help with troubleshooting of document importing.
  * Place this tagger anywhere in your handler configuration to print to 
  * the log stream the metadata fields or content so far when this handler 
  * gets invoked.
  * This handler does not impact the data being imported at all 
- * (it only reads it).  
- * <p />
- * The default behavior logs all metadata fields using the DEBUG log level.
+ * (it only reads it).</p>
+ * 
+ * <p>The default behavior logs all metadata fields using the DEBUG log level.
  * You can optionally set which fields to log and whether to also log the 
- * document content or not, as well as specifying a different log level.
- * <p />
- * <b>Be careful:</b> Logging the content when you deal with very large content
- * can result in memory exceptions.
- * <p />
- * Can be used both as a pre-parse or post-parse handler.
+ * document content or not, as well as specifying a different log level.</p>
+ * 
+ * <p><b>Be careful:</b> Logging the content when you deal with very large 
+ * content can result in memory exceptions.</p>
+ * 
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
- * <p />
+ * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
  *          logFields="(CSV list of fields to log)"
  *          logContent="(false|true)"
  *          logLevel="(ERROR|WARN|INFO|DEBUG)" &gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -27,11 +27,11 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * Base class for transformers.
- * <p/>
+ * <br><br>
  * 
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -2,5 +2,22 @@
 TODO:
 ==============
 
-- Have DeleteTracker optionally take a regex.
-- Add a translation API, probably leveraging Tika translation API.
+- Add better defined Geospatial Data Abstraction Library (GDAL) support, 
+  leveraging Tika GDAL support.
+
+- Add a counter as method argument to AbstractStringTagger so we know which 
+  "chunk" of text we are processing (1st, 2nd, etc).
+
+- Improve new parsers:
+    - Extract WordPerfect footnotes and maybe more valuable text?
+
+- Create an ImageConverterTransformer that would convert images from/to
+  format of choice. This could allow for instance to convert some 
+  formats non-supported by Tesseract OCR into some that are.
+    
+- Based on demand, add full support for the following content-types:
+    - MS Excel binary format (.xlsb)
+    - MS Publisher 2000 format (this is an older format)
+    - MS Publisher 98 format (this is older format)
+    - MS Visio 2013 format (.vsdx)
+    - MS Access (.accdb)

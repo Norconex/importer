@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Copyright 2014-2015 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<!-- 
+  This file is an extension of org.apache.tika.mime.tika-mimetypes.xml
+  found in "tica-core" dependency.
+  -->
 <mime-info>
+
+  <!-- Microsoft Visio =========================================================
+    -->
   <mime-type type="application/vnd.ms-visio.drawing.main+xml">
     <_comment>Office Open XML Visio Drawing (macro-free)</_comment>
     <glob pattern="*.vsdx"/>
@@ -15,19 +37,112 @@
     <glob pattern="*.vssx"/>
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
-  <mime-type type="application/vnd.ms-visio.drawing.macroEnabled.main+xml">
+  <mime-type type="application/vnd.ms-visio.drawing.macroenabled.main+xml">
     <_comment>Office Open XML Visio Drawing (macro-enabled)</_comment>
     <glob pattern="*.vsdm"/>
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
-  <mime-type type="application/vnd.ms-visio.template.macroEnabled.main+xml">
+  <mime-type type="application/vnd.ms-visio.template.macroenabled.main+xml">
     <_comment>Office Open XML Visio Template (macro-enabled)</_comment>
     <glob pattern="*.vstm"/>
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
-  <mime-type type="application/vnd.ms-visio.stencil.macroEnabled.main+xml">
+  <mime-type type="application/vnd.ms-visio.stencil.macroenabled.main+xml">
     <_comment>Office Open XML Visio Stencil (macro-enabled)</_comment>
     <glob pattern="*.vssm"/>
     <sub-class-of type="application/x-tika-ooxml"/>
   </mime-type>
+
+  <!-- XFDL ====================================================================
+    TODO: Shall we add these aliases:
+        <alias type="application/uwi_form"/>
+        <alias type="application/vnd.ufdl"/>
+        <alias type="application/x-xfdl"/>
+
+    TODO: Shall we add the ".frm" extension, which conflicts with some
+    other mime-types?
+    -->
+  <mime-type type="application/vnd.xfdl">
+    <acronym>XFDL</acronym>
+    <_comment>PureEdge - Extensible Forms Description Language</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/Extensible_Forms_Description_Language</tika:link>
+    <tika:uti>public.xml</tika:uti>
+    <root-XML localName="xfdl" />
+    <magic priority="90">
+      <match value="application/vnd.xfdl;content-encoding=&quot;base64-gzip&quot;" type="string" offset="0"></match>
+      <match value="&lt;XFDL xmlns" type="string" offset="0:100"></match>
+    </magic>
+
+   	<glob pattern="*.xfdl" />
+   	<glob pattern="*.xfd" />
+  
+    <sub-class-of type="application/xml"/>
+  </mime-type>  
+
+  <!-- WordPerfect =============================================================
+    -->
+  <mime-type type="application/vnd.wordperfect">
+    <alias type="application/wordperfect"/>
+    <alias type="application/wordperfect5.1"/>
+    <alias type="application/wordperfect6.0"/>
+    <alias type="application/wordperfect6.1"/>
+    <alias type="application/x-corel-wordperfect"/>
+    <acronym>WPD</acronym>
+    <_comment>WordPerfect - Corel Word Processing</_comment>
+    <tika:link>http://en.wikipedia.org/wiki/WordPerfect</tika:link>
+    <tika:link>http://www.f13-labs.net/blog/2014/files/WP6%20File%20Format%20SDK.zip</tika:link>
+    <tika:uti>com.corel.wordperfect.doc</tika:uti>
+    <magic priority="60">
+      <match value="0xFF575043" type="big32" offset="0"/>
+    </magic>
+    <magic priority="50">
+      <match value="application/vnd.wordperfect;" type="string" offset="0"></match>
+    </magic>
+    <glob pattern="*.wpd"/>
+    <glob pattern="*.wp"/>
+    <glob pattern="*.wp5"/>
+    <glob pattern="*.wp6"/>
+    <glob pattern="*.w60"/>
+    <glob pattern="*.wp61"/>
+    <glob pattern="*.wpt"/>
+  </mime-type>  
+
+  <!-- Quattro Pro =============================================================
+    -->
+  <mime-type type="application/x-quattro-pro">
+    <!-- Conflicts with MS Word .doc format (handled by ContentTypeDetector):
+    <magic priority="90">
+      <match value="0xD0CF11E0A1B11AE1" type="string" offset="0"/>
+    </magic>
+     -->
+    <magic priority="50">
+      <match value="0x00000200" type="big32" offset="0"/>
+    </magic>
+    <glob pattern="*.qpw"/>
+    <glob pattern="*.wb1"/> 
+    <glob pattern="*.wb2"/>
+    <glob pattern="*.wb3"/>
+  </mime-type>
+
+  <!-- JBIG2 ===================================================================
+    -->
+  <mime-type type="image/x-jbig2">
+    <alias type="image/x-jb2"/>
+    <acronym>JBIG2</acronym>
+    <_comment>
+      A lossless image compression standard from the 
+      Joint Bi-level Image Experts Group.
+    </_comment>
+    <tika:link>http://www.itu.int/rec/T-REC-T.88/en</tika:link>
+    <magic priority="50">
+      <match value="0x974A42320D0A1A0A" type="string" offset="0"/>
+    </magic>
+    <magic priority="70">
+      <match value="0x0000000130000100" type="string" offset="0"/>
+    </magic>
+    <glob pattern="*.jb2"/>
+    <glob pattern="*.jbig2"/>
+    <glob pattern="*.jbig"/>
+  </mime-type>  
+
 </mime-info>

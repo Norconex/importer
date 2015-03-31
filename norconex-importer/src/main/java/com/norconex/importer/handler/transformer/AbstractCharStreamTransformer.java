@@ -35,14 +35,14 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Base class for transformers dealing with text documents only.
  * Subclasses can safely be used as either pre-parse or post-parse handlers
  * restricted to text documents only (see {@link AbstractImporterHandler}).
- * <p/>
+ * <br><br>
  * Sub-classes can restrict to which document to apply this transformation
  * based on document metadata (see {@link AbstractImporterHandler}).
- * <p/>
+ * <br><br>
  * Subclasses implementing {@link IXMLConfigurable} should allow this inner 
  * configuration:
  * <pre>
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

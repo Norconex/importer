@@ -22,8 +22,10 @@ package com.norconex.importer.parser;
  * @author Pascal Essiembre
  * @see IDocumentParserFactory
  * @since 2.0.0
+ * @deprecated Since 2.1.0.
  */
 @SuppressWarnings("nls")
+@Deprecated
 public interface IDocumentSplittableEmbeddedParser extends IDocumentParser {
 
     /**

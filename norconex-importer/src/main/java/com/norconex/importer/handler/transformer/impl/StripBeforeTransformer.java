@@ -44,9 +44,9 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
- *      &lt;stripBeforeRegex&gt(regex)&lt;/stripBeforeRegex&gt
+ *      &lt;stripBeforeRegex&gt;(regex)&lt;/stripBeforeRegex&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

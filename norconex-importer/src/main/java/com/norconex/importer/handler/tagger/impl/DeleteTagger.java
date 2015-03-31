@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -34,17 +35,20 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 /**
  * <p>
- * Delete the metadata fields provided.
+ * Delete the metadata fields provided. Exact field names (case-insensitive)
+ * to delete can be provided as well as a regular expression that matches
+ * one or many fields (since 2.1.0).
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger"
- *      fields="[coma-separated list of fields to delete]" &gt
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger"&gt;
+ *      &lt;fields&gt;(coma-separated list of fields to delete)&lt;/fields&gt;
+ *      &lt;fieldsRegex&gt;(regular expression matching fields to delete)&lt;/fieldsRegex&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
@@ -59,6 +63,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
     private static final Logger LOG = LogManager.getLogger(DeleteTagger.class);
     
     private final List<String> fieldsToRemove = new ArrayList<String>();
+    private String fieldsRegex;
     
     @Override
     public void tagApplicableDocument(
@@ -74,7 +79,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
                     + ArrayUtils.toString(fieldsToRemove.toArray()));
         }
         for (String metaField : metaFields) {
-            if (exists(metaField)) {
+            if (mustDelete(metaField)) {
                 metadata.remove(metaField);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Removed field: " + metaField);
@@ -83,11 +88,18 @@ public class DeleteTagger extends AbstractDocumentTagger {
         }
     }
 
-    private boolean exists(String metaField) {
+    private boolean mustDelete(String metaField) {
+        // Check with exact field names
         for (String fieldToRemove : fieldsToRemove) {
             if (fieldToRemove.trim().equalsIgnoreCase(metaField.trim())) {
                 return true;
             }
+        }
+
+        // Check with regex
+        if (StringUtils.isNotBlank(fieldsRegex)
+                && Pattern.matches(fieldsRegex, metaField)) {
+            return true;
         }
         return false;
     }
@@ -103,36 +115,61 @@ public class DeleteTagger extends AbstractDocumentTagger {
     public void removeField(String field) {
         fieldsToRemove.remove(field);
     }
+    
+    public String getFieldsRegex() {
+        return fieldsRegex;
+    }
+    public void setFieldsRegex(String fieldsRegex) {
+        this.fieldsRegex = fieldsRegex;
+    }
 
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        String fieldsStr = xml.getString("[@fields]");
+        String fieldsStr = xml.getString("[@fields]", 
+                StringUtils.join(fieldsToRemove, ","));
+        if (StringUtils.isNotBlank(fieldsStr)) {
+            LOG.warn("Configuring fields to delete via the \"fields\" "
+                   + "attribute is now deprecated. Now use the <fields> "
+                   + "element instead.");
+        }
+        String fieldsElement = xml.getString(
+                "fields", StringUtils.join(fieldsToRemove, ","));
+        if (StringUtils.isNotBlank(fieldsElement)) {
+            fieldsStr = fieldsElement;
+        }
+        
         String[] configFields = StringUtils.split(fieldsStr, ",");
         for (String field : configFields) {
             addField(field.trim());
         }
+        setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
 
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute("fields", StringUtils.join(fieldsToRemove, ","));
+        writer.writeElementString(
+                "fields", StringUtils.join(fieldsToRemove, ","));
+        writer.writeElementString("fieldsRegex", fieldsRegex);
     }
     
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("DeleteTagger [{");
+        builder.append("DeleteTagger [fieldsToRemove={");
         builder.append(StringUtils.join(fieldsToRemove, ","));
-        builder.append("}]");
+        builder.append("}, fieldsRegex=" + fieldsRegex + "]");
         return builder.toString();
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result + ((fieldsToRemove == null) ? 0 : fieldsToRemove.hashCode());
+        int result = super.hashCode();
+        result = prime * result
+                + ((fieldsRegex == null) ? 0 : fieldsRegex.hashCode());
+        result = prime * result
+                + ((fieldsToRemove == null) ? 0 : fieldsToRemove.hashCode());
         return result;
     }
 
@@ -141,13 +178,20 @@ public class DeleteTagger extends AbstractDocumentTagger {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
+        if (!super.equals(obj)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof DeleteTagger)) {
             return false;
         }
         DeleteTagger other = (DeleteTagger) obj;
+        if (fieldsRegex == null) {
+            if (other.fieldsRegex != null) {
+                return false;
+            }
+        } else if (!fieldsRegex.equals(other.fieldsRegex)) {
+            return false;
+        }
         if (fieldsToRemove == null) {
             if (other.fieldsToRemove != null) {
                 return false;
@@ -157,4 +201,5 @@ public class DeleteTagger extends AbstractDocumentTagger {
         }
         return true;
     }
+
 }

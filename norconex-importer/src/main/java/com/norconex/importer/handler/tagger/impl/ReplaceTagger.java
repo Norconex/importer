@@ -38,9 +38,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 
 /**
- * Replaces an existing metadata value with another one.  The "toField" argument
+ * <p>Replaces an existing metadata value with another one.  The "toField" argument
  * is optional (the same field will be used for the replacement if no
- * "toField" is specified").
+ * "toField" is specified").</p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
@@ -48,13 +48,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
  *      &lt;replace fromField="sourceFieldName" toField="targetFieldName" 
- *               regex="[false|true]"&gt
- *          &lt;fromValue&gtSource Value&lt;/fromValue&gt
- *          &lt;toValue&gtTarget Value&lt;/toValue&gt
- *      &lt;/replace&gt
+ *               regex="[false|true]"&gt;
+ *          &lt;fromValue&gt;Source Value&lt;/fromValue&gt;
+ *          &lt;toValue&gt;Target Value&lt;/toValue&gt;
+ *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

@@ -35,20 +35,19 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
- * Copies metadata fields. If a target field already
+ * <p>Copies metadata fields. If a target field already
  * exists, the values of the original field name will be <i>added</i>, unless
- * "overwrite" is set to <code>true</code>. 
- * <p/>
- * Can be used both as a pre-parse or post-parse handler.
- * <p/>
- * XML configuration usage:
- * </p>
+ * "overwrite" is set to <code>true</code>.</p>
+ * 
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ *
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
- *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt
+ *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
  *      &lt;-- multiple copy tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

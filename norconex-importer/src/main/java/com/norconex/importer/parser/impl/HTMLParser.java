@@ -19,8 +19,9 @@ import org.apache.tika.parser.html.HtmlParser;
 /**
  * HTML parser based on Apache Tika {@link HtmlParser}.
  * @author Pascal Essiembre
+ * @deprecated since 2.1.0.  Now handled by FallbackParser by default.
  */
-//TODO keep this class since default Tika parser covers it?
+@Deprecated
 public class HTMLParser extends AbstractTikaParser {
 
     public HTMLParser() {

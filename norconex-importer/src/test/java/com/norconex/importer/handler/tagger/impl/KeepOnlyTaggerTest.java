@@ -18,11 +18,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
+import org.apache.commons.io.input.NullInputStream;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.KeepOnlyTagger;
 
 public class KeepOnlyTaggerTest {
@@ -38,7 +43,7 @@ public class KeepOnlyTaggerTest {
     }
 
     @Test
-    public void test_keep_all_fields() throws Exception {
+    public void testKeepAllFields() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
@@ -56,7 +61,7 @@ public class KeepOnlyTaggerTest {
     }
     
     @Test
-    public void test_keep_single_field() throws Exception {
+    public void testKeepSingleField() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
@@ -73,7 +78,7 @@ public class KeepOnlyTaggerTest {
     }
 
     @Test
-    public void test_delete_all_metadata() throws Exception {
+    public void testDeleteAllMetadata() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.addString("key1", "value1");
@@ -88,4 +93,27 @@ public class KeepOnlyTaggerTest {
         assertTrue(metadata.isEmpty());
     }
 
+    @Test
+    public void testKeepFieldsRegexViaXMLConfig() 
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("content-type", "blah");
+        meta.addString("x-access-level", "blah");
+        meta.addString("X-CONTENT-TYPE-OPTIONS", "blah");
+        meta.addString("X-FRAME-OPTIONS", "blah");
+        meta.addString("X-PARSED-BY", "blah");
+        meta.addString("date", "blah");
+        meta.addString("X-RATE-LIMIT-LIMIT", "blah");
+        meta.addString("source", "blah");
+        
+        KeepOnlyTagger tagger = new KeepOnlyTagger();
+        
+        Reader r = new StringReader(
+                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
+        tagger.loadFromXML(r);
+        
+        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        
+        Assert.assertEquals("Invalid field count", 5, meta.size());
+    }
 }

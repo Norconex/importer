@@ -52,25 +52,16 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * XML configuration usage:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.transformer.impl.TextBetweenTagger"
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]" &gt;
- *      &lt;contentTypeRegex&gt;
- *          (regex to identify text content-types for pre-import, 
- *           overriding default)
- *      &lt;/contentTypeRegex&gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
- *              field="(name of header/metadata name to match)"
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;textBetween name="targetFieldName"&gt
- *          &lt;start&gt(regex)&lt;/start&gt
- *          &lt;end&gt(regex)&lt;/end&gt
- *      &lt;/textBetween&gt
+ *      &lt;textBetween name="targetFieldName"&gt;
+ *          &lt;start&gt;(regex)&lt;/start&gt;
+ *          &lt;end&gt;(regex)&lt;/end&gt;
+ *      &lt;/textBetween&gt;
  *      &lt;-- multiple textBetween tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

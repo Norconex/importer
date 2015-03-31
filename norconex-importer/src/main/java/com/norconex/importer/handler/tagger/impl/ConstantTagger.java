@@ -42,10 +42,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
- *      &lt;constant name="CONSTANT_NAME"&gtConstant Value&lt;/constant&gt
+ *      &lt;constant name="CONSTANT_NAME"&gt;Constant Value&lt;/constant&gt;
  *      &lt;!-- multiple constant tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

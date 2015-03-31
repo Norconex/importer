@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -55,9 +56,9 @@ public class ImporterConfig implements IXMLConfigurable {
     public static final String DEFAULT_TEMP_DIR_PATH = 
             FileUtils.getTempDirectoryPath();
     public static final int DEFAULT_MAX_FILE_CACHE_SIZE = 
-            (int) DataUnit.MB.toBytes(1);
-    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(10);
+    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
+            (int) DataUnit.MB.toBytes(100);
     
     private IDocumentParserFactory documentParserFactory = 
             new GenericDocumentParserFactory();
@@ -69,7 +70,7 @@ public class ImporterConfig implements IXMLConfigurable {
     private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
     private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
     private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
-    
+    private File parseErrorsSaveDir;
     
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
@@ -83,6 +84,22 @@ public class ImporterConfig implements IXMLConfigurable {
     }
     public void setTempDir(File tempDir) {
         this.tempDir = tempDir;
+    }
+    
+    /**
+     * Gets the directory where file generating parsing errors will be saved.
+     * Default is <code>null</code> (not storing errors).
+     * @return directory where to save error files
+     */
+    public File getParseErrorsSaveDir() {
+        return parseErrorsSaveDir;
+    }
+    /**
+     * Sets the directory where file generating parsing errors will be saved.
+     * @param parseErrorsSaveDir directory where to save error files
+     */
+    public void setParseErrorsSaveDir(File parseErrorsSaveDir) {
+        this.parseErrorsSaveDir = parseErrorsSaveDir;
     }
 
     public void setPreParseHandlers(IImporterHandler... handlers) {
@@ -130,11 +147,19 @@ public class ImporterConfig implements IXMLConfigurable {
             //--- Temp directory -----------------------------------------------
             setTempDir(new File(xml.getString(
                     "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
-    
+
+            //--- Parse errors save dir ----------------------------------------
+            String saveDir = xml.getString("parseErrorsSaveDir", null);
+            if (saveDir != null) {
+                setParseErrorsSaveDir(new File(saveDir));
+            } else {
+                setParseErrorsSaveDir(null);
+            }
+            
             //--- File Mem Cache Size ------------------------------------------
             setMaxFileCacheSize(xml.getInt("maxFileCacheSize", 
                     ImporterConfig.DEFAULT_MAX_FILE_CACHE_SIZE));
-            //--- File Pool Mem Cache Size ------------------------------------------
+            //--- File Pool Mem Cache Size -------------------------------------
             setMaxFilePoolCacheSize(xml.getInt("maxFilePoolCacheSize", 
                     ImporterConfig.DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
             
@@ -152,6 +177,9 @@ public class ImporterConfig implements IXMLConfigurable {
             setResponseProcessors(loadResponseProcessors(
                     xml, "responseProcessors.responseProcessor"));
         } catch (Exception e) {
+            if (e instanceof ConfigurationException) {
+                throw (ConfigurationException) e;
+            }
             throw new ConfigurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);
         }
@@ -168,8 +196,12 @@ public class ImporterConfig implements IXMLConfigurable {
         xml.setExpressionEngine(originalEngine);
         for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
-            handlers.add((IImporterHandler) 
-                    ConfigurationUtil.newInstance(xmlHandler));
+            IImporterHandler handler = (IImporterHandler) 
+                    ConfigurationUtil.newInstance(xmlHandler);
+            if (handler != null) {
+                handlers.add(handler);
+                //TODO throw exception here?
+            }
         }
         return handlers.toArray(new IImporterHandler[]{});
     }
@@ -201,6 +233,8 @@ public class ImporterConfig implements IXMLConfigurable {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("importer");
             writer.writeElementString("tempDir", getTempDir().toString());
+            writer.writeElementString("parseErrorsSaveDir", 
+                    Objects.toString(getParseErrorsSaveDir(), null));
             writer.writeElementInteger(
                     "maxFileCacheSize", getMaxFileCacheSize());
             writer.writeElementInteger(

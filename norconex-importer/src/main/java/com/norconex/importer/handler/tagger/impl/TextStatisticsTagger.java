@@ -35,12 +35,13 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 
 /**
- * Analyzes the content of the supplied document and adds statistical
+ * <p>Analyzes the content of the supplied document and adds statistical
  * information about its content or field as metadata fields.  Default
  * behavior provide the statistics about the content. Refer to the following
- * for the new metadata fields to be created along with their description.
- * <p />
+ * for the new metadata fields to be created along with their description.</p>
+ * 
  * <table border="1">
+ *  <caption>Statistic fields</caption>
  *   <tr>
  *     <th>Field name</th>
  *     <th>Description</th>
@@ -90,20 +91,19 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *   </tr>
  * </table>
  * 
- * You can specify a field name to obtain statistics about that field instead. 
+ * <p>You can specify a field name to obtain statistics about that field instead. 
  * When you do so, the field name will be inserted in the above
  * names, right after "document.stat.". E.g.:
- * <code>document.stat.myfield.characterCount</code>
- * <p />
- * Can be used both as a pre-parse (text-only) or post-parse handler.
- * <p>
- * XML configuration usage:
- * <p />
+ * <code>document.stat.myfield.characterCount</code></p>
+ * 
+ * <p>Can be used both as a pre-parse (text-only) or post-parse handler.</p>
+ * 
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          fieldName="(optional field name instead of using content)" &gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

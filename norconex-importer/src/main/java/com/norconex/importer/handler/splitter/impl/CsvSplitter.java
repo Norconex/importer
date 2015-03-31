@@ -42,14 +42,13 @@ import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
- * Split files with Coma-Separated values (or any other characters, like tab) 
- * into one document per line. 
- * </p>
+ * <p>Split files with Coma-Separated values (or any other characters, like tab) 
+ * into one document per line.</p>
+ * 
  * <p>Can be used both as a pre-parse (text documents) or post-parse handler
  * documents.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * 
+ * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=""
@@ -60,7 +59,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          referenceColumn="(column name or position from 1)"
  *          contentColumns="(csv list of column/position to use as content)" &gt;
  *      &lt;restrictTo
- *              caseSensitive="[false|true]" &gt;
+ *              caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;

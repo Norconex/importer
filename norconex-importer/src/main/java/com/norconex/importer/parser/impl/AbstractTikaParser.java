@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,21 +18,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.ParserDecorator;
+import org.apache.tika.parser.ocr.TesseractOCRConfig;
+import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Objects;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
@@ -40,17 +47,23 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.DocumentParserException;
-import com.norconex.importer.parser.IDocumentSplittableEmbeddedParser;
+import com.norconex.importer.parser.IDocumentParser;
+import com.norconex.importer.parser.OCRConfig;
+
 
 /**
  * Base class wrapping Apache Tika parser for use by the importer.
  * @author Pascal Essiembre
  */
-public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
+public class AbstractTikaParser implements IDocumentParser {
 
     private final Parser parser;
     private boolean splitEmbedded;
-
+    private OCRConfig ocrConfig;
+    private TesseractOCRConfig ocrTesseractConfig;
+    private List<String> ocrContentTypes;
+    private final ThreadSafeSpecificAutoDetectWrapper knownDetector;
+    
     /**
      * Creates a new Tika-based parser.
      * @param parser Tika parser
@@ -58,6 +71,37 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     public AbstractTikaParser(Parser parser) {
         super();
         this.parser = parser;
+        if (parser instanceof AutoDetectParser) {
+            AutoDetectParser p = (AutoDetectParser) parser;
+            knownDetector = 
+                    new ThreadSafeSpecificAutoDetectWrapper(p.getDetector());
+            p.setDetector(knownDetector);
+        } else {
+            knownDetector = null;
+        }
+    }
+    
+    /**
+     * Sets the OCR configuration.
+     * @param ocrConfig the ocrConfig to set
+     * @since 2.1.0
+     */
+    public synchronized void setOCRConfig(OCRConfig ocrConfig) {
+        if (ocrConfig == null) {
+            this.ocrConfig = new OCRConfig();
+        } else {
+            this.ocrConfig = ocrConfig;
+        }
+        this.ocrTesseractConfig = toTesseractConfig(this.ocrConfig);
+        this.ocrContentTypes = toContentTypeList(ocrConfig);
+    }
+    /**
+     * Gets the OCR configuration (never null).
+     * @return the OCR configuration
+     * @since 2.1.0
+     */
+    public OCRConfig getOCRConfig() {
+        return ocrConfig;
     }
     
     //TODO distinguish between archives and other embedded docs and offer
@@ -73,34 +117,77 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     public final List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output)
             throws DocumentParserException {
-
+        
+        
         Metadata tikaMetadata = new Metadata();
-        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, 
-                doc.getContentType().toString());
+        if (doc.getContentType() == null) {
+            throw new DocumentParserException(
+                    "ImporterDocument must have a content-type.");
+        }
+        String contentType = doc.getContentType().toString();
+        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, contentType);
         tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
                 doc.getReference());
         tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
         
         try {
+            if (knownDetector != null) {
+                knownDetector.setContentType(contentType);
+                knownDetector.setReference(doc.getReference());
+            }
             RecursiveParser recursiveParser = createRecursiveParser(
                     doc.getReference(), output, doc.getMetadata(), 
                     doc.getContent().getStreamFactory());
-            
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
+
+            if (ocrConfig != null 
+                    && StringUtils.isNotBlank(ocrConfig.getPath())
+                    && (ocrContentTypes == null 
+                        || ocrContentTypes.contains(contentType))) {
+                context.set(TesseractOCRConfig.class, ocrTesseractConfig);
+                //TODO cache this?
+                PDFParserConfig pdfConfig = new PDFParserConfig();
+                pdfConfig.setExtractInlineImages(true);
+                context.set(PDFParserConfig.class, pdfConfig);
+            }
+            modifyParseContext(context);
+            
             ContentHandler handler = new BodyContentHandler(output);
-            recursiveParser.parse(doc.getContent(), 
-                    handler, tikaMetadata, context);
+
+            InputStream stream = doc.getContent();
+            recursiveParser.parse(stream, handler,  tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
-        }
+        }        
     }
-
+    
+    /**
+     * Override to apply your own settings on the Tika ParseContext.
+     * The ParseContext is already configured before calling this method.
+     * Changing existing settings may cause failure.  
+     * Only override if you know what you are doing.
+     * The default implementation does nothing.
+     * @param parseContext Tika parse context
+     */
+    protected void modifyParseContext(ParseContext parseContext) {
+    }
+    
+    /**
+     * Gets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @return <code>true</code> if parser should split embedded documents.
+     */
     public boolean isSplitEmbedded() {
         return splitEmbedded;
     }
-    @Override
+    /**
+     * Sets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @param splitEmbedded <code>true</code> if parser should split 
+     *                      embedded documents.
+     */
     public void setSplitEmbedded(boolean splitEmbedded) {
         this.splitEmbedded = splitEmbedded;
     }
@@ -166,6 +253,7 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
                 }
 
                 ImporterMetadata embedMeta = new ImporterMetadata();
+                addTikaMetadata(tikaMeta, embedMeta);
 
                 String embedRef = reference + "!" + resolveEmbeddedResourceName(
                         tikaMeta, embedMeta, embedCount);
@@ -196,6 +284,38 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
             return embeddedDocs;
         }
     }
+    
+    private List<String> toContentTypeList(OCRConfig ocrConfig) {
+        if (ocrConfig == null) {
+            return null;
+        }
+        String contentTypes = ocrConfig.getContentTypes();
+        if (StringUtils.isBlank(contentTypes)) {
+            return null;
+        }
+        List<String> types = new ArrayList<>();
+        types.addAll(Arrays.asList(
+                StringUtils.split(StringUtils.remove(contentTypes, ' '), ',')));
+        return types;
+    }
+    private TesseractOCRConfig toTesseractConfig(OCRConfig ocrConfig) {
+        if (StringUtils.isBlank(ocrConfig.getPath())) {
+            return null;
+        }
+        TesseractOCRConfig tc = new TesseractOCRConfig();
+        String path = ocrConfig.getPath();
+        if (StringUtils.isNotBlank(path)) {
+            tc.setTesseractPath(path);
+        }
+        String langs = ocrConfig.getLanguages();
+        if (StringUtils.isNotBlank(langs)) {
+            langs = StringUtils.remove(langs, ' ');
+            langs = langs.replace(',', '+');
+            tc.setLanguage(langs);
+        }
+        return tc;
+    }
+    
     
     private String resolveEmbeddedResourceName(
             Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {
@@ -262,5 +382,49 @@ public class AbstractTikaParser implements IDocumentSplittableEmbeddedParser {
     
     protected interface RecursiveParser extends Parser {
         List<ImporterDocument> getEmbeddedDocuments();
+    }
+    
+    /**
+     * This class prevents detecting the content type a second time when
+     * we already know what it is.  Only the content type for the root
+     * reference is not detected again. Any embedded documents will have 
+     * default detection behavior applied on them.
+     */
+    class ThreadSafeSpecificAutoDetectWrapper implements Detector {
+        private static final long serialVersionUID = 225979407457365951L;
+        private final Detector originalDetector; 
+        private final ThreadLocal<MediaType> mediaType = new ThreadLocal<>();
+        private final ThreadLocal<String> reference = new ThreadLocal<>();
+        public ThreadSafeSpecificAutoDetectWrapper(Detector originalDetector) {
+            super();
+            this.originalDetector = originalDetector;
+        }
+        @Override
+        public MediaType detect(InputStream input, Metadata metadata)
+                throws IOException {
+            MediaType type = mediaType.get();
+            String reference = this.reference.get();
+            if (type == null || !Objects.equal(
+                    reference, metadata.get(Metadata.RESOURCE_NAME_KEY))) {
+                type = originalDetector.detect(input, metadata);
+            }
+            return type;
+        }
+        public void setReference(String reference) {
+            if (StringUtils.isBlank(reference)) {
+                this.reference.set(null);
+            } else {
+                this.reference.set(reference);
+            }
+        }
+        public void setContentType(String contentType) {
+            if (StringUtils.isBlank(contentType)) {
+                mediaType.set(null);
+            } else {
+                mediaType.set(new MediaType(
+                        StringUtils.substringBefore(contentType, "/"),
+                        StringUtils.substringAfter(contentType, "/")));
+            }
+        }
     }
 }

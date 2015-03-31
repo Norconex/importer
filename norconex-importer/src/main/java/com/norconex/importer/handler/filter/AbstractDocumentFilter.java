@@ -31,19 +31,18 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * Base class for document filters.  Subclasses can be set an attribute
+ * <p>Base class for document filters.  Subclasses can be set an attribute
  * called "onMatch".  The logic whether to include or exclude a document
  * upon matching it is handled by this class.  Subclasses only 
  * need to focus on whether the document gets matched or not by
  * implementing the 
  * {@link #isDocumentMatched(String, InputStream, ImporterMetadata, boolean)}
- * method.
- * <p />
+ * method.</p>
  * 
- * Subclasses inherit this {@link IXMLConfigurable} configuration:
+ * <p>Subclasses inherit this {@link IXMLConfigurable} configuration:</p>
  * <pre>
  *  &lt;!-- main tag supports onMatch="[include|exclude]" attribute --&gt;
- *  &lt;restrictTo caseSensitive="[false|true]" &gt;
+ *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;

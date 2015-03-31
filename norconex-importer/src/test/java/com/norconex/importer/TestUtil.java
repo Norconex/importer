@@ -24,7 +24,7 @@ import org.apache.commons.io.IOUtils;
 public final class TestUtil {
 
     private static final String BASE_PATH = 
-            "src/site/resources/examples/books/alice-in-wonderland-book-chapter-1";
+         "src/site/resources/examples/books/alice-in-wonderland-book-chapter-1";
     
     private TestUtil() {
         super();
@@ -41,6 +41,9 @@ public final class TestUtil {
     }
     public static File getAliceHtmlFile() {
         return new File(BASE_PATH + ".html");
+    }
+    public static File getAliceTextFile() {
+        return new File(BASE_PATH + ".txt");
     }
     public static Importer getTestConfigImporter() {
         InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");

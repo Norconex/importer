@@ -39,6 +39,10 @@ public class ImporterMetadata extends Properties {
             DOC_META_PREFIX + "contentFamily";
     public static final String DOC_LANGUAGE = 
             DOC_META_PREFIX + "language";
+    public static final String DOC_TRANSLATED_FROM = 
+            DOC_META_PREFIX + "translatedFrom";
+    public static final String DOC_GENERATED_TITLE = 
+            DOC_META_PREFIX + "generatedTitle";
 
     private static final String DOC_EMBEDDED_META_PREFIX = 
             DOC_META_PREFIX + "embedded.";

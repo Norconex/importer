@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.apache.tika.mime.MediaType;
 import com.norconex.commons.lang.file.ContentType;
 
 /**
- * Detects content types.  This class is thread-safe.
+ * Master class to detect all content types.  This class is thread-safe.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -68,7 +68,7 @@ public class ContentTypeDetector {
             LOG.debug("Detected \"" + contentType
                     + "\" content-type for input stream.");
         }
-        return ContentType.valueOf(contentType);        
+        return ContentType.valueOf(contentType);
     }
     public ContentType detect(InputStream content, String fileName)
             throws IOException {
@@ -101,10 +101,15 @@ public class ContentTypeDetector {
     
     private ContentType doDetect(
             InputStream is, String fileName) throws IOException {
+
+        TikaInputStream tikaStream = TikaInputStream.get(is);
+        
         Metadata meta = new Metadata();
         String extension = extPattern.matcher(fileName).replaceFirst("$1");
         meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
-        MediaType media = getTikaConfig().getDetector().detect(is, meta);
+        MediaType media = 
+                getTikaConfig().getDetector().detect(tikaStream, meta);
+        
         if (LOG.isDebugEnabled()) {
             LOG.debug("Detected \"" + media.toString()
                     + "\" content-type for: " + fileName);
