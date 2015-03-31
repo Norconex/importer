@@ -9,7 +9,6 @@ TODO:
   "chunk" of text we are processing (1st, 2nd, etc).
 
 - Improve new parsers:
-    - Add unit tests for new parsers.
     - Extract WordPerfect footnotes and maybe more valuable text?
 
 - Create an ImageConverterTransformer that would convert images from/to
