@@ -7,8 +7,13 @@
   </properties>
   <body>
 
-    <release version="2.1.0" date="2015-03-31" description="Feature release">
+    <release version="2.1.1" date="2015-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        PDFBox now uses latest snapshot (as opposed to a frozen one).
+      </action>
+    </release>
 
+    <release version="2.1.0" date="2015-03-31" description="Feature release">
       <action dev="essiembre" type="add">
         Added OCR support using Tesseract open-source product. Configured
         by setting an OCRConfig to GenericDocumentParserFactory.
