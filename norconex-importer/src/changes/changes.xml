@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.1.1" date="2015-??-??" description="Maintenance release">
+    <release version="2.1.1" date="2015-04-08" description="Maintenance release">
       <action dev="essiembre" type="update">
         PDFBox now uses latest snapshot (as opposed to a frozen one).
       </action>
