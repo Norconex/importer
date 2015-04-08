@@ -50,7 +50,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * 
  * <p>XML configuration usage:</p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=""
  *          quoteCharacter=""
  *          escapeCharacter=""
@@ -64,7 +64,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/splitter&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0

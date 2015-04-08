@@ -11,6 +11,12 @@
       <action dev="essiembre" type="update">
         PDFBox now uses latest snapshot (as opposed to a frozen one).
       </action>
+      <action dev="essiembre" type="update">
+        Javadoc fixes.
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: SLF4J 1.7.12.
+      </action>
     </release>
 
     <release version="2.1.0" date="2015-03-31" description="Feature release">

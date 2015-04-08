@@ -102,12 +102,12 @@
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.5</version>
+        <version>1.7.12</version>
     </dependency>
     <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.5</version>
+        <version>1.7.12</version>
     </dependency>
     <dependency>
     	<groupId>commons-codec</groupId>
@@ -165,6 +165,21 @@
       <groupId>de.intarsys.opensource</groupId>
       <artifactId>jbig2</artifactId>
       <version>5.5.1</version>
+    </dependency>
+
+    <!-- The following dependencies are only present here to ensure their
+         proper version. They are otherwise provided by 
+         transitive dependencies. They can be removed from here once 
+         transitive versions match and don't cause conflicts. -->
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>stax2-api</artifactId>
+      <version>3.1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.woodstox</groupId>
+      <artifactId>woodstox-core-asl</artifactId>
+      <version>4.4.1</version>    
     </dependency>
   </dependencies>
   
