@@ -43,6 +43,8 @@ public class ImporterMetadata extends Properties {
             DOC_META_PREFIX + "translatedFrom";
     public static final String DOC_GENERATED_TITLE = 
             DOC_META_PREFIX + "generatedTitle";
+    public static final String DOC_IMPORTED_DATE = 
+            DOC_META_PREFIX + "importedDate";
 
     private static final String DOC_EMBEDDED_META_PREFIX = 
             DOC_META_PREFIX + "embedded.";

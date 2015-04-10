@@ -43,7 +43,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  * <p>Formats a date from any given format to a format of choice, as per the 
  * formatting options found on {@link SimpleDateFormat}.  The default format
  * for <code>fromFormat</code> or <code>toFormat</code> when not specified
- * is EPOCH.</p>
+ * is EPOCH (the difference, measured in milliseconds, between the date and 
+ * midnight, January 1, 1970).</p>
  * 
  * <p>When omitting the <code>toField</code>, the value will replace the one
  * in the same field.</p>

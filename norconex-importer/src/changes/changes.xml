@@ -6,6 +6,13 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
+  
+    <release version="2.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New CurrentDateTagger for adding the current date as a field to 
+        imported documents.
+      </action>
+    </release>
 
     <release version="2.1.1" date="2015-04-08" description="Maintenance release">
       <action dev="essiembre" type="update">

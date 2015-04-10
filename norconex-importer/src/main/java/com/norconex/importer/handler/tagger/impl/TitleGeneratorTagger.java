@@ -109,7 +109,8 @@ public class TitleGeneratorTagger
     private static final Logger LOG = 
             LogManager.getLogger(TitleGeneratorTagger.class);
     
-    public static final String DEFAULT_TO_FIELD = "document.generatedTitle";
+    public static final String DEFAULT_TO_FIELD = 
+            ImporterMetadata.DOC_GENERATED_TITLE;
     private static final int DEFAULT_FALLBACK_MAX_LENGTH = 150;
     private static final int DEFAULT_HEADING_MIN_LENGTH = 10;
     private static final int DEFAULT_HEADING_MAX_LENGTH = 150;
