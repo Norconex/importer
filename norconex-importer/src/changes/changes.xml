@@ -12,6 +12,9 @@
         New CurrentDateTagger for adding the current date as a field to 
         imported documents.
       </action>
+      <action dev="essiembre" type="update">
+        Javadoc fixes.
+      </action>
     </release>
 
     <release version="2.1.1" date="2015-04-08" description="Maintenance release">
