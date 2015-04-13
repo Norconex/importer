@@ -15,10 +15,12 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -29,6 +31,7 @@ public class CurrentDateTaggerTest {
     @Test
     public void testDateFormatTagger() throws ImporterHandlerException {
         long now = System.currentTimeMillis();
+        Sleeper.sleepMillis(10);// to make sure time has passed
         
         ImporterMetadata meta = null;
         CurrentDateTagger tagger = null;
@@ -47,9 +50,9 @@ public class CurrentDateTaggerTest {
         tagger.setOverwrite(true);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("Invalid number of date values", 
+        Assert.assertEquals("Invalid overwritten number of date values", 
                 1, meta.getLongs("existingField").size());
-        Assert.assertTrue("Invalid date created", 
+        Assert.assertTrue("Invalid overwritten date created", 
                 meta.getLong("existingField") > now);
 
         meta = new ImporterMetadata();
@@ -58,10 +61,16 @@ public class CurrentDateTaggerTest {
         tagger.setOverwrite(false);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("Invalid number of date values", 
+        Assert.assertEquals("Invalid added number of date values", 
                 2, meta.getLongs("existingField").size());
-        Assert.assertTrue("Invalid date created", 
-                meta.getLongs("existingField").get(1) > now);
+        List<Long> longs = meta.getLongs("existingField");
+        for (Long dateLong : longs) {
+            if (dateLong == 1002727941000L) {
+                continue;
+            } else {
+                Assert.assertTrue("Invalid added date created", dateLong > now);
+            }
+        }
     }
     
     @Test
