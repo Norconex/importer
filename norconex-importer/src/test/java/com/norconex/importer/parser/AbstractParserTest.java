@@ -51,7 +51,7 @@ public abstract class AbstractParserTest {
     @Before
     public void before() {
         Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.INFO);
         logger.setAdditivity(false);
         logger.addAppender(new ConsoleAppender(
                 new PatternLayout("%-5p [%C{1}] %m%n"), 

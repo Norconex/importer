@@ -35,7 +35,7 @@ public class DeleteTaggerTest {
     static {
         // Root
         Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.DEBUG);
+        logger.setLevel(Level.INFO);
         logger.setAdditivity(false);
         logger.addAppender(new ConsoleAppender(
                 new PatternLayout("%-5p [%C{1}] %m%n"), 
