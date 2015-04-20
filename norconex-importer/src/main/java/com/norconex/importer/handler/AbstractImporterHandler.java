@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,15 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -32,8 +35,6 @@ import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
-import com.norconex.importer.handler.filter.OnMatch;
-import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
 
 /**
  * Base class for handlers applying only to certain type of documents
@@ -70,7 +71,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     private static final Logger LOG = 
             LogManager.getLogger(AbstractImporterHandler.class);
     
-    private final List<RegexMetadataFilter> restrictions = new ArrayList<>();
+    private final List<Restriction> restrictions = new ArrayList<>();
     private final String xmltag;
     
     public AbstractImporterHandler(String xmltag) {
@@ -86,8 +87,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      */
     public void addRestriction(
             String field, String regex, boolean caseSensitive) {
-        restrictions.add(new RegexMetadataFilter(
-                field, regex, OnMatch.INCLUDE, caseSensitive));
+        restrictions.add(new Restriction(field, regex, caseSensitive));
     }
 
     /**
@@ -99,14 +99,14 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @return <code>true</code> if this handler is applicable to the document
      * @throws ImporterHandlerException problem evaluating if applicable
      */
-    protected boolean isApplicable(
+    protected final boolean isApplicable(
             String reference, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         if (restrictions.isEmpty()) {
             return true;
         }
-        for (RegexMetadataFilter restriction : restrictions) {
-            if (restriction.acceptDocument(reference, null, metadata, parsed)) {
+        for (Restriction restriction : restrictions) {
+            if (restriction.applies(metadata)) {
                 return true;
             }
         }
@@ -147,15 +147,15 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
             saveHandlerToXML(writer);
 
-            for (RegexMetadataFilter restriction : restrictions) {
+            for (Restriction restriction : restrictions) {
                 writer.writeStartElement("restrictTo");
-                if (restriction.getField() != null) {
-                    writer.writeAttribute("field", restriction.getField());
+                if (restriction.field != null) {
+                    writer.writeAttribute("field", restriction.field);
                 }
                 writer.writeAttribute("caseSensitive", 
-                        Boolean.toString(restriction.isCaseSensitive()));
-                if (restriction.getRegex() != null) {
-                    writer.writeCharacters(restriction.getRegex());
+                        Boolean.toString(restriction.caseSensitive));
+                if (restriction.regex != null) {
+                    writer.writeCharacters(restriction.regex);
                 }
                 writer.writeEndElement();
             }
@@ -218,4 +218,87 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         return builder.toString();
     }
 
+    private class Restriction {
+        private final String field;
+        private final String regex;
+        private final Pattern pattern;
+        private final boolean caseSensitive;
+        public Restriction(String field, String regex, boolean caseSensitive) {
+            super();
+            this.field = field;
+            this.regex = regex;
+            this.caseSensitive = caseSensitive;
+            if (regex != null) {
+                if (caseSensitive) {
+                    this.pattern = Pattern.compile(regex);
+                } else {
+                    this.pattern = Pattern.compile(
+                            regex, Pattern.CASE_INSENSITIVE);
+                }
+            } else {
+                this.pattern = Pattern.compile(".*");
+            }            
+        }
+        public boolean applies(ImporterMetadata metadata) {
+            if (StringUtils.isBlank(regex)) {
+                return true;
+            }
+            Collection<String> values =  metadata.getStrings(field);
+            for (String value : values) {
+                String safeVal = StringUtils.trimToEmpty(value);
+                if (pattern.matcher(safeVal).matches()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + (caseSensitive ? 1231 : 1237);
+            result = prime * result + ((field == null) ? 0 : field.hashCode());
+            result = prime * result + ((regex == null) ? 0 : regex.hashCode());
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof Restriction)) {
+                return false;
+            }
+            Restriction other = (Restriction) obj;
+            if (caseSensitive != other.caseSensitive) {
+                return false;
+            }
+            if (field == null) {
+                if (other.field != null) {
+                    return false;
+                }
+            } else if (!field.equals(other.field)) {
+                return false;
+            }
+            if (regex == null) {
+                if (other.regex != null) {
+                    return false;
+                }
+            } else if (!regex.equals(other.regex)) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public String toString() {
+            ToStringBuilder builder = new ToStringBuilder(this);
+            builder.append("field", field);
+            builder.append("regex", regex);
+            builder.append("caseSensitive", caseSensitive);
+            return builder.toString();
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,10 +37,28 @@ public class ReplaceTransformerTest {
             + "<toValue>FRUITS</toValue></replace>"
             + "<replace><fromValue>candies</fromValue>"
             + "<toValue>vegetables</toValue></replace>"
+            + "<restrictTo caseSensitive=\"false\" "
+            + "field=\"document.reference\">.*test.*</restrictTo>"
             + "</transformer>";
     
+
     @Test
-    public void testTransformTextDocument() 
+    public void testTransformRestrictedTextDocument() 
+            throws IOException, ImporterHandlerException {
+        String response = transformTextDocument("rejectme.html");
+        Assert.assertEquals(StringUtils.EMPTY, response.toLowerCase());
+    }
+
+    @Test
+    public void testTransformUnrestrictedTextDocument() 
+            throws IOException, ImporterHandlerException {
+        String response = transformTextDocument("test.html");
+        Assert.assertEquals(
+                "i like to eat fruits and vegetables.", 
+                response.toLowerCase());
+    }
+    
+    private String transformTextDocument(String reference)
             throws IOException, ImporterHandlerException {
         String text = "I like to eat cakes and candies.";
         
@@ -51,16 +70,16 @@ public class ReplaceTransformerTest {
         
         InputStream is = IOUtils.toInputStream(text);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        t.transformDocument("dummyRef", is, os, new ImporterMetadata(), true);
+        
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString("document.reference", reference);
+
+        t.transformDocument(reference, is, os, metadata, true);
         
         String response = os.toString();
-        System.out.println(response);
-        Assert.assertEquals(
-                "i like to eat fruits and vegetables.", 
-                response.toLowerCase());
-
         is.close();
         os.close();
+        return response;
     }
     
     

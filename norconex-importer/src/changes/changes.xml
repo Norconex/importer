@@ -15,6 +15,10 @@
       <action dev="essiembre" type="update">
         Javadoc fixes.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed the "restrictTo" feature not always working for 
+        AbstractImporterHandler subclasses (github #7).
+      </action>
     </release>
 
     <release version="2.1.1" date="2015-04-08" description="Maintenance release">
