@@ -9,6 +9,10 @@
   
     <release version="2.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New ExternalParser class which is used to run an external process
+        for parsing files (e.g. pdftotext) of the associated content type.
+      </action>
+      <action dev="essiembre" type="add">
         New CurrentDateTagger for adding the current date as a field to 
         imported documents.
       </action>
