@@ -297,10 +297,10 @@ public class EnhancedPDFParser extends AbstractParser {
         // Copy this over as-is
         List<String> handledMetadata = Arrays.asList("Author", "Creator", "CreationDate", "ModDate",
                 "Keywords", "Producer", "Subject", "Title", "Trapped");
-        for(COSName key : info.getDictionary().keySet()) {
+        for(COSName key : info.getCOSObject().keySet()) {
             String name = key.getName();
             if(! handledMetadata.contains(name)) {
-            addMetadata(metadata, name, info.getDictionary().getDictionaryObject(key));
+            addMetadata(metadata, name, info.getCOSObject().getDictionaryObject(key));
             }
         }
 
