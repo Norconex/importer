@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,8 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
- *          caseSensitive="[false|true]" &gt;
+ *          caseSensitive="[false|true]"
+ *          maxReadSize="(max characters to read at once)" &gt;
  *      &lt;textBetween name="targetFieldName"&gt;
  *          &lt;start&gt;(regex)&lt;/start&gt;
  *          &lt;end&gt;(regex)&lt;/end&gt;
@@ -81,7 +82,7 @@ public class TextBetweenTagger
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, boolean partialContent) {
+            ImporterMetadata metadata, boolean parsed, int sectionIndex) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
         if (!caseSensitive) {
             flags = flags | Pattern.CASE_INSENSITIVE;
@@ -155,7 +156,8 @@ public class TextBetweenTagger
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringTaggerFromXML(XMLConfiguration xml)
+            throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         setInclusive(xml.getBoolean("[@inclusive]", false));
         List<HierarchicalConfiguration> nodes = 
@@ -167,11 +169,11 @@ public class TextBetweenTagger
                     node.getString("end", null));
         }
     }
-    
+
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute(
+         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));
         writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
         for (TextBetween between : betweens) {

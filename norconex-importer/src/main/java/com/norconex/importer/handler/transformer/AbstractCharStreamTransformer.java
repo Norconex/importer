@@ -74,7 +74,7 @@ public abstract class AbstractCharStreamTransformer
     protected abstract void transformTextDocument(
             String reference, Reader input,
             Writer output, ImporterMetadata metadata, boolean parsed)
-            throws IOException;
+                    throws ImporterHandlerException;
 
     @Override
     public boolean equals(final Object other) {

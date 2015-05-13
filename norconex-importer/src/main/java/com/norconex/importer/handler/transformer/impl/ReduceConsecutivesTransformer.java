@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * </p>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
- *          caseSensitive="[false|true]" &gt;
+ *          caseSensitive="[false|true]"
+ *          maxReadSize="(max characters to read at once)" &gt;
+ *          
  *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
  *      &lt;!-- multiple reduce tags allowed --&gt;
  *      
@@ -74,7 +76,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     @Override
     protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            boolean partialContent) {
+            int sectionIndex) {
 
         String text = content.toString();
         content.setLength(0);
@@ -120,7 +122,8 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringTransformerFromXML(XMLConfiguration xml)
+            throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
         List<HierarchicalConfiguration> nodes =
@@ -136,7 +139,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTransformerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));

@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,132 +17,148 @@ package com.norconex.importer.handler.filter;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.apache.commons.io.FileUtils;
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.MemoryUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.util.BufferUtil;
 
 /**
  * <p>Base class to facilitate creating filters based on text content, loading
- * text into {@link StringBuilder} for memory processing, also giving more 
- * options (like fancy regex).  This class checks for free memory every 10KB of 
- * text read.  If enough memory, it keeps going for another 10KB or until
- * all the content is read, or the buffer size reaches half the available 
- * memory.  In either case, it passes the buffered content so far for 
- * tagging (all of it for small enough content, or in several
- * chunks for large content).
+ * text into {@link StringBuilder} for memory processing.
  * </p>
+ * 
+ * <p><b>Since 2.2.0</b> this class limits the memory used for content
+ * filtering by reading one section of text at a time.  Each
+ * sections are sent for filtering once they are read until a match is found.
+ * No two sections exists in memory at once.  Sub-classes should 
+ * respect this approach.  Each section have a maximum number of characters 
+ * equal to the maximum read size defined using {@link #setMaxReadSize(int)}.
+ * When none is set, the default read size is defined by 
+ * {@link TextReader#DEFAULT_MAX_READ_SIZE}.
+ * </p>
+ * 
+ * <p>An attempt is made to break sections nicely after a paragraph, sentence, 
+ * or word.  When not possible, long text will be cut at a size equal
+ * to the maximum read size.
+ * </p>
+ * 
  * <p>
  * Implementors should be conscious about memory when dealing with the string
  * builder.
  * </p>
+ * <p>
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
+ * </p>
  * <pre>
- *  &lt;!-- main tag supports onMatch="[include|exclude]" attribute --&gt;
- *  &lt;contentTypeRegex&gt;
- *      (regex to identify text content-types, overridding default)
- *  &lt;/contentTypeRegex&gt;
- *  &lt;restrictTo
- *          caseSensitive="[false|true]"
- *          field="(name of header/metadata name to match)" &gt;
+ *  &lt;!-- parent tag has these attributes: 
+ *      maxReadSize="(max characters to read at once)" 
+ *      onMatch="[include|exclude]"
+ *    --&gt;
+ *  &lt;restrictTo caseSensitive="[false|true]"
+ *          field="(name of header/metadata field name to match)" &gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
+ *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * @author Pascal Essiembre
  */
 public abstract class AbstractStringFilter 
             extends AbstractCharStreamFilter {
 
-    //TODO maybe: Add to importer config something about max buffer memory.
-    // That way, we can ensure to apply the memory check technique on content of 
-    // the same size (threads should be taken into account), 
-    // as opposed to have one big file take all the memory so other big files
-    // are forced to do smaller chunks at a time.
-    
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractStringFilter.class);
+    private int maxReadSize = TextReader.DEFAULT_MAX_READ_SIZE;
 
-    private static final int READ_CHUNK_SIZE = 10 * (int) FileUtils.ONE_KB;
-    private static final int STRING_TOTAL_MEMORY_DIVIDER = 4;
-    
     @Override
     protected final boolean isTextDocumentMatching(
             String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
-        try {
-            // Initial size is half free memory, considering chars take 2 bytes
-            StringBuilder b = new StringBuilder(
-                    (int)(MemoryUtil.getFreeMemory() 
-                            / STRING_TOTAL_MEMORY_DIVIDER));
-            int i;
-            while ((i = input.read()) != -1) {
-                char ch = (char) i;
-                b.append(ch);
-                if (b.length() * 2 % READ_CHUNK_SIZE == 0
-                        && isTakingTooMuchMemory(b)) {
-                    boolean matched = isStringContentMatching(
-                            reference, b, metadata, parsed, true);
-                    BufferUtil.flushBuffer(b, null, true);
-                    if (matched) {
-                        return true;
-                    }
-                }
-            }
-            if (b.length() > 0) {
+        int sectionIndex = 0;
+        StringBuilder b = new StringBuilder();
+        String text = null;
+        try (TextReader reader = new TextReader(input, maxReadSize)) {
+            while ((text = reader.readText()) != null) {
+                b.append(text);
+                
                 boolean matched = isStringContentMatching(
-                        reference, b, metadata, parsed, false);
-                BufferUtil.flushBuffer(b, null, false);
+                        reference, b, metadata, parsed, sectionIndex);
+                sectionIndex++;
+                b.setLength(0);
                 if (matched) {
                     return true;
                 }
             }
-            b.setLength(0);
-            b = null;
         } catch (IOException e) {
-            throw new ImporterHandlerException("Cannot tag text document.", e);
+            throw new ImporterHandlerException(
+                    "Cannot filter text document.", e);            
         }
+        b.setLength(0);
+        b = null;        
         return false;
     }
     
+    /**
+     * Gets the maximum number of characters to read for filtering
+     * at once. Default is {@link TextReader#DEFAULT_MAX_READ_SIZE}.
+     * @return maximum read size
+     */
+    public int getMaxReadSize() {
+        return maxReadSize;
+    }
+    /**
+     * Sets the maximum number of characters to read for filtering
+     * at once.
+     * @param maxReadSize maximum read size
+     */
+    public void setMaxReadSize(int maxReadSize) {
+        this.maxReadSize = maxReadSize;
+    }
     
     protected abstract boolean isStringContentMatching(
            String reference, StringBuilder content, ImporterMetadata metadata,
-           boolean parsed, boolean partialContent) 
+           boolean parsed, int sectionIndex) 
                    throws ImporterHandlerException;
     
-    // We ensure buffer size never goes beyond half available memory.
-    private boolean isTakingTooMuchMemory(StringBuilder b) {
-        int maxMem = (int) MemoryUtil.getFreeMemory() / 2;
-        int bufMem = b.length() * 2;
-        boolean busted = bufMem > maxMem;
-        if (busted) {
-            LOG.warn("Text document read via tagger is quite big for "
-                + "remaining JVM memory.  It was split in text chunks and "
-                + "tagging will be applied on each chunk.  This "
-                + "may sometimes result in unexpected tagging. "
-                + "To eliminate this risk, increase the JVM maximum heap "
-                + "space to more than double the processed content size "
-                + "by using the -xmx flag to your startup script "
-                + "(e.g. -xmx1024m for 1 Gigabyte).  In addition, "
-                + "reducing the number of threads may help (if applicable). "
-                + "As an alternative, you can also implement a new solution " 
-                + "using AbstractCharSteamTagger instead, which relies "
-                + "on streams (taking very little fixed-size memory when "
-                + "done right).");
-        }
-        return busted;
+
+    @Override
+    protected final void saveFilterToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
+        saveStringFilterToXML(writer);
     }
+    /**
+     * Saves configuration settings specific to the implementing class.
+     * The parent tag along with the "class" attribute are already written.
+     * Implementors must not close the writer.
+     * 
+     * @param writer the xml writer
+     * @throws XMLStreamException could not save to XML
+     */
+    protected abstract void saveStringFilterToXML(
+            EnhancedXMLStreamWriter writer) throws XMLStreamException;
+
+    @Override
+    protected final void loadFilterFromXML(
+            XMLConfiguration xml) throws IOException {
+        setMaxReadSize(xml.getInt("[@maxReadSize]", getMaxReadSize()));
+        loadStringFilterFromXML(xml);
+    }
+    /**
+     * Loads configuration settings specific to the implementing class.
+     * @param xml xml configuration
+     * @throws IOException could not load from XML
+     */
+    protected abstract void loadStringFilterFromXML(XMLConfiguration xml)
+            throws IOException;    
 
     @Override
     public boolean equals(Object obj) {
@@ -155,8 +171,10 @@ public abstract class AbstractStringFilter
         if (!(obj instanceof AbstractStringFilter)) {
             return false;
         }
+        AbstractStringFilter other = (AbstractStringFilter) obj;
         return new EqualsBuilder()
             .appendSuper(super.equals(obj))
+            .append(maxReadSize, other.maxReadSize)
             .isEquals();
     }
 
@@ -164,6 +182,7 @@ public abstract class AbstractStringFilter
     public int hashCode() {
         return new HashCodeBuilder()
             .appendSuper(super.hashCode())
+            .append(maxReadSize)
             .toHashCode();
     }
     
@@ -171,6 +190,7 @@ public abstract class AbstractStringFilter
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE)
             .appendSuper(super.toString())
+            .append("maxReadSize", maxReadSize)
             .toString();
     }
     

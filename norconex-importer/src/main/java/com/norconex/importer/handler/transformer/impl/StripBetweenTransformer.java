@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,8 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
  *          inclusive="[false|true]" 
- *          caseSensitive="[false|true]" &gt;
+ *          caseSensitive="[false|true]"
+ *          maxReadSize="(max characters to read at once)" &gt;
  *      &lt;stripBetween&gt;
  *          &lt;start&gt;(regex)&lt;/start&gt;
  *          &lt;end&gt;(regex)&lt;/end&gt;
@@ -84,7 +85,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     @Override
     protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            boolean partialContent) {
+            int sectionIndex) {
         int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
         if (!caseSensitive) {
             flags = flags | Pattern.CASE_INSENSITIVE;
@@ -149,8 +150,8 @@ public class StripBetweenTransformer extends AbstractStringTransformer
         return new ArrayList<Pair<String,String>>(stripPairs);
     }
     
-    @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringTransformerFromXML(XMLConfiguration xml)
+            throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         setInclusive(xml.getBoolean("[@inclusive]", false));
         List<HierarchicalConfiguration> nodes = 
@@ -162,7 +163,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     }
     
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTransformerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));

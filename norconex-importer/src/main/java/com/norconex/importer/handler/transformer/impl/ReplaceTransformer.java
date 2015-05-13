@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,9 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
- *          caseSensitive="[false|true]" &gt;
+ *          caseSensitive="[false|true]"
+ *          maxReadSize="(max characters to read at once)" &gt;
+ *          
  *      &lt;replace&gt;
  *          &lt;fromValue&gt;(regex of value to replace)&lt;/fromValue&gt;
  *          &lt;toValue&gt;(replacement value)&lt;/toValue&gt;
@@ -69,7 +71,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
     @Override
     protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            boolean partialContent) {
+            int sectionIndex) {
 
         String text = content.toString();
         content.setLength(0);
@@ -107,7 +109,8 @@ public class ReplaceTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringTransformerFromXML(XMLConfiguration xml)
+            throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
         List<HierarchicalConfiguration> nodes = 
@@ -119,7 +122,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
     }
     
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTransformerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,8 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
  *          onMatch="[include|exclude]" 
- *          caseSensitive="[false|true]" &gt;
+ *          caseSensitive="[false|true]"
+ *          maxReadSize="(max characters to read at once)" &gt;
  *      (regular expression of value to match)
  *  &lt;/filter&gt;
  * </pre>
@@ -99,7 +100,7 @@ public class RegexContentFilter extends AbstractStringFilter {
     @Override
     protected boolean isStringContentMatching(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            boolean partialContent) throws ImporterHandlerException {
+            int sectionIndex) throws ImporterHandlerException {
 
         if (StringUtils.isBlank(regex)) {
             return true;
@@ -110,14 +111,15 @@ public class RegexContentFilter extends AbstractStringFilter {
         return false;
     }
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer) 
             throws XMLStreamException {
         writer.writeAttribute("caseSensitive", 
                 Boolean.toString(caseSensitive));
         writer.writeCharacters(regex == null ? "" : regex);
     }
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringFilterFromXML(XMLConfiguration xml)
+            throws IOException {
         setRegex(xml.getString(""));
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
     }
@@ -128,4 +130,36 @@ public class RegexContentFilter extends AbstractStringFilter {
                 .append("regex", regex).append("pattern", pattern).toString();
     }
     
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = super.hashCode();
+        result = prime * result + (caseSensitive ? 1231 : 1237);
+        result = prime * result + ((regex == null) ? 0 : regex.hashCode());
+        return result;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!(obj instanceof RegexContentFilter)) {
+            return false;
+        }
+        RegexContentFilter other = (RegexContentFilter) obj;
+        if (caseSensitive != other.caseSensitive) {
+            return false;
+        }
+        if (regex == null) {
+            if (other.regex != null) {
+                return false;
+            }
+        } else if (!regex.equals(other.regex)) {
+            return false;
+        }
+        return true;
+    }
 }

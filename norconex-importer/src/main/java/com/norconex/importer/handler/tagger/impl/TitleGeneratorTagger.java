@@ -90,7 +90,8 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *          fallbackMaxLength="(max num of chars for fallback title)"
  *          detectHeading="[false|true]"
  *          detectHeadingMinLength="(min length a heading title can have)"
- *          detectHeadingMaxLength="(max length a heading title can have)" &gt;
+ *          detectHeadingMaxLength="(max length a heading title can have)"
+ *          maxReadSize="(max characters to read at once)" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -136,7 +137,7 @@ public class TitleGeneratorTagger
     
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, boolean partialContent)
+            ImporterMetadata metadata, boolean parsed, int sectionIndex)
                     throws ImporterHandlerException {
 
         //TODO check if partial content and !first run(?) do not add title again
@@ -321,7 +322,8 @@ public class TitleGeneratorTagger
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadStringTaggerFromXML(XMLConfiguration xml)
+            throws IOException {
         setFromField(xml.getString("[@fromField]", getFromField()));
         setToField(xml.getString("[@toField]", getToField()));
         setOverwrite(xml.getBoolean("[@overwrite]", isOverwrite()));
@@ -335,7 +337,7 @@ public class TitleGeneratorTagger
     }
     
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("fromField", getFromField());
         writer.writeAttributeString("toField", getToField());

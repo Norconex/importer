@@ -16,8 +16,30 @@
         New CurrentDateTagger for adding the current date as a field to 
         imported documents.
       </action>
+      <action dev="essiembre" type="update" issue="9">
+        Complete rewrite of AbstractStringFilter, AbstractStringTagger, 
+        and AbstractStringTransformer to limit the memory taken for
+        loading the content. Now the memory is specified in absolute terms
+        instead of dynamically allocating it based on free memory 
+        (an approach that could cause OutOfMemory errors). All subclasses
+        now accept a "maxReadSize" configuration option to set the 
+        maximum number of characters to process at once.
+      </action>
       <action dev="essiembre" type="update">
-        Javadoc fixes.
+        The abstract methods accepting a "partial" boolean argument 
+        on AbstractStringFilter, AbstractStringTagger, 
+        and AbstractStringTransformer have been changed to now accept
+        a "sectionIndex" integer, representing the document content section
+        being processed. Only larger documents will be processed one section
+        of text at a time (to preserve memory).
+      </action>
+      <action dev="essiembre" type="update">
+        AbstractCharStreamTransformer#transformTextDocument(...) now 
+        throws an ImporterHandlerException instead of IOException to be
+        consistent with other handlers.
+      </action>
+      <action dev="essiembre" type="update">
+        Javadoc fixes and updates.
       </action>
       <action dev="essiembre" type="fix">
         Fixed the "restrictTo" feature not always working for 
