@@ -119,9 +119,25 @@ public class EnhancedPDFParser extends AbstractParser {
             Pattern.DOTALL | Pattern.MULTILINE);
     private static final Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
             Pattern.DOTALL | Pattern.MULTILINE);
+
+    private boolean preserveMemory;
     
     public Set<MediaType> getSupportedTypes(ParseContext context) {
         return SUPPORTED_TYPES;
+    }
+
+    public boolean isPreserveMemory() {
+        return preserveMemory;
+    }
+    /**
+     * Sets whether memory should be preserved by using temp files to
+     * store the many PDF resources discovered.  This can drastically slow
+     * down parsing.
+     * @param preserveMemory <code>true</code> to preserve memory by using
+     *                       temp files
+     */
+    public void setPreserveMemory(boolean preserveMemory) {
+        this.preserveMemory = preserveMemory;
     }
 
     public void parse(
@@ -139,21 +155,13 @@ public class EnhancedPDFParser extends AbstractParser {
             // Decide which to do based on if we're reading from a file or not already
             TikaInputStream tstream = TikaInputStream.cast(stream);
             password = getPassword(metadata, context);
-            if (tstream != null && tstream.hasFile()) {
-                // File based, take that as a cue to use a temporary file
-                if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
-                } else {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), true);
-                }
+            
+            if (localConfig.getUseNonSequentialParser() == true) {
+                pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
             } else {
-                // Go for the normal, stream based in-memory parsing
-                if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
-                } else {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), true);
-                }
+                pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), preserveMemory);
             }
+            
             metadata.set("pdf:encrypted", Boolean.toString(pdfDocument.isEncrypted()));
 
             pdfDocument.setAllSecurityToBeRemoved(true);
