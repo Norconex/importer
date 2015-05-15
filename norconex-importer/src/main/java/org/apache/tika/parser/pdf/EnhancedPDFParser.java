@@ -142,16 +142,16 @@ public class EnhancedPDFParser extends AbstractParser {
             if (tstream != null && tstream.hasFile()) {
                 // File based, take that as a cue to use a temporary file
                 if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), password);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
                 } else {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), true);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), true);
                 }
             } else {
                 // Go for the normal, stream based in-memory parsing
                 if (localConfig.getUseNonSequentialParser() == true) {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), password);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
                 } else {
-                    pdfDocument = PDDocument.load(new CloseShieldInputStream(stream), true);
+                    pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), true);
                 }
             }
             metadata.set("pdf:encrypted", Boolean.toString(pdfDocument.isEncrypted()));
@@ -319,7 +319,9 @@ public class EnhancedPDFParser extends AbstractParser {
                 xmp.addXMLNSMapping(XMPSchemaPDFAId.NAMESPACE, XMPSchemaPDFAId.class);
                 XMPSchemaPDFAId pdfaxmp = (XMPSchemaPDFAId) xmp.getSchemaByClass(XMPSchemaPDFAId.class);
                 if( pdfaxmp != null ) {
-                    metadata.set("pdfaid:part", Integer.toString(pdfaxmp.getPart()));
+                    if (pdfaxmp.getPart() != null) {
+                        metadata.set("pdfaid:part", Integer.toString(pdfaxmp.getPart()));
+                    }
                     if (pdfaxmp.getConformance() != null) {
                         metadata.set("pdfaid:conformance", pdfaxmp.getConformance());
                         String version = "A-"+pdfaxmp.getPart()+pdfaxmp.getConformance().toLowerCase(Locale.ROOT);
@@ -386,7 +388,7 @@ public class EnhancedPDFParser extends AbstractParser {
 
             if (value != null && value.length() > 0) {
                 //if you're going to add it below in the baseline addition, don't add it now
-                if (value.equals(pdfBoxBaseline)){
+                if (pdfBoxBaseline != null && value.equals(pdfBoxBaseline)){
                     continue;
                 }
                 metadata.add(property, value); 
@@ -508,7 +510,10 @@ public class EnhancedPDFParser extends AbstractParser {
             }
         } else if(value instanceof COSString) {
             addMetadata(metadata, name, ((COSString)value).getString());
-        } else if (value != null) {
+        }
+        // Avoid calling COSDictionary#toString, since it can lead to infinite
+        // recursion. See TIKA-1038 and PDFBOX-1835.
+        else if (value != null && !(value instanceof COSDictionary)) {
             addMetadata(metadata, name, value.toString());
         }
     }

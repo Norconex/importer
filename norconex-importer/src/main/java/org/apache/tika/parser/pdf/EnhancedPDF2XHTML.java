@@ -57,6 +57,7 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlin
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
@@ -316,6 +317,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         } catch (SAXException e) {
             throw new IOExceptionWithCause("Unable to end a page", e);
         }
+        //page.clear();
     }
 
     public static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
@@ -504,7 +506,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             return;
         }
 
-        Map<String, COSObjectable> embeddedFileNames = embeddedFiles.getNames();
+        Map<String, PDComplexFileSpecification> embeddedFileNames = embeddedFiles.getNames();
         //For now, try to get the embeddedFileNames out of embeddedFiles or its kids.
         //This code follows: pdfbox/examples/pdmodel/ExtractEmbeddedFiles.java
         //If there is a need we could add a fully recursive search to find a non-null
@@ -512,12 +514,12 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         if (embeddedFileNames != null) {
             processEmbeddedDocNames(embeddedFileNames);
         } else {
-            List<PDNameTreeNode> kids = embeddedFiles.getKids();
+            List<PDNameTreeNode<PDComplexFileSpecification>> kids = embeddedFiles.getKids();
             if (kids == null) {
                 return;
             }
-            for (PDNameTreeNode n : kids) {
-                Map<String, COSObjectable> childNames = n.getNames();
+            for (PDNameTreeNode<PDComplexFileSpecification> n : kids) {
+                Map<String, PDComplexFileSpecification> childNames = n.getNames();
                 if (childNames != null) {
                     processEmbeddedDocNames(childNames);
                 }
@@ -526,15 +528,15 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     }
 
 
-    private void processEmbeddedDocNames(Map<String, COSObjectable> embeddedFileNames)
+    private void processEmbeddedDocNames(Map<String, PDComplexFileSpecification> embeddedFileNames)
             throws IOException, SAXException, TikaException {
         if (embeddedFileNames == null || embeddedFileNames.isEmpty()) {
             return;
         }
 
         EmbeddedDocumentExtractor extractor = getEmbeddedDocumentExtractor();
-        for (Map.Entry<String,COSObjectable> ent : embeddedFileNames.entrySet()) {
-            PDComplexFileSpecification spec = (PDComplexFileSpecification) ent.getValue();
+        for (Map.Entry<String,PDComplexFileSpecification> ent : embeddedFileNames.entrySet()) {
+            PDComplexFileSpecification spec = ent.getValue();
             extractMultiOSPDEmbeddedFiles(ent.getKey(), spec, extractor);
         }
     }
@@ -639,15 +641,12 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
 
         addFieldString(field, handler);
 
-        List<COSObjectable> kids = field.getKids();
-        if(kids != null) {
-
+        if (field instanceof PDNonTerminalField) {
             int r = currentRecursiveDepth+1;
             handler.startElement("ol");
             //TODO: can generate <ol/>. Rework to avoid that.
-            for(COSObjectable pdfObj : kids) {
-                if(pdfObj != null && pdfObj instanceof PDField) {
-                    PDField kid = (PDField)pdfObj;
+            for (PDField kid : ((PDNonTerminalField)field).getChildren()) {
+                if (kid != null) {
                     //recurse
                     processAcroField(kid, handler, r);
                 }
