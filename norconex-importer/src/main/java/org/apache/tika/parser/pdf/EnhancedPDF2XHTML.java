@@ -677,12 +677,10 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         }
         try {
             //getValue can throw an IOException if there is no value
-            String value = field.getValue().toString();
+            String value = field.getValueAsString();
             if (value != null && ! value.equals("null")) {
                 sb.append(value);
             }
-        } catch (IOException e) {
-            //swallow
         } catch (NullPointerException e) {
             //TODO: remove once PDFBOX-2161 is fixed
         }

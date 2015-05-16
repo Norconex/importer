@@ -41,8 +41,10 @@ public class FallbackParser extends AbstractTikaParser {
     private static AutoDetectParser createAutoDetectParser() {
         AutoDetectParser parser = new AutoDetectParser();
         Map<MediaType, Parser> parsers = parser.getParsers();
-        parsers.put(
-                MediaType.application("pdf"), new EnhancedPDFParser());
+        
+        EnhancedPDFParser pdfParser = new EnhancedPDFParser();
+        pdfParser.setPreserveMemory(false);
+        parsers.put(MediaType.application("pdf"), pdfParser);
         //Tika returns a defensive copy so we have to reset the whole thing
         parser.setParsers(parsers);
         return parser;

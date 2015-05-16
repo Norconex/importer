@@ -38,8 +38,18 @@
         throws an ImporterHandlerException instead of IOException to be
         consistent with other handlers.
       </action>
+      <action dev="essiembre" type="update" issue="99">
+        PDFs are now entirely processed in memory to avoid thousands of files
+        to be created and causing "Too many open files" on Linux. Increasing
+        Java heap size is recommended is processing large files. 
+        Added a "preserveMemory" attribute on EnhancedPDFParser to return
+        to PDFBox temp file approach for storing PDF resources.
+      </action>
       <action dev="essiembre" type="update">
         Javadoc fixes and updates.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed "Too many open files" exception.
       </action>
       <action dev="essiembre" type="fix">
         Fixed the "restrictTo" feature not always working for 
