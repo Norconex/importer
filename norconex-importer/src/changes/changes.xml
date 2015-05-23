@@ -61,9 +61,9 @@
       <action dev="essiembre" type="fix">
         Fixed "Too many open files" exception.
       </action>
-      <action dev="essiembre" type="fix" issue=>
+      <action dev="essiembre" type="fix" issue="7">
         Fixed the "restrictTo" feature not always working for 
-        AbstractImporterHandler subclasses (github #7).
+        AbstractImporterHandler subclasses.
       </action>
     </release>
 
