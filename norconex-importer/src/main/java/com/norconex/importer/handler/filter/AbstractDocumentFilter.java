@@ -39,6 +39,39 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * {@link #isDocumentMatched(String, InputStream, ImporterMetadata, boolean)}
  * method.</p>
  * 
+ * <h3 id="logic">Inclusion/exclusion logic:</h3>
+ * <p>The logic for accepting or rejecting documents when a subclass condition
+ * is met ("matches") is as follow:</p>
+ * <table border="1">
+ *  <tr>
+ *   <td><b>Matches?</b></td>
+ *   <td><b>On match</b></td>
+ *   <td><b>Expected behavior</b></td>
+ *  </tr>
+ *  <tr>
+ *   <td>yes</td><td>exclude</td><td>Document is rejected.</td>
+ *  </tr>
+ *  <tr>
+ *   <td>yes</td><td>include</td><td>Document is accepted.</td>
+ *  </tr>
+ *  <tr>
+ *   <td>no</td><td>exclude</td><td>Document is accepted.</td>
+ *  </tr>
+ *  <tr>
+ *   <td>no</td><td>include</td>
+ *   <td>Document is accepted if it was accepted by at least one filter with
+ *       onMatch="include". If no other one exists or if none matched, 
+ *       the document is rejected.</td>
+ *  </tr>
+ * </table>
+ * <p>
+ * When multiple filters are defined and a combination of both "include" and 
+ * "exclude" are possible, the "exclude" will always take precedence.
+ * In other words, it only take one matching "exclude" to reject a document, 
+ * not matter how many matching "include" were triggered.
+ * </p>
+ * 
+ * <h3>XML configuration usage:</h3>
  * <p>Subclasses inherit this {@link IXMLConfigurable} configuration:</p>
  * <pre>
  *  &lt;!-- main tag supports onMatch="[include|exclude]" attribute --&gt;
@@ -80,10 +113,13 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             return true;
         }
         
-        if (!isDocumentMatched(reference, input, metadata, parsed)) {
-            return true;
+        boolean matched = isDocumentMatched(reference, input, metadata, parsed);
+
+        if (matched) {
+            return getOnMatch() == OnMatch.INCLUDE;
+        } else {
+            return getOnMatch() == OnMatch.EXCLUDE;
         }
-        return getOnMatch() == OnMatch.INCLUDE;
     }
 
     protected abstract boolean isDocumentMatched(

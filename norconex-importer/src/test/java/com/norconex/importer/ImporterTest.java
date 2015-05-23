@@ -127,7 +127,9 @@ public class ImporterTest {
                         new ImporterMetadata(), "n/a");
         System.out.println("Reject desc: "
                         + result.getImporterStatus().getDescription());
-        Assert.assertTrue(result.getImporterStatus().isRejected() 
+        Assert.assertTrue("PDF should have been rejected with proper "
+                + "status description.", 
+                result.getImporterStatus().isRejected() 
                 && result.getImporterStatus().getDescription().contains(
                         "RegexMetadataFilter"));
     }

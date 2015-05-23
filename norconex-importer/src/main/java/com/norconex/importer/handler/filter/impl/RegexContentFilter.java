@@ -27,15 +27,21 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
+import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 
 /**
- * Filters a document based on a pattern matching in its content.  Based
- * on document site, it is possible the pattern matching will be done
+ * <p>Filters a document based on a pattern matching in its content.  Based
+ * on document size, it is possible the pattern matching will be done
  * in chunks, sometimes not achieving expected results.  Consider
  * using {@link AbstractCharStreamFilter} if this is a concern.
- * 
+ * Refer to {@link AbstractDocumentFilter} for the inclusion/exclusion logic.
+ * </p>
+ * <p>
+ * <b>Since 2.2.0</b>, the following regular expression flags are always
+ * active: {@link Pattern#MULTILINE} and {@link Pattern#DOTALL}.
+ * </p>
  * <p>
  * XML configuration usage:
  * </p>
@@ -86,11 +92,13 @@ public class RegexContentFilter extends AbstractStringFilter {
     }
     public final void setRegex(String regex) {
         this.regex = regex;
+        int baseFlags = Pattern.MULTILINE | Pattern.DOTALL;
         if (regex != null) {
             if (caseSensitive) {
-                this.pattern = Pattern.compile(regex);
+                this.pattern = Pattern.compile(regex, baseFlags);
             } else {
-                this.pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+                this.pattern = Pattern.compile(
+                        regex, baseFlags | Pattern.CASE_INSENSITIVE);
             }
         } else {
             this.pattern = Pattern.compile(".*");
