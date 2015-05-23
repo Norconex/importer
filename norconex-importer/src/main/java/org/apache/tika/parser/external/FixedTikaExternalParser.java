@@ -61,7 +61,6 @@ import org.xml.sax.SAXException;
  * (JIRA: <a href="https://issues.apache.org/jira/browse/TIKA-1620">
  * https://issues.apache.org/jira/browse/TIKA-1620</a>).
  */
-@SuppressWarnings("javadoc")
 public class FixedTikaExternalParser extends AbstractParser {
     private static final long serialVersionUID = -1079128990650687037L;
     
@@ -115,8 +114,9 @@ public class FixedTikaExternalParser extends AbstractParser {
 
     /**
      * Sets the command to be run. This can include either of
-     *  {@link #INPUT_FILE_TOKEN} or {@link #OUTPUT_FILE_TOKEN}
-     *  if the command needs filenames.
+     * {@link #INPUT_FILE_TOKEN} or {@link #OUTPUT_FILE_TOKEN}
+     * if the command needs filenames.
+     * @param command the command to execute, with its arguments
      * @see Runtime#exec(String[])
      */
     public void setCommand(String... command) {
@@ -130,9 +130,10 @@ public class FixedTikaExternalParser extends AbstractParser {
     
     /**
      * Sets the map of regular expression patterns and Metadata
-     *  keys. Any matching patterns will have the matching
-     *  metadata entries set.
+     * keys. Any matching patterns will have the matching
+     * metadata entries set.
      * Set this to null to disable Metadata extraction.
+     * @param patterns metadata extraction patterns
      */
     public void setMetadataExtractionPatterns(Map<Pattern,String> patterns) {
        this.metadataPatterns = patterns;
@@ -141,9 +142,9 @@ public class FixedTikaExternalParser extends AbstractParser {
 
     /**
      * Executes the configured external command and passes the given document
-     *  stream as a simple XHTML document to the given SAX content handler.
+     * stream as a simple XHTML document to the given SAX content handler.
      * Metadata is only extracted if {@link #setMetadataExtractionPatterns(Map)}
-     *  has been called to set patterns.
+     * has been called to set patterns.
      */
     public void parse(
             InputStream stream, ContentHandler handler,
@@ -347,6 +348,7 @@ public class FixedTikaExternalParser extends AbstractParser {
      *  
      * @param checkCmd The check command to run
      * @param errorValue What is considered an error value? 
+     * @return <code>true</code> if the command can be run
      */
     public static boolean check(String checkCmd, int... errorValue) {
        return check(new String[] {checkCmd}, errorValue);

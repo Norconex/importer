@@ -42,7 +42,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <h3 id="logic">Inclusion/exclusion logic:</h3>
  * <p>The logic for accepting or rejecting documents when a subclass condition
  * is met ("matches") is as follow:</p>
- * <table border="1">
+ * <table border="1" summary="Inclusion/exclusion logic">
  *  <tr>
  *   <td><b>Matches?</b></td>
  *   <td><b>On match</b></td>
