@@ -104,8 +104,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     private final static int MAX_ACROFORM_RECURSIONS = 10;
 
 
-    // TODO: remove once PDFBOX-2160 is fixed:
-    private boolean inParagraph = false;
 
     /**
      * This keeps track of the pdf object ids for inline
@@ -320,7 +318,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         //page.clear();
     }
 
-    public static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
+    private static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
         pdf2XHTML.setSortByPosition(config.getSortByPosition());
         if (config.getEnableAutoSpace()) {
             pdf2XHTML.setWordSeparator(" ");
@@ -424,13 +422,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
 
     @Override
     protected void writeParagraphStart() throws IOException {
-        // TODO: remove once PDFBOX-2160 is fixed
-        if (inParagraph) {
-            // Close last paragraph
-            writeParagraphEnd();
-        }
-        assert !inParagraph;
-        inParagraph = true;
         try {
             handler.startElement("p");
         } catch (SAXException e) {
@@ -440,12 +431,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
 
     @Override
     protected void writeParagraphEnd() throws IOException {
-        // TODO: remove once PDFBOX-2160 is fixed
-        if (!inParagraph) {
-            writeParagraphStart();
-        }
-        assert inParagraph;
-        inParagraph = false;
         try {
             handler.endElement("p");
         } catch (SAXException e) {

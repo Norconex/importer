@@ -20,39 +20,6 @@
   -->
 <mime-info>
 
-  <!-- Microsoft Visio =========================================================
-    -->
-  <mime-type type="application/vnd.ms-visio.drawing.main+xml">
-    <_comment>Office Open XML Visio Drawing (macro-free)</_comment>
-    <glob pattern="*.vsdx"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-  <mime-type type="application/vnd.ms-visio.template.main+xml">
-    <_comment>Office Open XML Visio Template (macro-free)</_comment>
-    <glob pattern="*.vstx"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-  <mime-type type="application/vnd.ms-visio.stencil.main+xml">
-    <_comment>Office Open XML Visio Stencil (macro-free)</_comment>
-    <glob pattern="*.vssx"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-  <mime-type type="application/vnd.ms-visio.drawing.macroenabled.main+xml">
-    <_comment>Office Open XML Visio Drawing (macro-enabled)</_comment>
-    <glob pattern="*.vsdm"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-  <mime-type type="application/vnd.ms-visio.template.macroenabled.main+xml">
-    <_comment>Office Open XML Visio Template (macro-enabled)</_comment>
-    <glob pattern="*.vstm"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-  <mime-type type="application/vnd.ms-visio.stencil.macroenabled.main+xml">
-    <_comment>Office Open XML Visio Stencil (macro-enabled)</_comment>
-    <glob pattern="*.vssm"/>
-    <sub-class-of type="application/x-tika-ooxml"/>
-  </mime-type>
-
   <!-- XFDL ====================================================================
     TODO: Shall we add these aliases:
         <alias type="application/uwi_form"/>
