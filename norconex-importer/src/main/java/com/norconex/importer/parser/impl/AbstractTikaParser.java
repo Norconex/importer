@@ -137,6 +137,9 @@ public class AbstractTikaParser implements IDocumentParser {
             }
             RecursiveParser recursiveParser = createRecursiveParser(
                     doc.getReference(), output, doc.getMetadata(), 
+                    //TODO getContent() here does a rewind just to get stream
+                    //which may be an unnecessary read.  Have stream factory
+                    //directly on document instead to save a read?
                     doc.getContent().getStreamFactory());
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);

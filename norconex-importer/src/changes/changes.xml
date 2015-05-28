@@ -9,12 +9,16 @@
   
     <release version="2.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
       <action dev="essiembre" type="add">
-        New ExternalParser class which is used to run an external process
-        for parsing files (e.g. pdftotext) of the associated content type.
+        New DocumentLengthTagger for adding the document byte length 
+        as a field to imported documents.
       </action>
       <action dev="essiembre" type="add">
         New CurrentDateTagger for adding the current date as a field to 
         imported documents.
+      </action>
+      <action dev="essiembre" type="add">
+        New ExternalParser class which is used to run an external process
+        for parsing files (e.g. pdftotext) of the associated content type.
       </action>
       <action dev="essiembre" type="update" issue="9">
         Complete rewrite of AbstractStringFilter, AbstractStringTagger, 
@@ -47,7 +51,7 @@
         (github collector-http#99).
       </action>
       <action dev="essiembre" type="update">
-        Library updates: Apache Tika 1.8.
+        Library updates: Apache Tika 1.8, Norconex Commons Lang 1.6.1.
       </action>
       <action dev="essiembre" type="update">
         Javadoc fixes and updates.

@@ -522,7 +522,9 @@ public class Importer {
         boolean accepted = filter.acceptDocument(
                 doc.getReference(),
                 doc.getContent(), doc.getMetadata(), parsed);
-        doc.getContent().rewind();
+        //TODO Is the next .rewind() necessary given next call to getContent()
+        //will do it?
+        doc.getContent().rewind(); 
         if (!accepted) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document import rejected. Filter=" + filter);
