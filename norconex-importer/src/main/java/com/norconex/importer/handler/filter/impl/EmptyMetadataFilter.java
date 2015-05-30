@@ -35,7 +35,7 @@ import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
  * <p>Accepts or rejects a document based on whether specified metadata fields
- * are empty or not.  Any control characters (char &lt; 32) are removed 
+ * are empty or not.  Any control characters (char &lt;= 32) are removed 
  * before evaluating if a property is empty or not.</p>
  * 
  * <p>XML configuration usage:</p>
