@@ -36,10 +36,10 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * Accepts or rejects a document based on the numerical number(s) of a metadata
+ * Accepts or rejects a document based on the numeric value(s) of a metadata
  * field, supporting decimals. If multiple values are found for a field, only
  * one of them needs to match for this filter to take effect. 
- * If the number is not a valid number, it is considered not to be matching.
+ * If the value is not a valid number, it is considered not to be matching.
  * The decimal character is expected to be a dot. 
  * To reject decimals or to deal with
  * non-numeric fields in your own way, you can use {@link RegexMetadataFilter}.
@@ -110,12 +110,12 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         private Operator(String abbr) {
             this.abbr = abbr;
         }
-        public static Operator getOperator(String condition) {
-            if (StringUtils.isBlank(condition)) {
+        public static Operator getOperator(String op) {
+            if (StringUtils.isBlank(op)) {
                 return null;
             }
             for (Operator c : Operator.values()) {
-                if (c.abbr.equalsIgnoreCase(condition)) {
+                if (c.abbr.equalsIgnoreCase(op)) {
                     return c;
                 }
             }
@@ -194,7 +194,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        setField(xml.getString("[@field]"));
+        setField(xml.getString("[@field]", getField()));
         List<HierarchicalConfiguration> nodes =
                 xml.configurationsAt("condition");
         for (HierarchicalConfiguration node : nodes) {

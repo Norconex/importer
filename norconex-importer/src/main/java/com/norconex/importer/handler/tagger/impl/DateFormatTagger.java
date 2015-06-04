@@ -16,10 +16,8 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -27,17 +25,15 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import com.norconex.importer.util.FormatUtil;
 
 /**
  * <p>Formats a date from any given format to a format of choice, as per the 
@@ -75,9 +71,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  */
 public class DateFormatTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CharacterCaseTagger.class);
-    
     private String fromField;
     private String toField;
     private String fromFormat;
@@ -101,7 +94,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         List<String> fromDates = metadata.getStrings(fromField);
         List<String> toDates = new ArrayList<>(fromDates.size());
         for (String fromDate : fromDates) {
-            String toDate = formatDate(fromDate);
+            String toDate = FormatUtil.formatDateString(
+                    fromDate, fromFormat, toFormat, fromField);
             if (StringUtils.isNotBlank(toDate)) {
                 toDates.add(toDate);
             } else if (keepBadDates) {
@@ -121,44 +115,6 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         }
     }
     
-    private String formatDate(String fromDate) {
-        if (StringUtils.isBlank(fromDate)) {
-            return null;
-        }
-        
-        //--- Parse from date ---
-        Date date = null;
-        if (StringUtils.isBlank(fromFormat)) {
-            // From date format is EPOCH
-            long millis = NumberUtils.toLong(fromDate, -1);
-            if (millis == -1) {
-                LOG.warn("Invalid date format found in " + fromField
-                        + ". When no \"fromFormat\" is specified, the date "
-                        + "value is expected to be of EPOCH format.");
-                return null;
-            }
-            date = new Date(millis);
-        } else {
-            // From date is custom format
-            try {
-                date = new SimpleDateFormat(fromFormat).parse(fromDate);
-            } catch (ParseException e) {
-                LOG.warn("Invalid date format found in " + fromField + ".", e);
-                return null;
-            }
-        }
-
-        //--- Format to date ---
-        String toDate = null;
-        if (StringUtils.isBlank(toFormat)) {
-            // To date foramt is EPOCH
-            toDate = Long.toString(date.getTime());
-        } else {
-            toDate = new SimpleDateFormat(toFormat).format(date);
-        }
-        return toDate;
-    }
-
     public String getFromField() {
         return fromField;
     }

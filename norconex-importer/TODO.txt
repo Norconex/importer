@@ -2,13 +2,15 @@
 TODO:
 ==============
 
+- Check if other regex-based handlers should have more flags by default. 
+
+- Remove Lucene dependency in TitleGeneratorTagger?? Make optional??
+  Find another way besides Carrot??? 
+
 - Add a generic XMLSplitter.
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support.
-
-- Add a counter as method argument to AbstractStringTagger so we know which 
-  "chunk" of text we are processing (1st, 2nd, etc).
 
 - Improve new parsers:
     - Extract WordPerfect footnotes and maybe more valuable text?

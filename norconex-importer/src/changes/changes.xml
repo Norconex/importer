@@ -21,6 +21,10 @@
         numeric field value matches a given numeric range.
       </action>
       <action dev="essiembre" type="add">
+        New DateMetadataFilter for filtering documents based on whether a
+        date field value matches a given date range.
+      </action>
+      <action dev="essiembre" type="add">
         New ExternalParser class which is used to run an external process
         for parsing files (e.g. pdftotext) of the associated content type.
       </action>

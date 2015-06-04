@@ -410,6 +410,10 @@ public class Importer {
                 out, CharEncoding.UTF_8);
 
         try {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Parser \"" + parser.getClass().getCanonicalName()
+                        + "\" about to parse \"" + doc.getReference() + "\".");
+            }
             List<ImporterDocument> nestedDocs = 
                     parser.parseDocument(doc, output);
             output.flush();
