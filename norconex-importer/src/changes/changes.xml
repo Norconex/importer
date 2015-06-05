@@ -59,6 +59,25 @@
         (github collector-http#99).
       </action>
       <action dev="essiembre" type="update">
+        Removed custom Tika mappings for Microsoft Visio now that they have 
+        been added to default Tika mappings in Tika 1.8.
+        Reference: https://issues.apache.org/jira/browse/TIKA-1286
+      </action>
+      <action dev="essiembre" type="update">
+        ReplaceTagger: now case insensitive by default. Added a new
+        flag to turn case-sensitivity on/off. #addReplacement(...) methods
+        have been deprecated in favor of addReplacement(Replacement).
+      </action>
+      <action dev="essiembre" type="update">
+        Regular expressions in RegexContentFilter, RegexMetadataFilter, 
+        ReplaceTagger, TextBetweenTagger, ReplaceTransformer, 
+        StripAfterTransformer, StripBeforeTransformer, and 
+        StripBetweenTransformer now always have the
+        Pattern.DOTALL flags enabled and when case
+        sensitivity is enabled for regex, Pattern.UNICODE_CASE is now always
+        used.
+      </action>
+      <action dev="essiembre" type="update">
         Library updates: Apache Tika 1.8, Norconex Commons Lang 1.6.1.
       </action>
       <action dev="essiembre" type="update">
@@ -66,11 +85,6 @@
       </action>
       <action dev="essiembre" type="update">
         New unit tests to cover all filter onMatch use cases.
-      </action>
-      <action dev="essiembre" type="update">
-        Removed custom Tika mappings for Microsoft Visio now that they have 
-        been added to default Tika mappings in Tika 1.8.
-        Reference: https://issues.apache.org/jira/browse/TIKA-1286
       </action>
       <action dev="essiembre" type="fix">
         Fixed filters not working properly when using 

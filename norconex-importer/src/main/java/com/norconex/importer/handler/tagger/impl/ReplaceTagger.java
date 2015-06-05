@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 
 /**
- * <p>Replaces an existing metadata value with another one.  The "toField" argument
- * is optional (the same field will be used for the replacement if no
+ * <p>Replaces an existing metadata value with another one. The "toField" 
+ * argument is optional (the same field will be used for the replacement if no
  * "toField" is specified").</p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
@@ -47,7 +47,8 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
- *      &lt;replace fromField="sourceFieldName" toField="targetFieldName" 
+ *      &lt;replace fromField="sourceFieldName" toField="targetFieldName"
+ *               caseSensitive="[false|true]"
  *               regex="[false|true]"&gt;
  *          &lt;fromValue&gt;Source Value&lt;/fromValue&gt;
  *          &lt;toValue&gt;Target Value&lt;/toValue&gt;
@@ -84,10 +85,12 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     String newValue = null;
                     if (repl.isRegex()) {
                         newValue = regexReplace(metaValue, 
-                                repl.getFromValue(), repl.getToValue());
+                                repl.getFromValue(), repl.getToValue(),
+                                repl.isCaseSensitive());
                     } else {
                         newValue = regularReplace(metaValue, 
-                                repl.getFromValue(), repl.getToValue());
+                                repl.getFromValue(), repl.getToValue(),
+                                repl.isCaseSensitive());
                     }
                     if (!Objects.equals(metaValue, newValue)) {
                         if (StringUtils.isNotBlank(repl.getToField())) {
@@ -103,14 +106,24 @@ public class ReplaceTagger extends AbstractDocumentTagger {
     }
     
 
-    private String regexReplace(
-            String metaValue, String fromValue, String toValue) {
-        Pattern p = Pattern.compile(fromValue);
+    private String regexReplace(String metaValue, String fromValue, 
+            String toValue, boolean caseSensitive) {
+        int flags = Pattern.DOTALL;
+        if (!caseSensitive) {
+            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+        }
+        Pattern p = Pattern.compile(fromValue, flags);
         return p.matcher(metaValue).replaceFirst(toValue);
     }
-    private String regularReplace(
-            String metaValue, String fromValue, String toValue) {
-        if (Objects.equals(metaValue, fromValue)) {
+    private String regularReplace(String metaValue, String fromValue, 
+            String toValue, boolean caseSensitive) {
+        String mv = metaValue;
+        String fv = fromValue;
+        if (!caseSensitive) {
+            mv = StringUtils.lowerCase(mv);
+            fv = StringUtils.lowerCase(fv);
+        }
+        if (Objects.equals(mv, fv)) {
             return toValue;
         }
         return metaValue;
@@ -132,39 +145,95 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
     }
     
+    /**
+     * Adds a replacement.
+     * @param fromValue value to replace
+     * @param toValue replacement value
+     * @param fromField field holding the value to replace
+     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
+     *             instead.
+     */
+    @Deprecated
     public void addReplacement(
             String fromValue, String toValue, String fromField) {
         addReplacement(fromValue, toValue, fromField, null, false);
     }
+    /**
+     * Adds a replacement.
+     * @param fromValue value to replace
+     * @param toValue replacement value
+     * @param fromField field holding the value to replace
+     * @param regex <code>true</code> if a regular expression
+     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
+     *             instead.
+     */
+    @Deprecated
     public void addReplacement(
             String fromValue, String toValue, String fromField, boolean regex) {
         addReplacement(fromValue, toValue, fromField, null, regex);
     }
+    /**
+     * Adds a replacement.
+     * @param fromValue value to replace
+     * @param toValue replacement value
+     * @param fromField field holding the value to replace
+     * @param toField field to store the replaced value
+     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
+     *             instead.
+     */
+    @Deprecated
     public void addReplacement(String fromValue, String toValue, 
             String fromField, String toField) {
         addReplacement(fromValue, toValue, fromField, toField, false);
     }
+    /**
+     * Adds a replacement.
+     * @param fromValue value to replace
+     * @param toValue replacement value
+     * @param fromField field holding the value to replace
+     * @param toField field to store the replaced value
+     * @param regex <code>true</code> if a regular expression
+     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
+     *             instead.
+     */
+    @Deprecated
     public void addReplacement(String fromValue, String toValue, 
             String fromField, String toField, boolean regex) {
-        replacements.add(new Replacement(
-                fromField, fromValue, toField, toValue, regex));
+        Replacement r = new Replacement(fromField, fromValue, toField, toValue);
+        r.setRegex(regex);
+        addReplacement(r);
+    }
+
+    /**
+     * Adds a replacement.
+     * @param replacement the replacement
+     * @since 2.2.0
+     */
+    public void addReplacement(Replacement replacement) {
+        if (replacement != null) {
+            replacements.add(replacement);
+        }
     }
 
     
     public static class Replacement {
-        private final String fromField;
-        private final String fromValue;
-        private final String toField;
-        private final String toValue;
-        private final boolean regex;
-        public Replacement(String fromField, String fromValue, String toField,
-                String toValue, boolean regex) {
+        private String fromField;
+        private String fromValue;
+        private String toField;
+        private String toValue;
+        private boolean regex;
+        private boolean caseSensitive;
+        public Replacement() {
+            super();
+        }
+        public Replacement(
+                String fromField, String fromValue, 
+                String toField, String toValue) {
             super();
             this.fromField = fromField;
             this.fromValue = fromValue;
             this.toField = toField;
             this.toValue = toValue;
-            this.regex = regex;
         }
         public String getFromField() {
             return fromField;
@@ -181,14 +250,71 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         public boolean isRegex() {
             return regex;
         }
-
-        
-        
+        /**
+         * Whether the replacement should be case sensitive or not.
+         * @return the caseSensitive
+         * @since 2.2.0
+         */
+        public boolean isCaseSensitive() {
+            return caseSensitive;
+        }
+        /**
+         * Sets the field with the value to replace.
+         * @param fromField field with the value to replace
+         * @since 2.2.0
+         */
+        public void setFromField(String fromField) {
+            this.fromField = fromField;
+        }
+        /**
+         * Sets the value to replace.
+         * @param fromValue the value to replace
+         * @since 2.2.0
+         */
+        public void setFromValue(String fromValue) {
+            this.fromValue = fromValue;
+        }
+        /**
+         * Sets the field to store the replaced value.
+         * @param toField field to store the replaced value
+         * @since 2.2.0
+         */
+        public void setToField(String toField) {
+            this.toField = toField;
+        }
+        /**
+         * Sets the replacement value.
+         * @param toValue the replacement value
+         * @since 2.2.0
+         */
+        public void setToValue(String toValue) {
+            this.toValue = toValue;
+        }
+        /**
+         * Sets whether the <code>fromValue</code> is a regular expression.
+         * @param regex <code>true</code> if <code>fromValue</code> is a 
+         *              regular expression
+         * @since 2.2.0
+         */
+        public void setRegex(boolean regex) {
+            this.regex = regex;
+        }
+        /**
+         * Sets whether to do a case sensitive replacement or not.
+         * <b>Since 2.2.0</b>, replacements are not case sensitive by default.
+         * @param caseSensitive <code>true</code> if doing a case sensitive
+         *                      replacement
+         * @since 2.2.0
+         */
+        public void setCaseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
+        }
         @Override
         public String toString() {
             return "Replacement [fromField=" + fromField + ", fromValue="
-                    + fromValue + ", toField=" + toField + ", toValue=" + toValue
-                    + ", regex=" + regex + "]";
+                    + fromValue + ", toField=" + toField
+                    + ", toValue=" + toValue + ", regex=" + regex
+                    + ", caseSensitive=" + caseSensitive + "]";
         }
         @Override
         public boolean equals(final Object other) {
@@ -199,7 +325,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     .append(fromValue, castOther.fromValue)
                     .append(toField, castOther.toField)
                     .append(toValue, castOther.toValue)
-                    .append(regex, castOther.regex).isEquals();
+                    .append(regex, castOther.regex)
+                    .append(caseSensitive, castOther.caseSensitive).isEquals();
         }
         private transient int hashCode;
         @Override
@@ -207,24 +334,24 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             if (hashCode == 0) {
                 hashCode = new HashCodeBuilder().append(fromField)
                         .append(fromValue).append(toField).append(toValue)
-                        .append(regex).toHashCode();
+                        .append(regex).append(caseSensitive).toHashCode();
             }
             return hashCode;
         }
-
     }
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration> nodes = 
-                xml.configurationsAt("replace");
+        List<HierarchicalConfiguration> nodes = xml.configurationsAt("replace");
         for (HierarchicalConfiguration node : nodes) {
-            addReplacement(
-                    node.getString("fromValue"),
-                    node.getString("toValue"),
-                    node.getString("[@fromField]"),
-                    node.getString("[@toField]", null),
-                    node.getBoolean("[@regex]", false));
+            Replacement r = new Replacement();
+            r.setFromValue(node.getString("fromValue"));
+            r.setToValue(node.getString("toValue"));
+            r.setFromField(node.getString("[@fromField]"));
+            r.setToField(node.getString("[@toField]", null));
+            r.setRegex(node.getBoolean("[@regex]", false));
+            r.setCaseSensitive(node.getBoolean("[@caseSensitive]", false));
+            addReplacement(r);
         }
     }
     
@@ -239,6 +366,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             }
             writer.writeAttribute("regex", 
                     Boolean.toString(replacement.isRegex()));
+            writer.writeAttribute("caseSensitive", 
+                    Boolean.toString(replacement.isCaseSensitive()));
             writer.writeStartElement("fromValue");
             writer.writeCharacters(replacement.getFromValue());
             writer.writeEndElement();

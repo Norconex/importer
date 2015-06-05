@@ -79,11 +79,11 @@ public class ReplaceTransformer extends AbstractStringTransformer
         
         for (String from : replacements.keySet()) {
             String to = replacements.get(from);
-            if (caseSensitive) {
-                pattern = Pattern.compile(from);
-            } else {
-                pattern = Pattern.compile(from, Pattern.CASE_INSENSITIVE);
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
             }
+            pattern = Pattern.compile(from, flags);
             text = pattern.matcher(text).replaceAll(to);
         }
         content.append(text);

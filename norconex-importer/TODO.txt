@@ -2,8 +2,6 @@
 TODO:
 ==============
 
-- Check if other regex-based handlers should have more flags by default. 
-
 - Remove Lucene dependency in TitleGeneratorTagger?? Make optional??
   Find another way besides Carrot??? 
 

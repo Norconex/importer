@@ -74,9 +74,9 @@ public class StripBeforeTransformer extends AbstractStringTransformer
             LOG.error("No regular expression provided.");
             return;
         }
-        int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
+        int flags = Pattern.DOTALL;
         if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE;
+            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         }
         Pattern pattern = Pattern.compile(stripBeforeRegex, flags);
         Matcher match = pattern.matcher(content);

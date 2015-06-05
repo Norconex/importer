@@ -116,9 +116,9 @@ public class EnhancedPDFParser extends AbstractParser {
 
     private static final Pattern PATTERN_TEXT = Pattern.compile(
             "<\\s*(speak|text|exData)\\b([^>]*)(?<!/)>(.*?)<\\s*/\\s*\\1\\s*>",
-            Pattern.DOTALL | Pattern.MULTILINE);
+            Pattern.DOTALL);
     private static final Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
-            Pattern.DOTALL | Pattern.MULTILINE);
+            Pattern.DOTALL);
 
     private boolean preserveMemory;
     

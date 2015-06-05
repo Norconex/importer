@@ -54,8 +54,7 @@ public class ImporterTest {
                             boolean parsed) throws ImporterHandlerException {
                 try {
                     // Clean up what we know is extra noise for a given format
-                    Pattern pattern = 
-                            Pattern.compile("[^a-zA-Z ]", Pattern.MULTILINE);
+                    Pattern pattern = Pattern.compile("[^a-zA-Z ]");
                     String txt = IOUtils.toString(input);
                     txt = pattern.matcher(txt).replaceAll("");
                     txt = txt.replaceAll("DowntheRabbitHole", "");

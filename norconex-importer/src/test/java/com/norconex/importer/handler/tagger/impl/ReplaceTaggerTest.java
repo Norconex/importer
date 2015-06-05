@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,45 @@ import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.ReplaceTagger;
+import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
 
 public class ReplaceTaggerTest {
 
     @Test
     public void testWriteRead() throws IOException {
+        Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        tagger.addReplacement("fromValue1", "toValue1", "fromName1");
-        tagger.addReplacement("fromValue2", "toValue2", "fromName1");
-        tagger.addReplacement("fromValue1", "toValue1", "fromName2", "toName2");
-        tagger.addReplacement("fromValue3", "toValue3", "fromName3", "toName3");
+        
+        r = new Replacement();
+        r.setFromValue("fromValue1");
+        r.setToValue("toValue1");
+        r.setFromField("fromName1");
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("fromValue2");
+        r.setToValue("toValue2");
+        r.setFromField("fromName1");
+        r.setRegex(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("fromValue1");
+        r.setToValue("toValue1");
+        r.setFromField("fromName2");
+        r.setToField("toName2");
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("fromValue3");
+        r.setToValue("toValue3");
+        r.setFromField("fromName3");
+        r.setToField("toName3");
+        r.setRegex(true);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+        
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }
@@ -45,17 +74,45 @@ public class ReplaceTaggerTest {
         meta.addString("partialNoMatchField", "partial value nomatch"); 
         meta.addString("matchOldField", "match to new field"); 
         meta.addString("nomatchOldField", "no match to new field"); 
+        meta.addString("caseField", "Value Of Mixed Case"); 
         
+        Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        tagger.addReplacement("full value match", "replaced", 
-                "fullMatchField");
-        tagger.addReplacement("bad if you see me", "not replaced", 
-                "partialNoMatchField");
-        tagger.addReplacement("match to new field", "replaced to new field", 
-                "matchOldField", "matchNewField");
-        tagger.addReplacement("bad if you see me", "not replaced", 
-                "nomatchOldField", "nomatchNewField");
+        
+        r = new Replacement();
+        r.setFromValue("full value match");
+        r.setToValue("replaced");
+        r.setFromField("fullMatchField");
+        tagger.addReplacement(r);
 
+        r = new Replacement();
+        r.setFromValue("bad if you see me");
+        r.setToValue("not replaced");
+        r.setFromField("partialNoMatchField");
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("match to new field");
+        r.setToValue("replaced to new field");
+        r.setFromField("matchOldField");
+        r.setToField("matchNewField");
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("bad if you see me");
+        r.setToValue("not replaced");
+        r.setFromField("nomatchOldField");
+        r.setToField("nomatchNewField");
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("value Of mixed case");
+        r.setToValue("REPLACED");
+        r.setFromField("caseField");
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+        
+        
         tagger.tagDocument("n/a", null, meta, true);
 
         Assert.assertEquals("replaced", meta.getString("fullMatchField"));
@@ -66,6 +123,7 @@ public class ReplaceTaggerTest {
         Assert.assertEquals("no match to new field", 
                 meta.getString("nomatchOldField"));
         Assert.assertNull(meta.getString("nomatchNewField"));
+        Assert.assertEquals("REPLACED", meta.getString("caseField"));
     }
     
     @Test
@@ -73,11 +131,33 @@ public class ReplaceTaggerTest {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("path1", "/this/is/a/path/file.doc"); 
         meta.addString("path2", "/that/is/a/path/file.doc"); 
+        meta.addString("path3", "/That/Is/A/Path/File.doc"); 
         
+        Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        tagger.addReplacement("(.*)/.*", "$1", "path1", true);
-        tagger.addReplacement("(.*)/.*", "$1", "path2", "folder", true);
         
+        r = new Replacement();
+        r.setFromValue("(.*)/.*");
+        r.setToValue("$1");
+        r.setFromField("path1");
+        r.setRegex(true);
+        tagger.addReplacement(r);
+        
+        r = new Replacement();
+        r.setFromValue("(.*)/.*");
+        r.setToValue("$1");
+        r.setFromField("path2");
+        r.setToField("folder");
+        r.setRegex(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("file");
+        r.setToValue("something");
+        r.setFromField("path3");
+        r.setRegex(true);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
         
         tagger.tagDocument("n/a", null, meta, true);
 
@@ -85,6 +165,8 @@ public class ReplaceTaggerTest {
         Assert.assertEquals("/that/is/a/path", meta.getString("folder"));
         Assert.assertEquals(
                 "/that/is/a/path/file.doc", meta.getString("path2"));
+        Assert.assertEquals(
+                "/That/Is/A/Path/something.doc", meta.getString("path3"));
     }
 
 }

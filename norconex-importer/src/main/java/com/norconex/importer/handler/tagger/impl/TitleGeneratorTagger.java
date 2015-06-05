@@ -121,7 +121,7 @@ public class TitleGeneratorTagger
     private static final int NUM_SECTIONS = 25;
     private static final int MIN_ACCEPTABLE_SCORE = 1;
     private static final Pattern PATTERN_HEADING = Pattern.compile(
-            "^.*?([^\\n\\r]+)[\\n\\r]", Pattern.DOTALL | Pattern.MULTILINE);
+            "^.*?([^\\n\\r]+)[\\n\\r]", Pattern.DOTALL);
 
     
     private final Controller controller = ControllerFactory.createSimple();

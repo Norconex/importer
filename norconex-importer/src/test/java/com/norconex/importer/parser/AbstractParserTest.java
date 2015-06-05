@@ -123,8 +123,7 @@ public abstract class AbstractParserTest {
             String contentRegex, 
             String extension,
             String family) throws IOException {
-        Pattern p = Pattern.compile(
-                contentRegex, Pattern.DOTALL | Pattern.MULTILINE);
+        Pattern p = Pattern.compile(contentRegex, Pattern.DOTALL);
 
         Assert.assertNotNull("Document is null", doc);
         

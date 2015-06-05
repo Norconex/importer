@@ -92,13 +92,13 @@ public class RegexContentFilter extends AbstractStringFilter {
     }
     public final void setRegex(String regex) {
         this.regex = regex;
-        int baseFlags = Pattern.MULTILINE | Pattern.DOTALL;
+        int baseFlags = Pattern.DOTALL;
         if (regex != null) {
             if (caseSensitive) {
                 this.pattern = Pattern.compile(regex, baseFlags);
             } else {
-                this.pattern = Pattern.compile(
-                        regex, baseFlags | Pattern.CASE_INSENSITIVE);
+                this.pattern = Pattern.compile(regex, baseFlags 
+                        | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
             }
         } else {
             this.pattern = Pattern.compile(".*");

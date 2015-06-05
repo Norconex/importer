@@ -86,9 +86,9 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     protected void transformStringContent(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             int sectionIndex) {
-        int flags = Pattern.DOTALL | Pattern.UNICODE_CASE;
+        int flags = Pattern.DOTALL;
         if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE;
+            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         }
         for (Pair<String, String> pair : stripPairs) {
             List<Pair<Integer, Integer>> matches = 
