@@ -125,16 +125,6 @@
       <artifactId>norconex-language-detector</artifactId>
       <version>1.0.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.carrot2</groupId>
-      <artifactId>carrot2-mini</artifactId>
-      <version>3.9.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-analyzers-common</artifactId>
-      <version>5.0.0</version>
-    </dependency>
     
     <!-- The following may no longer be needed once a version of Tika
          is released with PDBBox 2.0.0 support. -->
@@ -168,15 +158,10 @@
       <version>5.5.1</version>
     </dependency>
 
-    <!-- The following dependencies are only present here to ensure their
-         proper version. They are otherwise provided by 
-         transitive dependencies. They can be removed from here once 
+    <!-- The following dependency is only present here to ensure its
+         proper version. It is otherwise provided by 
+         transitive dependencies. It can be removed from here once 
          transitive versions match and don't cause conflicts. -->
-    <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>stax2-api</artifactId>
-      <version>3.1.4</version>
-    </dependency>
     <dependency>
       <groupId>org.codehaus.woodstox</groupId>
       <artifactId>woodstox-core-asl</artifactId>

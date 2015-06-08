@@ -59,6 +59,10 @@
         (github collector-http#99).
       </action>
       <action dev="essiembre" type="update">
+        TitleGeneratorTagger was re-written no longer uses Carrot, to 
+        reduce library dependencies.
+      </action>
+      <action dev="essiembre" type="update">
         Removed custom Tika mappings for Microsoft Visio now that they have 
         been added to default Tika mappings in Tika 1.8.
         Reference: https://issues.apache.org/jira/browse/TIKA-1286
@@ -79,6 +83,8 @@
       </action>
       <action dev="essiembre" type="update">
         Library updates: Apache Tika 1.8, Norconex Commons Lang 1.6.1.
+        Removed these library "direct" dependencies: Carrot2 (3.9.4), 
+        Lucene Analyzers (5.0.0), and Stax2 API (3.1.4).
       </action>
       <action dev="essiembre" type="update">
         Javadoc fixes and updates.

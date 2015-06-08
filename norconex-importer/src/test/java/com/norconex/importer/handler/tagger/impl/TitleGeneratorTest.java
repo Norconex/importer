@@ -50,7 +50,7 @@ public class TitleGeneratorTest {
     }
     
     @Test
-    public void testCarrotTitle() 
+    public void testSummarizeTitle() 
             throws IOException, ImporterHandlerException {
         
         TitleGeneratorTagger t = new TitleGeneratorTagger();
@@ -68,7 +68,9 @@ public class TitleGeneratorTest {
         String title = metadata.getString("mytitle");
         
         LOG.debug("TITLE IS: " + title);        
-        Assert.assertEquals("Wrong title.", "Alice",  title);
+        Assert.assertEquals("Wrong title.", 
+                "that Alice had begun to think that very few things "
+              + "indeed were really impossible.",  title);
     }
     
     @Test
@@ -110,7 +112,7 @@ public class TitleGeneratorTest {
         String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
         
         LOG.info("TITLE IS: " + title);        
-        Assert.assertEquals("Wrong title.", "This is the first line",  title);
+        Assert.assertEquals("Wrong title.", "This is the first line.",  title);
     }
 
     
@@ -120,7 +122,7 @@ public class TitleGeneratorTest {
         t.setFromField("potato");
         t.setToField("banana");
         t.setOverwrite(true);
-        t.setFallbackMaxLength(300);
+        t.setTitleMaxLength(300);
         t.setDetectHeading(true);
         t.setDetectHeadingMaxLength(200);
         t.setDetectHeadingMinLength(20);

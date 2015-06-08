@@ -2,9 +2,6 @@
 TODO:
 ==============
 
-- Remove Lucene dependency in TitleGeneratorTagger?? Make optional??
-  Find another way besides Carrot??? 
-
 - Add a generic XMLSplitter.
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
