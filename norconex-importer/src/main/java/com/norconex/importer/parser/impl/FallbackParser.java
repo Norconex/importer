@@ -43,7 +43,7 @@ public class FallbackParser extends AbstractTikaParser {
         Map<MediaType, Parser> parsers = parser.getParsers();
         
         EnhancedPDFParser pdfParser = new EnhancedPDFParser();
-        pdfParser.setPreserveMemory(false);
+        pdfParser.setPreserveMemory(true);
         parsers.put(MediaType.application("pdf"), pdfParser);
         //Tika returns a defensive copy so we have to reset the whole thing
         parser.setParsers(parsers);
