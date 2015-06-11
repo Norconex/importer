@@ -396,7 +396,7 @@ public class EnhancedPDFParser extends AbstractParser {
 
             if (value != null && value.length() > 0) {
                 //if you're going to add it below in the baseline addition, don't add it now
-                if (pdfBoxBaseline != null && value.equals(pdfBoxBaseline)){
+                if (value.equals(pdfBoxBaseline)){
                     continue;
                 }
                 metadata.add(property, value); 
