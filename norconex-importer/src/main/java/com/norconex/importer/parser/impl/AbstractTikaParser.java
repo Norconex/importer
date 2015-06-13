@@ -144,16 +144,16 @@ public class AbstractTikaParser implements IDocumentParser {
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
 
+            PDFParserConfig pdfConfig = new PDFParserConfig();
             if (ocrConfig != null 
                     && StringUtils.isNotBlank(ocrConfig.getPath())
                     && (ocrContentTypes == null 
                         || ocrContentTypes.contains(contentType))) {
                 context.set(TesseractOCRConfig.class, ocrTesseractConfig);
-                //TODO cache this?
-                PDFParserConfig pdfConfig = new PDFParserConfig();
                 pdfConfig.setExtractInlineImages(true);
-                context.set(PDFParserConfig.class, pdfConfig);
             }
+            pdfConfig.setSuppressDuplicateOverlappingText(true);
+            context.set(PDFParserConfig.class, pdfConfig);
             modifyParseContext(context);
             
             ContentHandler handler = new BodyContentHandler(output);
