@@ -7,7 +7,7 @@
   </properties>
   <body>
   
-    <release version="2.2.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+    <release version="2.2.0" date="2015-06-15" description="Feature release">
       <action dev="essiembre" type="add">
         New DocumentLengthTagger for adding the document byte length 
         as a field to imported documents.
