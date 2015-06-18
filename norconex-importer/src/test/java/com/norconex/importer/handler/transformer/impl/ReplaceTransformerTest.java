@@ -32,7 +32,7 @@ import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
 
 public class ReplaceTransformerTest {
 
-    private final String xml = "<transformer>"
+    private final String restrictionTestConfig = "<transformer>"
             + "<replace><fromValue>CAKES</fromValue>"
             + "<toValue>FRUITS</toValue></replace>"
             + "<replace><fromValue>candies</fromValue>"
@@ -40,35 +40,55 @@ public class ReplaceTransformerTest {
             + "<restrictTo caseSensitive=\"false\" "
             + "field=\"document.reference\">.*test.*</restrictTo>"
             + "</transformer>";
-    
+    private final String restrictionTestContent = 
+            "I like to eat cakes and candies.";
+
+
+    @Test
+    public void testReplaceEolWithWhiteSpace() 
+            throws ImporterHandlerException, IOException {
+        String input = "line1\r\nline2\rline3\nline4";
+        String expectedOutput = "line1 line2 line3 line4";
+
+        String preserveTestConfig = "<transformer>"
+                + "<replace><fromValue>[\\r\\n]+</fromValue>"
+                + "<toValue xml:space=\"preserve\"> </toValue></replace>"
+                + "</transformer>";
+        String response1 = transformTextDocument(
+                preserveTestConfig, "N/A", input);
+        Assert.assertEquals(expectedOutput, response1);
+    }
 
     @Test
     public void testTransformRestrictedTextDocument() 
             throws IOException, ImporterHandlerException {
-        String response = transformTextDocument("rejectme.html");
+        String response = transformTextDocument(
+                restrictionTestConfig, "rejectme.html", restrictionTestContent);
         Assert.assertEquals(StringUtils.EMPTY, response.toLowerCase());
     }
 
     @Test
     public void testTransformUnrestrictedTextDocument() 
             throws IOException, ImporterHandlerException {
-        String response = transformTextDocument("test.html");
+        String response = transformTextDocument(
+                restrictionTestConfig, "test.html", restrictionTestContent);
         Assert.assertEquals(
                 "i like to eat fruits and vegetables.", 
                 response.toLowerCase());
     }
     
-    private String transformTextDocument(String reference)
+    private String transformTextDocument(
+            String config, String reference, String content)
             throws IOException, ImporterHandlerException {
-        String text = "I like to eat cakes and candies.";
         
         ReplaceTransformer t = new ReplaceTransformer();
 
-        Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
+        Reader reader = new InputStreamReader(
+                IOUtils.toInputStream(config));
         t.loadFromXML(reader);
         reader.close();
         
-        InputStream is = IOUtils.toInputStream(text);
+        InputStream is = IOUtils.toInputStream(content);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         ImporterMetadata metadata = new ImporterMetadata();
@@ -87,7 +107,7 @@ public class ReplaceTransformerTest {
     public void testWriteRead() throws IOException {
         ReplaceTransformer t = new ReplaceTransformer();
         t.setMaxReadSize(128);
-        Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
+        Reader reader = new InputStreamReader(IOUtils.toInputStream(restrictionTestConfig));
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);

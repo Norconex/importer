@@ -5,6 +5,8 @@ TODO:
 - Add to all classes where regex is present that it is Java regex
   with a link to Java Pattern class.
 
+- Add option to replace ALL vs replace Once in ReplaceTagger.
+
 - Add a generic XMLSplitter.
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 

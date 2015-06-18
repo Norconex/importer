@@ -58,6 +58,13 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/transformer&gt;
  * </pre>
+ * <p>
+ * <b>Note:</b> To preserve white space add <code>xml:space="preserve"</code>
+ * to the "toValue" tag, like this:
+ * </p>
+ * <pre>
+ *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
+ * </pre>
  * @author Pascal Essiembre
  * @since 1.2.0
  */
