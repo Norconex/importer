@@ -6,6 +6,16 @@
     <author email="info@norconex.com">Norconex Inc.</author>
   </properties>
   <body>
+
+    <release version="2.3.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="update">
+        Jar manifest now includes implementation entries and 
+        specifications entries (matching Maven pom.xml).
+      </action>
+      <action dev="essiembre" type="update">
+        Javadoc fixes and updates.
+      </action>      
+    </release>
   
     <release version="2.2.0" date="2015-06-15" description="Feature release">
       <action dev="essiembre" type="add">

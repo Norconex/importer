@@ -30,6 +30,28 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public class TextBetweenTaggerTest {
 
     @Test
+    public void testExtractMatchingRegex() 
+            throws IOException, ImporterHandlerException {
+        // use it in a way that one of the end point is all we want to match
+        TextBetweenTagger t = new TextBetweenTagger();
+        t.addTextEndpoints("field", "http://www\\..*?02a\\.gif", "\\b");
+        t.setInclusive(true);
+        File htmlFile = TestUtil.getAliceHtmlFile();
+        FileInputStream is = new FileInputStream(htmlFile);
+
+        
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+
+        is.close();
+
+        String field = metadata.getString("field");
+
+        Assert.assertEquals("http://www.cs.cmu.edu/%7Ergs/alice02a.gif", field);
+    }
+    
+    @Test
     public void testTagTextDocument() 
             throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();

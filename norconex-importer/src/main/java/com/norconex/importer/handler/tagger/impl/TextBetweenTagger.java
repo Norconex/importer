@@ -122,9 +122,9 @@ public class TextBetweenTagger
         return inclusive;
     }
     /**
-     * Sets whether start and end text pairs should themselves be stripped or 
+     * Sets whether start and end text pairs should be kept or 
      * not.
-     * @param inclusive <code>true</code> to strip start and end text
+     * @param inclusive <code>true</code> to keep matching start and end text
      */
     public void setInclusive(boolean inclusive) {
         this.inclusive = inclusive;
