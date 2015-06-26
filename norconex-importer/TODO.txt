@@ -2,13 +2,8 @@
 TODO:
 ==============
 
-- Add to all classes where regex is present that it is Java regex
-  with a link to Java Pattern class.
-
 - Create a "RegexExtractorTagger" which will store in a field every occurences
   of a matching regex.
-
-- Add option to replace ALL vs replace Once in ReplaceTagger.
 
 - Add a generic XMLSplitter.
 
