@@ -63,7 +63,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
- *
+ * @see Pattern
  */
 @SuppressWarnings("nls")
 public class ReplaceTagger extends AbstractDocumentTagger {

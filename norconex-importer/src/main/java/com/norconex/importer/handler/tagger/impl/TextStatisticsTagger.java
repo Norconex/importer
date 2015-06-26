@@ -112,6 +112,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see Pattern
  */
 @SuppressWarnings("nls")
 public class TextStatisticsTagger extends AbstractCharStreamTagger 

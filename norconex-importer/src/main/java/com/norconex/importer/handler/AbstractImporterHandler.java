@@ -65,6 +65,7 @@ import com.norconex.importer.doc.ImporterMetadata;
  * </p>
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see Pattern
  */
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
 

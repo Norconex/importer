@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -64,6 +65,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.3.0
+ * @see Pattern
  */
 @SuppressWarnings("nls")
 public class SplitTagger extends AbstractDocumentTagger {

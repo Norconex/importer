@@ -67,6 +67,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see Pattern
  */
 public class StripBetweenTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {

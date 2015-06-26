@@ -67,6 +67,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.2.0
+ * @see Pattern
  */
 public class ReplaceTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {

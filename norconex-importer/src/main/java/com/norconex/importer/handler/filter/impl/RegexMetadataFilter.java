@@ -49,6 +49,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;/filter&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see Pattern
  */
 public class RegexMetadataFilter extends AbstractDocumentFilter {
 

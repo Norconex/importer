@@ -71,6 +71,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </pre>
  * @author Khalid AlHomoud
  * @author Pascal Essiembre
+ * @see Pattern
  */
 public class TextBetweenTagger 
         extends AbstractStringTagger implements IXMLConfigurable {

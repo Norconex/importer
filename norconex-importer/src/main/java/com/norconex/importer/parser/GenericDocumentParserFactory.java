@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -109,6 +110,7 @@ import com.norconex.importer.response.ImporterResponse;
  *  &lt;/documentParserFactory&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see Pattern
  */
 @SuppressWarnings("nls")
 public class GenericDocumentParserFactory 

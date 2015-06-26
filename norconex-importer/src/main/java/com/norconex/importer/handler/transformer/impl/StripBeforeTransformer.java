@@ -55,6 +55,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see Pattern
  */
 public class StripBeforeTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {

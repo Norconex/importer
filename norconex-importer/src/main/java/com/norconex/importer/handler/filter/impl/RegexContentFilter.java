@@ -56,6 +56,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * 
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @see Pattern
  */
 public class RegexContentFilter extends AbstractStringFilter {
 

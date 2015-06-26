@@ -67,6 +67,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * </ul>
  * @author Pascal Essiembre
  * @since 1.2.0
+ * @see Pattern
  */
 public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
