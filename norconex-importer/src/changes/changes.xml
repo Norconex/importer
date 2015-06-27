@@ -14,7 +14,10 @@
       </action>
       <action dev="essiembre" type="update">
         Javadoc fixes and updates.
-      </action>      
+      </action>
+      <action dev="essiembre" type="update">
+        Library updates: Norconex Commons Lang 1.6.2.
+      </action>
     </release>
   
     <release version="2.2.0" date="2015-06-15" description="Feature release">
