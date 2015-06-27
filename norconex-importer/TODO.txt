@@ -2,9 +2,6 @@
 TODO:
 ==============
 
-- Create a "RegexExtractorTagger" which will store in a field every occurences
-  of a matching regex.
-
 - Add a generic XMLSplitter.
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 

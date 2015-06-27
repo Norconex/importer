@@ -8,6 +8,11 @@
   <body>
 
     <release version="2.3.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New TextPatternTagger for extracting text matching regular expressions
+        out of a document content and storing matches into a field.
+        New unit tests created for it.
+      </action>
       <action dev="essiembre" type="update">
         Jar manifest now includes implementation entries and 
         specifications entries (matching Maven pom.xml).

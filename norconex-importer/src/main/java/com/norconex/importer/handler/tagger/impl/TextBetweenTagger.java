@@ -46,8 +46,9 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * can be specified at once. The field specified for a pair of end-points
  * is considered a multi-value field.</p>
  * 
- * <p>This class can be used as a pre-parsing  
- * or post-parsing handlers.</p>
+ * <p>
+ * This class can be used as a pre-parsing handler on text documents only
+ * or a post-parsing handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
