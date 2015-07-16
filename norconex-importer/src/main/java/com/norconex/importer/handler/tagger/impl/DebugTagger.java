@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -112,11 +112,15 @@ public class DebugTagger extends AbstractDocumentTagger {
     
     private void logField(Level level, String fieldName, List<String> values) {
         StringBuilder b = new StringBuilder();
-        for (String value : values) {
-            if (b.length() > 0) {
-                b.append(", ");
+        if (values == null) {
+            b.append("<null>");
+        } else {
+            for (String value : values) {
+                if (b.length() > 0) {
+                    b.append(", ");
+                }
+                b.append(value);
             }
-            b.append(value);
         }
         LOG.log(level, fieldName + "=" + b.toString());
     }
