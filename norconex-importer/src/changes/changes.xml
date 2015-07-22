@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.3.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+    <release version="2.3.0" date="2015-07-21" description="Feature release">
       <action dev="essiembre" type="add">
         New TextPatternTagger for extracting text matching regular expressions
         out of a document content and storing matches into a field.
