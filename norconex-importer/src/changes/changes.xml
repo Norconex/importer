@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="2.3.1-SNAPSHOT" date="2015-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Library updates: Norconex Commons Lang 1.7.0.
+      </action>
+    </release>
+
     <release version="2.3.0" date="2015-07-21" description="Feature release">
       <action dev="essiembre" type="add">
         New TextPatternTagger for extracting text matching regular expressions
