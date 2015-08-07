@@ -9,7 +9,7 @@
 
     <release version="2.3.1" date="2015-08-07" description="Maintenance release">
       <action dev="essiembre" type="update">
-        Library updates: Norconex Commons Lang 1.7.0.
+        Maven dependency updates: Norconex Commons Lang 1.7.0.
       </action>
     </release>
 
