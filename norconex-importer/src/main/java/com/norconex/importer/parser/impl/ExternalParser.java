@@ -26,6 +26,7 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.mime.MediaType;
 import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.external.FixedTikaExternalParser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -42,8 +43,7 @@ import com.norconex.importer.parser.IDocumentParser;
  * @since 2.2.0
  */
 public class ExternalParser 
-        extends org.apache.tika.parser.external.ExternalParser
-        implements IDocumentParser {
+        extends FixedTikaExternalParser implements IDocumentParser {
 
     private static final long serialVersionUID = 3569996828422125700L;
 
