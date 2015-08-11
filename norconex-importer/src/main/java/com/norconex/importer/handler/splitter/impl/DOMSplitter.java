@@ -54,7 +54,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * <a href="http://jsoup.org/cookbook/extracting-data/selector-syntax">
  * CSS or JQuery-like syntax</a>.
  * </p>
- * <p>Can be used both as a pre-parse handler.</p>
+ * <p>Should be used as a pre-parse handler.</p>
  * 
  * <h3>Content-types</h3>
  * <p>

@@ -18,6 +18,10 @@
         documents based on a specified element.
       </action>
       <action dev="essiembre" type="add">
+        New DOMTagger handler to extract text elements from XML/HTML 
+        documents using a friendly syntax to navigate a DOM-tree structure. 
+      </action>
+      <action dev="essiembre" type="add">
         New CommonRestrictions class to obtain restrictions commonly associated
         with certain documents.
       </action>

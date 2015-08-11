@@ -62,6 +62,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <p>
  * Refer to {@link AbstractDocumentFilter} for the inclusion/exclusion logic.
  * </p>
+ * <p>Should be used as a pre-parse handler.</p>
  * <h3>Content-types</h3>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
@@ -71,7 +72,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * with HTML or XML-like markup tags.  For documents that are
  * incompatible, consider using {@link RegexContentFilter}
  * instead.
- * It usually only make sense to use this filter as a pre-parse handler.
  * </p>
  * <h3>
  * XML configuration usage:
