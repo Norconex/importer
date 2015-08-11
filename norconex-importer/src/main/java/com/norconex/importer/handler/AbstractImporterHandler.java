@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -26,13 +26,13 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 
@@ -51,7 +51,7 @@ import com.norconex.importer.doc.ImporterMetadata;
  * 
  * <pre>
  *  &lt;restrictTo caseSensitive="[false|true]"
- *          field="(name of header/metadata field name to match)"&gt;
+ *          field="(name of metadata field name to match)"&gt;
  *      (regular expression of value to match)
  *  &lt;/restrictTo&gt;
  *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
@@ -72,7 +72,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     private static final Logger LOG = 
             LogManager.getLogger(AbstractImporterHandler.class);
     
-    private final List<Restriction> restrictions = new ArrayList<>();
+    private final List<PropertyMatcher> restrictions = new ArrayList<>();
     private final String xmltag;
     
     public AbstractImporterHandler(String xmltag) {
@@ -86,9 +86,81 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param regex regular expression
      * @param caseSensitive whether regular expression should be case sensitive
      */
-    public void addRestriction(
+    public synchronized void addRestriction(
             String field, String regex, boolean caseSensitive) {
-        restrictions.add(new Restriction(field, regex, caseSensitive));
+        restrictions.add(new PropertyMatcher(field, regex, caseSensitive));
+    }
+
+    /**
+     * Adds one or more restrictions this handler should be restricted to.
+     * @param restriction the restriction
+     * @since 2.4.0
+     */
+    public synchronized void addRestriction(PropertyMatcher... restriction) {
+        for (PropertyMatcher propertyMatcher : restriction) {
+            restrictions.add(propertyMatcher);
+        }
+    }
+    /**
+     * Adds restrictions this handler should be restricted to.
+     * @param restrictions the restrictions
+     * @since 2.4.0
+     */
+    public synchronized void addRestrictions(
+            List<PropertyMatcher> restrictions) {
+        if (restrictions != null) {
+            for (PropertyMatcher propertyMatcher : restrictions) {
+                this.restrictions.add(propertyMatcher);
+            }
+        }
+    }
+    
+    /**
+     * Removes all restrictions on a given field.
+     * @param field the field to remove restrictions on
+     * @return how many elements were removed
+     * @since 2.4.0
+     */
+    public synchronized  int removeRestriction(String field) {
+        Iterator<PropertyMatcher> it = restrictions.iterator();
+        int count = 0;
+        while (it.hasNext()) {
+            PropertyMatcher r = (PropertyMatcher) it.next();
+            if (r.isCaseSensitive() && r.getKey().equals(field)
+                    || !r.isCaseSensitive() 
+                            && r.getKey().equalsIgnoreCase(field)) {
+                it.remove();
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Removes a restriction.
+     * @param restriction the restriction to remove
+     * @return <code>true</code> if this handler contained the restriction
+     * @since 2.4.0
+     */
+    public synchronized boolean removeRestriction(PropertyMatcher restriction) {
+        return restrictions.remove(restriction);
+    }
+    
+    /**
+     * Clears all restrictions.
+     * @since 2.4.0
+     */
+    public synchronized void clearRestrictions() {
+        restrictions.clear();
+    }
+    
+    /**
+     * Gets all restrictions
+     * @return the restrictions
+     * @since 2.4.0
+     */
+    public List<PropertyMatcher> getRestrictions() {
+        return restrictions;
     }
 
     /**
@@ -106,8 +178,8 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         if (restrictions.isEmpty()) {
             return true;
         }
-        for (Restriction restriction : restrictions) {
-            if (restriction.applies(metadata)) {
+        for (PropertyMatcher restriction : restrictions) {
+            if (restriction.matches(metadata)) {
                 return true;
             }
         }
@@ -122,11 +194,14 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
         List<HierarchicalConfiguration> nodes = 
                 xml.configurationsAt("restrictTo");
-        for (HierarchicalConfiguration node : nodes) {
-            addRestriction(
-                    node.getString("[@field]"), 
-                    node.getString("", null),
-                    node.getBoolean("[@caseSensitive]", false));
+        if (!nodes.isEmpty()) {
+            restrictions.clear();
+            for (HierarchicalConfiguration node : nodes) {
+                addRestriction(
+                        node.getString("[@field]"), 
+                        node.getString("", null),
+                        node.getBoolean("[@caseSensitive]", false));
+            }
         }
         loadHandlerFromXML(xml);
     }
@@ -148,15 +223,15 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
             saveHandlerToXML(writer);
 
-            for (Restriction restriction : restrictions) {
+            for (PropertyMatcher restriction : restrictions) {
                 writer.writeStartElement("restrictTo");
-                if (restriction.field != null) {
-                    writer.writeAttribute("field", restriction.field);
+                if (restriction.getKey() != null) {
+                    writer.writeAttribute("field", restriction.getKey());
                 }
                 writer.writeAttribute("caseSensitive", 
-                        Boolean.toString(restriction.caseSensitive));
-                if (restriction.regex != null) {
-                    writer.writeCharacters(restriction.regex);
+                        Boolean.toString(restriction.isCaseSensitive()));
+                if (restriction.getRegex() != null) {
+                    writer.writeCharacters(restriction.getRegex());
                 }
                 writer.writeEndElement();
             }
@@ -217,89 +292,5 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         ToStringBuilder builder = new ToStringBuilder(this);
         builder.append("restrictions", restrictions);
         return builder.toString();
-    }
-
-    private class Restriction {
-        private final String field;
-        private final String regex;
-        private final Pattern pattern;
-        private final boolean caseSensitive;
-        public Restriction(String field, String regex, boolean caseSensitive) {
-            super();
-            this.field = field;
-            this.regex = regex;
-            this.caseSensitive = caseSensitive;
-            if (regex != null) {
-                if (caseSensitive) {
-                    this.pattern = Pattern.compile(regex);
-                } else {
-                    this.pattern = Pattern.compile(
-                            regex, Pattern.CASE_INSENSITIVE);
-                }
-            } else {
-                this.pattern = Pattern.compile(".*");
-            }            
-        }
-        public boolean applies(ImporterMetadata metadata) {
-            if (StringUtils.isBlank(regex)) {
-                return true;
-            }
-            Collection<String> values =  metadata.getStrings(field);
-            for (String value : values) {
-                String safeVal = StringUtils.trimToEmpty(value);
-                if (pattern.matcher(safeVal).matches()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (caseSensitive ? 1231 : 1237);
-            result = prime * result + ((field == null) ? 0 : field.hashCode());
-            result = prime * result + ((regex == null) ? 0 : regex.hashCode());
-            return result;
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof Restriction)) {
-                return false;
-            }
-            Restriction other = (Restriction) obj;
-            if (caseSensitive != other.caseSensitive) {
-                return false;
-            }
-            if (field == null) {
-                if (other.field != null) {
-                    return false;
-                }
-            } else if (!field.equals(other.field)) {
-                return false;
-            }
-            if (regex == null) {
-                if (other.regex != null) {
-                    return false;
-                }
-            } else if (!regex.equals(other.regex)) {
-                return false;
-            }
-            return true;
-        }
-        @Override
-        public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(this);
-            builder.append("field", field);
-            builder.append("regex", regex);
-            builder.append("caseSensitive", caseSensitive);
-            return builder.toString();
-        }
     }
 }

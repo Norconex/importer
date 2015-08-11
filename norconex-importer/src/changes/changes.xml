@@ -7,6 +7,40 @@
   </properties>
   <body>
 
+    <release version="2.4.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add" issue="48">
+        New DOMContentFilter to filter out XML/HTML documents containing
+        identified element or element value using a friendly syntax
+        to navigate a DOM-tree structure.
+      </action>
+      <action dev="essiembre" type="add">
+        New DOMSplitter handler to split XML/HTML documents into multiple 
+        documents based on a specified element.
+      </action>
+      <action dev="essiembre" type="add">
+        New CommonRestrictions class to obtain restrictions commonly associated
+        with certain documents.
+      </action>
+      <action dev="essiembre" type="add">
+        New methods on AbstractImporterHandler to deal with restrictions:
+        #addRestriction(PropertyMatcher...), 
+        #addRestrictions(List&lt;PropertyMatcher&gt;)
+        #removeRestriction(String), #getRestrictions()
+        #removeRestriction(PropertyMatcher), #clearRestrictions()
+      </action>
+      <action dev="essiembre" type="update">
+        New file formats supported (brought by Tika update):
+        GCMD DIF, Geographic ISO 19139 files, CBOR. 
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Apache Tika 1.9, Norconex Commons Lang 1.8.0,
+        JSoup 1.8.3.
+      </action>
+      <action dev="essiembre" type="update">
+        Importer ExternalParser now uses Tika fixed ExternalParser.
+      </action>
+    </release>
+
     <release version="2.3.1" date="2015-08-07" description="Maintenance release">
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Commons Lang 1.7.0.
