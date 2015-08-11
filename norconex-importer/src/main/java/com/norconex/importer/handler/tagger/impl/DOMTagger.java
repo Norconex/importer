@@ -43,7 +43,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * a target field, from and HTML, XHTML, or XML document. If a target field 
  * already exists, extracted values will be added to existing values, 
  * unless "overwrite" is set to <code>true</code>.</p>
- * </p>
  * <p>
  * This class constructs a DOM tree from the document content. That DOM tree
  * is loaded entirely into memory. Use this tagger with caution if you know
