@@ -28,8 +28,6 @@ public class CopyTaggerTest {
         CopyTagger tagger = new CopyTagger();
         tagger.addCopyDetails("from1", "to1", false);
         tagger.addCopyDetails("from2", "to2", true);
-        tagger.addCopyDetails("from3", null, true);
-        tagger.addCopyDetails(null, "to4", true);
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }
