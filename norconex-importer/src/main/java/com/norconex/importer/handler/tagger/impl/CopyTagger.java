@@ -31,6 +31,7 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
@@ -127,16 +128,23 @@ public class CopyTagger extends AbstractDocumentTagger {
      */
     public void addCopyDetails(
             String fromField, String toField, boolean overwrite) {
-        if (StringUtils.isNotBlank(fromField) 
-                && StringUtils.isNotBlank(toField)) {
-            list.add(new CopyDetails(fromField, toField, overwrite));
+        if (StringUtils.isBlank(fromField)) {
+            throw new IllegalArgumentException(
+                    "'fromField' argument cannot be blank.");
         }
+        if (StringUtils.isBlank(toField)) {
+            throw new IllegalArgumentException(
+                    "'toField' argument cannot be blank.");
+        }
+        list.add(new CopyDetails(fromField, toField, overwrite));
     }
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration> nodes =
-                xml.configurationsAt("copy");
+        List<HierarchicalConfiguration> nodes = xml.configurationsAt("copy");
+        if (!nodes.isEmpty()) {
+            list.clear();
+        }
         for (HierarchicalConfiguration node : nodes) {
             addCopyDetails(node.getString("[@fromField]", null),
                       node.getString("[@toField]", null),

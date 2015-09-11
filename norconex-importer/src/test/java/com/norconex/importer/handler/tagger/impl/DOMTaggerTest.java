@@ -37,8 +37,8 @@ public class DOMTaggerTest {
     public void testExtractFromDOM() 
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
-        t.setSelector("h2");
-        t.setToField("headings");
+        t.addDOMExtractDetails("h2", "headings", false);
+        t.addDOMExtractDetails("a[href]", "links", true);
         
         File htmlFile = TestUtil.getAliceHtmlFile();
         FileInputStream is = new FileInputStream(htmlFile);
@@ -49,22 +49,21 @@ public class DOMTaggerTest {
         is.close();
 
         List<String> headings = metadata.getStrings("headings");
+        List<String> links = metadata.getStrings("links");
         
         Assert.assertEquals("Wrong <h2> count.", 2, headings.size());
+        Assert.assertEquals("Wrong <img src=\"...\"> count.", 4, links.size());
         Assert.assertEquals("Did not extract first heading", 
                 "CHAPTER I", headings.get(0));
         Assert.assertEquals("Did not extract second heading", 
                 "Down the Rabbit-Hole", headings.get(1));
     }
 
-
-    
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
-        tagger.setSelector("p.blah > a");
-        tagger.setOverwrite(true);
-        tagger.setToField("myField");
+        tagger.addDOMExtractDetails("p.blah > a", "myField", true);
+        tagger.addDOMExtractDetails("div.blah > a", "myOtherField", true);
         tagger.addRestriction("afield", "aregex", true);
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);

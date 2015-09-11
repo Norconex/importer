@@ -21,10 +21,13 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jsoup.Jsoup;
@@ -47,7 +50,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * This class constructs a DOM tree from the document content. That DOM tree
  * is loaded entirely into memory. Use this tagger with caution if you know
  * you'll need to parse huge files. It may be preferable to use 
- * {@link TextPatternTagger} if this is a concern.
+ * {@link TextPatternTagger} if this is a concern. Also, to help performance
+ * and avoid re-creating DOM tree before every DOM extraction you want to 
+ * perform, try to combine multiple extractions in a single instance
+ * of this Tagger.
  * </p>
  * <p>
  * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load a 
@@ -69,10 +75,11 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * XML configuration usage:
  * </h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
- *          selector="(selector syntax)"
- *          toField="(target field)"
- *          overwrite="[false|true]" &gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"&gt;
+ *      &lt;dom selector="(selector syntax)" toField="(target field)"
+ *              overwrite="[false|true]" /&gt;
+ *      &lt;!-- multiple "dom" tags allowed --&gt;
+ *          
  *      &lt;restrictTo
  *              caseSensitive="[false|true]"
  *              field="(name of metadata field name to match)"&gt;
@@ -86,10 +93,45 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class DOMTagger extends AbstractDocumentTagger {
 
-    private String selector;
-    private String toField;
-    private boolean overwrite;
+    private static class DOMExtractDetails {
+        private String selector;
+        private String toField;
+        private boolean overwrite;
+        
+        DOMExtractDetails(String selector, String to, boolean overwrite) {
+            this.selector = selector;
+            this.toField = to;
+            this.overwrite = overwrite;
+        }
+        
+        @Override
+        public String toString() {
+            ToStringBuilder builder = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE);
+            builder.append("selector", selector);
+            builder.append("toField", toField);
+            builder.append("overwrite", overwrite);
+            return builder.toString();
+        }
 
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof DOMExtractDetails)) {
+                return false;
+            }
+            DOMExtractDetails castOther = (DOMExtractDetails) other;
+            return new EqualsBuilder().append(selector, castOther.selector)
+                    .append(toField, castOther.toField)
+                    .append(overwrite, castOther.overwrite).isEquals();
+        }
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(selector).append(toField)
+                    .append(overwrite).toHashCode();
+        }
+    }
+
+    private final List<DOMExtractDetails> list = new ArrayList<>();
     
     /**
      * Constructor.
@@ -104,6 +146,47 @@ public class DOMTagger extends AbstractDocumentTagger {
             InputStream document, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
+        try {
+            Document doc = Jsoup.parse(document, CharEncoding.UTF_8, reference);
+            for (DOMExtractDetails details : list) {
+                Elements elms = doc.select(details.selector);
+                // no elements matching
+                if (elms.isEmpty()) {
+                    return;
+                }
+                
+                // one or more elements matching
+                List<String> values = new ArrayList<String>();
+                for (Element elm : elms) {
+                    String value = elm.html();
+                    if (StringUtils.isNotBlank(value)) {
+                        values.add(value);
+                    }
+                }
+                if (values.isEmpty()) {
+                    return;
+                }
+                String[] vals = values.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+                if (details.overwrite) {
+                    metadata.setString(details.toField, vals);
+                } else {
+                    metadata.addString(details.toField, vals);
+                }
+            }
+        } catch (IOException e) {
+            throw new ImporterHandlerException(
+                    "Cannot extract DOM element(s) from DOM-tree.", e);
+        }
+    }
+
+    /**
+     * Adds DOM element value extraction instructions.
+     * @param selector selector
+     * @param toField target field name
+     * @param overwrite whether toField overwrite target field if it exists
+     */
+    public void addDOMExtractDetails(
+            String selector, String toField, boolean overwrite) {
         if (StringUtils.isBlank(selector)) {
             throw new IllegalArgumentException(
                     "'selector' argument cannot be blank.");
@@ -112,114 +195,57 @@ public class DOMTagger extends AbstractDocumentTagger {
             throw new IllegalArgumentException(
                     "'toField' argument cannot be blank.");
         }
-        
-        try {
-            Document doc = Jsoup.parse(document, CharEncoding.UTF_8, reference);
-            Elements elms = doc.select(selector);
-            // no elements matching
-            if (elms.isEmpty()) {
-                return;
-            }
-            
-            // one or more elements matching
-            List<String> values = new ArrayList<String>();
-            for (Element elm : elms) {
-                String value = elm.html();
-                if (StringUtils.isNotBlank(value)) {
-                    values.add(value);
-                }
-            }
-            if (values.isEmpty()) {
-                return;
-            }
-            String[] vals = values.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-            if (overwrite) {
-                metadata.setString(toField, vals);
-            } else {
-                metadata.addString(toField, vals);
-            }
-        } catch (IOException e) {
-            throw new ImporterHandlerException(
-                    "Cannot parse document into a DOM-tree.", e);
-        }
+        list.add(new DOMExtractDetails(selector, toField, overwrite));
     }
-
-    public String getSelector() {
-        return selector;
-    }
-    public void setSelector(String selector) {
-        this.selector = selector;
-    }
-
-    public String getToField() {
-        return toField;
-    }
-    public void setToField(String toField) {
-        this.toField = toField;
-    }
-
-    public boolean isOverwrite() {
-        return overwrite;
-    }
-    public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
-    }
-
+    
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        setSelector(xml.getString("[@selector]", getSelector()));
-        setToField(xml.getString("[@toField]", getToField()));
-        setOverwrite(xml.getBoolean("[@overwrite]", isOverwrite()));
+        List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
+        if (!nodes.isEmpty()) {
+            list.clear();
+        }
+        for (HierarchicalConfiguration node : nodes) {
+            addDOMExtractDetails(node.getString("[@selector]", null),
+                      node.getString("[@toField]", null),
+                      node.getBoolean("[@overwrite]", false));
+        }
     }
 
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttributeString("selector", getSelector());
-        writer.writeAttributeString("toField", getToField());
-        writer.writeAttributeBoolean("overwrite", isOverwrite());
+        for (DOMExtractDetails details : list) {
+            writer.writeStartElement("dom");
+            writer.writeAttribute("selector", details.selector);
+            writer.writeAttribute("toField", details.toField);
+            writer.writeAttribute("overwrite", 
+                    Boolean.toString(details.overwrite));
+            writer.writeEndElement();
+        }
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + (overwrite ? 1231 : 1237);
-        result = prime * result
-                + ((selector == null) ? 0 : selector.hashCode());
-        result = prime * result + ((toField == null) ? 0 : toField.hashCode());
+        int result = 1;
+        result = prime * result + ((list == null) ? 0 : list.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
+        if (this == obj)
             return true;
-        }
-        if (!super.equals(obj)) {
+        if (obj == null)
             return false;
-        }
-        if (!(obj instanceof DOMTagger)) {
+        if (getClass() != obj.getClass())
             return false;
-        }
         DOMTagger other = (DOMTagger) obj;
-        if (overwrite != other.overwrite) {
-            return false;
-        }
-        if (selector == null) {
-            if (other.selector != null) {
+        if (list == null) {
+            if (other.list != null)
                 return false;
-            }
-        } else if (!selector.equals(other.selector)) {
+        } else if (!list.equals(other.list))
             return false;
-        }
-        if (toField == null) {
-            if (other.toField != null) {
-                return false;
-            }
-        } else if (!toField.equals(other.toField)) {
-            return false;
-        }
         return true;
     }
 
@@ -227,9 +253,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     public String toString() {
         ToStringBuilder builder = new ToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.append("selector", getSelector());
-        builder.append("toField", getToField());
-        builder.append("overwrite", isOverwrite());
+        builder.append("list", list);
         return builder.toString();
     }
 }
