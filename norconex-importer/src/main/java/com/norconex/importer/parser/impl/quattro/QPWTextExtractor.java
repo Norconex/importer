@@ -170,12 +170,14 @@ public class QPWTextExtractor {
         }
     }
     
+    @SuppressWarnings("resource")
     public void extract(
             InputStream input, Writer out, ImporterMetadata metadata)
                     throws IOException {
         //TODO shall we validate and throw warning/error if the file does not 
         //start with a BOF and ends with a EOF?
-        try (WPInputStream in = new WPInputStream(new POIFSFileSystem(
+        try (
+            WPInputStream in = new WPInputStream(new POIFSFileSystem(
                 input).createDocumentInputStream(OLE_DOCUMENT_NAME))) {
             Context ctx = new Context(in, out, metadata);
             while (hasNext(in)) {

@@ -37,8 +37,8 @@
         GCMD DIF, Geographic ISO 19139 files, CBOR. 
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Apache Tika 1.9, Norconex Commons Lang 1.8.0,
-        JSoup 1.8.3.
+        Maven dependency updates: Apache Tika 1.10, JSoup 1.8.3, 
+        Norconex Commons Lang 1.8.0.
       </action>
       <action dev="essiembre" type="update">
         Importer ExternalParser now uses Tika fixed ExternalParser.
