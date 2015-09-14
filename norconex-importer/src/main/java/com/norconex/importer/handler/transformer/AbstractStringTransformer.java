@@ -121,7 +121,7 @@ public abstract class AbstractStringTransformer
 
     protected abstract void transformStringContent(
            String reference, StringBuilder content, ImporterMetadata metadata,
-           boolean parsed, int sectionIndex);
+           boolean parsed, int sectionIndex) throws ImporterHandlerException;
    
     @Override
     protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)

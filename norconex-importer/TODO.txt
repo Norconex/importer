@@ -2,8 +2,6 @@
 TODO:
 ==============
 
-- Add new Tagger, Filter, Transformers, Splitters that support Java scripting.
-
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support (requires external app install, like
   Tesserac OCR feature).

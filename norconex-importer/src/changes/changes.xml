@@ -8,6 +8,10 @@
   <body>
 
     <release version="2.4.0-SNAPSHOT" date="2015-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        The following new handlers enable using scripting languages to define
+        processing logic: ScriptFilter, ScriptTagger, and ScriptTransformer.
+      </action>
       <action dev="essiembre" type="add" issue="48">
         New DOMContentFilter to filter out XML/HTML documents containing
         identified element or element value using a friendly syntax
@@ -41,7 +45,11 @@
         Norconex Commons Lang 1.8.0.
       </action>
       <action dev="essiembre" type="update">
-        Importer ExternalParser now uses Tika fixed ExternalParser.
+        Importer ExternalParser now uses corrected ExternalParser from Tika.
+      </action>
+      <action dev="essiembre" type="update">
+        AbstractStringTransformer#transformStringContent(...) now throws
+        an ImporterHandlerException.
       </action>
     </release>
 
