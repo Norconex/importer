@@ -159,7 +159,8 @@ public class EnhancedPDFParser extends AbstractParser {
             // with preserve memory being true (using scratch file). it
             // started to fail with snapshot version, so stream should always
             // be CachedInputStream to avoid issue until PDFBox is more stable.
-            pdfDocument = PDDocument.load(tstream, password, false);//, preserveMemory);
+            pdfDocument = PDDocument.load(tstream, password);
+//            pdfDocument = PDDocument.load(tstream, password, false);//, preserveMemory);
             
 //            long maxMemory = 10 * 1024 * 1024; // 10 MB
 //            if (stream instanceof CachedInputStream) {
