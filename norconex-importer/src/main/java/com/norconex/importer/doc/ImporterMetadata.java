@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import com.norconex.commons.lang.map.Properties;
 
 /**
+ * Holds a document metadata with case-insensitive keys.
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -58,17 +59,17 @@ public class ImporterMetadata extends Properties {
             DOC_EMBEDDED_META_PREFIX + "type";
     
     public ImporterMetadata() {
-        super();
+        this(true);
     }
-    public ImporterMetadata(boolean caseSensitiveKeys) {
-        super(caseSensitiveKeys);
+    public ImporterMetadata(boolean caseInsensitiveKeys) {
+        super(caseInsensitiveKeys);
     }
     public ImporterMetadata(Map<String, List<String>> map,
-            boolean caseSensitiveKeys) {
-        super(map, caseSensitiveKeys);
+            boolean caseInsensitiveKeys) {
+        super(map, caseInsensitiveKeys);
     }
     public ImporterMetadata(Map<String, List<String>> map) {
-        super(map);
+        this(map, true);
     }
     
     public String getLanguage() {
