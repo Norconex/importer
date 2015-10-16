@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -38,7 +39,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 //TODO offer sentences and capitalizations?
 
 /**
- * <p>Changes the character case of a field value according to one of the 
+ * <p>Changes the character case of field values according to one of the 
  * following methods:</p>
  * <ul>
  *   <li>uppper: Changes all characters to upper case.</li>
@@ -46,14 +47,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <li>words: Converts the first letter of each words to upper case, and the
  *              rest to lowercase.</li>
  * </ul>
+ * <p>Since 2.3.0, the change of character case can be applied to one of the 
+ * following (defaults to "value" when unspecified):</p>
+ * <ul>
+ *   <li>value: Applies to the field values.</li>
+ *   <li>field: Applies to the field name.</li>
+ *   <li>both: Applies to both the field name and its values.</li>
+ * </ul>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
- *      &lt;characterCase type="(upper|lower|words)" 
- *                     fieldName="(field to change)" /&gt;
+ *      &lt;characterCase fieldName="(field to change)"
+ *                     type="[upper|lower|words]" 
+ *                     applyTo="[value|field|both]" /&gt;
  *      &lt;!-- multiple characterCase tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -75,8 +84,13 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     public static final String CASE_WORDS = "words";
     public static final String CASE_UPPER = "upper";
     public static final String CASE_LOWER = "lower";
+
+    public static final String APPLY_VALUE = "value";
+    public static final String APPLY_FIELD = "field";
+    public static final String APPLY_BOTH = "both";
+
+    private final Map<String, CaseChangeDetails> fieldCases = new HashMap<>();
     
-    private final Map<String, String> fieldCases = new HashMap<>();
     
     @Override
     public void tagApplicableDocument(
@@ -85,35 +99,103 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
                     throws ImporterHandlerException {
 
         for (String fieldName : fieldCases.keySet()) {
-            String type = fieldCases.get(fieldName);
-            List<String> values = metadata.getStrings(fieldName);
-            if (values != null) {
-                for (int i = 0; i < values.size(); i++) {
-                    String value = values.get(i);
-                    if (CASE_UPPER.equals(type)) {
-                        values.set(i, StringUtils.upperCase(value));
-                    } else if (CASE_LOWER.equals(type)) {
-                        values.set(i, StringUtils.lowerCase(value));
-                    } else if (CASE_WORDS.equals(type)) {
-                        values.set(i, WordUtils.capitalizeFully(value));
-                    } else {
-                        LOG.warn("Unsupported character case type: " + type);
-                    }
-                }
-                metadata.setString(fieldName, 
-                        values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+            CaseChangeDetails d = fieldCases.get(fieldName);
+            boolean validApplyTo = false;
+            
+            String newField = fieldName;
+            
+            // Do field
+            if (EqualsUtil.equalsAny(d.applyTo, APPLY_FIELD, APPLY_BOTH)) {
+                newField = changeFieldCase(fieldName, d, metadata);
+                validApplyTo = true;
+            }
+                
+            // Do values
+            if (StringUtils.isBlank(d.applyTo) || EqualsUtil.equalsAny(
+                    d.applyTo, APPLY_VALUE, APPLY_BOTH)) {
+                changeValuesCase(newField, d, metadata);
+                validApplyTo = true;
+            }
+            
+            if (!validApplyTo) {
+                LOG.warn("Unsupported \"applyTo\": " + d.applyTo);
             }
         }
     }
+    
+    private String changeFieldCase(
+            String field, CaseChangeDetails d, ImporterMetadata metadata) {
+        List<String> values = metadata.getStrings(field);
+        String newField = changeCase(field, d.caseType);
+        metadata.remove(field);
+        if (values != null && !values.isEmpty()) {
+            metadata.setString(
+                    newField, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+        }
+        return newField;
+    }
+    private void changeValuesCase(
+            String field, CaseChangeDetails d, ImporterMetadata metadata) {
+        List<String> values = metadata.getStrings(field);
+        if (values != null) {
+            for (int i = 0; i < values.size(); i++) {
+                String value = values.get(i);
+                values.set(i, changeCase(value, d.caseType));
+            }
+            metadata.setString(field, 
+                    values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+        }
+    }
 
+    private String changeCase(String value, String type) {
+        if (CASE_UPPER.equals(type)) {
+            return StringUtils.upperCase(value);
+        } else if (CASE_LOWER.equals(type)) {
+            return StringUtils.lowerCase(value);
+        } else if (CASE_WORDS.equals(type)) {
+            return WordUtils.capitalizeFully(value);
+        } else {
+            LOG.warn("Unsupported character case type: " + type);
+            return value;
+        }
+    }
+
+    
     public void addFieldCase(String field, String caseType) {
-        fieldCases.put(field, caseType);
+        addFieldCase(field, caseType, null);
+    }
+    /**
+     * Adds field case changing instructions.
+     * @param field the field to apply the case changing
+     * @param caseType the type of case change to apply
+     * @param applyTo what to apply the case change to
+     * @since 2.4.0
+     */
+    public void addFieldCase(String field, String caseType, String applyTo) {
+        fieldCases.put(field, new CaseChangeDetails(caseType, applyTo));
     }
     public Set<String> getFieldNames() {
         return fieldCases.keySet();
     }
     public String getCaseType(String fieldName) {
-        return fieldCases.get(fieldName);
+        CaseChangeDetails d = fieldCases.get(fieldName);
+        if (d != null) {
+            return d.caseType;
+        }
+        return null;
+    }
+    /**
+     * Gets what the case changing instructions apply to.
+     * @param fieldName the field name
+     * @return what the case changing instructions apply to
+     * @since 2.4.0
+     */
+    public String getApplyTo(String fieldName) {
+        CaseChangeDetails d = fieldCases.get(fieldName);
+        if (d != null) {
+            return d.applyTo;
+        }
+        return null;
     }
     
     @Override
@@ -124,7 +206,8 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         for (HierarchicalConfiguration node : nodes) {
             addFieldCase(
                     node.getString("[@fieldName]"),
-                    node.getString("[@type]"));
+                    node.getString("[@type]"),
+                    node.getString("[@applyTo]"));
         }
     }
     
@@ -133,8 +216,12 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             throws XMLStreamException {
         for (String fieldName : fieldCases.keySet()) {
             writer.writeStartElement("characterCase");
-            writer.writeAttribute("fieldName", fieldName);
-            writer.writeAttribute("type", fieldCases.get(fieldName)); 
+            writer.writeAttributeString("fieldName", fieldName);
+            CaseChangeDetails d = fieldCases.get(fieldName);
+            if (d != null) {
+                writer.writeAttributeString("type", d.caseType); 
+                writer.writeAttributeString("applyTo", d.applyTo); 
+            }
             writer.writeEndElement();
         }
     }
@@ -173,5 +260,58 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             return false;
         }
         return true;
+    }
+    
+    private class CaseChangeDetails {
+        private String caseType;
+        private String applyTo;
+        public CaseChangeDetails(String caseType, String applyTo) {
+            super();
+            this.caseType = caseType;
+            this.applyTo = applyTo;
+        }
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result
+                    + ((applyTo == null) ? 0 : applyTo.hashCode());
+            result = prime * result
+                    + ((caseType == null) ? 0 : caseType.hashCode());
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof CaseChangeDetails)) {
+                return false;
+            }
+            CaseChangeDetails other = (CaseChangeDetails) obj;
+            if (applyTo == null) {
+                if (other.applyTo != null) {
+                    return false;
+                }
+            } else if (!applyTo.equals(other.applyTo)) {
+                return false;
+            }
+            if (caseType == null) {
+                if (other.caseType != null) {
+                    return false;
+                }
+            } else if (!caseType.equals(other.caseType)) {
+                return false;
+            }
+            return true;
+        }
+        @Override
+        public String toString() {
+            return "CaseChangeDetails [caseType=" + caseType + ", applyTo="
+                    + applyTo + "]";
+        }
     }
 }

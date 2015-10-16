@@ -26,6 +26,10 @@
         documents using a friendly syntax to navigate a DOM-tree structure. 
       </action>
       <action dev="essiembre" type="add">
+        CharacterCaseTagger can now be applied to field names
+        (in addition to, or instead of, values).
+      </action>
+      <action dev="essiembre" type="add">
         New CommonRestrictions class to obtain restrictions commonly associated
         with certain documents.
       </action>
