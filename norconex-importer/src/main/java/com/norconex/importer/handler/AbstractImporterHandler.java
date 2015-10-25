@@ -26,7 +26,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -256,41 +259,33 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     protected abstract void saveHandlerToXML(EnhancedXMLStreamWriter writer) 
             throws XMLStreamException;
 
+    
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((restrictions == null) ? 0 : restrictions.hashCode());
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractImporterHandler)) {
+            return false;
+        }
+        AbstractImporterHandler castOther = (AbstractImporterHandler) other;
+        return new EqualsBuilder()
+                .append(xmltag, castOther.xmltag)
+                .append(restrictions, castOther.restrictions)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof AbstractImporterHandler)) {
-            return false;
-        }
-        AbstractImporterHandler other = (AbstractImporterHandler) obj;
-        if (restrictions == null) {
-            if (other.restrictions != null) {
-                return false;
-            }
-        } else if (!restrictions.equals(other.restrictions)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(xmltag)
+                .append(restrictions)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
-        builder.append("restrictions", restrictions);
-        return builder.toString();
-    }
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("xmltag", xmltag)
+                .append("restrictions", restrictions)
+                .toString();
+    }    
+
 }

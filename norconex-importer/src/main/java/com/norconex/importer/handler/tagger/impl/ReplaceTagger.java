@@ -28,6 +28,8 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -311,30 +313,41 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
         @Override
         public String toString() {
-            return "Replacement [fromField=" + fromField + ", fromValue="
-                    + fromValue + ", toField=" + toField
-                    + ", toValue=" + toValue + ", regex=" + regex
-                    + ", caseSensitive=" + caseSensitive + "]";
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("fromField", fromField)
+                    .append("fromValue", fromValue)
+                    .append("toField", toField)
+                    .append("toValue", toValue)
+                    .append("regex", regex)
+                    .append("caseSensitive", caseSensitive)
+                    .toString();
         }
         @Override
         public boolean equals(final Object other) {
             if (!(other instanceof Replacement))
                 return false;
             Replacement castOther = (Replacement) other;
-            return new EqualsBuilder().append(fromField, castOther.fromField)
+            return new EqualsBuilder()
+                    .append(fromField, castOther.fromField)
                     .append(fromValue, castOther.fromValue)
                     .append(toField, castOther.toField)
                     .append(toValue, castOther.toValue)
                     .append(regex, castOther.regex)
-                    .append(caseSensitive, castOther.caseSensitive).isEquals();
+                    .append(caseSensitive, castOther.caseSensitive)
+                    .isEquals();
         }
         private transient int hashCode;
         @Override
         public int hashCode() {
             if (hashCode == 0) {
-                hashCode = new HashCodeBuilder().append(fromField)
-                        .append(fromValue).append(toField).append(toValue)
-                        .append(regex).append(caseSensitive).toHashCode();
+                hashCode = new HashCodeBuilder()
+                        .append(fromField)
+                        .append(fromValue)
+                        .append(toField)
+                        .append(toValue)
+                        .append(regex)
+                        .append(caseSensitive)
+                        .toHashCode();
             }
             return hashCode;
         }
@@ -379,40 +392,30 @@ public class ReplaceTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public String toString() {
-        return "ReplaceTagger [replacements=" + replacements + "]";
+    public boolean equals(final Object other) {
+        if (!(other instanceof ReplaceTagger)) {
+            return false;
+        }
+        ReplaceTagger castOther = (ReplaceTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(replacements, castOther.replacements)
+                .isEquals();
     }
-
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((replacements == null) ? 0 : replacements.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(replacements)
+                .toHashCode();
     }
 
-
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ReplaceTagger other = (ReplaceTagger) obj;
-        if (replacements == null) {
-            if (other.replacements != null) {
-                return false;
-            }
-        } else if (!replacements.equals(other.replacements)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("replacements", replacements)
+                .toString();
     }
 }

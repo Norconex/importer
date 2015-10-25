@@ -23,6 +23,10 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.HttpHeaders;
@@ -223,71 +227,7 @@ public class AbstractTikaParser implements IDocumentParser {
             return new MergeEmbeddedParser(this.parser, writer, metadata);
         }
     }
-    
-    protected class SplitEmbbededParser 
-            extends ParserDecorator implements RecursiveParser {
-        private static final long serialVersionUID = -5011890258694908887L;
-        private final String reference;
-        private final ImporterMetadata metadata;
-        private final CachedStreamFactory streamFactory;
-        private boolean isMasterDoc = true;
-        private int embedCount;
-        private List<ImporterDocument> embeddedDocs;
-        public SplitEmbbededParser(String reference, Parser parser, 
-                ImporterMetadata metadata, CachedStreamFactory streamFactory) {
-            super(parser);
-            this.streamFactory = streamFactory;
-            this.reference = reference;
-            this.metadata = metadata;
-        }
-        @Override
-        public void parse(InputStream stream, ContentHandler handler,
-                Metadata tikaMeta, ParseContext context)
-                throws IOException, SAXException, TikaException {
-            
-            if (isMasterDoc) {
-                isMasterDoc = false;
-                super.parse(stream, handler, tikaMeta, context);
-                addTikaMetadata(tikaMeta, metadata);
-            } else {
-                embedCount++;
-                if (embeddedDocs == null) {
-                    embeddedDocs = new ArrayList<>();
-                }
 
-                ImporterMetadata embedMeta = new ImporterMetadata();
-                addTikaMetadata(tikaMeta, embedMeta);
-
-                String embedRef = reference + "!" + resolveEmbeddedResourceName(
-                        tikaMeta, embedMeta, embedCount);
-
-                // Read the steam into cache for reuse since Tika will
-                // close the original stream on us causing exceptions later.
-                CachedOutputStream embedOutput = streamFactory.newOuputStream();
-                IOUtils.copy(stream, embedOutput);
-                CachedInputStream embedInput = embedOutput.getInputStream();
-                embedOutput.close();
-                
-                ImporterDocument embedDoc = new ImporterDocument(
-                        embedRef, embedInput, embedMeta); 
-                embedMeta.setReference(embedRef);
-                embedMeta.setEmbeddedParentReference(reference);
-                
-                String rootRef = metadata.getEmbeddedParentRootReference();
-                if (StringUtils.isBlank(rootRef)) {
-                    rootRef = reference;
-                }
-                embedMeta.setEmbeddedParentRootReference(rootRef);
-                
-                embeddedDocs.add(embedDoc);
-            }
-        }
-        
-        public List<ImporterDocument> getEmbeddedDocuments() {
-            return embeddedDocs;
-        }
-    }
-    
     private List<String> toContentTypeList(OCRConfig ocrConfig) {
         if (ocrConfig == null) {
             return null;
@@ -356,6 +296,121 @@ public class AbstractTikaParser implements IDocumentParser {
         // Default... we could not find any name so make a unique one.
         embedMeta.setEmbeddedType("unknown");
         return "embedded-" + embedCount + ".unknown";
+    }
+    
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractTikaParser)) {
+            return false;
+        }
+        AbstractTikaParser castOther = (AbstractTikaParser) other;
+        Class<?> thisParserClass = null;
+        Class<?> otherParserClass = null;
+        if (parser != null) {
+            thisParserClass = parser.getClass();
+        }
+        if (castOther.parser != null) {
+            otherParserClass = castOther.parser.getClass();
+        }
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(thisParserClass, otherParserClass)
+                .append(splitEmbedded, castOther.splitEmbedded)
+                .append(ocrConfig, castOther.ocrConfig)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        Class<?> thisParserClass = null;
+        if (parser != null) {
+            thisParserClass = parser.getClass();
+        }
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(thisParserClass)
+                .append(splitEmbedded)
+                .append(ocrConfig)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        Class<?> thisParserClass = null;
+        if (parser != null) {
+            thisParserClass = parser.getClass();
+        }
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("thisParserClass", thisParserClass)
+                .append("splitEmbedded", splitEmbedded)
+                .append("ocrConfig", ocrConfig)
+                .toString();
+    }
+    
+    protected class SplitEmbbededParser 
+            extends ParserDecorator implements RecursiveParser {
+        private static final long serialVersionUID = -5011890258694908887L;
+        private final String reference;
+        private final ImporterMetadata metadata;
+        private final CachedStreamFactory streamFactory;
+        private boolean isMasterDoc = true;
+        private int embedCount;
+        private List<ImporterDocument> embeddedDocs;
+        public SplitEmbbededParser(String reference, Parser parser, 
+                ImporterMetadata metadata, CachedStreamFactory streamFactory) {
+            super(parser);
+            this.streamFactory = streamFactory;
+            this.reference = reference;
+            this.metadata = metadata;
+        }
+        @Override
+        public void parse(InputStream stream, ContentHandler handler,
+                Metadata tikaMeta, ParseContext context)
+                throws IOException, SAXException, TikaException {
+            
+            if (isMasterDoc) {
+                isMasterDoc = false;
+                super.parse(stream, handler, tikaMeta, context);
+                addTikaMetadata(tikaMeta, metadata);
+            } else {
+                embedCount++;
+                if (embeddedDocs == null) {
+                    embeddedDocs = new ArrayList<>();
+                }
+
+                ImporterMetadata embedMeta = new ImporterMetadata();
+                addTikaMetadata(tikaMeta, embedMeta);
+
+                String embedRef = reference + "!" + resolveEmbeddedResourceName(
+                        tikaMeta, embedMeta, embedCount);
+
+                // Read the steam into cache for reuse since Tika will
+                // close the original stream on us causing exceptions later.
+                CachedOutputStream embedOutput = streamFactory.newOuputStream();
+                IOUtils.copy(stream, embedOutput);
+                CachedInputStream embedInput = embedOutput.getInputStream();
+                embedOutput.close();
+                
+                ImporterDocument embedDoc = new ImporterDocument(
+                        embedRef, embedInput, embedMeta); 
+                embedMeta.setReference(embedRef);
+                embedMeta.setEmbeddedParentReference(reference);
+                
+                String rootRef = metadata.getEmbeddedParentRootReference();
+                if (StringUtils.isBlank(rootRef)) {
+                    rootRef = reference;
+                }
+                embedMeta.setEmbeddedParentRootReference(rootRef);
+                
+                embeddedDocs.add(embedDoc);
+            }
+        }
+        
+        public List<ImporterDocument> getEmbeddedDocuments() {
+            return embeddedDocs;
+        }
     }
     
     protected class MergeEmbeddedParser 

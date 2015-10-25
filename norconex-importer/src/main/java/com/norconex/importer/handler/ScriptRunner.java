@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -193,7 +194,8 @@ public class ScriptRunner<T> {
     @Override
     public String toString() {
         if (toString == null) {
-            toString = new ToStringBuilder(this)
+            toString = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE)
                     .append("engineName", engineName)
                     .append("script", script)
                     .toString();

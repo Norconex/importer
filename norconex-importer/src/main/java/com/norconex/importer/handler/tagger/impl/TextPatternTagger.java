@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -154,7 +155,37 @@ public class TextPatternTagger
             writer.writeEndElement();
         }
     }
-    
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TextPatternTagger)) {
+            return false;
+        }
+        TextPatternTagger castOther = (TextPatternTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(patterns, castOther.patterns)
+                .append(caseSensitive, castOther.caseSensitive)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(patterns)
+                .append(caseSensitive)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("patterns", patterns)
+                .append("caseSensitive", caseSensitive)
+                .toString();
+    }
     
     private static class TextPattern {
         private final String field;

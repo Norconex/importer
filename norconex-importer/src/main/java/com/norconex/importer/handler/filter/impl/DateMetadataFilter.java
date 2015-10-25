@@ -31,6 +31,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -318,57 +322,38 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }        
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DateMetadataFilter)) {
+            return false;
+        }
+        DateMetadataFilter castOther = (DateMetadataFilter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(conditions, castOther.conditions)
+                .append(field, castOther.field)
+                .append(format, castOther.format)
+                .isEquals();
+    }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-                + ((conditions == null) ? 0 : conditions.hashCode());
-        result = prime * result + ((field == null) ? 0 : field.hashCode());
-        result = prime * result + ((format == null) ? 0 : format.hashCode());
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof DateMetadataFilter)) {
-            return false;
-        }
-        DateMetadataFilter other = (DateMetadataFilter) obj;
-        if (conditions == null) {
-            if (other.conditions != null) {
-                return false;
-            }
-        } else if (!conditions.equals(other.conditions)) {
-            return false;
-        }
-        if (field == null) {
-            if (other.field != null) {
-                return false;
-            }
-        } else if (!field.equals(other.field)) {
-            return false;
-        }
-        if (format == null) {
-            if (other.format != null) {
-                return false;
-            }
-        } else if (!format.equals(other.format)) {
-            return false;
-        }
-        return true;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(conditions)
+                .append(field)
+                .append(format)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "DateMetadataFilter [field=" + field + ", format=" + format
-                + ", conditions=" + conditions + "]";
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("conditions", conditions)
+                .append("field", field)
+                .append("format", format)
+                .toString();
     }
 
     public static class Condition {
@@ -503,58 +488,46 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             }
             return null;
         }
+
         
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (int) (epochDate ^ (epochDate >>> 32));
-            result = prime * result
-                    + ((operator == null) ? 0 : operator.hashCode());
-            result = prime * result + (today ? 1231 : 1237);
-            result = prime * result + ((type == null) ? 0 : type.hashCode());
-            result = prime * result + ((unit == null) ? 0 : unit.hashCode());
-            result = prime * result + amount;
-            return result;
+        public boolean equals(final Object other) {
+            if (!(other instanceof Condition)) {
+                return false;
+            }
+            Condition castOther = (Condition) other;
+            return new EqualsBuilder()
+                    .append(operator, castOther.operator)
+                    .append(epochDate, castOther.epochDate)
+                    .append(type, castOther.type)
+                    .append(unit, castOther.unit)
+                    .append(amount, castOther.amount)
+                    .append(today, castOther.today)
+                    .isEquals();
         }
+
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof Condition)) {
-                return false;
-            }
-            Condition other = (Condition) obj;
-            if (epochDate != other.epochDate) {
-                return false;
-            }
-            if (operator != other.operator) {
-                return false;
-            }
-            if (today != other.today) {
-                return false;
-            }
-            if (type != other.type) {
-                return false;
-            }
-            if (unit != other.unit) {
-                return false;
-            }
-            if (amount != other.amount) {
-                return false;
-            }
-            return true;
+        public int hashCode() {
+            return new HashCodeBuilder()
+                    .append(operator)
+                    .append(epochDate)
+                    .append(type)
+                    .append(unit)
+                    .append(amount)
+                    .append(today)
+                    .toHashCode();
         }
+
         @Override
         public String toString() {
-            return "Condition [operator=" + operator + ", type=" + type
-                    + ", epochDate=" + epochDate
-                    + ", unit=" + unit + ", value=" + amount
-                    + ", today=" + today + "]";
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("operator", operator)
+                    .append("epochDate", epochDate)
+                    .append("type", type)
+                    .append("unit", unit)
+                    .append("amount", amount)
+                    .append("today", today)
+                    .toString();
         }
     }
 }

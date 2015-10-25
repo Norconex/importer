@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -128,7 +129,8 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
+        ToStringBuilder builder = 
+                new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         builder.append("field", field);
         builder.append("overwrite", overwrite);
         return builder.toString();
@@ -136,10 +138,12 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DocumentLengthTagger))
+        if (!(other instanceof DocumentLengthTagger)) {
             return false;
+        }
         DocumentLengthTagger castOther = (DocumentLengthTagger) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
                 .append(field, castOther.field)
                 .append(overwrite, castOther.overwrite)
                 .isEquals();
@@ -147,8 +151,10 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(field).append(overwrite)
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(field)
+                .append(overwrite)
                 .toHashCode();
     }
 }

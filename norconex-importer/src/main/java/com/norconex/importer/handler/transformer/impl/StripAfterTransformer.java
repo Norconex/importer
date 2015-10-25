@@ -21,8 +21,10 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -149,36 +151,22 @@ public class StripAfterTransformer extends AbstractStringTransformer
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof StripAfterTransformer)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        StripAfterTransformer other = (StripAfterTransformer) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (inclusive != other.inclusive) {
-            return false;
-        }
-        if (stripAfterRegex == null) {
-            if (other.stripAfterRegex != null) {
-                return false;
-            }
-        } else if (!stripAfterRegex.equals(other.stripAfterRegex)) {
-            return false;
-        }
-        return true;
+        StripAfterTransformer castOther = (StripAfterTransformer) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(inclusive, castOther.inclusive)
+                .append(caseSensitive, castOther.caseSensitive)
+                .append(stripAfterRegex, castOther.stripAfterRegex)
+                .isEquals();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("inclusive", inclusive)
                 .append("caseSensitive", caseSensitive)

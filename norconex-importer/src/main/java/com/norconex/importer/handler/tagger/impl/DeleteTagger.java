@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -156,51 +160,32 @@ public class DeleteTagger extends AbstractDocumentTagger {
     
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("DeleteTagger [fieldsToRemove={");
-        builder.append(StringUtils.join(fieldsToRemove, ","));
-        builder.append("}, fieldsRegex=" + fieldsRegex + "]");
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("fieldsRegex", fieldsRegex)
+                .append("fieldsToRemove", fieldsToRemove)
+                .toString();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DeleteTagger)) {
+            return false;
+        }
+        DeleteTagger castOther = (DeleteTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
+                .append(fieldsRegex, castOther.fieldsRegex)
+                .append(fieldsToRemove, castOther.fieldsToRemove)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-                + ((fieldsRegex == null) ? 0 : fieldsRegex.hashCode());
-        result = prime * result
-                + ((fieldsToRemove == null) ? 0 : fieldsToRemove.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(fieldsRegex)
+                .append(fieldsToRemove)
+                .toHashCode();
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof DeleteTagger)) {
-            return false;
-        }
-        DeleteTagger other = (DeleteTagger) obj;
-        if (fieldsRegex == null) {
-            if (other.fieldsRegex != null) {
-                return false;
-            }
-        } else if (!fieldsRegex.equals(other.fieldsRegex)) {
-            return false;
-        }
-        if (fieldsToRemove == null) {
-            if (other.fieldsToRemove != null) {
-                return false;
-            }
-        } else if (!fieldsToRemove.equals(other.fieldsToRemove)) {
-            return false;
-        }
-        return true;
-    }
-
 }

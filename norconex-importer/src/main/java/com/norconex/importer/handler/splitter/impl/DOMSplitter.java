@@ -23,6 +23,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -146,5 +150,32 @@ public class DOMSplitter extends AbstractDocumentSplitter
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("selector", getSelector());
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof DOMSplitter)) {
+            return false;
+        }
+        DOMSplitter castOther = (DOMSplitter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(selector, castOther.selector)
+                .isEquals();
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(selector)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("selector", selector)
+                .toString();
     }
 }

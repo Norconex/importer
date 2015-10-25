@@ -16,7 +16,6 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -28,6 +27,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -172,16 +173,14 @@ public class DebugTagger extends AbstractDocumentTagger {
         }
     }
 
-
-    
-
     @Override
     public String toString() {
-        final int maxLen = 10;
-        return "DebugTagger [logFields="
-                + (logFields != null ? Arrays.asList(logFields).subList(0,
-                        Math.min(logFields.length, maxLen)) : null)
-                + ", logContent=" + logContent + ", logLevel=" + logLevel + "]";
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("logFields", logFields)
+                .append("logContent", logContent)
+                .append("logLevel", logLevel)
+                .toString();
     }
 
     @Override
@@ -190,7 +189,8 @@ public class DebugTagger extends AbstractDocumentTagger {
             return false;
         }
         DebugTagger castOther = (DebugTagger) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
                 .append(logFields, castOther.logFields)
                 .append(logContent, castOther.logContent)
                 .append(logLevel, castOther.logLevel).isEquals();
@@ -198,8 +198,11 @@ public class DebugTagger extends AbstractDocumentTagger {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(logFields).append(logContent).append(logLevel)
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(logFields)
+                .append(logContent)
+                .append(logLevel)
                 .toHashCode();
     }
 

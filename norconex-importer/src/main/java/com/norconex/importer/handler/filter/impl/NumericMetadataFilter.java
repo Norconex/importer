@@ -26,6 +26,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -231,48 +235,35 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result
-                + ((conditions == null) ? 0 : conditions.hashCode());
-        result = prime * result + ((field == null) ? 0 : field.hashCode());
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof NumericMetadataFilter)) {
             return false;
         }
-        if (!(obj instanceof NumericMetadataFilter)) {
-            return false;
-        }
-        NumericMetadataFilter other = (NumericMetadataFilter) obj;
-        if (conditions == null) {
-            if (other.conditions != null) {
-                return false;
-            }
-        } else if (!conditions.equals(other.conditions)) {
-            return false;
-        }
-        if (field == null) {
-            if (other.field != null) {
-                return false;
-            }
-        } else if (!field.equals(other.field)) {
-            return false;
-        }
-        return true;
-    }
-    @Override
-    public String toString() {
-        return "NumericMetadataFilter [field=" + field + ", conditions="
-                + conditions + "]";
+        NumericMetadataFilter castOther = (NumericMetadataFilter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(conditions, castOther.conditions)
+                .append(field, castOther.field)
+                .isEquals();
     }
 
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(conditions)
+                .append(field)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("conditions", conditions)
+                .append("field", field)
+                .toString();
+    }
 
     public static class Condition {
         private final Operator operator;
@@ -290,40 +281,29 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         }
         
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((operator == null) ? 0 : operator.hashCode());
-            long temp;
-            temp = Double.doubleToLongBits(number);
-            result = prime * result + (int) (temp ^ (temp >>> 32));
-            return result;
+        public boolean equals(final Object other) {
+            if (!(other instanceof Condition)) {
+                return false;
+            }
+            Condition castOther = (Condition) other;
+            return new EqualsBuilder()
+                    .append(operator, castOther.operator)
+                    .append(number, castOther.number)
+                    .isEquals();
         }
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof Condition)) {
-                return false;
-            }
-            Condition other = (Condition) obj;
-            if (operator != other.operator) {
-                return false;
-            }
-            if (Double.doubleToLongBits(number) != Double
-                    .doubleToLongBits(other.number)) {
-                return false;
-            }
-            return true;
+        public int hashCode() {
+            return new HashCodeBuilder()
+                    .append(operator)
+                    .append(number)
+                    .toHashCode();
         }
         @Override
         public String toString() {
-            return "Condition [operator=" + operator + ", number=" + number + "]";
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("operator", operator)
+                    .append("number", number)
+                    .toString();
         }
     }
 }

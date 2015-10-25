@@ -32,6 +32,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.tika.language.translate.CachedTranslator;
 import org.apache.tika.language.translate.MicrosoftTranslator;
 import org.apache.tika.language.translate.MosesTranslator;
@@ -567,6 +571,71 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         writer.writeElementString("smtPath", smtPath);
         writer.writeElementString("scriptPath", scriptPath);
     }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TranslatorSplitter)) {
+            return false;
+        }
+        TranslatorSplitter castOther = (TranslatorSplitter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(api, castOther.api)
+                .append(ignoreContent, castOther.ignoreContent)
+                .append(fieldsToTranslate, castOther.fieldsToTranslate)
+                .append(ignoreNonTranslatedFields, 
+                        castOther.ignoreNonTranslatedFields)
+                .append(sourceLanguageField, castOther.sourceLanguageField)
+                .append(sourceLanguage, castOther.sourceLanguage)
+                .append(targetLanguages, castOther.targetLanguages)
+                .append(clientId, castOther.clientId)
+                .append(clientSecret, castOther.clientSecret)
+                .append(apiKey, castOther.apiKey)
+                .append(userKey, castOther.userKey)
+                .append(smtPath, castOther.smtPath)
+                .append(scriptPath, castOther.scriptPath)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(api)
+                .append(ignoreContent)
+                .append(fieldsToTranslate)
+                .append(ignoreNonTranslatedFields)
+                .append(sourceLanguageField)
+                .append(sourceLanguage)
+                .append(targetLanguages)
+                .append(clientId)
+                .append(clientSecret)
+                .append(apiKey)
+                .append(userKey)
+                .append(smtPath)
+                .append(scriptPath)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("api", api)
+                .append("ignoreContent", ignoreContent)
+                .append("fieldsToTranslate", fieldsToTranslate)
+                .append("ignoreNonTranslatedFields", ignoreNonTranslatedFields)
+                .append("sourceLanguageField", sourceLanguageField)
+                .append("sourceLanguage", sourceLanguage)
+                .append("targetLanguages", targetLanguages)
+                .append("clientId", clientId)
+                .append("clientSecret", clientSecret)
+                .append("apiKey", apiKey)
+                .append("userKey", userKey)
+                .append("smtPath", smtPath)
+                .append("scriptPath", scriptPath)
+                .toString();
+    }    
     
     private static abstract class TranslatorStrategy {
         private final int DEFAULT_READ_SIZE = 

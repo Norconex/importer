@@ -31,6 +31,10 @@ import org.apache.commons.configuration.tree.ExpressionEngine;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -203,6 +207,9 @@ public class ImporterConfig implements IXMLConfigurable {
                 //TODO throw exception here?
             }
         }
+        if (handlers.isEmpty()) {
+            return null;
+        }
         return handlers.toArray(new IImporterHandler[]{});
     }
     
@@ -224,6 +231,9 @@ public class ImporterConfig implements IXMLConfigurable {
                         + "please check for other log messages.");
             }
         }
+        if (processors.isEmpty()) {
+            return null;
+        }
         return processors.toArray(new IImporterResponseProcessor[] {});
     }
     
@@ -232,7 +242,8 @@ public class ImporterConfig implements IXMLConfigurable {
         try {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("importer");
-            writer.writeElementString("tempDir", getTempDir().toString());
+            writer.writeElementString(
+                    "tempDir", Objects.toString(getTempDir(), null));
             writer.writeElementString("parseErrorsSaveDir", 
                     Objects.toString(getParseErrorsSaveDir(), null));
             writer.writeElementInteger(
@@ -248,6 +259,7 @@ public class ImporterConfig implements IXMLConfigurable {
                     out, "responseProcessors", getResponseProcessors());
             
             writer.writeEndElement();
+            writer.flush();
         } catch (XMLStreamException e) {
             throw new IOException("Could not save importer config.", e);
         }
@@ -305,4 +317,50 @@ public class ImporterConfig implements IXMLConfigurable {
         out.write(xml);
         out.flush();
     }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof ImporterConfig)) {
+            return false;
+        }
+        ImporterConfig castOther = (ImporterConfig) other;
+        return new EqualsBuilder()
+                .append(documentParserFactory, castOther.documentParserFactory)
+                .append(preParseHandlers, castOther.preParseHandlers)
+                .append(postParseHandlers, castOther.postParseHandlers)
+                .append(responseProcessors, castOther.responseProcessors)
+                .append(tempDir, castOther.tempDir)
+                .append(maxFileCacheSize, castOther.maxFileCacheSize)
+                .append(maxFilePoolCacheSize, castOther.maxFilePoolCacheSize)
+                .append(parseErrorsSaveDir, castOther.parseErrorsSaveDir)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(documentParserFactory)
+                .append(preParseHandlers)
+                .append(postParseHandlers)
+                .append(responseProcessors)
+                .append(tempDir)
+                .append(maxFileCacheSize)
+                .append(maxFilePoolCacheSize)
+                .append(parseErrorsSaveDir)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("documentParserFactory", documentParserFactory)
+                .append("preParseHandlers", preParseHandlers)
+                .append("postParseHandlers", postParseHandlers)
+                .append("responseProcessors", responseProcessors)
+                .append("tempDir", tempDir)
+                .append("maxFileCacheSize", maxFileCacheSize)
+                .append("maxFilePoolCacheSize", maxFilePoolCacheSize)
+                .append("parseErrorsSaveDir", parseErrorsSaveDir)
+                .toString();
+    }    
 }

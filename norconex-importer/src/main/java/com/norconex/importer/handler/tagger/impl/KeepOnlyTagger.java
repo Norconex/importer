@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -175,50 +179,33 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     }
     
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("KeepOnlyTagger [fields={");
-        builder.append(StringUtils.join(fields, ","));
-        builder.append("}, fieldsRegex=" + fieldsRegex + "]");
-        return builder.toString();
+    public boolean equals(final Object other) {
+        if (!(other instanceof KeepOnlyTagger)) {
+            return false;
+        }
+        KeepOnlyTagger castOther = (KeepOnlyTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(fieldsRegex, castOther.fieldsRegex)
+                .append(fields, castOther.fields)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ((fields == null) ? 0 : fields.hashCode());
-        result = prime * result
-                + ((fieldsRegex == null) ? 0 : fieldsRegex.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(fieldsRegex)
+                .append(fields)
+                .toHashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof KeepOnlyTagger)) {
-            return false;
-        }
-        KeepOnlyTagger other = (KeepOnlyTagger) obj;
-        if (fields == null) {
-            if (other.fields != null) {
-                return false;
-            }
-        } else if (!fields.equals(other.fields)) {
-            return false;
-        }
-        if (fieldsRegex == null) {
-            if (other.fieldsRegex != null) {
-                return false;
-            }
-        } else if (!fieldsRegex.equals(other.fieldsRegex)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("fieldsRegex", fieldsRegex)
+                .append("fields", fields)
+                .toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,30 +75,32 @@ public class CopyTagger extends AbstractDocumentTagger {
         
         @Override
         public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE);
-            builder.append("fromField", fromField);
-            builder.append("toField", toField);
-            builder.append("overwrite", overwrite);
-            return builder.toString();
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("fromField", fromField)
+                    .append("toField", toField)
+                    .append("overwrite", overwrite)
+                    .toString();
         }
-
         @Override
         public boolean equals(final Object other) {
             if (!(other instanceof CopyDetails)) {
                 return false;
             }
             CopyDetails castOther = (CopyDetails) other;
-            return new EqualsBuilder().append(fromField, castOther.fromField)
+            return new EqualsBuilder()
+                    .append(fromField, castOther.fromField)
                     .append(toField, castOther.toField)
-                    .append(overwrite, castOther.overwrite).isEquals();
+                    .append(overwrite, castOther.overwrite)
+                    .isEquals();
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(fromField).append(toField)
-                    .append(overwrite).toHashCode();
+            return new HashCodeBuilder()
+                    .append(fromField)
+                    .append(toField)
+                    .append(overwrite)
+                    .toHashCode();
         }
-        
     }
     
     
@@ -166,35 +168,30 @@ public class CopyTagger extends AbstractDocumentTagger {
     }
     
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((list == null) ? 0 : list.hashCode());
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof CopyTagger)) {
+            return false;
+        }
+        CopyTagger castOther = (CopyTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(list, castOther.list)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CopyTagger other = (CopyTagger) obj;
-        if (list == null) {
-            if (other.list != null)
-                return false;
-        } else if (!list.equals(other.list))
-            return false;
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(list)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.append("list", list);
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("list", list)
+                .toString();
     }
 }

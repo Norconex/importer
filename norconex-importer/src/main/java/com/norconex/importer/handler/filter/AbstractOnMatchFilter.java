@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 
@@ -76,32 +80,26 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
 	
     @Override
     public String toString() {
-        return "AbstractOnMatchFilter [onMatch=" + onMatch + "]";
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("onMatch", onMatch)
+                .toString();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof AbstractOnMatchFilter)) {
+            return false;
+        }
+        AbstractOnMatchFilter castOther = (AbstractOnMatchFilter) other;
+        return new EqualsBuilder()
+                .append(onMatch, castOther.onMatch)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((onMatch == null) ? 0 : onMatch.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        AbstractOnMatchFilter other = (AbstractOnMatchFilter) obj;
-        if (onMatch != other.onMatch) {
-            return false;
-        }
-        return true;
+        return new HashCodeBuilder()
+                .append(onMatch)
+                .toHashCode();
     }
 }

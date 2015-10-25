@@ -31,6 +31,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -414,6 +418,54 @@ public class TitleGeneratorTagger
                 "detectHeadingMaxLength", getDetectHeadingMaxLength());
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TitleGeneratorTagger)) {
+            return false;
+        }
+        TitleGeneratorTagger castOther = (TitleGeneratorTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(fromField, castOther.fromField)
+                .append(toField, castOther.toField)
+                .append(overwrite, castOther.overwrite)
+                .append(titleMaxLength, castOther.titleMaxLength)
+                .append(detectHeading, castOther.detectHeading)
+                .append(detectHeadingMinLength, 
+                        castOther.detectHeadingMinLength)
+                .append(detectHeadingMaxLength, 
+                        castOther.detectHeadingMaxLength)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(fromField)
+                .append(toField)
+                .append(overwrite)
+                .append(titleMaxLength)
+                .append(detectHeading)
+                .append(detectHeadingMinLength)
+                .append(detectHeadingMaxLength)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("fromField", fromField)
+                .append("toField", toField)
+                .append("overwrite", overwrite)
+                .append("titleMaxLength", titleMaxLength)
+                .append("detectHeading", detectHeading)
+                .append("detectHeadingMinLength", detectHeadingMinLength)
+                .append("detectHeadingMaxLength", detectHeadingMaxLength)
+                .toString();
+    }    
+    
     //--- Inner classes --------------------------------------------------------
     class EntryValueComparator 
             implements Comparator<Entry<String, AtomicInteger>> {
@@ -473,5 +525,4 @@ public class TitleGeneratorTagger
             return true;
         }
     }    
-    
 }

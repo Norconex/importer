@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -128,64 +130,60 @@ public class RenameTagger extends AbstractDocumentTagger {
             this.overwrite = overwrite;
         }
         @Override
+        public String toString() {
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("fromField", fromField)
+                    .append("toField", toField)
+                    .append("overwrite", overwrite)
+                    .toString();
+        }
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof RenameDetails)) {
+                return false;
+            }
+            RenameDetails castOther = (RenameDetails) other;
+            return new EqualsBuilder()
+                    .append(fromField, castOther.fromField)
+                    .append(toField, castOther.toField)
+                    .append(overwrite, castOther.overwrite)
+                    .isEquals();
+        }
+        @Override
         public int hashCode() {
             return new HashCodeBuilder()
-                .append(fromField)
-                .append(toField)
-                .append(overwrite)
-                .toHashCode();
-        }
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof RenameTagger.RenameDetails)) {
-                return false;
-            }
-            RenameTagger.RenameDetails other = (RenameTagger.RenameDetails) obj;
-            return new EqualsBuilder()
-                .append(fromField, other.fromField)
-                .append(toField, other.toField)
-                .append(overwrite, other.overwrite)
-                .isEquals();
-        }
-        @Override
-        public String toString() {
-            return "RenameDetails [fromField=" + fromField + ", toField="
-                    + toField + ", overwrite=" + overwrite + "]";
+                    .append(fromField)
+                    .append(toField)
+                    .append(overwrite)
+                    .toHashCode();
         }
     }
     
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .append(renames)
-            .toHashCode();
+    public boolean equals(final Object other) {
+        if (!(other instanceof RenameTagger)) {
+            return false;
+        }
+        RenameTagger castOther = (RenameTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(renames, castOther.renames)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof RenameTagger)) {
-            return false;
-        }
-        RenameTagger other = (RenameTagger) obj;
-        return new EqualsBuilder()
-            .append(renames, other.renames)
-            .isEquals();
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(renames)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return "RemapTagger [renames=" + renames + "]";
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("renames", renames)
+                .toString();
     }
 }

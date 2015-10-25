@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -148,11 +149,12 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
-        builder.append("field", field);
-        builder.append("format", format);
-        builder.append("overwrite", overwrite);
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append(super.toString())
+                .append("field", field)
+                .append("format", format)
+                .append("overwrite", overwrite)
+                .toString();
     }
 
     @Override
@@ -160,7 +162,8 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
         if (!(other instanceof CurrentDateTagger))
             return false;
         CurrentDateTagger castOther = (CurrentDateTagger) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
                 .append(field, castOther.field)
                 .append(format, castOther.format)
                 .append(overwrite, castOther.overwrite)
@@ -169,8 +172,11 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(field).append(format).append(overwrite)
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(field)
+                .append(format)
+                .append(overwrite)
                 .toHashCode();
     }
 }

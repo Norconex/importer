@@ -21,8 +21,6 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -85,17 +83,4 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
             String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException;
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamTagger)) {
-            return false;
-        }
-        return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();
-    }
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode()).toHashCode();
-    } 
-
 }

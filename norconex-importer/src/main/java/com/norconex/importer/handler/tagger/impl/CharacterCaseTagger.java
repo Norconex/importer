@@ -26,6 +26,10 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -227,39 +231,31 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     }
     
     @Override
-    public String toString() {
-        return "CharacterCaseTagger [fieldCases=" + fieldCases + "]";
+    public boolean equals(final Object other) {
+        if (!(other instanceof CharacterCaseTagger)) {
+            return false;
+        }
+        CharacterCaseTagger castOther = (CharacterCaseTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(fieldCases, castOther.fieldCases)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((fieldCases == null) ? 0 : fieldCases.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(fieldCases)
+                .toHashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof CharacterCaseTagger)) {
-            return false;
-        }
-        CharacterCaseTagger other = (CharacterCaseTagger) obj;
-        if (fieldCases == null) {
-            if (other.fieldCases != null) {
-                return false;
-            }
-        } else if (!fieldCases.equals(other.fieldCases)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("fieldCases", fieldCases)
+                .toString();
     }
     
     private class CaseChangeDetails {
@@ -271,47 +267,31 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             this.applyTo = applyTo;
         }
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result
-                    + ((applyTo == null) ? 0 : applyTo.hashCode());
-            result = prime * result
-                    + ((caseType == null) ? 0 : caseType.hashCode());
-            return result;
+        public boolean equals(final Object other) {
+            if (!(other instanceof CaseChangeDetails)) {
+                return false;
+            }
+            CaseChangeDetails castOther = (CaseChangeDetails) other;
+            return new EqualsBuilder()
+                    .append(caseType, castOther.caseType)
+                    .append(applyTo, castOther.applyTo)
+                    .isEquals();
         }
+
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof CaseChangeDetails)) {
-                return false;
-            }
-            CaseChangeDetails other = (CaseChangeDetails) obj;
-            if (applyTo == null) {
-                if (other.applyTo != null) {
-                    return false;
-                }
-            } else if (!applyTo.equals(other.applyTo)) {
-                return false;
-            }
-            if (caseType == null) {
-                if (other.caseType != null) {
-                    return false;
-                }
-            } else if (!caseType.equals(other.caseType)) {
-                return false;
-            }
-            return true;
+        public int hashCode() {
+            return new HashCodeBuilder()
+                    .append(caseType)
+                    .append(applyTo)
+                    .toHashCode();
         }
+
         @Override
         public String toString() {
-            return "CaseChangeDetails [caseType=" + caseType + ", applyTo="
-                    + applyTo + "]";
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .append("caseType", caseType)
+                    .append("applyTo", applyTo)
+                    .toString();
         }
     }
 }

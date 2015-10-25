@@ -24,8 +24,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -157,33 +159,22 @@ public class ReplaceTransformer extends AbstractStringTransformer
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof ReplaceTransformer)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ReplaceTransformer other = (ReplaceTransformer) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (replacements == null) {
-            if (other.replacements != null) {
-                return false;
-            }
-        } else if (!replacements.equals(other.replacements)) {
-            return false;
-        }
-        return true;
+        ReplaceTransformer castOther = 
+                (ReplaceTransformer) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(caseSensitive, castOther.caseSensitive)
+                .append(replacements, castOther.replacements)
+                .isEquals();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("caseSensitive", caseSensitive)
                 .append("replacements", replacements).toString();

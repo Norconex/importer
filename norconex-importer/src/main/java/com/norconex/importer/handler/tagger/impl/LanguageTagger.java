@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -543,7 +544,8 @@ public class LanguageTagger extends AbstractCharStreamTagger
         if (!(other instanceof LanguageTagger))
             return false;
         LanguageTagger castOther = (LanguageTagger) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
                 .append(detector, castOther.detector)
                 .append(shortText, castOther.shortText)
                 .append(keepProbabilities, castOther.keepProbabilities)
@@ -554,17 +556,25 @@ public class LanguageTagger extends AbstractCharStreamTagger
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(detector).append(shortText).append(keepProbabilities)
-                .append(languages).append(fallbackLanguage).toHashCode();
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(detector)
+                .append(shortText)
+                .append(keepProbabilities)
+                .append(languages)
+                .append(fallbackLanguage)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
-                .append("detector", detector).append("shortText", shortText)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("detector", detector)
+                .append("shortText", shortText)
                 .append("keepProbabilities", keepProbabilities)
                 .append("languages", languages)
-                .append("fallbackLanguage", fallbackLanguage).toString();
+                .append("fallbackLanguage", fallbackLanguage)
+                .toString();
     }
 }

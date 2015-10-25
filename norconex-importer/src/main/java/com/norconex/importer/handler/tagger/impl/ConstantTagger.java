@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -122,56 +126,30 @@ public class ConstantTagger extends AbstractDocumentTagger{
     }
     
     @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("ConstantTagger [{");
-        boolean first = true;
-        for (String name : constants.keySet()) {
-            List<String> values = constants.get(name);
-            for (String value : values) {
-                if (value != null) {
-                    if (!first) {
-                        builder.append(", ");
-                    }
-                    builder.append("[name=").append(name)
-                        .append(", value=").append(value)
-                        .append("]");
-                    first = false;
-                }
-            }
+    public boolean equals(final Object other) {
+        if (!(other instanceof ConstantTagger)) {
+            return false;
         }
-        builder.append("}]");
-        return builder.toString();
+        ConstantTagger castOther = (ConstantTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(constants, castOther.constants)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((constants == null) ? 0 : constants.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(constants)
+                .toHashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ConstantTagger other = (ConstantTagger) obj;
-        if (constants == null) {
-            if (other.constants != null) {
-                return false;
-            }
-        } else if (!constants.equals(other.constants)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("constants", constants)
+                .toString();
     }
 }

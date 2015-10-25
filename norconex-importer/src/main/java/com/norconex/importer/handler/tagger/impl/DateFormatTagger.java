@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -193,7 +194,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
+        ToStringBuilder builder = 
+                new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
         builder.append("fromField", fromField);
         builder.append("toField", toField);
         builder.append("fromFormat", fromFormat);

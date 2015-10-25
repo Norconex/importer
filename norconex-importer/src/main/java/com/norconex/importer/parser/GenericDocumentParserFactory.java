@@ -28,6 +28,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -360,4 +364,43 @@ public class GenericDocumentParserFactory
         }
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof GenericDocumentParserFactory)) {
+            return false;
+        }
+        GenericDocumentParserFactory castOther = (GenericDocumentParserFactory) other;
+        return new EqualsBuilder()
+                .append(namedParsers, castOther.namedParsers)
+                .append(fallbackParser, castOther.fallbackParser)
+                .append(ignoredContentTypesRegex, castOther.ignoredContentTypesRegex)
+                .append(ocrConfig, castOther.ocrConfig)
+                .append(splitEmbedded, castOther.splitEmbedded)
+                .append(parsersAreUpToDate, castOther.parsersAreUpToDate)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(namedParsers)
+                .append(fallbackParser)
+                .append(ignoredContentTypesRegex)
+                .append(ocrConfig)
+                .append(splitEmbedded)
+                .append(parsersAreUpToDate)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("namedParsers", namedParsers)
+                .append("fallbackParser", fallbackParser)
+                .append("ignoredContentTypesRegex", ignoredContentTypesRegex)
+                .append("ocrConfig", ocrConfig)
+                .append("splitEmbedded", splitEmbedded)
+                .append("parsersAreUpToDate", parsersAreUpToDate)
+                .toString();
+    }    
 }

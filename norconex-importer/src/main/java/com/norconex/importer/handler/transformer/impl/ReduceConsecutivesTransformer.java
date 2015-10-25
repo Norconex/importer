@@ -24,8 +24,10 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -168,35 +170,25 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof ReduceConsecutivesTransformer)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ReduceConsecutivesTransformer other = (ReduceConsecutivesTransformer) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (reductions == null) {
-            if (other.reductions != null) {
-                return false;
-            }
-        } else if (!reductions.equals(other.reductions)) {
-            return false;
-        }
-        return true;
+        ReduceConsecutivesTransformer castOther = 
+                (ReduceConsecutivesTransformer) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(caseSensitive, castOther.caseSensitive)
+                .append(reductions, castOther.reductions)
+                .isEquals();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("caseSensitive", caseSensitive)
-                .append("reductions", reductions).toString();
+                .append("reductions", reductions)
+                .toString();
     }
 }

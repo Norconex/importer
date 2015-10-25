@@ -135,9 +135,8 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
     @Override
     protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute("field", field);
-        writer.writeAttribute("caseSensitive", 
-                Boolean.toString(caseSensitive));
+        writer.writeAttributeString("field", field);
+        writer.writeAttributeBoolean("caseSensitive", caseSensitive);
         writer.writeCharacters(regex == null ? "" : regex);
     }
     

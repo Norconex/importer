@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.io.Reader;
 import java.io.Writer;
 
 import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -75,17 +73,4 @@ public abstract class AbstractCharStreamTransformer
             String reference, Reader input,
             Writer output, ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException;
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamTransformer)) {
-            return false;
-        }
-        return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode()).toHashCode();
-    } 
 }

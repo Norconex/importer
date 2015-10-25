@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -180,16 +182,21 @@ public class SplitTagger extends AbstractDocumentTagger {
 
         @Override
         public String toString() {
-            return "Split [fromField=" + fromField
-                    + ", toField=" + toField + ", separator=" + separator
-                    + ", regex=" + regex + "]";
+            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .appendSuper(super.toString())
+                    .append("fromField", fromField)
+                    .append("toField", toField)
+                    .append("separator", separator)
+                    .append("regex", regex)
+                    .toString();
         }
         @Override
         public boolean equals(final Object other) {
             if (!(other instanceof Split))
                 return false;
             Split castOther = (Split) other;
-            return new EqualsBuilder().append(fromField, castOther.fromField)
+            return new EqualsBuilder()
+                    .append(fromField, castOther.fromField)
                     .append(toField, castOther.toField)
                     .append(separator, castOther.separator)
                     .append(regex, castOther.regex).isEquals();
@@ -198,8 +205,11 @@ public class SplitTagger extends AbstractDocumentTagger {
         @Override
         public int hashCode() {
             if (hashCode == 0) {
-                hashCode = new HashCodeBuilder().append(fromField)
-                        .append(toField).append(separator).append(regex)
+                hashCode = new HashCodeBuilder()
+                        .append(fromField)
+                        .append(toField)
+                        .append(separator)
+                        .append(regex)
                         .toHashCode();
             }
             return hashCode;
@@ -238,39 +248,30 @@ public class SplitTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public String toString() {
-        return "SplitTagger [splits=" + splits + "]";
+    public boolean equals(final Object other) {
+        if (!(other instanceof SplitTagger)) {
+            return false;
+        }
+        SplitTagger castOther = (SplitTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(splits, castOther.splits)
+                .isEquals();
     }
-
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((splits == null) ? 0 : splits.hashCode());
-        return result;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(splits)
+                .toHashCode();
     }
 
-
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        SplitTagger other = (SplitTagger) obj;
-        if (splits == null) {
-            if (other.splits != null) {
-                return false;
-            }
-        } else if (!splits.equals(other.splits)) {
-            return false;
-        }
-        return true;
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("splits", splits)
+                .toString();
     }
 }

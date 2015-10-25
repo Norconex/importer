@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -230,37 +230,31 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     }
     
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((list == null) ? 0 : list.hashCode());
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof HierarchyTagger)) {
+            return false;
+        }
+        HierarchyTagger castOther = (HierarchyTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(list, castOther.list)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        HierarchyTagger other = (HierarchyTagger) obj;
-        if (list == null) {
-            if (other.list != null)
-                return false;
-        } else if (!list.equals(other.list))
-            return false;
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(list)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
         ToStringBuilder builder = new ToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE);
+        builder.appendSuper(super.toString());
         builder.append("list", list);
         return builder.toString();
     }
-
-    
 }

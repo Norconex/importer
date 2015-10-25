@@ -23,7 +23,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -209,53 +212,35 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this)
-                .append("caseSensitive", caseSensitive)
-                .append("selector", selector)
-                .append("regex", regex).toString();
+    public boolean equals(final Object other) {
+        if (!(other instanceof DOMContentFilter)) {
+            return false;
+        }
+        DOMContentFilter castOther = (DOMContentFilter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(caseSensitive, castOther.caseSensitive)
+                .append(selector, castOther.selector)
+                .append(regex, castOther.regex)
+                .isEquals();
     }
-
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + (caseSensitive ? 1231 : 1237);
-        result = prime * result + ((selector == null) ? 0 
-                : selector.hashCode());
-        result = prime * result + ((regex == null) ? 0 : regex.hashCode());
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        if (!(obj instanceof DOMContentFilter)) {
-            return false;
-        }
-        DOMContentFilter other = (DOMContentFilter) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (regex == null) {
-            if (other.regex != null) {
-                return false;
-            }
-        } else if (!regex.equals(other.regex)) {
-            return false;
-        }
-        if (selector == null) {
-            if (other.selector != null) {
-                return false;
-            }
-        } else if (!selector.equals(other.selector)) {
-            return false;
-        }
-        return true;
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(caseSensitive)
+                .append(selector)
+                .append(regex)
+                .toHashCode();
     }
 
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("caseSensitive", caseSensitive)
+                .append("selector", selector)
+                .append("regex", regex)
+                .toString();
+    }    
 }

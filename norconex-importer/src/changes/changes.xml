@@ -55,6 +55,15 @@
         AbstractStringTransformer#transformStringContent(...) now throws
         an ImporterHandlerException.
       </action>
+      <action dev="essiembre" type="update">
+        Saved and loaded configuration-related classes are now equal.
+        Methods equals/hashCode/toString for those classes are now implemented
+        uniformly and where added where missing.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed some configuration classes not always being saved to XML 
+        properly or giving errors.
+      </action>      
     </release>
 
     <release version="2.3.1" date="2015-08-07" description="Maintenance release">

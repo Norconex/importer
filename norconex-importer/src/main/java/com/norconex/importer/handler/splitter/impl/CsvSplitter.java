@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -298,14 +302,15 @@ public class CsvSplitter extends AbstractDocumentSplitter
                 xml, "[@separatorCharacter]", separatorCharacter));
         setQuoteCharacter(loadCharacter(
                 xml, "[@quoteCharacter]", quoteCharacter));
-        setQuoteCharacter(loadCharacter(
+        setEscapeCharacter(loadCharacter(
                 xml, "[@escapeCharacter]", escapeCharacter));
         setUseFirstRowAsFields(
-                xml.getBoolean("useFirstRowAsFields", useFirstRowAsFields));
-        setLinesToSkip(xml.getInt("linesToSkip", linesToSkip));
-        setReferenceColumn(xml.getString("referenceColumn", referenceColumn));
+                xml.getBoolean("[@useFirstRowAsFields]", useFirstRowAsFields));
+        setLinesToSkip(xml.getInt("[@linesToSkip]", linesToSkip));
+        setReferenceColumn(
+                xml.getString("[@referenceColumn]", referenceColumn));
 
-        String contentCols = xml.getString("contentColumns", null);
+        String contentCols = xml.getString("[@contentColumns]", null);
         if (StringUtils.isNotBlank(contentCols)) {
             setContentColumns(contentCols.split(","));
         }
@@ -347,4 +352,49 @@ public class CsvSplitter extends AbstractDocumentSplitter
         return character.charAt(0);
     }
 
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof CsvSplitter)) {
+            return false;
+        }
+        CsvSplitter castOther = (CsvSplitter) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(separatorCharacter, castOther.separatorCharacter)
+                .append(quoteCharacter, castOther.quoteCharacter)
+                .append(escapeCharacter, castOther.escapeCharacter)
+                .append(useFirstRowAsFields, castOther.useFirstRowAsFields)
+                .append(linesToSkip, castOther.linesToSkip)
+                .append(referenceColumn, castOther.referenceColumn)
+                .append(contentColumns, castOther.contentColumns)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(separatorCharacter)
+                .append(quoteCharacter)
+                .append(escapeCharacter)
+                .append(useFirstRowAsFields)
+                .append(linesToSkip)
+                .append(referenceColumn)
+                .append(contentColumns)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("separatorCharacter", separatorCharacter)
+                .append("quoteCharacter", quoteCharacter)
+                .append("escapeCharacter", escapeCharacter)
+                .append("useFirstRowAsFields", useFirstRowAsFields)
+                .append("linesToSkip", linesToSkip)
+                .append("referenceColumn", referenceColumn)
+                .append("contentColumns", contentColumns)
+                .toString();
+    }
 }

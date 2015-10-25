@@ -23,6 +23,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -139,12 +140,14 @@ public class ScriptFilter extends AbstractStringFilter {
         }
         ScriptFilter castOther = (ScriptFilter) other;
         return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
                 .append(scriptRunner, castOther.scriptRunner)
                 .isEquals();
     }
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
                 .append(scriptRunner)
                 .toHashCode();
     }
@@ -152,7 +155,9 @@ public class ScriptFilter extends AbstractStringFilter {
     @Override
     public String toString() {
         if (toString == null) {
-            toString = new ToStringBuilder(this)
+            toString = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE)
+                    .appendSuper(super.toString())
                     .append("scriptRunner", scriptRunner)
                     .toString();
         }

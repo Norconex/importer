@@ -28,8 +28,10 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -184,6 +186,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
+            .appendSuper(super.hashCode())
             .append(caseSensitive)
             .append(inclusive)
             .append(stripPairs)
@@ -191,39 +194,27 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (!super.equals(obj)) {
+    public boolean equals(final Object other) {
+        if (!(other instanceof StripBetweenTransformer)) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        StripBetweenTransformer other = (StripBetweenTransformer) obj;
-        if (caseSensitive != other.caseSensitive) {
-            return false;
-        }
-        if (inclusive != other.inclusive) {
-            return false;
-        }
-        if (stripPairs == null) {
-            if (other.stripPairs != null) {
-                return false;
-            }
-        } else if (!stripPairs.equals(other.stripPairs)) {
-            return false;
-        }
-        return true;
+        StripBetweenTransformer castOther = (StripBetweenTransformer) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(caseSensitive, castOther.caseSensitive)
+                .append(inclusive, castOther.inclusive)
+                .append(stripPairs, castOther.stripPairs)
+                .isEquals();
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
                 .append("stripPairs", stripPairs)
                 .append("inclusive", inclusive)
-                .append("caseSensitive", caseSensitive).toString();
+                .append("caseSensitive", caseSensitive)
+                .toString();
     }
 
 }

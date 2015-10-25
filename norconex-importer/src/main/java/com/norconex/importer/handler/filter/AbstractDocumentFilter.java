@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -149,25 +150,29 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).appendSuper(super.toString())
-                .append("onMatch", onMatch).toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("onMatch", onMatch)
+                .toString();
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractDocumentFilter))
+        if (!(other instanceof AbstractDocumentFilter)) {
             return false;
+        }
         AbstractDocumentFilter castOther = (AbstractDocumentFilter) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
-                .append(onMatch, castOther.onMatch).isEquals();
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
+                .append(onMatch, castOther.onMatch)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(onMatch).toHashCode();
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(onMatch)
+                .toHashCode();
     }
-
-
-    
 }

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2015 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@ package com.norconex.importer.handler.splitter;
 
 import java.io.OutputStream;
 import java.util.List;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -65,17 +62,4 @@ public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
             SplittableDocument doc, OutputStream output, 
             CachedStreamFactory streamFactory, boolean parsed) 
                     throws ImporterHandlerException;
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof AbstractDocumentSplitter)) {
-            return false;
-        }
-        return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode()).toHashCode();
-    } 
 }

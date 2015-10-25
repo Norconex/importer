@@ -14,7 +14,10 @@
  */
 package com.norconex.importer.parser;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * OCR configuration details.
@@ -80,61 +83,33 @@ public class OCRConfig {
     }
     
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result
-                + ((contentTypes == null) ? 0 : contentTypes.hashCode());
-        result = prime * result
-                + ((languages == null) ? 0 : languages.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        return result;
+    public boolean equals(final Object other) {
+        if (!(other instanceof OCRConfig)) {
+            return false;
+        }
+        OCRConfig castOther = (OCRConfig) other;
+        return new EqualsBuilder()
+                .append(path, castOther.path)
+                .append(languages, castOther.languages)
+                .append(contentTypes, castOther.contentTypes)
+                .isEquals();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof OCRConfig)) {
-            return false;
-        }
-        OCRConfig other = (OCRConfig) obj;
-        if (contentTypes == null) {
-            if (other.contentTypes != null) {
-                return false;
-            }
-        } else if (!contentTypes.equals(other.contentTypes)) {
-            return false;
-        }
-        if (languages == null) {
-            if (other.languages != null) {
-                return false;
-            }
-        } else if (!languages.equals(other.languages)) {
-            return false;
-        }
-        if (path == null) {
-            if (other.path != null) {
-                return false;
-            }
-        } else if (!path.equals(other.path)) {
-            return false;
-        }
-        return true;
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(path)
+                .append(languages)
+                .append(contentTypes)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
-        builder.append("path", path);
-        builder.append("languages", languages);
-        builder.append("contentTypes", contentTypes);
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("path", path)
+                .append("languages", languages)
+                .append("contentTypes", contentTypes)
+                .toString();
     }
-    
-    
 }

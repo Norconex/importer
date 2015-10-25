@@ -30,6 +30,7 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -191,6 +192,40 @@ public class TextBetweenTagger
         }
     }
     
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof TextBetweenTagger)) {
+            return false;
+        }
+        TextBetweenTagger castOther = (TextBetweenTagger) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(betweens, castOther.betweens)
+                .append(inclusive, castOther.inclusive)
+                .append(caseSensitive, castOther.caseSensitive)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(betweens)
+                .append(inclusive)
+                .append(caseSensitive)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("betweens", betweens)
+                .append("inclusive", inclusive)
+                .append("caseSensitive", caseSensitive)
+                .toString();
+    }    
+    
     private static class TextBetween implements Comparable<TextBetween> {
         private final String name;
         private final String start;
@@ -207,29 +242,34 @@ public class TextBetweenTagger
                 return false;
             }
             TextBetween castOther = (TextBetween) other;
-            return new EqualsBuilder().append(name, castOther.name)
-                    .append(start, castOther.start).append(end, castOther.end)
+            return new EqualsBuilder()
+                    .append(name, castOther.name)
+                    .append(start, castOther.start)
+                    .append(end, castOther.end)
                     .isEquals();
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(name).append(start)
-                        .append(end).toHashCode();
+            return new HashCodeBuilder()
+                    .append(name)
+                    .append(start)
+                    .append(end)
+                    .toHashCode();
         }
         private transient String toString;
         @Override
         public String toString() {
             if (toString == null) {
-                toString = new ToStringBuilder(this).append("name", name)
-                        .append("start", start).append("end", end).toString();
+                toString = new ToStringBuilder(
+                        this, ToStringStyle.SHORT_PREFIX_STYLE)
+                        .append("name", name)
+                        .append("start", start)
+                        .append("end", end)
+                        .toString();
             }
             return toString;
         }
         public int compareTo(final TextBetween other) {
-            int val = start.length() - end.length();
-            if (val != 0) {
-                return val;
-            }
             return new CompareToBuilder()
                     .append(start, other.start)
                     .append(end, other.end)
