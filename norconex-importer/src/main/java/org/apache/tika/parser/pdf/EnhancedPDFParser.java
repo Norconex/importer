@@ -119,25 +119,9 @@ public class EnhancedPDFParser extends AbstractParser {
     private static final Pattern PATTERN_STRIP_MARKUP = Pattern.compile("<.*?>",
             Pattern.DOTALL);
 
-//    private boolean preserveMemory;
-    
     public Set<MediaType> getSupportedTypes(ParseContext context) {
         return SUPPORTED_TYPES;
     }
-
-//    public boolean isPreserveMemory() {
-//        return preserveMemory;
-//    }
-//    /**
-//     * Sets whether memory should be preserved by using temp files to
-//     * store the many PDF resources discovered.  This can drastically slow
-//     * down parsing.
-//     * @param preserveMemory <code>true</code> to preserve memory by using
-//     *                       temp files
-//     */
-//    public void setPreserveMemory(boolean preserveMemory) {
-//        this.preserveMemory = preserveMemory;
-//    }
 
     public void parse(
             InputStream stream, ContentHandler handler,
@@ -160,19 +144,6 @@ public class EnhancedPDFParser extends AbstractParser {
             // started to fail with snapshot version, so stream should always
             // be CachedInputStream to avoid issue until PDFBox is more stable.
             pdfDocument = PDDocument.load(tstream, password);
-//            pdfDocument = PDDocument.load(tstream, password, false);//, preserveMemory);
-            
-//            long maxMemory = 10 * 1024 * 1024; // 10 MB
-//            if (stream instanceof CachedInputStream) {
-//                maxMemory = ((CachedInputStream) stream).getMemCacheSize();
-//            }
-//            pdfDocument = PDDocument.load(tstream, password, MemoryUsageSetting.setupMixed(maxMemory));
-
-//            if (localConfig.getUseNonSequentialParser() == true) {
-//                pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), password);
-//            } else {
-//                pdfDocument = PDDocument.load(new CloseShieldInputStream(tstream), preserveMemory);
-//            }
             
             metadata.set("pdf:encrypted", Boolean.toString(pdfDocument.isEncrypted()));
 

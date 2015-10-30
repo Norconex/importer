@@ -146,11 +146,13 @@ public class ScriptRunner<T> {
                 String engVersion = factory.getEngineVersion();
                 String langName = factory.getLanguageName();
                 String langVersion = factory.getLanguageVersion();
-                b.append("\n\tScript Engine: " + engName);
+                b.append("\n\tScript Engine: ");
+                b.append(engName);
                 b.append(" (" + engVersion + ")\n");
                 b.append("\t      Aliases: ");
                 b.append(StringUtils.join(factory.getNames(), ", "));
-                b.append("\n\t     Language: " + langName);
+                b.append("\n\t     Language: ");
+                b.append(langName);
                 b.append(" (" + langVersion + ")");
             }
             LOG.error("Invalid Script Engine \"" + engineName 
