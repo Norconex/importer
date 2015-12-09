@@ -7,6 +7,17 @@
   </properties>
   <body>
 
+    <release version="2.5.0-SNAPSHOT" date="201?-??-??" description="Feature release">
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Apache Tika 1.11, Norconex Commons Lang 1.9.0.
+        Removal: Apacke Jempbox.
+      </action>
+      <action dev="essiembre" type="update">
+        Importer-specific version of Tika PDFParser was updated to work around
+        PDFBox 2.0 no longer depending on Jempbox.
+      </action>
+    </release>
+
     <release version="2.4.0" date="2015-11-02" description="Feature release">
       <action dev="essiembre" type="add">
         The following new handlers enable using scripting languages to define

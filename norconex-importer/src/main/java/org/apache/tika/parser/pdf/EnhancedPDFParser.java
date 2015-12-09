@@ -36,10 +36,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jempbox.xmp.XMPMetadata;
-import org.apache.jempbox.xmp.XMPSchema;
-import org.apache.jempbox.xmp.XMPSchemaDublinCore;
-import org.apache.jempbox.xmp.pdfa.XMPSchemaPDFAId;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -48,11 +44,14 @@ import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDDocumentInformation;
+import org.apache.pdfbox.pdmodel.common.PDMetadata;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDXFAResource;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.metadata.AccessPermissions;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.PagedText;
 import org.apache.tika.metadata.Property;
@@ -62,6 +61,12 @@ import org.apache.tika.parser.AbstractParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.PasswordProvider;
 import org.apache.tika.parser.txt.TXTParser;
+import org.apache.xmpbox.XMPMetadata;
+import org.apache.xmpbox.schema.DublinCoreSchema;
+import org.apache.xmpbox.schema.PDFAIdentificationSchema;
+import org.apache.xmpbox.schema.XMPSchema;
+import org.apache.xmpbox.xml.DomXmpParser;
+import org.apache.xmpbox.xml.XmpParsingException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -251,17 +256,39 @@ public class EnhancedPDFParser extends AbstractParser {
     private void extractMetadata(PDDocument document, Metadata metadata)
             throws TikaException {
 
+        //first extract AccessPermissions
+        AccessPermission ap = document.getCurrentAccessPermission();
+        metadata.set(AccessPermissions.EXTRACT_FOR_ACCESSIBILITY,
+                Boolean.toString(ap.canExtractForAccessibility()));
+        metadata.set(AccessPermissions.EXTRACT_CONTENT,
+                Boolean.toString(ap.canExtractContent()));
+        metadata.set(AccessPermissions.ASSEMBLE_DOCUMENT,
+                Boolean.toString(ap.canAssembleDocument()));
+        metadata.set(AccessPermissions.FILL_IN_FORM,
+                Boolean.toString(ap.canFillInForm()));
+        metadata.set(AccessPermissions.CAN_MODIFY,
+                Boolean.toString(ap.canModify()));
+        metadata.set(AccessPermissions.CAN_MODIFY_ANNOTATIONS,
+                Boolean.toString(ap.canModifyAnnotations()));
+        metadata.set(AccessPermissions.CAN_PRINT,
+                Boolean.toString(ap.canPrint()));
+        metadata.set(AccessPermissions.CAN_PRINT_DEGRADED,
+                Boolean.toString(ap.canPrintDegraded()));        
+        
+        
         XMPMetadata xmp = null;
-        XMPSchemaDublinCore dcSchema = null;
+        DublinCoreSchema dcSchema = null;
         try{
-            if (document.getDocumentCatalog().getMetadata() != null) {
-                xmp = XMPMetadata.load(document.getDocumentCatalog()
-                        .getMetadata().exportXMPMetadata());
+            PDDocumentCatalog catalog = document.getDocumentCatalog();
+            PDMetadata meta = catalog.getMetadata();
+            if (meta != null) {
+                DomXmpParser xmpParser = new DomXmpParser();
+                xmp = xmpParser.parse(meta.createInputStream());
             }
             if (xmp != null) {
                 dcSchema = xmp.getDublinCoreSchema();
             }
-        } catch (IOException e) {
+        } catch (IOException | XmpParsingException e) {
             //swallow
         }
         PDDocumentInformation info = document.getDocumentInformation();
@@ -307,8 +334,8 @@ public class EnhancedPDFParser extends AbstractParser {
 
         try {           
             if( xmp != null ) {
-                xmp.addXMLNSMapping(XMPSchemaPDFAId.NAMESPACE, XMPSchemaPDFAId.class);
-                XMPSchemaPDFAId pdfaxmp = (XMPSchemaPDFAId) xmp.getSchemaByClass(XMPSchemaPDFAId.class);
+                PDFAIdentificationSchema pdfaxmp = xmp.getPDFIdentificationSchema();
+                
                 if( pdfaxmp != null ) {
                     if (pdfaxmp.getPart() != null) {
                         metadata.set("pdfaid:part", Integer.toString(pdfaxmp.getPart()));
@@ -323,7 +350,7 @@ public class EnhancedPDFParser extends AbstractParser {
                 } 
                 // TODO WARN if this XMP version is inconsistent with document header version?          
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             metadata.set(TikaCoreProperties.TIKA_META_PREFIX+"pdf:metadata-xmp-parse-failed", ""+e);
         }
         //TODO: Let's try to move this into PDFBox.
@@ -374,8 +401,8 @@ public class EnhancedPDFParser extends AbstractParser {
             return;
         }
 
-        for (String lang : schema.getLanguagePropertyLanguages(property.getName())) {
-            String value = schema.getLanguageProperty(property.getName(), lang);
+        for (String lang : schema.getUnqualifiedLanguagePropertyLanguagesValue(property.getName())) {
+            String value = schema.getUnqualifiedLanguagePropertyValue(property.getName(), lang);
 
             if (value != null && value.length() > 0) {
                 //if you're going to add it below in the baseline addition, don't add it now
@@ -422,7 +449,7 @@ public class EnhancedPDFParser extends AbstractParser {
      * @param metadata
      */
     private void extractDublinCoreListItems(Metadata metadata, Property property, 
-            String pdfBoxBaseline, XMPSchemaDublinCore dc) {
+            String pdfBoxBaseline, DublinCoreSchema dc) {
         //if no dc, add baseline and return
         if (dc == null) {
             if (pdfBoxBaseline != null && pdfBoxBaseline.length() > 0) {
@@ -459,16 +486,20 @@ public class EnhancedPDFParser extends AbstractParser {
      * @return list of values or null
      */
     private List<String> getXMPBagOrSeqList(XMPSchema schema, String name) {
-        List<String> ret = schema.getBagList(name);
+        List<String> ret = schema.getUnqualifiedBagValueList(name);
         if (ret == null) {
-            ret = schema.getSequenceList(name);
+            ret = schema.getUnqualifiedSequenceValueList(name);
         }
         return ret;
     }
 
     private void addMetadata(Metadata metadata, Property property, String value) {
         if (value != null) {
-            metadata.add(property, value);
+            String decoded = decode(value);
+            if (property.isMultiValuePermitted() || metadata.get(property) == null) {
+                metadata.add(property, decoded);
+            }
+            //silently skip adding property that already exists if multiple values are not permitted
         }
     }
     
@@ -478,6 +509,14 @@ public class EnhancedPDFParser extends AbstractParser {
         }
     }
 
+    private String decode(String value) {
+        if (PDFEncodedStringDecoder.shouldDecode(value)) {
+            PDFEncodedStringDecoder d = new PDFEncodedStringDecoder();
+            return d.decode(value);
+        }
+        return value;
+    }
+    
     private void addMetadata(Metadata metadata, String name, Calendar value) {
         if (value != null) {
             metadata.set(name, value.getTime().toString());

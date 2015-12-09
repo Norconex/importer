@@ -58,7 +58,7 @@ public class ContentTypeDetector {
         if (StringUtils.isBlank(safeFileName)) {
             safeFileName = file.getName();
         }
-        return doDetect(TikaInputStream.get(file), safeFileName);
+        return doDetect(TikaInputStream.get(file.toPath()), safeFileName);
     }
     public ContentType detect(InputStream content)
             throws IOException {
