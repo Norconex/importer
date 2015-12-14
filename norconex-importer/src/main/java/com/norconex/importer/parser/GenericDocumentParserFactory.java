@@ -59,6 +59,12 @@ import com.norconex.importer.response.ImporterResponse;
  * them to execute properly.  Unless you really know what you are doing, <b> 
  * avoid excluding binary content types from parsing.</b></p>
  * 
+ * <p>Parsing a document also attempts to detect the <b>character encoding</b> 
+ * (charset) of the extracted text to converts it to UTF-8. When ignoring
+ * content-types, the character encoding conversion to UTF-8 cannot
+ * take place and your documents will likely retain their original encoding.
+ * </p>
+ * 
  * <h3>Embedded documents:</h3>
  * <p>For documents containing embedded documents (e.g. zip files), the default 
  * behavior of this treat them as a single document, merging all
