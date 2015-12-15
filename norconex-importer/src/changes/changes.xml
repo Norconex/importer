@@ -8,6 +8,10 @@
   <body>
 
     <release version="2.5.0-SNAPSHOT" date="201?-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New CharsetTransformer to convert the character encoding of a 
+        document content into the desired target character encoding.
+      </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Apache Tika 1.11, Norconex Commons Lang 1.9.0.
         Removal: Apacke Jempbox.

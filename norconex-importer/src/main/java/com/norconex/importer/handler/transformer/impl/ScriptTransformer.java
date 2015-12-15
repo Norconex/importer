@@ -64,7 +64,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
  *          engineName="(script engine name)"
  *          maxReadSize="(max content characters to read at once)" &gt;
  *      &lt;script&gt;(your script)&lt;/script&gt;
@@ -74,7 +74,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/transformer&gt;
  * </pre>
  * 
  * <h3>XML example:</h3>
