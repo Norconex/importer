@@ -72,7 +72,14 @@ import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
  * </h3>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
- *      targetCharset="(character encoding)" /&gt;
+ *      targetCharset="(character encoding)"&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.5.0
