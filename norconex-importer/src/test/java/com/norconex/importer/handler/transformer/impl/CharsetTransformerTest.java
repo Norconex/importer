@@ -59,6 +59,59 @@ public class CharsetTransformerTest {
         testCharsetTransformer("UTF-8",        "KOI8-R");
     }
     
+    
+    @Test
+    public void testCharsetWithGoodSourceTransformer() 
+            throws IOException, ImporterHandlerException {
+        byte[] startWith = "En télécommunications".getBytes("UTF-8");
+        
+        CharsetTransformer t = new CharsetTransformer();
+        t.setSourceCharset("ISO-8859-1");
+        t.setTargetCharset("UTF-8");
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImporterMetadata metadata = new ImporterMetadata();
+        InputStream is = getFileStream("/charset/ISO-8859-1.txt");
+        
+        t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
+
+        byte[] output = os.toByteArray();
+        
+        is.close();
+        os.close();
+
+        byte[] targetStartWith = Arrays.copyOf(output, startWith.length);
+        Assert.assertArrayEquals(
+                "ISO-8859-1 > UTF-8", startWith, targetStartWith);
+    }
+
+    @Test
+    public void testCharsetWithBadSourceTransformer() 
+            throws IOException, ImporterHandlerException {
+        byte[] startWith = "En télécommunications".getBytes("UTF-8");
+        
+        CharsetTransformer t = new CharsetTransformer();
+        t.setSourceCharset("KOI8-R");
+        t.setTargetCharset("UTF-8");
+
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImporterMetadata metadata = new ImporterMetadata();
+        InputStream is = getFileStream("/charset/ISO-8859-1.txt");
+        
+        t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
+
+        byte[] output = os.toByteArray();
+        
+        is.close();
+        os.close();
+
+        byte[] targetStartWith = Arrays.copyOf(output, startWith.length);
+        if (Arrays.equals(startWith, targetStartWith)) {
+            Assert.fail("Transformation with bad source must not be equal. "
+                    + "KOI8-R > UTF-8");
+        }
+    }
+    
     private void testCharsetTransformer(String fromCharset, String toCharset) 
             throws IOException, ImporterHandlerException {
 

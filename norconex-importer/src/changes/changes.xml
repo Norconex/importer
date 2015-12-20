@@ -13,6 +13,10 @@
         document content into the desired target character encoding.
       </action>
       <action dev="essiembre" type="update">
+        Metadata document.contentEncoding is now always set when passed 
+        to importDocument method.
+      </action>
+      <action dev="essiembre" type="update">
         Maven dependency updates: Apache Tika 1.11, Norconex Commons Lang 1.9.0.
         Removal: Apacke Jempbox.
       </action>

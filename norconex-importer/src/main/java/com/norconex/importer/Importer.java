@@ -255,6 +255,10 @@ public class Importer {
             meta.setString(ImporterMetadata.DOC_CONTENT_FAMILY, 
                     contentFamily.toString());
         }
+        if (StringUtils.isNotBlank(contentEncoding)) {
+            meta.setString(
+                    ImporterMetadata.DOC_CONTENT_ENCODING, contentEncoding);
+        }
         
         //--- Document Handling ---
         try {
