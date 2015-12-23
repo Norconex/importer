@@ -33,30 +33,30 @@ public class CharsetTransformerTest {
     public void testCharsetTransformer() 
             throws IOException, ImporterHandlerException {
         
-        testCharsetTransformer("ISO-8859-1",   "ISO-8859-1");
-        testCharsetTransformer("ISO-8859-2",   "ISO-8859-1");
-        testCharsetTransformer("windows-1250", "ISO-8859-1");
-        testCharsetTransformer("UTF-8",        "ISO-8859-1");
+        testCharsetTransformer("ISO-8859-1",   "ISO-8859-1", true);
+        testCharsetTransformer("ISO-8859-2",   "ISO-8859-1", false);
+        testCharsetTransformer("windows-1250", "ISO-8859-1", true);
+        testCharsetTransformer("UTF-8",        "ISO-8859-1", true);
     
-        testCharsetTransformer("ISO-8859-1",   "ISO-8859-2");
-        testCharsetTransformer("ISO-8859-2",   "ISO-8859-2");
-        testCharsetTransformer("windows-1250", "ISO-8859-2");
-        testCharsetTransformer("UTF-8",        "ISO-8859-2");
+        testCharsetTransformer("ISO-8859-1",   "ISO-8859-2", true);
+        testCharsetTransformer("ISO-8859-2",   "ISO-8859-2", false);
+        testCharsetTransformer("windows-1250", "ISO-8859-2", true);
+        testCharsetTransformer("UTF-8",        "ISO-8859-2", true);
     
-        testCharsetTransformer("ISO-8859-1",   "windows-1250");
-        testCharsetTransformer("ISO-8859-2",   "windows-1250");
-        testCharsetTransformer("windows-1250", "windows-1250");
-        testCharsetTransformer("UTF-8",        "windows-1250");
+        testCharsetTransformer("ISO-8859-1",   "windows-1250", true);
+        testCharsetTransformer("ISO-8859-2",   "windows-1250", true);
+        testCharsetTransformer("windows-1250", "windows-1250", false);
+        testCharsetTransformer("UTF-8",        "windows-1250", true);
 
-        testCharsetTransformer("ISO-8859-1",   "UTF-8");
-        testCharsetTransformer("ISO-8859-2",   "UTF-8");
-        testCharsetTransformer("windows-1250", "UTF-8");
-        testCharsetTransformer("UTF-8",        "UTF-8");
+        testCharsetTransformer("ISO-8859-1",   "UTF-8", true);
+        testCharsetTransformer("ISO-8859-2",   "UTF-8", true);
+        testCharsetTransformer("windows-1250", "UTF-8", true);
+        testCharsetTransformer("UTF-8",        "UTF-8", true);
 
-        testCharsetTransformer("ISO-8859-1",   "KOI8-R");
-        testCharsetTransformer("ISO-8859-2",   "KOI8-R");
-        testCharsetTransformer("windows-1250", "KOI8-R");
-        testCharsetTransformer("UTF-8",        "KOI8-R");
+        testCharsetTransformer("ISO-8859-1",   "KOI8-R", true);
+        testCharsetTransformer("ISO-8859-2",   "KOI8-R", true);
+        testCharsetTransformer("windows-1250", "KOI8-R", true);
+        testCharsetTransformer("UTF-8",        "KOI8-R", true);
     }
     
     
@@ -112,12 +112,17 @@ public class CharsetTransformerTest {
         }
     }
     
-    private void testCharsetTransformer(String fromCharset, String toCharset) 
+    private void testCharsetTransformer(
+            String fromCharset, String toCharset, boolean detect) 
             throws IOException, ImporterHandlerException {
 
         byte[] startWith = "En télécommunications".getBytes(toCharset);
+        byte[] blankBytes = new byte[startWith.length];
         
         CharsetTransformer t = new CharsetTransformer();
+        if (!detect) {
+            t.setSourceCharset(fromCharset);
+        }
         t.setTargetCharset(toCharset);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -137,8 +142,13 @@ public class CharsetTransformerTest {
 //        System.out.println(Arrays.toString(startWith));
 //        System.out.println(Arrays.toString(targetStartWith));
 
-        Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
-                startWith, targetStartWith);
+        if (fromCharset.equals(toCharset)) {
+            Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
+                    blankBytes, targetStartWith);
+        } else {
+            Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
+                    startWith, targetStartWith);
+        }
     }
 
     private InputStream getFileStream(String resourcePath) {

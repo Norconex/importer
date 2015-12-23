@@ -9,8 +9,16 @@
 
     <release version="2.5.0-SNAPSHOT" date="201?-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New CharsetTagger to convert the character encoding of specified
+        document metadata field into the desired target character encoding.
+      </action>
+      <action dev="essiembre" type="add">
         New CharsetTransformer to convert the character encoding of a 
         document content into the desired target character encoding.
+      </action>
+      <action dev="essiembre" type="add">
+        New CharsetUtil class offering simplified charset detection and 
+        conversion methods.
       </action>
       <action dev="essiembre" type="update">
         Metadata document.contentEncoding is now always set when passed 

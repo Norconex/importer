@@ -12,15 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.transformer.impl;
+package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -35,30 +38,30 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
  * <p>
- * Transforms a document content (if needed) from a source character
+ * Converts one or more field values (if needed) from a source character
  * encoding (charset) to a target one. Both the source and target character
  * encodings are optional. If no source character encoding is explicitly
- * provided, it first tries to detect the encoding of the document
- * content before converting it to the target encoding. If the source 
+ * provided, it first tries to detect the encoding of the field values
+ * before converting them to the target encoding. If the source 
  * character encoding cannot be established, the content encoding will remain
  * unchanged. When no target character encoding is specified, UTF-8 is assumed.
  * </p>
  * 
- * <h3>Should I use this transformer?</h3>
+ * <h3>Should I use this tagger?</h3>
  * <p>
- * Before using this transformer, you need to know the parsing of documents
+ * Before using this tagger, you need to know the parsing of documents
  * by the importer using default document parser factory will try to convert
- * and return content as UTF-8 (for most, if not all content-types).
- * If UTF-8 is your desired target, it only make sense to use this transformer
+ * and return fields as UTF-8 (for most, if not all content-types).
+ * If UTF-8 is your desired target, it only make sense to use this tagger
  * as a pre-parsing handler (for text content-types only) when it is important
  * to work with a specific character encoding before parsing. 
  * If on the other hand you wish to convert to a character encoding to a 
- * target different than UTF-8, you can use this transformer as a post-parsing
+ * target different than UTF-8, you can use this tagger as a post-parsing
  * handler to do so.
  * </p>
  * 
@@ -72,52 +75,102 @@ import com.norconex.importer.util.CharsetUtil;
  * XML configuration usage:
  * </h3>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
- *      sourceCharset="(character encoding)" targetCharset="(character encoding)"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ *          sourceCharset="(character encoding)"
+ *          targetCharset="(character encoding)"&gt;
+ *      &lt;fieldsRegex&gt;(regex matching fields to detect encoding)&lt;/fieldsRegex&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/transformer&gt;
+ *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.5.0
  */
-public class CharsetTransformer extends AbstractDocumentTransformer
+public class CharsetTagger extends AbstractDocumentTagger
         implements IXMLConfigurable {
 
     private static final Logger LOG = 
-            LogManager.getLogger(CharsetTransformer.class);    
+            LogManager.getLogger(CharsetTagger.class);    
 
     public static final String DEFAULT_TARGET_CHARSET = CharEncoding.UTF_8;
     
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
-
+    private String fieldsRegex;
+    
     @Override
-    protected void transformApplicableDocument(String reference,
-            InputStream input, OutputStream output, ImporterMetadata metadata,
-            boolean parsed) throws ImporterHandlerException {
+    protected void tagApplicableDocument(String reference,
+            InputStream document, ImporterMetadata metadata, boolean parsed)
+            throws ImporterHandlerException {
+        
+        if (StringUtils.isBlank(fieldsRegex)) {
+            throw new ImporterHandlerException(
+                    "\"fieldsRegex\" cannot be blank on CharsetTagger.");
+        }
+        
+        String[] metaFields = metadata.keySet().toArray(
+                ArrayUtils.EMPTY_STRING_ARRAY);
+        Pattern pattern = Pattern.compile(fieldsRegex, Pattern.DOTALL 
+                | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        for (String metaField : metaFields) {
+            if (pattern.matcher(metaField).matches()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Field to convert charset: " + metaField);
+                }
+                convertCharset(reference, metadata, metaField);
+            }
+        }
+    }
+    
+
+    public String getFieldsRegex() {
+        return fieldsRegex;
+    }
+    public void setFieldsRegex(String fieldsRegex) {
+        this.fieldsRegex = fieldsRegex;
+    }
+    
+    private void convertCharset(
+            String reference, ImporterMetadata metadata, String metaField) {
+        List<String> values = metadata.get(metaField);
+        if (values == null) {
+            return;
+        }
+        String declaredEncoding = 
+                metadata.getString(ImporterMetadata.DOC_CONTENT_ENCODING);
+        List<String> newValues = new ArrayList<>();
+        for (String value : values) {
+            String newValue = value;            
+            try {
+                newValue = convertCharset(reference, value, declaredEncoding);
+            } catch (IOException e) {
+                LOG.warn("Cannot detect source encoding for value \""
+                        + StringUtils.abbreviate(value, 0, 200)
+                        + "\". Encoding will remain unchanged. Reference: "
+                        + reference, e);
+            }
+            newValues.add(newValue);
+        }
+        metadata.setString(metaField, 
+                newValues.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+    }
+    
+    private String convertCharset(
+            String reference, String value, String declaredEncoding)
+            throws IOException {
         
         //--- Get source charset ---
         String inputCharset = sourceCharset;
         if (StringUtils.isBlank(inputCharset)) {
-            String declaredEncoding = 
-                    metadata.getString(ImporterMetadata.DOC_CONTENT_ENCODING);
-            try {
-                inputCharset = CharsetUtil.detectCharset(input, declaredEncoding);
-            } catch (IOException e) {
-                LOG.warn("Cannot detect source encoding. "
-                        + "Encoding will remain unchanged for: "
-                        + reference, e);
-                return;
-            }
+            inputCharset = CharsetUtil.detectCharset(value, declaredEncoding);
         }
         // Do not attempt conversion of no source charset is found
         if (StringUtils.isBlank(inputCharset)) {
-            return;
+            return value;
         }
         inputCharset = CharsetUtils.clean(inputCharset);
 
@@ -134,19 +187,20 @@ public class CharsetTransformer extends AbstractDocumentTransformer
                 LOG.debug("Source and target encodings are the same for "
                         + reference);
             }
-            return;
+            return value;
         }
         
         //--- Convert ---
         try {
-            CharsetUtil.convertCharset(
-                    input, inputCharset, output, outputCharset);
+            value = CharsetUtil.convertCharset(
+                    value, inputCharset, outputCharset);
         } catch (IOException e) {
             LOG.warn("Cannot convert character encoding from " + inputCharset
                     + " to " + outputCharset 
                     + ". Encoding will remain unchanged. "
                     + "Reference: " + reference, e);
         }
+        return value;
     }
     
     public String getTargetCharset() {
@@ -167,6 +221,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         setTargetCharset(xml.getString("[@targetCharset]", getTargetCharset()));
+        setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
     
     @Override
@@ -174,6 +229,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         writer.writeAttributeString("targetCharset", getTargetCharset());
+        writer.writeElementString("fieldsRegex", fieldsRegex);        
     }
 
     @Override
@@ -182,19 +238,21 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             .appendSuper(super.hashCode())
             .append(sourceCharset)
             .append(targetCharset)
+            .append(fieldsRegex)
             .toHashCode();
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CharsetTransformer)) {
+        if (!(other instanceof CharsetTagger)) {
             return false;
         }
-        CharsetTransformer castOther = (CharsetTransformer) other;
+        CharsetTagger castOther = (CharsetTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(sourceCharset, castOther.sourceCharset)
                 .append(targetCharset, castOther.targetCharset)
+                .append(fieldsRegex, castOther.fieldsRegex)                
                 .isEquals();
     }
 
@@ -204,6 +262,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
                 .appendSuper(super.toString())
                 .append("sourceCharset", sourceCharset)
                 .append("targetCharset", targetCharset)
+                .append("fieldsRegex", fieldsRegex)
                 .toString();
     }
 }
