@@ -32,6 +32,14 @@
         Importer-specific version of Tika PDFParser was updated to work around
         PDFBox 2.0 no longer depending on Jempbox.
       </action>
+      <action dev="essiembre" type="update">
+        Importer now issues a WARN instead of DEBUG sometimes thrown
+        when importing fails.
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed NullPointerException being thrown with some PDFs when extracting
+        multilingual items.
+      </action>
     </release>
 
     <release version="2.4.0" date="2015-11-02" description="Feature release">

@@ -195,7 +195,7 @@ public class Importer {
             return doImportDocument(input, contentType, 
                     charEncoding, metadata, reference);
         } catch (ImporterException e) {
-            LOG.debug("Could not import " + reference, e);
+            LOG.warn("Could not import " + reference, e);
             return new ImporterResponse(reference, new ImporterStatus(e));
         }
     }

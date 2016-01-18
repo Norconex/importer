@@ -401,17 +401,20 @@ public class EnhancedPDFParser extends AbstractParser {
             return;
         }
 
-        for (String lang : schema.getUnqualifiedLanguagePropertyLanguagesValue(property.getName())) {
-            String value = schema.getUnqualifiedLanguagePropertyValue(property.getName(), lang);
+        List<String> langs = schema.getUnqualifiedLanguagePropertyLanguagesValue(property.getName());
+        if (langs != null) {
+            for (String lang : langs) {
+                String value = schema.getUnqualifiedLanguagePropertyValue(property.getName(), lang);
 
-            if (value != null && value.length() > 0) {
-                //if you're going to add it below in the baseline addition, don't add it now
-                if (value.equals(pdfBoxBaseline)){
-                    continue;
-                }
-                metadata.add(property, value); 
-                if (! property.isMultiValuePermitted()){
-                    return;
+                if (value != null && value.length() > 0) {
+                    //if you're going to add it below in the baseline addition, don't add it now
+                    if (value.equals(pdfBoxBaseline)){
+                        continue;
+                    }
+                    metadata.add(property, value); 
+                    if (! property.isMultiValuePermitted()){
+                        return;
+                    }
                 }
             }
         }
