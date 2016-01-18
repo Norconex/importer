@@ -21,6 +21,12 @@
         conversion methods.
       </action>
       <action dev="essiembre" type="update">
+        When used as pre-parse handlers, most handlers dealing with text 
+        now accepts a charset to use for parsing content, or will detect 
+        encoding when no charset is specified.  This eliminates many 
+        bad character issues.
+      </action>
+      <action dev="essiembre" type="update">
         Metadata document.contentEncoding is now always set when passed 
         to importDocument method.
       </action>

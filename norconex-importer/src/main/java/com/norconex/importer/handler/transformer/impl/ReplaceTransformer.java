@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
  *          caseSensitive="[false|true]"
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *          
  *      &lt;replace&gt;

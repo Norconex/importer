@@ -101,25 +101,8 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             InputStream input, OutputStream output, ImporterMetadata metadata,
             boolean parsed) throws ImporterHandlerException {
         
-        //--- Get source charset ---
-        String inputCharset = sourceCharset;
-        if (StringUtils.isBlank(inputCharset)) {
-            String declaredEncoding = 
-                    metadata.getString(ImporterMetadata.DOC_CONTENT_ENCODING);
-            try {
-                inputCharset = CharsetUtil.detectCharset(input, declaredEncoding);
-            } catch (IOException e) {
-                LOG.warn("Cannot detect source encoding. "
-                        + "Encoding will remain unchanged for: "
-                        + reference, e);
-                return;
-            }
-        }
-        // Do not attempt conversion of no source charset is found
-        if (StringUtils.isBlank(inputCharset)) {
-            return;
-        }
-        inputCharset = CharsetUtils.clean(inputCharset);
+        String inputCharset = detectCharsetIfBlank(
+                sourceCharset, reference, input, metadata, false);
 
         //--- Get target charset ---
         String outputCharset = targetCharset;

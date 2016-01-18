@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,6 +101,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *          detectHeading="[false|true]"
  *          detectHeadingMinLength="(min length a heading title can have)"
  *          detectHeadingMaxLength="(max length a heading title can have)"
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"

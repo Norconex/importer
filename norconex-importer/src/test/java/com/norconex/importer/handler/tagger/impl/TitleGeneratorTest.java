@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,7 +58,7 @@ public class TitleGeneratorTest {
         t.setToField("mytitle");
         
         File file = TestUtil.getAliceTextFile();
-        FileInputStream is = new FileInputStream(file);
+        InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");

@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.importer.handler;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -26,18 +27,22 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.tika.utils.CharsetUtils;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.util.CharsetUtil;
 
 /**
  * Base class for handlers applying only to certain type of documents
@@ -192,6 +197,59 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         return false;
     }
 
+    /**
+     * Convenience method for handlers that need to detect an input encoding
+     * if the explicitly provided encoding is blank.  Detection is only
+     * attempted if parsing has not occurred (since parsing converts everything
+     * to UTF-8 already).
+     * @param charset the character encoding to test if blank
+     * @param reference the reference of the document to detect charset on
+     * @param document the document to detect charset on
+     * @param metadata the document metadata to check for declared encoding
+     * @param parsed whether the document has already been parsed or not.
+     * @return detected and clean encoding.
+     */
+    protected final String detectCharsetIfBlank(
+            String charset, 
+            String reference, 
+            InputStream document, 
+            ImporterMetadata metadata,
+            boolean parsed) {
+        if (parsed) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Document already parsed, assuming UTF-8 charset: "
+                        + reference);
+            }
+            return CharEncoding.UTF_8;
+        }
+
+        String detectedCharset = charset;
+        if (StringUtils.isNotBlank(detectedCharset)) {
+            return CharsetUtils.clean(detectedCharset);
+        } else { 
+            String declaredEncoding = null;
+            if (metadata != null) {
+                declaredEncoding = metadata.getString(
+                        ImporterMetadata.DOC_CONTENT_ENCODING);
+            }
+            try {
+                detectedCharset = CharsetUtil.detectCharset(
+                        document, declaredEncoding);
+            } catch (IOException e) {
+                detectedCharset = CharEncoding.UTF_8;
+                LOG.debug("Problem detecting encoding for: " + reference, e);
+            }
+        }
+        if (StringUtils.isBlank(detectedCharset)) {
+            detectedCharset = CharEncoding.UTF_8;
+            LOG.debug("Cannot detect source encoding. UTF-8 will be "
+                    + "assumed for: " + reference);
+        } else {
+            detectedCharset = CharsetUtils.clean(detectedCharset);
+        }
+        return detectedCharset;
+    }
+    
     @Override
     public final void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);

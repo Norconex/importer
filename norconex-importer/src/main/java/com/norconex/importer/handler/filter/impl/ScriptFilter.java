@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"
  *          engineName="(script engine name)"
  *          onMatch="[include|exclude]" 
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
  *      &lt;script&gt;(your script)&lt;/script&gt;
  *  &lt;/filter&gt;

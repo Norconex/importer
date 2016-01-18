@@ -141,7 +141,9 @@ public final class CharsetUtil {
     }
 
     /**
-     * Detects the character encoding of an input stream.
+     * Detects the character encoding of an input stream. 
+     * {@link InputStream#markSupported()} must return <code>true</code>
+     * otherwise no decoding will be attempted.
      * @param input the input to detect encoding on
      * @return the character encoding official name or <code>null</code>
      *         if input is null
@@ -155,6 +157,8 @@ public final class CharsetUtil {
      * Detects the character encoding of an input stream. When the character
      * encoding of what the input is supposed to be is known, specifying
      * it as a declared encoding will influence the detection result.
+     * {@link InputStream#markSupported()} must return <code>true</code>
+     * otherwise no decoding will be attempted.
      * @param input the input to detect encoding on
      * @param declaredEncoding declared input encoding, if known
      * @return the character encoding official name or <code>null</code>
@@ -166,6 +170,12 @@ public final class CharsetUtil {
         if (input == null) {
             return null;
         }
+        if (!input.markSupported()) {
+            LOG.warn("mark/reset not supported on input stream. "
+                    + "Will not attempt to detect encoding.");
+            return declaredEncoding;
+        }
+        
         CharsetDetector cd = new CharsetDetector();
         if (StringUtils.isNotBlank(declaredEncoding)) {
             cd.setDeclaredEncoding(declaredEncoding);

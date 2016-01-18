@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *      (regular expression of value to match)
  *  &lt;/filter&gt;

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -71,11 +70,21 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * You can specify your own content types if you know they represent a file
  * with HTML or XML-like markup tags.
  * </p>
+ * 
+ * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * this class attempts to detect the content character 
+ * encoding unless the character encoding
+ * was specified using {@link #setSourceCharset(String)}. Since document
+ * parsing converts content to UTF-8, UTF-8 is always assumed when
+ * used as a post-parse handler.
+ * </p>
+ * 
  * <h3>
  * XML configuration usage:
  * </h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+ *          sourceCharset="(character encoding)"&gt;
  *      &lt;dom selector="(selector syntax)" toField="(target field)"
  *              overwrite="[false|true]" /&gt;
  *      &lt;!-- multiple "dom" tags allowed --&gt;
@@ -93,45 +102,8 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class DOMTagger extends AbstractDocumentTagger {
 
-    private static class DOMExtractDetails {
-        private String selector;
-        private String toField;
-        private boolean overwrite;
-        
-        DOMExtractDetails(String selector, String to, boolean overwrite) {
-            this.selector = selector;
-            this.toField = to;
-            this.overwrite = overwrite;
-        }
-        
-        @Override
-        public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE);
-            builder.append("selector", selector);
-            builder.append("toField", toField);
-            builder.append("overwrite", overwrite);
-            return builder.toString();
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            if (!(other instanceof DOMExtractDetails)) {
-                return false;
-            }
-            DOMExtractDetails castOther = (DOMExtractDetails) other;
-            return new EqualsBuilder().append(selector, castOther.selector)
-                    .append(toField, castOther.toField)
-                    .append(overwrite, castOther.overwrite).isEquals();
-        }
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder().append(selector).append(toField)
-                    .append(overwrite).toHashCode();
-        }
-    }
-
     private final List<DOMExtractDetails> list = new ArrayList<>();
+    private String sourceCharset = null;
     
     /**
      * Constructor.
@@ -141,13 +113,33 @@ public class DOMTagger extends AbstractDocumentTagger {
         addRestrictions(CommonRestrictions.domContentTypes());
     }
     
+    /**
+     * Gets the assumed source character encoding.
+     * @return character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public String getSourceCharset() {
+        return sourceCharset;
+    }
+    /**
+     * Sets the assumed source character encoding.
+     * @param sourceCharset character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public void setSourceCharset(String sourceCharset) {
+        this.sourceCharset = sourceCharset;
+    }
+    
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
+        String inputCharset = detectCharsetIfBlank(
+                sourceCharset, reference, document, metadata, parsed);
+        
         try {
-            Document doc = Jsoup.parse(document, CharEncoding.UTF_8, reference);
+            Document doc = Jsoup.parse(document, inputCharset, reference);
             for (DOMExtractDetails details : list) {
                 Elements elms = doc.select(details.selector);
                 // no elements matching
@@ -200,6 +192,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
         if (!nodes.isEmpty()) {
             list.clear();
@@ -214,6 +207,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
+        writer.writeAttributeString("sourceCharset", getSourceCharset());
         for (DOMExtractDetails details : list) {
             writer.writeStartElement("dom");
             writer.writeAttribute("selector", details.selector);
@@ -233,6 +227,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(list, castOther.list)
+                .append(sourceCharset, castOther.sourceCharset)
                 .isEquals();
     }
 
@@ -241,6 +236,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
                 .append(list)
+                .append(sourceCharset)                
                 .toHashCode();
     }
 
@@ -250,6 +246,45 @@ public class DOMTagger extends AbstractDocumentTagger {
                 this, ToStringStyle.SHORT_PREFIX_STYLE);
         builder.appendSuper(super.toString());
         builder.append("list", list);
+        builder.append("sourceCharset", sourceCharset);
         return builder.toString();
     }
+    
+    private static class DOMExtractDetails {
+        private String selector;
+        private String toField;
+        private boolean overwrite;
+        
+        DOMExtractDetails(String selector, String to, boolean overwrite) {
+            this.selector = selector;
+            this.toField = to;
+            this.overwrite = overwrite;
+        }
+        
+        @Override
+        public String toString() {
+            ToStringBuilder builder = new ToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE);
+            builder.append("selector", selector);
+            builder.append("toField", toField);
+            builder.append("overwrite", overwrite);
+            return builder.toString();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof DOMExtractDetails)) {
+                return false;
+            }
+            DOMExtractDetails castOther = (DOMExtractDetails) other;
+            return new EqualsBuilder().append(selector, castOther.selector)
+                    .append(toField, castOther.toField)
+                    .append(overwrite, castOther.overwrite).isEquals();
+        }
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder().append(selector).append(toField)
+                    .append(overwrite).toHashCode();
+        }
+    }    
 }

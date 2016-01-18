@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
  *          caseSensitive="[false|true]"
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *      &lt;pattern field="targetFieldName" group="(optional match group index)"&gt;
  *          (regular expression)

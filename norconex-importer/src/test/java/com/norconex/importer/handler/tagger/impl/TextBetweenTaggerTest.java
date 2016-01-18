@@ -19,7 +19,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
@@ -29,6 +34,16 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TextBetweenTaggerTest {
 
+    @Before
+    public void before() {
+        Logger logger = Logger.getRootLogger();
+        logger.setLevel(Level.INFO);
+        logger.setAdditivity(false);
+        logger.addAppender(new ConsoleAppender(
+                new PatternLayout("%-5p [%C{1}] %m%n"), 
+                ConsoleAppender.SYSTEM_OUT));
+    }
+    
     @Test
     public void testExtractMatchingRegex() 
             throws IOException, ImporterHandlerException {

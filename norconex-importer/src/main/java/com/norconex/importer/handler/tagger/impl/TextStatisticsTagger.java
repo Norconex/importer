@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * <p>XML configuration usage:</p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+ *          sourceCharset="(character encoding)"
  *          fieldName="(optional field name instead of using content)" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -219,12 +220,13 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadCharStreamTaggerFromXML(XMLConfiguration xml)
+            throws IOException {
         setFieldName(xml.getString("[@fieldName]", getFieldName()));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveCharStreamTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         if (StringUtils.isNotBlank(fieldName)) {
             writer.writeAttribute("fieldName", fieldName);

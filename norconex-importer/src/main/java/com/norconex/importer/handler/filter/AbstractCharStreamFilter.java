@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,22 @@
  */
 package com.norconex.importer.handler.filter;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 
-import org.apache.commons.lang3.CharEncoding;
+import javax.xml.stream.XMLStreamException;
+
+import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -33,9 +39,23 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses can safely be used as either pre-parse or post-parse handlers
  * restricted to text documents only (see {@link AbstractImporterHandler}).
  * </p>
+ * 
+ * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * this class attempts to detect the content character 
+ * encoding unless the character encoding
+ * was specified using {@link #setSourceCharset(String)}. Since document
+ * parsing converts content to UTF-8, UTF-8 is always assumed when
+ * used as a post-parse handler.
+ * </p>
+ * 
+ * <p>
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
+ * </p>
  * <pre>
- *  &lt;!-- main tag supports onMatch="[include|exclude]" attribute --&gt;
+ *  &lt;!-- parent tag has these attribute: 
+ *      sourceCharset="(character encoding)"
+ *      onMatch="[include|exclude]"
+ *    --&gt; 
  *  &lt;restrictTo
  *          caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
@@ -48,16 +68,35 @@ import com.norconex.importer.handler.ImporterHandlerException;
  */
 public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
 
+    private String sourceCharset = null;
+    
+    /**
+     * Gets the assumed source character encoding.
+     * @return character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public String getSourceCharset() {
+        return sourceCharset;
+    }
+    /**
+     * Sets the assumed source character encoding.
+     * @param sourceCharset character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public void setSourceCharset(String sourceCharset) {
+        this.sourceCharset = sourceCharset;
+    }    
+    
     @Override
     protected final boolean isDocumentMatched(
             String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        //TODO shall we try to use document char encoding instead??
+        String inputCharset = detectCharsetIfBlank(
+                sourceCharset, reference, input, metadata, parsed);
         try {
-            InputStreamReader is = new InputStreamReader(
-                    input, CharEncoding.UTF_8);
+            InputStreamReader is = new InputStreamReader(input, inputCharset);
             return isTextDocumentMatching(reference, is, metadata, parsed);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);
@@ -69,16 +108,71 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException;
 
+    
     @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof AbstractCharStreamFilter)) {
+    protected final void saveFilterToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.writeAttributeString("sourceCharset", getSourceCharset());
+        saveCharStreamFilterToXML(writer);
+    }
+    /**
+     * Saves configuration settings specific to the implementing class.
+     * The parent tag along with the "class" attribute are already written.
+     * Implementors must not close the writer.
+     * 
+     * @param writer the xml writer
+     * @throws XMLStreamException could not save to XML
+     */
+    protected abstract void saveCharStreamFilterToXML(
+            EnhancedXMLStreamWriter writer) throws XMLStreamException;
+    
+
+    @Override
+    protected final void loadFilterFromXML(
+            XMLConfiguration xml) throws IOException {
+        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+        loadCharStreamFilterFromXML(xml);
+    }
+    /**
+     * Loads configuration settings specific to the implementing class.
+     * @param xml xml configuration
+     * @throws IOException could not load from XML
+     */
+    protected abstract void loadCharStreamFilterFromXML(
+            XMLConfiguration xml) throws IOException;
+    
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
             return false;
         }
-        return new EqualsBuilder().appendSuper(super.equals(other)).isEquals();
+        if (!(obj instanceof AbstractCharStreamFilter)) {
+            return false;
+        }
+        AbstractCharStreamFilter other = (AbstractCharStreamFilter) obj;
+        return new EqualsBuilder()
+            .appendSuper(super.equals(obj))
+            .append(sourceCharset, other.sourceCharset)
+            .isEquals();
     }
+
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode()).toHashCode();
-    } 
-
+        return new HashCodeBuilder()
+            .appendSuper(super.hashCode())
+            .append(sourceCharset)
+            .toHashCode();
+    }
+    
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+            .appendSuper(super.toString())
+            .append("sourceCharset", sourceCharset)
+            .toString();
+    }
 }

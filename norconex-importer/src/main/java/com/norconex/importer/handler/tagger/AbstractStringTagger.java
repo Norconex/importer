@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <pre>
  *  &lt;!-- parent tag has this attribute: 
  *      maxReadSize="(max characters to read at once)"
+ *      sourceCharset="(character encoding)"
  *    --&gt;
  *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)" &gt;
@@ -120,10 +121,9 @@ public abstract class AbstractStringTagger
            boolean parsed, int sectionIndex) 
                    throws ImporterHandlerException;
     
-    
     @Override
-    protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected final void saveCharStreamTaggerToXML(
+            EnhancedXMLStreamWriter writer) throws XMLStreamException {
         writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
         saveStringTaggerToXML(writer);
     }
@@ -139,8 +139,8 @@ public abstract class AbstractStringTagger
             EnhancedXMLStreamWriter writer) throws XMLStreamException;
     
     @Override
-    protected final void loadHandlerFromXML(
-            XMLConfiguration xml) throws IOException {
+    protected final void loadCharStreamTaggerFromXML(XMLConfiguration xml)
+            throws IOException {
         setMaxReadSize(xml.getInt("[@maxReadSize]", getMaxReadSize()));
         loadStringTaggerFromXML(xml);
     }

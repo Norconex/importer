@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,6 +363,7 @@ import com.norconex.language.detector.LanguageDetectorException;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
  *          shortText="(false|true)"
  *          keepProbabilities="(false|true)"
+ *          sourceCharset="(character encoding)"
  *          fallbackLanguage="" &gt;
  *      &lt;languages&gt;
  *        (CSV list of language tag candidates. Defaults to the above list.)
@@ -511,7 +512,8 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadCharStreamTaggerFromXML(XMLConfiguration xml)
+            throws IOException {
         setShortText(xml.getBoolean("[@shortText]", isShortText()));
         setKeepProbabilities(xml.getBoolean(
                 "[@keepProbabilities]", isKeepProbabilities()));
@@ -525,7 +527,7 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveCharStreamTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute("shortText", Boolean.toString(shortText));
         writer.writeAttribute(

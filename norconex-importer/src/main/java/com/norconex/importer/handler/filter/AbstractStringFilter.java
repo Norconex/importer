@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <pre>
  *  &lt;!-- parent tag has these attributes: 
  *      maxReadSize="(max characters to read at once)" 
+ *      sourceCharset="(character encoding)"
  *      onMatch="[include|exclude]"
  *    --&gt;
  *  &lt;restrictTo caseSensitive="[false|true]"
@@ -130,8 +131,8 @@ public abstract class AbstractStringFilter
     
 
     @Override
-    protected final void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected final void saveCharStreamFilterToXML(
+            EnhancedXMLStreamWriter writer) throws XMLStreamException {
         writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
         saveStringFilterToXML(writer);
     }
@@ -147,8 +148,8 @@ public abstract class AbstractStringFilter
             EnhancedXMLStreamWriter writer) throws XMLStreamException;
 
     @Override
-    protected final void loadFilterFromXML(
-            XMLConfiguration xml) throws IOException {
+    protected final void loadCharStreamFilterFromXML(XMLConfiguration xml)
+            throws IOException {
         setMaxReadSize(xml.getInt("[@maxReadSize]", getMaxReadSize()));
         loadStringFilterFromXML(xml);
     }

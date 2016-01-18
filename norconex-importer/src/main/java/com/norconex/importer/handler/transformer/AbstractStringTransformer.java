@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * or word.  When not possible, long text will be cut at a size equal
  * to the maximum read size.
  * </p>
- * 
+ *
  * <p>
  * Implementors should be conscious about memory when dealing with the string
  * builder.
@@ -60,8 +60,9 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * </p>
  * <pre>
- *  &lt;!-- parent tag has this attribute: 
+ *  &lt;!-- parent tag has these attribute: 
  *      maxReadSize="(max characters to read at once)"
+ *      sourceCharset="(character encoding)"
  *    --&gt;
  *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)" &gt;
@@ -124,7 +125,8 @@ public abstract class AbstractStringTransformer
            boolean parsed, int sectionIndex) throws ImporterHandlerException;
    
     @Override
-    protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected final void saveCharStreamTransformerToXML(
+            EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
         saveStringTransformerToXML(writer);
@@ -139,10 +141,10 @@ public abstract class AbstractStringTransformer
      */
     protected abstract void saveStringTransformerToXML(
             EnhancedXMLStreamWriter writer) throws XMLStreamException;
-    
+
     @Override
-    protected final void loadHandlerFromXML(
-            XMLConfiguration xml) throws IOException {
+    protected final void loadCharStreamTransformerFromXML(XMLConfiguration xml)
+            throws IOException {
         setMaxReadSize(xml.getInt("[@maxReadSize]", getMaxReadSize()));
         loadStringTransformerFromXML(xml);
     }
