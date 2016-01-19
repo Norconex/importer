@@ -38,7 +38,7 @@ public class DOMTaggerTest {
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails("h2", "headings", false);
-        t.addDOMExtractDetails("a[href]", "links", true);
+        t.addDOMExtractDetails("a[href]", "links", true, "html");
         
         File htmlFile = TestUtil.getAliceHtmlFile();
         FileInputStream is = new FileInputStream(htmlFile);
@@ -59,6 +59,43 @@ public class DOMTaggerTest {
                 "Down the Rabbit-Hole", headings.get(1));
     }
 
+    @Test
+    public void testExtractionTypes() 
+            throws IOException, ImporterHandlerException {
+        DOMTagger t = new DOMTagger();
+        t.addDOMExtractDetails("head", "fhtml", false, "html");
+        t.addDOMExtractDetails("head", "fouter", false, "outerhtml");
+        t.addDOMExtractDetails("head", "ftext", false, "text");
+
+        File htmlFile = TestUtil.getAliceHtmlFile();
+        FileInputStream is = new FileInputStream(htmlFile);
+
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        is.close();
+
+        String expectedText = "Alice's Adventures in Wonderland -- Chapter I";
+        String expectedHtml = "<meta http-equiv=\"content-type\" "
+                + "content=\"text/html; charset=ISO-8859-1\">"
+                + "<title>" + expectedText + "</title>";
+        String expectedOuter = "<head>" + expectedHtml + "</head>";
+
+        Assert.assertEquals(expectedText, metadata.getString("ftext"));
+        Assert.assertEquals(expectedHtml, 
+                cleanHTML(metadata.getString("fhtml")));
+        Assert.assertEquals(expectedOuter, 
+                cleanHTML(metadata.getString("fouter")));
+    }
+    private String cleanHTML(String html) {
+        String clean = html;
+        clean = clean.replaceAll("[\\r\\n]", "");
+        clean = clean.replaceAll(">\\s+<", "><");
+        return clean;
+    }
+    
+    
+    
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();

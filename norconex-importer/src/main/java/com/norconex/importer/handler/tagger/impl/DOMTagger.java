@@ -29,6 +29,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -79,6 +81,19 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * used as a post-parse handler.
  * </p>
  * 
+ * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
+ * exactly thanks to the "extract" argument of the new method 
+ * {@link #addDOMExtractDetails(String, String, boolean, String)}.
+ * Possible values are:</p>
+ * <ul>
+ *   <li><b>text</b>: Default option. The text of the element, including 
+ *       combined children.</li>
+ *   <li><b>html</b>: Extracts an element inner 
+ *       HTML (including children).</li>
+ *   <li><b>outerHtml</b>: Extracts an element outer 
+ *       HTML (like "html", but includes the "current" tag).</li>
+ * </ul>
+ * 
  * <h3>
  * XML configuration usage:
  * </h3>
@@ -86,7 +101,8 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
  *          sourceCharset="(character encoding)"&gt;
  *      &lt;dom selector="(selector syntax)" toField="(target field)"
- *              overwrite="[false|true]" /&gt;
+ *              overwrite="[false|true]"
+ *              extract="[text|html|outerHtml]" /&gt;
  *      &lt;!-- multiple "dom" tags allowed --&gt;
  *          
  *      &lt;restrictTo
@@ -102,7 +118,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class DOMTagger extends AbstractDocumentTagger {
 
-    private final List<DOMExtractDetails> list = new ArrayList<>();
+    private static final Logger LOG = LogManager.getLogger(DOMTagger.class);
+    
+    private final List<DOMExtractDetails> extractions = new ArrayList<>();
     private String sourceCharset = null;
     
     /**
@@ -140,7 +158,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         
         try {
             Document doc = Jsoup.parse(document, inputCharset, reference);
-            for (DOMExtractDetails details : list) {
+            for (DOMExtractDetails details : extractions) {
                 Elements elms = doc.select(details.selector);
                 // no elements matching
                 if (elms.isEmpty()) {
@@ -150,7 +168,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                 // one or more elements matching
                 List<String> values = new ArrayList<String>();
                 for (Element elm : elms) {
-                    String value = elm.html();
+                    String value = getElementValue(elm, details.extract);
                     if (StringUtils.isNotBlank(value)) {
                         values.add(value);
                     }
@@ -170,15 +188,45 @@ public class DOMTagger extends AbstractDocumentTagger {
                     "Cannot extract DOM element(s) from DOM-tree.", e);
         }
     }
+    
+    private String getElementValue(Element element, String extract) {
+        if ("html".equalsIgnoreCase(extract)) {
+            return element.html();
+        }
+        if ("outerhtml".equalsIgnoreCase(extract)) {
+            return element.outerHtml();
+        }
+        if (StringUtils.isNotBlank(extract) 
+                && !"text".equalsIgnoreCase(extract)) {
+            LOG.warn("\"" + extract + "\" is not a supported extract type. "
+                    + "\"text\" will be used (other options are \"html\" "
+                    + "and \"outerHtml\").");
+        }
+        return element.text();
+    }
 
     /**
-     * Adds DOM element value extraction instructions.
+     * Adds DOM element value extraction instructions. Extracts
+     * the value as text (stripped of HTML tags).
      * @param selector selector
      * @param toField target field name
      * @param overwrite whether toField overwrite target field if it exists
      */
     public void addDOMExtractDetails(
             String selector, String toField, boolean overwrite) {
+        addDOMExtractDetails(selector, toField, overwrite, "text");
+    }
+    /**
+     * Adds DOM element value extraction instructions.
+     * @param selector selector
+     * @param toField target field name
+     * @param overwrite whether toField overwrite target field if it exists
+     * @param extract one of "html", "outerHtml", "text"
+     * @since 2.5.0
+     */
+    public void addDOMExtractDetails(
+            String selector, String toField, 
+            boolean overwrite, String extract) {
         if (StringUtils.isBlank(selector)) {
             throw new IllegalArgumentException(
                     "'selector' argument cannot be blank.");
@@ -187,7 +235,8 @@ public class DOMTagger extends AbstractDocumentTagger {
             throw new IllegalArgumentException(
                     "'toField' argument cannot be blank.");
         }
-        list.add(new DOMExtractDetails(selector, toField, overwrite));
+        extractions.add(new DOMExtractDetails(
+                selector, toField, overwrite, extract));
     }
     
     @Override
@@ -195,12 +244,13 @@ public class DOMTagger extends AbstractDocumentTagger {
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
         if (!nodes.isEmpty()) {
-            list.clear();
+            extractions.clear();
         }
         for (HierarchicalConfiguration node : nodes) {
             addDOMExtractDetails(node.getString("[@selector]", null),
                       node.getString("[@toField]", null),
-                      node.getBoolean("[@overwrite]", false));
+                      node.getBoolean("[@overwrite]", false),
+                      node.getString("[@extract]", null));
         }
     }
 
@@ -208,12 +258,13 @@ public class DOMTagger extends AbstractDocumentTagger {
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
-        for (DOMExtractDetails details : list) {
+        for (DOMExtractDetails details : extractions) {
             writer.writeStartElement("dom");
             writer.writeAttribute("selector", details.selector);
             writer.writeAttribute("toField", details.toField);
             writer.writeAttribute("overwrite", 
                     Boolean.toString(details.overwrite));
+            writer.writeAttribute("extract", details.extract);
             writer.writeEndElement();
         }
     }
@@ -226,7 +277,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         DOMTagger castOther = (DOMTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
-                .append(list, castOther.list)
+                .append(extractions, castOther.extractions)
                 .append(sourceCharset, castOther.sourceCharset)
                 .isEquals();
     }
@@ -235,30 +286,32 @@ public class DOMTagger extends AbstractDocumentTagger {
     public int hashCode() {
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
-                .append(list)
-                .append(sourceCharset)                
+                .append(extractions)
+                .append(sourceCharset)
                 .toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.appendSuper(super.toString());
-        builder.append("list", list);
-        builder.append("sourceCharset", sourceCharset);
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("list", extractions)
+                .append("sourceCharset", sourceCharset)
+                .toString();
     }
     
     private static class DOMExtractDetails {
-        private String selector;
-        private String toField;
-        private boolean overwrite;
+        private final String selector;
+        private final String toField;
+        private final boolean overwrite;
+        private final String extract;
         
-        DOMExtractDetails(String selector, String to, boolean overwrite) {
+        DOMExtractDetails(
+                String selector, String to, boolean overwrite, String extract) {
             this.selector = selector;
             this.toField = to;
             this.overwrite = overwrite;
+            this.extract = extract;
         }
         
         @Override
@@ -268,6 +321,7 @@ public class DOMTagger extends AbstractDocumentTagger {
             builder.append("selector", selector);
             builder.append("toField", toField);
             builder.append("overwrite", overwrite);
+            builder.append("extract", extract);
             return builder.toString();
         }
 
@@ -279,12 +333,18 @@ public class DOMTagger extends AbstractDocumentTagger {
             DOMExtractDetails castOther = (DOMExtractDetails) other;
             return new EqualsBuilder().append(selector, castOther.selector)
                     .append(toField, castOther.toField)
-                    .append(overwrite, castOther.overwrite).isEquals();
+                    .append(overwrite, castOther.overwrite)
+                    .append(extract, castOther.extract)
+                    .isEquals();
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(selector).append(toField)
-                    .append(overwrite).toHashCode();
+            return new HashCodeBuilder()
+                    .append(selector)
+                    .append(toField)
+                    .append(overwrite)
+                    .append(extract)
+                    .toHashCode();
         }
     }    
 }

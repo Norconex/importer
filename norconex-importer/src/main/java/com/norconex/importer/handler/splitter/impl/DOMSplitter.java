@@ -22,7 +22,6 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -68,12 +67,22 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * You can specify your own content types if you know they represent a file
  * with HTML or XML-like markup tags.
  * </p>
+ * 
+ * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * this class attempts to detect the content character 
+ * encoding unless the character encoding
+ * was specified using {@link #setSourceCharset(String)}. Since document
+ * parsing converts content to UTF-8, UTF-8 is always assumed when
+ * used as a post-parse handler.
+ * </p>
+ * 
  * <h3>
  * XML configuration usage:
  * </h3>
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
- *          selector="(selector syntax)" &gt;
+ *          selector="(selector syntax)"
+ *          sourceCharset="(character encoding)" &gt;
  *      &lt;restrictTo
  *              caseSensitive="[false|true]"
  *              field="(name of metadata field name to match)"&gt;
@@ -90,6 +99,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
     private String selector;
+    private String sourceCharset = null;
     
     public DOMSplitter() {
         super();
@@ -102,17 +112,37 @@ public class DOMSplitter extends AbstractDocumentSplitter
     public void setSelector(String selector) {
         this.selector = selector;
     }
-
+    /**
+     * Gets the assumed source character encoding.
+     * @return character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public String getSourceCharset() {
+        return sourceCharset;
+    }
+    /**
+     * Sets the assumed source character encoding.
+     * @param sourceCharset character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public void setSourceCharset(String sourceCharset) {
+        this.sourceCharset = sourceCharset;
+    }
+    
     @Override
     protected List<ImporterDocument> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
         
+        String inputCharset = detectCharsetIfBlank(
+                sourceCharset, doc.getReference(), 
+                doc.getInput(), doc.getMetadata(), parsed);
+        
         List<ImporterDocument> docs = new ArrayList<>();
         try {
             Document soupDoc = Jsoup.parse(
-                    doc.getInput(), CharEncoding.UTF_8, doc.getReference());
+                    doc.getInput(), inputCharset, doc.getReference());
             Elements elms = soupDoc.select(selector);
             for (Element elm : elms) {
                 ImporterMetadata childMeta = new ImporterMetadata();
@@ -144,12 +174,14 @@ public class DOMSplitter extends AbstractDocumentSplitter
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) {
         setSelector(xml.getString("[@selector]", getSelector()));
+        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
     }
 
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("selector", getSelector());
+        writer.writeAttributeString("sourceCharset", getSourceCharset());
     }
     
     @Override
@@ -161,6 +193,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(selector, castOther.selector)
+                .append(sourceCharset, castOther.sourceCharset)
                 .isEquals();
     }
     @Override
@@ -168,6 +201,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
                 .append(selector)
+                .append(sourceCharset)
                 .toHashCode();
     }
 
@@ -176,6 +210,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("selector", selector)
+                .append("sourceCharset", sourceCharset)
                 .toString();
     }
 }

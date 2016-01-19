@@ -21,12 +21,13 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -76,6 +77,26 @@ import com.norconex.importer.handler.filter.OnMatch;
  * incompatible, consider using {@link RegexContentFilter}
  * instead.
  * </p>
+ * 
+ * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * this class attempts to detect the content character 
+ * encoding unless the character encoding
+ * was specified using {@link #setSourceCharset(String)}. Since document
+ * parsing converts content to UTF-8, UTF-8 is always assumed when
+ * used as a post-parse handler.
+ * </p>
+ * 
+ * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
+ * exactly for matching purposes thanks to the "extract" argument of the 
+ * new method {@link #setExtract(String)}.  Possible values are:</p>
+ * <ul>
+ *   <li><b>html</b>: Default option. Extracts an element inner 
+ *       HTML (including children).</li>
+ *   <li><b>outerHtml</b>: Extracts an element outer 
+ *       HTML (like "html", but includes the "current" tag).</li>
+ *   <li><b>text</b>: The text of the element, including combined children.</li>
+ * </ul>
+ * 
  * <h3>
  * XML configuration usage:
  * </h3>
@@ -83,7 +104,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
- *          selector="(selector syntax)" &gt;
+ *          sourceCharset="(character encoding)"          
+ *          selector="(selector syntax)"
+ *          extract="[text|html|outerHtml]" &gt;
  *    &lt;regex&gt;(optional regular expression of value to match)&lt;/regex&gt;
  *    &lt;restrictTo caseSensitive="[false|true]"
  *            field="(name of header/metadata field name to match)"&gt;
@@ -115,11 +138,15 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 public class DOMContentFilter extends AbstractDocumentFilter {
     
+    private static final Logger LOG = 
+            LogManager.getLogger(DOMContentFilter.class);
+    
     private boolean caseSensitive;
     private String regex;
     private Pattern pattern;
     private String selector;
-
+    private String extract;
+    private String sourceCharset = null;    
     
     public DOMContentFilter() {
         this(null, OnMatch.INCLUDE);
@@ -169,12 +196,53 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         this.selector = selector;
     }
     
+    /**
+     * Gets what should be extracted for the value. One of 
+     * "text" (default), "html", or "outerHtml". <code>null</code> means
+     * this class will use the default ("text").
+     * @return what should be extracted for the value
+     * @since 2.5.0
+     */
+    public String getExtract() {
+        return extract;
+    }
+    /**
+     * Sets what should be extracted for the value. One of 
+     * "text" (default), "html", or "outerHtml". <code>null</code> means
+     * this class will use the default ("text").
+     * @param extract what should be extracted for the value
+     * @since 2.5.0
+     */
+    public void setExtract(String extract) {
+        this.extract = extract;
+    }
+    /**
+     * Gets the assumed source character encoding.
+     * @return character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public String getSourceCharset() {
+        return sourceCharset;
+    }
+    /**
+     * Sets the assumed source character encoding.
+     * @param sourceCharset character encoding of the source to be transformed
+     * @since 2.5.0
+     */
+    public void setSourceCharset(String sourceCharset) {
+        this.sourceCharset = sourceCharset;
+    }
+    
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
+        
+        String inputCharset = detectCharsetIfBlank(
+                sourceCharset, reference, input, metadata, parsed);
+        
         try {
-            Document doc = Jsoup.parse(input, CharEncoding.UTF_8, reference);
+            Document doc = Jsoup.parse(input, inputCharset, reference);
             Elements elms = doc.select(selector);
             // no elements matching
             if (elms.isEmpty()) {
@@ -185,7 +253,8 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 return true;
             }
             for (Element elm : elms) {
-                if (pattern.matcher(elm.text()).find()) {
+                String value = getElementValue(elm, getExtract());
+                if (pattern.matcher(value).find()) {
                     return true;
                 }
             }
@@ -196,18 +265,39 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         }
     }
     
+    //TODO same method found in DOMTagger. Move this to a DOMUtil or similar?
+    // Also have constant values if doing so? (emums)
+    private String getElementValue(Element element, String extract) {
+        if ("html".equalsIgnoreCase(extract)) {
+            return element.html();
+        }
+        if ("outerhtml".equalsIgnoreCase(extract)) {
+            return element.outerHtml();
+        }
+        if (StringUtils.isNotBlank(extract) 
+                && !"text".equalsIgnoreCase(extract)) {
+            LOG.warn("\"" + extract + "\" is not a supported extract type. "
+                    + "\"text\" will be used (other options are \"html\" "
+                    + "and \"outerHtml\").");
+        }
+        return element.text();
+    }    
     
     @Override
     protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeBoolean("caseSensitive", caseSensitive);
         writer.writeAttributeString("selector", selector);
+        writer.writeAttributeString("sourceCharset", getSourceCharset());
+        writer.writeAttributeString("extract", getExtract());
         writer.writeElementString("regex", regex);
     }
     @Override
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", isCaseSensitive()));
         setSelector(xml.getString("[@selector]", getSelector()));
+        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+        setSourceCharset(xml.getString("[@extract]", getExtract()));
         setRegex(xml.getString("regex"));
     }
 
@@ -222,6 +312,8 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .append(caseSensitive, castOther.caseSensitive)
                 .append(selector, castOther.selector)
                 .append(regex, castOther.regex)
+                .append(sourceCharset, castOther.sourceCharset)
+                .append(extract, castOther.extract)
                 .isEquals();
     }
     @Override
@@ -231,6 +323,8 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .append(caseSensitive)
                 .append(selector)
                 .append(regex)
+                .append(sourceCharset)                
+                .append(extract)
                 .toHashCode();
     }
 
@@ -241,6 +335,8 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .append("caseSensitive", caseSensitive)
                 .append("selector", selector)
                 .append("regex", regex)
+                .append("sourceCharset", sourceCharset)
+                .append("extract", "extract")
                 .toString();
     }    
 }

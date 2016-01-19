@@ -9,6 +9,10 @@
 
     <release version="2.5.0-SNAPSHOT" date="201?-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        DOMTagger and DOMFilter can now be told how to return matching elements 
+        values (i.e., text, html, or outerHtml).
+      </action>
+      <action dev="essiembre" type="add">
         New CharsetTagger to convert the character encoding of specified
         document metadata field into the desired target character encoding.
       </action>
@@ -19,6 +23,10 @@
       <action dev="essiembre" type="add">
         New CharsetUtil class offering simplified charset detection and 
         conversion methods.
+      </action>
+      <action dev="essiembre" type="update">
+        DOMTagger now returns matching element text as opposed to HTML
+        (can be configured back to HTML).
       </action>
       <action dev="essiembre" type="update">
         When used as pre-parse handlers, most handlers dealing with text 
