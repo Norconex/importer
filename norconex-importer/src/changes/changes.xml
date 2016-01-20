@@ -51,6 +51,10 @@
         when importing fails.
       </action>
       <action dev="essiembre" type="fix">
+        Fixed charset in HTML comments being wrongfully considered when
+        charset is being detected.
+      </action>
+      <action dev="essiembre" type="fix">
         Fixed NullPointerException being thrown with some PDFs when extracting
         multilingual items.
       </action>
