@@ -51,6 +51,10 @@
         when importing fails.
       </action>
       <action dev="essiembre" type="fix">
+        Fixed invalid zip bomb detection on PDF with elements nested more
+        than 100 level deep.
+      </action>
+      <action dev="essiembre" type="fix">
         Fixed charset in HTML comments being wrongfully considered when
         charset is being detected.
       </action>
