@@ -50,7 +50,7 @@
         Importer now issues a WARN instead of DEBUG sometimes thrown
         when importing fails.
       </action>
-      <action dev="essiembre" type="fix">
+      <action dev="tballison" type="fix">
         Fixed invalid zip bomb detection on PDF with elements nested more
         than 100 level deep.
       </action>
