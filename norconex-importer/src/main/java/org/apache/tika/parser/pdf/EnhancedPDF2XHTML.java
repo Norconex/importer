@@ -103,7 +103,10 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
      */
     private final static int MAX_ACROFORM_RECURSIONS = 10;
 
-
+    private final ContentHandler originalHandler;
+    private final ParseContext context;
+    private final XHTMLContentHandler handler;
+    private final PDFParserConfig config;
 
     /**
      * This keeps track of the pdf object ids for inline
@@ -116,6 +119,18 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
 
     private int inlineImageCounter = 0;
 
+    private EnhancedPDF2XHTML(ContentHandler handler, ParseContext context, Metadata metadata, 
+            PDFParserConfig config)
+            throws IOException {
+        //source of config (derives from context or PDFParser?) is
+        //already determined in PDFParser.  No need to check context here.
+        this.config = config;
+        this.originalHandler = handler;
+        this.context = context;
+        this.handler = new XHTMLContentHandler(handler, metadata);
+    }
+    
+    
     /**
      * Converts the given PDF document (and related metadata) to a stream
      * of XHTML SAX events sent to the given content handler.
@@ -161,22 +176,6 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         }
     }
     
-    private final ContentHandler originalHandler;
-    private final ParseContext context;
-    private final XHTMLContentHandler handler;
-    private final PDFParserConfig config;
-    
-    private EnhancedPDF2XHTML(ContentHandler handler, ParseContext context, Metadata metadata, 
-            PDFParserConfig config)
-            throws IOException {
-        //source of config (derives from context or PDFParser?) is
-        //already determined in PDFParser.  No need to check context here.
-        this.config = config;
-        this.originalHandler = handler;
-        this.context = context;
-        this.handler = new XHTMLContentHandler(handler, metadata);
-    }
-
     void extractBookmarkText() throws SAXException {
         PDDocumentOutline outline = document.getDocumentCatalog().getDocumentOutline();
         if (outline != null) {
