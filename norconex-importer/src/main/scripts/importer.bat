@@ -1,5 +1,6 @@
 @echo off
 cd %~dp0
+set IMPORTER_ROOT_DIR=%~dp0
 
 REM Third-party libraries sometimes have to create and write to temporary files.
 REM By default those are created in your system "temp" folder 
@@ -9,4 +10,4 @@ REM following to the java command below (replacing the path):
 REM
 REM     -Djava.io.tmpdir="C:\temp"
 
-java -Dlog4j.configuration="file:///%ROOT_DIR%classes/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*;./classes" com.norconex.importer.Importer %*
+java -Dlog4j.configuration="file:///%IMPORTER_ROOT_DIR%log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*;./classes" com.norconex.importer.Importer %*

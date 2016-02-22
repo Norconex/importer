@@ -25,6 +25,10 @@
         conversion methods.
       </action>
       <action dev="essiembre" type="update">
+        The "log4j.properties" file has been moved from classes to the 
+        installation root directory.
+      </action>
+      <action dev="essiembre" type="update">
         DOMTagger now returns matching element text as opposed to HTML
         (can be configured back to HTML).
       </action>

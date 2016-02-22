@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cd $(dirname $0)
+export IMPORTER_ROOT_DIR=$(dirname $0)
 
 # Third-party libraries sometimes have to create and write to temporary files.
 # By default those are created in your system "temp" folder
@@ -10,4 +11,4 @@ cd $(dirname $0)
 #
 #     -Djava.io.tmpdir=/path/to/tmp
 
-java -Dlog4j.configuration="file:${ROOT_DIR}/classes/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"
+java -Dlog4j.configuration="file:${IMPORTER_ROOT_DIR}/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"

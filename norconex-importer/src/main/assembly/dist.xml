@@ -40,6 +40,7 @@
       <directory>${basedir}/src/main/assembly/</directory>
       <excludes>
         <exclude>dist.xml</exclude>
+        <exclude>CLASSES_README.txt</exclude>
       </excludes>
       <includes>
         <include>third-party/**</include>
@@ -66,6 +67,10 @@
   <files>
     <file>
       <source>src/main/assembly/log4j.properties</source>
+      <outputDirectory>/</outputDirectory>
+    </file>
+    <file>
+      <source>src/main/assembly/CLASSES_README.txt</source>
       <outputDirectory>/classes</outputDirectory>
     </file>
   </files>
