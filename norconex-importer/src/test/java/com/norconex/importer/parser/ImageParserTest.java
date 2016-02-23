@@ -46,7 +46,6 @@ public class ImageParserTest extends AbstractParserTest {
         Assert.assertEquals("Could not find XMP metadata dc:subject with "
                 + "expected value \"XML Parsing\".",
                 "XMP Parsing", meta.getString("dc:subject"));
-        System.out.println(meta);
     }
     @Test
     public void testPNG() throws Exception {
