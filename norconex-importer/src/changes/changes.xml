@@ -44,7 +44,7 @@
       </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Apache Tika 1.11, Norconex Commons Lang 1.9.0.
-        Removal: Apacke Jempbox.
+        Jempbox 1.8.11 (still required by Tika JPegParser).
       </action>
       <action dev="essiembre" type="update">
         Importer-specific version of Tika PDFParser was updated to work around

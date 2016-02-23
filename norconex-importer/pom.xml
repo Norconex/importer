@@ -159,6 +159,19 @@
       <version>5.5.1</version>
     </dependency>
 
+    <!-- Following dep is required for JPEG parsing by Tika
+         org.apache.tika.parser.image.xmp.JempboxExtractor, which
+         is invoked from org.apache.tika.parser.jpeg.JpegParser.
+         Tika does not provide this dependency directly, instead it relies
+         on PDFBox 1.8.x to provide it, but we are using PDFBox 2.0.0 which
+         no longer uses Jempbox.
+          -->
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>jempbox</artifactId>
+      <version>1.8.11</version>
+    </dependency>
+
   </dependencies>
   
   <dependencyManagement>
