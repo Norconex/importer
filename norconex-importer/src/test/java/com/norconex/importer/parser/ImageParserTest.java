@@ -41,7 +41,7 @@ public class ImageParserTest extends AbstractParserTest {
         // Currently parsed by Tika using Jempbox
         ImporterResponse[] responses = 
                 testParsing("/parser/image/importer-xmp.jpg",
-                        "image/jpeg", ".*Importer.*", "jpg", "Image");
+                        "image/jpeg", ".*", "jpg", "Image");
         ImporterMetadata meta = responses[0].getDocument().getMetadata();
         Assert.assertEquals("Could not find XMP metadata dc:subject with "
                 + "expected value \"XML Parsing\".",
@@ -65,6 +65,6 @@ public class ImageParserTest extends AbstractParserTest {
     private void testParsing(String contentType, String extension)
             throws Exception {
         testParsing("/parser/image/importer." + extension,
-                contentType, ".*Importer.*", extension, "Image");
+                contentType, ".*", extension, "Image");
     }
 }
