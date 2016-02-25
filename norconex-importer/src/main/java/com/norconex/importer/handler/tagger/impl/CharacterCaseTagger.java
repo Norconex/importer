@@ -58,7 +58,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <li>field: Applies to the field name.</li>
  *   <li>both: Applies to both the field name and its values.</li>
  * </ul>
- * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ * <p>Field names are referenced in a case insensitive manner.</p>
  * <p>
  * XML configuration usage:
  * </p>
