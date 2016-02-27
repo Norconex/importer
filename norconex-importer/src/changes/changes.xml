@@ -43,8 +43,8 @@
         to importDocument method.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Apache Tika 1.11, Norconex Commons Lang 1.9.0.
-        Jempbox 1.8.11 (still required by Tika JPegParser).
+        Maven dependency updates: Apache Tika 1.12, Norconex Commons Lang 1.9.0.
+        Jempbox 1.8.11 (still required by Tika JPegParser), PDFBox 2.0.0-RC3.
       </action>
       <action dev="essiembre" type="update">
         Importer-specific version of Tika PDFParser was updated to work around
