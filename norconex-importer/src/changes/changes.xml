@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.5.0-SNAPSHOT" date="201?-??-??" description="Feature release">
+    <release version="2.5.0" date="2016-02-28" description="Feature release">
       <action dev="essiembre" type="add">
         DOMTagger and DOMFilter can now be told how to return matching elements 
         values (i.e., text, html, or outerHtml).
@@ -44,7 +44,8 @@
       </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Apache Tika 1.12, Norconex Commons Lang 1.9.0.
-        Jempbox 1.8.11 (still required by Tika JPegParser), PDFBox 2.0.0-RC3.
+        Jempbox 1.8.11 (still required by Tika JPegParser), PDFBox 2.0.0-RC3,
+        Apache Commons CLI 1.3.1.
       </action>
       <action dev="essiembre" type="update">
         Importer-specific version of Tika PDFParser was updated to work around
