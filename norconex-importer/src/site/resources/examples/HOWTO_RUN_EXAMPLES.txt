@@ -6,11 +6,11 @@ distribution zip and run the following.
 
 Windows:
 
-importer.bat -i "examples/books/alice-in-wonderland-book-chapter-1.pdf" -c "examples/config/sample-config.xml"
+importer.bat -i "examples/books/alice-in-wonderland-book-chapter-1.pdf" -c "examples/config/sample-config.xml" -o "examples/example-output.txt"
 
 Unix/Linux:
 
-importer.sh -i "examples/books/alice-in-wonderland-book-chapter-1.pdf" -c "examples/config/sample-config.xml"
+importer.sh -i "examples/books/alice-in-wonderland-book-chapter-1.pdf" -c "examples/config/sample-config.xml" -o "examples/example-output.txt"
 
 Change the extension to ".docx" or ".zip" for a different test.
 
