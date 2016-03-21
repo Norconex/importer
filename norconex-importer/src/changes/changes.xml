@@ -8,6 +8,11 @@
   <body>
 
     <release version="2.5.1-SNAPSHOT" date="2016-0?-??" description="Bug fix release">
+      <action dev="essiembre" type="update">
+        Text-based transformers extending AbstractCharStreamTransformer now 
+        logs a warning when character encoding could not be detected,
+        suggesting to make sure the content being transformed is text.
+      </action>
       <action dev="essiembre" type="fix">
         StripBetweenTransformer now accepts multiple strip endpoints with
         the same "start" regex.

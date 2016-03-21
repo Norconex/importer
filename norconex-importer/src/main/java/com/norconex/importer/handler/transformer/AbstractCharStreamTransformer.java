@@ -25,10 +25,14 @@ import java.io.Writer;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.CharEncoding;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -50,7 +54,9 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
  * this class attempts to detect the content character 
  * encoding unless the character encoding
- * was specified using {@link #setSourceCharset(String)}. Since document
+ * was specified using {@link #setSourceCharset(String)}.  If the character
+ * set cannot be established, UTF-8 is assumed.
+ * Since document
  * parsing converts content to UTF-8, UTF-8 is always assumed when
  * used as a post-parse handler.
  * </p>
@@ -74,11 +80,14 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public abstract class AbstractCharStreamTransformer 
             extends AbstractDocumentTransformer {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(AbstractCharStreamTransformer.class);    
+
     private String sourceCharset = null;
     
     /**
      * Gets the assumed source character encoding.
-     * @return character encoding of the source to be transformed
+     * @return character encoding of the source to be transformed 
      * @since 2.5.0
      */
     public String getSourceCharset() {
@@ -101,7 +110,16 @@ public abstract class AbstractCharStreamTransformer
         
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, input, metadata, parsed);
-        
+        if (StringUtils.isBlank(inputCharset)) {
+            LOG.warn("Character encoding could not be detected (will assume "
+                    + "UTF-8). If this leads to a failure, it could be that "
+                    + "you are using this transformer "
+                    + getClass().getCanonicalName()
+                    + " with binary content. You can avoid this by applying "
+                    + "restrictions or making sure it was parsed first. "
+                    + "Reference: " + reference);
+            inputCharset = CharEncoding.UTF_8;
+        }
         try {
             InputStreamReader is = new InputStreamReader(input, inputCharset);
             OutputStreamWriter os = 
