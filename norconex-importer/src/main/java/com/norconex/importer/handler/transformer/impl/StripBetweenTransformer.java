@@ -16,6 +16,7 @@ package com.norconex.importer.handler.transformer.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -147,7 +148,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
             return;
         }
         stripPairs.add(new ImmutablePair<String, String>(fromText, toText));
-        stripPairs.sort(stripComparator);
+        Collections.sort(stripPairs, stripComparator);
     }
     public List<Pair<String, String>> getStripEndpoints() {
         return new ArrayList<Pair<String,String>>(stripPairs);
