@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="2.5.1-SNAPSHOT" date="2016-0?-??" description="Bug fix release">
+      <action dev="essiembre" type="fix">
+        StripBetweenTransformer now accepts multiple strip endpoints with
+        the same "start" regex.
+      </action>
+    </release>
+
     <release version="2.5.0" date="2016-02-28" description="Feature release">
       <action dev="essiembre" type="add">
         DOMTagger and DOMFilter can now be told how to return matching elements 

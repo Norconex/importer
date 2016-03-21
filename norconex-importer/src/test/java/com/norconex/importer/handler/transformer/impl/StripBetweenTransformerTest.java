@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,7 +27,6 @@ import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.impl.StripBetweenTransformer;
 
 public class StripBetweenTransformerTest {
 
@@ -57,6 +57,39 @@ public class StripBetweenTransformerTest {
 
         is.close();
         os.close();
+    }
+
+
+    @Test
+    public void testCollectorHttpIssue237() 
+            throws IOException, ImporterHandlerException {
+        StripBetweenTransformer t = new StripBetweenTransformer();
+        t.addStripEndpoints("<body>", "<\\!-- START -->");
+        t.addStripEndpoints("<\\!-- END -->", "<\\!-- START -->");
+        t.addStripEndpoints("<\\!-- END -->", "</body>");
+
+        t.setCaseSensitive(false);
+        t.setInclusive(true);
+        
+        String html = "<html><body>"
+                + "ignore this text"
+                + "<!-- START -->extract me 1<!-- END -->"
+                + "ignore this text"
+                + "<!-- START -->extract me 2<!-- END -->"
+                + "ignore this text"
+                + "</body></html>";
+
+        ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        t.transformDocument("fake.html", is, os, metadata, false);
+        String output = os.toString();
+        is.close();
+        os.close();
+        //System.out.println(output);
+        Assert.assertEquals(
+                "<html>extract me 1extract me 2</html>", output);
     }
     
     

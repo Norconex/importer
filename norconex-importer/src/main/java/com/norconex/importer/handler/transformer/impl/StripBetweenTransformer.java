@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,14 +73,14 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 public class StripBetweenTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private Set<Pair<String, String>> stripPairs = 
-            new TreeSet<Pair<String,String>>(
-                    new Comparator<Pair<String,String>>() {
+    private Comparator<Pair<String,String>> stripComparator = 
+            new Comparator<Pair<String,String>>() {
         @Override
         public int compare(Pair<String,String> o1, Pair<String,String> o2) {
             return o1.getLeft().length() - o2.getLeft().length();
         }
-    });
+    };
+    private List<Pair<String, String>> stripPairs = new ArrayList<>();
     private boolean inclusive;
     private boolean caseSensitive;
 
@@ -144,11 +142,12 @@ public class StripBetweenTransformer extends AbstractStringTransformer
         this.caseSensitive = caseSensitive;
     }
 
-    public void addStripEndpoints(String fromText, String toText) {
+    public synchronized void addStripEndpoints(String fromText, String toText) {
         if (StringUtils.isBlank(fromText) || StringUtils.isBlank(toText)) {
             return;
         }
         stripPairs.add(new ImmutablePair<String, String>(fromText, toText));
+        stripPairs.sort(stripComparator);
     }
     public List<Pair<String, String>> getStripEndpoints() {
         return new ArrayList<Pair<String,String>>(stripPairs);
