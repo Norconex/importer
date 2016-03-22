@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.5.1-SNAPSHOT" date="2016-0?-??" description="Bug fix release">
+    <release version="2.5.1" date="2016-03-22" description="Bug fix release">
       <action dev="essiembre" type="update">
         Text-based transformers extending AbstractCharStreamTransformer now 
         logs a warning when character encoding could not be detected,
