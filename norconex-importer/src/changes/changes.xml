@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="2.5.2-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        Maven dependency updates: PDFBox 2.0.0 (final release).
+      </action>
+    </release>
+
     <release version="2.5.1" date="2016-03-22" description="Bug fix release">
       <action dev="essiembre" type="update">
         Text-based transformers extending AbstractCharStreamTransformer now 
