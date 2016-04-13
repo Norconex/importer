@@ -336,11 +336,9 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     .append(caseSensitive, castOther.caseSensitive)
                     .isEquals();
         }
-        private transient int hashCode;
         @Override
         public int hashCode() {
-            if (hashCode == 0) {
-                hashCode = new HashCodeBuilder()
+            return new HashCodeBuilder()
                         .append(fromField)
                         .append(fromValue)
                         .append(toField)
@@ -348,8 +346,6 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                         .append(regex)
                         .append(caseSensitive)
                         .toHashCode();
-            }
-            return hashCode;
         }
     }
     
