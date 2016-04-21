@@ -9,6 +9,10 @@
 
     <release version="2.5.2-SNAPSHOT" date="2016-??-??" description="Maintenance release">
       <action dev="essiembre" type="update">
+        It is now possible to specify a locale when parsing/formatting dates
+        with CurrentDateTagger and DateFormatTagger.
+      </action>
+      <action dev="essiembre" type="update">
         Maven dependency updates: PDFBox 2.0.0 (final release).
       </action>
     </release>

@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -52,11 +54,19 @@ import com.norconex.importer.util.FormatUtil;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <p>Since 2.5.2, it is possible to specify a locale used for parsing
+ * and formatting dates. 
+ * The locale is the ISO two-letter language code, with an optional
+ * ISO country code, separated with an underscore (e.g., "fr" for French, 
+ * "fr_CA" for Canadian French). When no locale is specified, the default is 
+ * "en_US" (US English).</p> 
+ * 
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
  *      fromField="(from field)" toField="(to field)" 
  *      fromFormat="(date format)" toFormat="(date format)"
+ *      fromLocale="(locale)" toLocale="(locale)"
  *      keepBadDates="(false|true)" overwrite="[false|true]" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -76,6 +86,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     private String toField;
     private String fromFormat;
     private String toFormat;
+    private Locale fromLocale;
+    private Locale toLocale;
     private boolean overwrite;
     private boolean keepBadDates;
     
@@ -96,7 +108,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         List<String> toDates = new ArrayList<>(fromDates.size());
         for (String fromDate : fromDates) {
             String toDate = FormatUtil.formatDateString(
-                    fromDate, fromFormat, toFormat, fromField);
+                    fromDate, fromFormat, fromLocale, 
+                    toFormat, toLocale, fromField);
             if (StringUtils.isNotBlank(toDate)) {
                 toDates.add(toDate);
             } else if (keepBadDates) {
@@ -158,6 +171,40 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         this.keepBadDates = keepBadDates;
     }
 
+    /**
+     * Gets the locale used for parsing the source date. 
+     * @return locale
+     * @since 2.5.2
+     */
+    public Locale getFromLocale() {
+        return fromLocale;
+    }
+    /**
+     * Sets the locale used for parsing the source date.
+     * @param locale locale
+     * @since 2.5.2
+     */    
+    public void setFromLocale(Locale fromLocale) {
+        this.fromLocale = fromLocale;
+    }
+
+    /**
+     * Gets the locale used for formatting the target date. 
+     * @return locale
+     * @since 2.5.2
+     */
+    public Locale getToLocale() {
+        return toLocale;
+    }
+    /**
+     * Sets the locale used for formatting the source date.
+     * @param locale locale
+     * @since 2.5.2
+     */    
+    public void setToLocale(Locale toLocale) {
+        this.toLocale = toLocale;
+    }
+
     private void validateArguments() {
         if (StringUtils.isBlank(fromField)) {
             throw new IllegalArgumentException(
@@ -177,6 +224,14 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         toFormat = xml.getString("[@toFormat]", toFormat);
         overwrite = xml.getBoolean("[@overwrite]", overwrite);
         keepBadDates = xml.getBoolean("[@keepBadDates]", keepBadDates);
+        String fromLocaleStr = xml.getString("[@fromLocale]", null);
+        if (StringUtils.isNotBlank(fromLocaleStr)) {
+            setFromLocale(LocaleUtils.toLocale(fromLocaleStr));
+        }
+        String toLocaleStr = xml.getString("[@toLocale]", null);
+        if (StringUtils.isNotBlank(toLocaleStr)) {
+            setToLocale(LocaleUtils.toLocale(toLocaleStr));
+        }
     }
 
     @Override
@@ -188,21 +243,29 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         writer.writeAttributeString("toFormat", toFormat);
         writer.writeAttributeBoolean("overwrite", overwrite);
         writer.writeAttributeBoolean("keepBadDates", keepBadDates);
+        if (fromLocale != null) {
+            writer.writeAttributeString("fromLocale", fromLocale.toString());
+        }        
+        if (toLocale != null) {
+            writer.writeAttributeString("toLocale", toLocale.toString());
+        }        
     }
 
     
 
     @Override
     public String toString() {
-        ToStringBuilder builder = 
-                new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.append("fromField", fromField);
-        builder.append("toField", toField);
-        builder.append("fromFormat", fromFormat);
-        builder.append("toFormat", toFormat);
-        builder.append("overwrite", overwrite);
-        builder.append("keepBadDates", keepBadDates);
-        return builder.toString();
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("fromField", fromField)
+                .append("toField", toField)
+                .append("fromFormat", fromFormat)
+                .append("toFormat", toFormat)
+                .append("overwrite", overwrite)
+                .append("keepBadDates", keepBadDates)
+                .append("fromLocale", fromLocale)
+                .append("toLocale", toLocale)
+                .toString();
     }
 
     @Override
@@ -210,20 +273,31 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         if (!(other instanceof DateFormatTagger))
             return false;
         DateFormatTagger castOther = (DateFormatTagger) other;
-        return new EqualsBuilder().appendSuper(super.equals(other))
+        return new EqualsBuilder()
+                .appendSuper(super.equals(other))
                 .append(fromField, castOther.fromField)
                 .append(toField, castOther.toField)
                 .append(fromFormat, castOther.fromFormat)
                 .append(toFormat, castOther.toFormat)
                 .append(overwrite, castOther.overwrite)
-                .append(keepBadDates, castOther.keepBadDates).isEquals();
+                .append(keepBadDates, castOther.keepBadDates)
+                .append(fromLocale, castOther.fromLocale)
+                .append(toLocale, castOther.toLocale)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().appendSuper(super.hashCode())
-                .append(fromField).append(toField).append(fromFormat)
-                .append(toFormat).append(overwrite).append(keepBadDates)
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(fromField)
+                .append(toField)
+                .append(fromFormat)
+                .append(toFormat)
+                .append(overwrite)
+                .append(keepBadDates)
+                .append(fromLocale)
+                .append(toLocale)
                 .toHashCode();
     }
     

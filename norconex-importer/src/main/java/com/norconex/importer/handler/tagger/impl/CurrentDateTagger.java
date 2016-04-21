@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -53,11 +55,18 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <p>Since 2.5.2, it is possible to specify a locale used for formatting
+ * dates. The locale is the ISO two-letter language code, 
+ * with an optional ISO country code, separated with an underscore 
+ * (e.g., "fr" for French, "fr_CA" for Canadian French). When no locale is 
+ * specified, the default is "en_US" (US English).</p>
+ * 
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
  *      field="(target field)"
  *      format="(date format)"
+ *      locale="(locale)"
  *      overwrite="[false|true]" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -78,6 +87,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     
     private String field = DEFAULT_FIELD;
     private String format;
+    private Locale locale;
     private boolean overwrite;
     
     /**
@@ -108,7 +118,12 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
         if (StringUtils.isBlank(format)) {
             return Long.toString(time);
         }
-        return new SimpleDateFormat(format).format(new Date(time));
+        Locale safeLocale = locale;
+        if (safeLocale == null) {
+            safeLocale = Locale.US;
+        }
+        return new SimpleDateFormat(
+                format, safeLocale).format(new Date(time));
     }
 
     public String getField() {
@@ -124,7 +139,24 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     public void setFormat(String toFormat) {
         this.format = toFormat;
     }
-    
+
+    /**
+     * Gets the locale used for formatting. 
+     * @return locale
+     * @since 2.5.2
+     */
+    public Locale getLocale() {
+        return locale;
+    }
+    /**
+     * Sets the locale used for formatting.
+     * @param locale locale
+     * @since 2.5.2
+     */
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
+
     public boolean isOverwrite() {
         return overwrite;
     }
@@ -136,6 +168,10 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         field = xml.getString("[@field]", field);
         format = xml.getString("[@format]", format);
+        String localeStr = xml.getString("[@locale]", null);
+        if (StringUtils.isNotBlank(localeStr)) {
+            setLocale(LocaleUtils.toLocale(localeStr));
+        }
         overwrite = xml.getBoolean("[@overwrite]", overwrite);
     }
 
@@ -145,6 +181,9 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
         writer.writeAttributeString("field", field);
         writer.writeAttributeString("format", format);
         writer.writeAttributeBoolean("overwrite", overwrite);
+        if (locale != null) {
+            writer.writeAttributeString("locale", locale.toString());
+        }
     }
 
     @Override
@@ -153,6 +192,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
                 .append(super.toString())
                 .append("field", field)
                 .append("format", format)
+                .append("locale", locale)
                 .append("overwrite", overwrite)
                 .toString();
     }
@@ -166,6 +206,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
                 .appendSuper(super.equals(other))
                 .append(field, castOther.field)
                 .append(format, castOther.format)
+                .append(locale, castOther.locale)
                 .append(overwrite, castOther.overwrite)
                 .isEquals();
     }
@@ -176,6 +217,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
                 .appendSuper(super.hashCode())
                 .append(field)
                 .append(format)
+                .append(locale)
                 .append(overwrite)
                 .toHashCode();
     }

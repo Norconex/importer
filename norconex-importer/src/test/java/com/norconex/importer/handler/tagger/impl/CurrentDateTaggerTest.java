@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,7 +31,7 @@ public class CurrentDateTaggerTest {
 
     
     @Test
-    public void testDateFormatTagger() throws ImporterHandlerException {
+    public void testCurrentDateTagger() throws ImporterHandlerException {
         long now = System.currentTimeMillis();
         Sleeper.sleepMillis(10);// to make sure time has passed
         
@@ -44,6 +46,17 @@ public class CurrentDateTaggerTest {
                 meta.getString(ImporterMetadata.DOC_IMPORTED_DATE).matches(
                         "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"));
 
+        meta = new ImporterMetadata();
+        tagger = new CurrentDateTagger();
+        tagger.setFormat("EEEE");
+        tagger.setLocale(Locale.CANADA_FRENCH);
+        tagger.tagDocument("n/a", null, meta, true);
+        Assert.assertTrue("Returned date format does not match",
+                ArrayUtils.contains(new String[]{
+                        "lundi", "mardi", "mercredi", "jeudi", "vendredi",
+                        "samedi", "dimanche"}, 
+                        meta.getString(ImporterMetadata.DOC_IMPORTED_DATE)));
+        
         meta = new ImporterMetadata();
         meta.addString("existingField", "1002727941000"); 
         tagger = new CurrentDateTagger();
