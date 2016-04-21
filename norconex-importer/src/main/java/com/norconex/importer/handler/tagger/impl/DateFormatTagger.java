@@ -181,7 +181,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
     /**
      * Sets the locale used for parsing the source date.
-     * @param locale locale
+     * @param fromLocale locale
      * @since 2.5.2
      */    
     public void setFromLocale(Locale fromLocale) {
@@ -198,7 +198,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
     /**
      * Sets the locale used for formatting the source date.
-     * @param locale locale
+     * @param toLocale locale
      * @since 2.5.2
      */    
     public void setToLocale(Locale toLocale) {
