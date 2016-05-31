@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.5.2-SNAPSHOT" date="2016-??-??" description="Maintenance release">
+    <release version="2.5.2" date="2016-05-31" description="Maintenance release">
       <action dev="essiembre" type="update">
         It is now possible to specify a locale when parsing/formatting dates
         with CurrentDateTagger and DateFormatTagger.

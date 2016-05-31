@@ -2,6 +2,27 @@
 TODO:
 ==============
 
+- Remove custom PDF parser given latest Tika now supports PDFBox 2.0.1.
+  (make sure any custom tweaks are still supported, and that XFA extracation
+  is enabled out of the box).
+
+- Remove FixedHtmlEncodingDetector in favor of Tika original one
+  when Tika 1.11 is released.  See:
+    https://issues.apache.org/jira/browse/TIKA-1837
+    https://github.com/Norconex/collector-http/issues/223
+
+- Investigate Tika Named Entity Parser: 
+  https://wiki.apache.org/tika/TikaAndNER
+
+- Investigate Tika Natural Language Toolkit: 
+  https://wiki.apache.org/tika/TikaAndNLTK
+
+- Maybe ship with a default tika-config on a given path so it can easily be
+  modified: https://tika.apache.org/1.12/configuring.html
+
+- Added Yandex translation support now in Tika: 
+  https://issues.apache.org/jira/browse/TIKA-1943
+
 - Have content type parsers configurable via XML.
 
 - Have global way to configure disabling parsing of embedded resources 
