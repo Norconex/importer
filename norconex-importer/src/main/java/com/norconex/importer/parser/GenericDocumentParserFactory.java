@@ -228,8 +228,7 @@ public class GenericDocumentParserFactory
      * Creates associations between specific content types and the parsers
      * that should be used to parse them.  Content types not having 
      * a parser explicitly associated by this method will be parsed by the 
-     * fall-back parser (if not ignore and a fall-back parser exists).
-     * by this method 
+     * fall-back parser (if not ignored and a fall-back parser exists).
      * @return association between content types and parsers
      * @since 2.1.0
      */

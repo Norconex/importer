@@ -23,6 +23,7 @@ package org.apache.tika.parser.pdf;
 import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,6 @@ import org.apache.pdfbox.pdmodel.PDDocumentNameDictionary;
 import org.apache.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDNameTreeNode;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
@@ -92,33 +92,35 @@ import org.xml.sax.helpers.AttributesImpl;
 class EnhancedPDF2XHTML extends PDFTextStripper {
     
     /**
+     * Maximum recursive depth during AcroForm processing.
+     * Prevents theoretical AcroForm recursion bomb.
+     */
+    private final static int MAX_ACROFORM_RECURSIONS = 10;
+    /**
      * Format used for signature dates
      * TODO Make this thread-safe
      */
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ROOT);
- 
-    /**
-     * Maximum recursive depth during AcroForm processing.
-     * Prevents theoretical AcroForm recursion bomb. 
-     */
-    private final static int MAX_ACROFORM_RECURSIONS = 10;
-
     private final ContentHandler originalHandler;
     private final ParseContext context;
     private final XHTMLContentHandler handler;
     private final PDFParserConfig config;
-
+    private final Metadata metadata;
+    private final List<IOException> exceptions = new ArrayList<>();
+    
     /**
      * This keeps track of the pdf object ids for inline
-     * images that have been processed.  If {@link PDFParserConfig#getExtractUniqueInlineImagesOnly()}
+     * images that have been processed.
+     * If {@link PDFParserConfig#getExtractUniqueInlineImagesOnly()}
      * is true, this will be checked before extracting an embedded image.
      * The integer keeps track of the inlineImageCounter for that image.
      * This integer is used to identify images in the markup.
+     *
+     * This is used across the document.  To avoid infinite recursion
+     * TIKA-1742, we're limiting the export to one image per page.
      */
-    private Map<String, Integer> processedInlineImages = new HashMap<String, Integer>();
-
+    private Map<String, Integer> processedInlineImages = new HashMap<>();
     private int inlineImageCounter = 0;
-
     private EnhancedPDF2XHTML(ContentHandler handler, ParseContext context, Metadata metadata, 
             PDFParserConfig config)
             throws IOException {
@@ -128,6 +130,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         this.originalHandler = handler;
         this.context = context;
         this.handler = new XHTMLContentHandler(handler, metadata);
+        this.metadata = metadata;        
     }
     
     
@@ -686,7 +689,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         if (sig == null) {
             return;
         }
-        Map<String, String> vals= new TreeMap<String, String>();
+        Map<String, String> vals = new TreeMap<>();
         vals.put("name", sig.getName());
         vals.put("contactInfo", sig.getContactInfo());
         vals.put("location", sig.getLocation());
