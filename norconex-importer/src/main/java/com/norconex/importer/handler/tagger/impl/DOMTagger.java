@@ -155,37 +155,41 @@ public class DOMTagger extends AbstractDocumentTagger {
         
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, document, metadata, parsed);
-        
         try {
             Document doc = Jsoup.parse(document, inputCharset, reference);
             for (DOMExtractDetails details : extractions) {
-                Elements elms = doc.select(details.selector);
-                // no elements matching
-                if (elms.isEmpty()) {
-                    return;
-                }
-                
-                // one or more elements matching
-                List<String> values = new ArrayList<String>();
-                for (Element elm : elms) {
-                    String value = getElementValue(elm, details.extract);
-                    if (StringUtils.isNotBlank(value)) {
-                        values.add(value);
-                    }
-                }
-                if (values.isEmpty()) {
-                    return;
-                }
-                String[] vals = values.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-                if (details.overwrite) {
-                    metadata.setString(details.toField, vals);
-                } else {
-                    metadata.addString(details.toField, vals);
-                }
+                domExtract(doc, details, metadata);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot extract DOM element(s) from DOM-tree.", e);
+        }
+    }
+    
+    private void domExtract(
+            Document doc, DOMExtractDetails details, ImporterMetadata meta) {
+        Elements elms = doc.select(details.selector);
+        // no elements matching
+        if (elms.isEmpty()) {
+            return;
+        }
+        
+        // one or more elements matching
+        List<String> values = new ArrayList<>();
+        for (Element elm : elms) {
+            String value = getElementValue(elm, details.extract);
+            if (StringUtils.isNotBlank(value)) {
+                values.add(value);
+            }
+        }
+        if (values.isEmpty()) {
+            return;
+        }
+        String[] vals = values.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+        if (details.overwrite) {
+            meta.setString(details.toField, vals);
+        } else {
+            meta.addString(details.toField, vals);
         }
     }
     

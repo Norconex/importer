@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="2.5.3-SNAPSHOT" date="2016-??-??" description="Bug fix release">
+      <action dev="essiembre" type="fix" issue="21">
+        Fixed DOMTagger ignoring subsequent selectors when one selector 
+        has no match. 
+      </action>
+    </release>
+
     <release version="2.5.2" date="2016-05-31" description="Maintenance release">
       <action dev="essiembre" type="update">
         It is now possible to specify a locale when parsing/formatting dates

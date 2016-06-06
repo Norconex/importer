@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.junit.Assert;
@@ -33,6 +35,38 @@ import com.norconex.importer.handler.ImporterHandlerException;
  */
 public class DOMTaggerTest {
 
+    
+    @Test
+    // This is a test for: https://github.com/Norconex/importer/issues/21 
+    public void testNotAllSelectorsMatching()
+            throws IOException, ImporterHandlerException { 
+
+        DOMTagger t = new DOMTagger();
+        t.addDOMExtractDetails("div.class1", "match1", false);
+        t.addDOMExtractDetails("div.classNoMatch", "match2", false);
+        t.addDOMExtractDetails("div.class3", "match3", false);
+
+        String html = "<html><body>"
+                + "<div class=\"class1\">text1</div>"
+                + "<div class=\"class2\">text2</div>"
+                + "<div class=\"class3\">text3</div>"
+                + "</body></html>";
+        
+        ImporterMetadata metadata = new ImporterMetadata();
+        InputStream is = new ByteArrayInputStream(html.getBytes());
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        t.tagDocument("n/a", is, metadata, false);
+        is.close();
+
+        String match1 = metadata.getString("match1");
+        String match2 = metadata.getString("match2");
+        String match3 = metadata.getString("match3");
+        
+        Assert.assertEquals("text1", match1);
+        Assert.assertEquals(null, match2);
+        Assert.assertEquals("text3", match3);
+    }
+    
     @Test
     public void testExtractFromDOM() 
             throws IOException, ImporterHandlerException {
