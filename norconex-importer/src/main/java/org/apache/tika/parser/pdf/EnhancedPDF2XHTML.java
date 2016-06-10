@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,35 @@
  * Derived Work:
  * -------------
  * This code is derived from the source file  
- * org.apache.tika.parser.pdf.PDF2XHTML from Apache Tika 1.7,
- * to support PDFBox 2.0.0 which better handles spaces between words.
+ * org.apache.tika.parser.pdf.PDF2XHTML from Apache Tika 1.13,
+ * to support embedded JPX image files.
  */
 package org.apache.tika.parser.pdf;
 
+import javax.xml.stream.XMLStreamException;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.commons.io.IOExceptionWithCause;
+import org.apache.commons.io.IOUtils;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
@@ -43,6 +55,8 @@ import org.apache.pdfbox.pdmodel.common.PDNameTreeNode;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
@@ -59,13 +73,13 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDNonTerminalField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDXFAResource;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.TextPosition;
+import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.extractor.ParsingEmbeddedDocumentExtractor;
-import org.apache.tika.io.IOExceptionWithCause;
-import org.apache.tika.io.IOUtils;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -82,13 +96,9 @@ import org.xml.sax.helpers.AttributesImpl;
  * stream.</p>
  * 
  * <h2>About this class:</h2>
- * This class is a copy of the PDFTextStripper class from Apache Tika 1.7, 
- * modified by Norconex to support PDFBox 2.0.0 which better handles
- * spaces between words.
+ * This class is a copy of the PDF2XHTML class from Apache Tika 1.13, 
+ * modified by Norconex to add support for embedded JPX image files.
  */
-//TODO should probably delete once Tika supports PDFBox 2.0.0.
-// Ignored by Sonar.
-@SuppressWarnings("all")
 class EnhancedPDF2XHTML extends PDFTextStripper {
     
     /**
@@ -144,17 +154,18 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
      * @param metadata PDF metadata
      * @param config PDF parser config
      * @throws SAXException if the content handler fails to process SAX events
-     * @throws TikaException if the PDF document can not be processed
+     * @throws TikaException if there was an exception outside of per page processing
      */
     public static void process(
             PDDocument document, ContentHandler handler, ParseContext context, Metadata metadata,
             PDFParserConfig config)
             throws SAXException, TikaException {
+        EnhancedPDF2XHTML pdf2XHTML = null;
         try {
             // Extract text using a dummy Writer as we override the
             // key methods to output to the given content
             // handler.
-            EnhancedPDF2XHTML pdf2XHTML = new EnhancedPDF2XHTML(handler, context, metadata, config);
+            pdf2XHTML = new EnhancedPDF2XHTML(handler, context, metadata, config);
             
             configure(config, pdf2XHTML);
 
@@ -176,6 +187,11 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             } else {
                 throw new TikaException("Unable to extract PDF content", e);
             }
+        }
+        if (pdf2XHTML.exceptions.size() > 0) {
+            //throw the first
+            throw new TikaException("Unable to extract all PDF content",
+                    pdf2XHTML.exceptions.get(0));
         }
     }
     
@@ -203,6 +219,15 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     }
 
     @Override
+    public void processPage(PDPage page) throws IOException {
+        try {
+            super.processPage(page);
+        } catch (IOException e) {
+            handleCatchableIOE(e);
+        }
+    }
+    
+    @Override
     protected void startDocument(PDDocument pdf) throws IOException {
         try {
             handler.startDocument();
@@ -216,12 +241,20 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             // Extract text for any bookmarks:
             extractBookmarkText();
-            extractEmbeddedDocuments(pdf, originalHandler);
+            try {
+                extractEmbeddedDocuments(pdf, originalHandler);
+            } catch (IOException e) {
+                handleCatchableIOE(e);
+            }
             
             //extract acroform data at end of doc
             if (config.getExtractAcroFormContent() == true) {
-                extractAcroForm(pdf, handler);
-             }
+                try {
+                    extractAcroForm(pdf, handler);
+                } catch (IOException e) {
+                    handleCatchableIOE(e);
+                }
+            }
             handler.endDocument();
         } catch (TikaException e) {
            throw new IOExceptionWithCause("Unable to end a document", e);
@@ -244,8 +277,11 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     protected void endPage(PDPage page) throws IOException {
         try {
             writeParagraphEnd();
-
-            extractImages(page.getResources());
+            try {
+                extractImages(page.getResources(), new HashSet<COSBase>());
+            } catch (IOException e) {
+                handleCatchableIOE(e);
+            }
 
             EmbeddedDocumentExtractor extractor = getEmbeddedDocumentExtractor();
             for (PDAnnotation annotation : page.getAnnotations()) {
@@ -316,65 +352,61 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             handler.endElement("div");
         } catch (SAXException e) {
             throw new IOExceptionWithCause("Unable to end a page", e);
+        } catch (IOException e) {
+            exceptions.add(e);
         }
-        //page.clear();
     }
 
-    private static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
-        pdf2XHTML.setSortByPosition(config.getSortByPosition());
-        if (config.getEnableAutoSpace()) {
-            pdf2XHTML.setWordSeparator(" ");
-        } else {
-            pdf2XHTML.setWordSeparator("");
-        }
-        if (config.getAverageCharTolerance() != null) {
-            pdf2XHTML.setAverageCharTolerance(config.getAverageCharTolerance());
-        }
-        if (config.getSpacingTolerance() != null) {
-            pdf2XHTML.setSpacingTolerance(config.getSpacingTolerance());
-        }
-        pdf2XHTML.setSuppressDuplicateOverlappingText(config.getSuppressDuplicateOverlappingText());
-    }
-    
-    private void extractImages(PDResources resources) throws SAXException, IOException {
+    private void extractImages(PDResources resources, Set<COSBase> seenThisPage) throws SAXException, IOException {
         if (resources == null || config.getExtractInlineImages() == false) {
             return;
         }
 
-        Iterable<COSName> cosIterable = resources.getXObjectNames();
-        if (cosIterable == null) {
-            return;
-        }
-                 
-        for (COSName name: cosIterable) {
+        for (COSName name : resources.getXObjectNames()) {
+
             PDXObject object = resources.getXObject(name);
+            if (object == null) {
+                continue;
+            }
+            COSBase cosObject = object.getCOSObject();
+            if (seenThisPage.contains(cosObject)) {
+                //avoid infinite recursion TIKA-1742
+                continue;
+            }
+            seenThisPage.add(cosObject);
+
             if (object instanceof PDFormXObject) {
-                extractImages(((PDFormXObject) object).getResources());
+                extractImages(((PDFormXObject) object).getResources(), seenThisPage);
             } else if (object instanceof PDImageXObject) {
+
                 PDImageXObject image = (PDImageXObject) object;
 
                 Metadata metadata = new Metadata();
-                String extension = "";
-
-                if ("jpg".equalsIgnoreCase(image.getSuffix())) {
-                    metadata.set(Metadata.CONTENT_TYPE, "image/jpeg");
-                    extension = ".jpg";
-                } else if ("tiff".equalsIgnoreCase(image.getSuffix())) {
-                    metadata.set(Metadata.CONTENT_TYPE, "image/tiff");
-                    extension = ".tif";
-                } else if ("jpx".equalsIgnoreCase(image.getSuffix())) {
-                    metadata.set(Metadata.CONTENT_TYPE, "image/jpx");
-                    extension = ".jpx";
-                } else if ("png".equalsIgnoreCase(image.getSuffix())) {
+                String extension = image.getSuffix();
+                if (extension == null) {
                     metadata.set(Metadata.CONTENT_TYPE, "image/png");
-                    extension = ".png";
+                    extension = "png";
+                } else if (extension.equals("jpg")) {
+                    metadata.set(Metadata.CONTENT_TYPE, "image/jpeg");
+                } else if (extension.equals("tiff")) {
+                    metadata.set(Metadata.CONTENT_TYPE, "image/tiff");
+                    extension = "tif";
+                } else if (extension.equals("png")) {
+                    metadata.set(Metadata.CONTENT_TYPE, "image/png");
+                    extension = "png";
+                } else if (extension.equals("jpx")) {
+                    metadata.set(Metadata.CONTENT_TYPE, "image/jpx");
+                    extension = "jpx";
+                } else {
+                    //TODO: determine if we need to add more image types
+                    //throw new RuntimeException("EXTEN:" + extension);
                 }
 
                 Integer imageNumber = processedInlineImages.get(name.getName());
                 if (imageNumber == null) {
                     imageNumber = inlineImageCounter++;
                 }
-                String fileName = "image"+imageNumber+extension;
+                String fileName = "image" + imageNumber + "."+extension;
                 metadata.set(Metadata.RESOURCE_NAME_KEY, fileName);
 
                 // Output the img tag
@@ -388,7 +420,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
                 //If so, have we already processed this one?
                 if (config.getExtractUniqueInlineImagesOnly() == true) {
                     String cosObjectId = name.getName();
-                    if (processedInlineImages.containsKey(cosObjectId)){
+                    if (processedInlineImages.containsKey(cosObjectId)) {
                         continue;
                     }
                     processedInlineImages.put(cosObjectId, imageNumber);
@@ -400,19 +432,51 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
                 EmbeddedDocumentExtractor extractor =
                         getEmbeddedDocumentExtractor();
                 if (extractor.shouldParseEmbedded(metadata)) {
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                     try {
+                        //TODO: handle image.getMetadata()?
+                        writeToBuffer(image, extension, buffer);
                         extractor.parseEmbedded(
-                                image.getCOSStream().getFilteredStream(),
+                                new ByteArrayInputStream(buffer.toByteArray()),
                                 new EmbeddedContentHandler(handler),
                                 metadata, false);
                     } catch (IOException e) {
-                        // could not extract this image, so just skip it...
+                        handleCatchableIOE(e);
                     }
                 }
             }
         }
     }
 
+    //nearly directly copied from PDFBox ExtractImages
+    private void writeToBuffer(PDImageXObject pdImage, String suffix, OutputStream out)
+            throws IOException {
+
+        BufferedImage image = pdImage.getImage();
+        if (image != null) {
+            if ("jpg".equals(suffix)) {
+                String colorSpaceName = pdImage.getColorSpace().getName();
+                //TODO: figure out if we want directJPEG as a configuration
+                //previously: if (directJPeg || PDDeviceGray....
+                if (PDDeviceGray.INSTANCE.getName().equals(colorSpaceName) ||
+                        PDDeviceRGB.INSTANCE.getName().equals(colorSpaceName)) {
+                    // RGB or Gray colorspace: get and write the unmodifiedJPEG stream
+                    //TODO: shouldn't need to do this: should be able to call createInputStream directly?!
+                    //version clash somewhere?!
+                    InputStream data = pdImage.getStream().createInputStream();
+                    org.apache.pdfbox.io.IOUtils.copy(data, out);
+                    org.apache.pdfbox.io.IOUtils.closeQuietly(data);
+                } else {
+                    // for CMYK and other "unusual" colorspaces, the JPEG will be converted
+                    ImageIOUtil.writeImage(image, suffix, out);
+                }
+            } else {
+                ImageIOUtil.writeImage(image, suffix, out);
+            }
+        }
+        out.flush();
+    }
+    
     protected EmbeddedDocumentExtractor getEmbeddedDocumentExtractor() {
         EmbeddedDocumentExtractor extractor =
                 context.get(EmbeddedDocumentExtractor.class);
@@ -455,10 +519,10 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     @Override
     protected void writeCharacters(TextPosition text) throws IOException {
         try {
-            handler.characters(text.toString());
+            handler.characters(text.getUnicode());
         } catch (SAXException e) {
             throw new IOExceptionWithCause(
-            "Unable to write a character: " + text.toString(), e);
+                    "Unable to write a character: " + text.getUnicode(), e);
         }
     }
 
@@ -484,18 +548,14 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     
     private void extractEmbeddedDocuments(PDDocument document, ContentHandler handler)
             throws IOException, SAXException, TikaException {
-        PDDocumentCatalog catalog = document.getDocumentCatalog();
-        PDDocumentNameDictionary names = catalog.getNames();
-        if (names == null) {
-            return;
-        }
-        PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
-
-        if (embeddedFiles == null) {
+        PDDocumentNameDictionary namesDictionary =
+                new PDDocumentNameDictionary( document.getDocumentCatalog() );
+        PDEmbeddedFilesNameTreeNode efTree = namesDictionary.getEmbeddedFiles();
+        if (efTree == null) {
             return;
         }
 
-        Map<String, PDComplexFileSpecification> embeddedFileNames = embeddedFiles.getNames();
+        Map<String, PDComplexFileSpecification> embeddedFileNames = efTree.getNames();
         //For now, try to get the embeddedFileNames out of embeddedFiles or its kids.
         //This code follows: pdfbox/examples/pdmodel/ExtractEmbeddedFiles.java
         //If there is a need we could add a fully recursive search to find a non-null
@@ -503,14 +563,14 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         if (embeddedFileNames != null) {
             processEmbeddedDocNames(embeddedFileNames);
         } else {
-            List<PDNameTreeNode<PDComplexFileSpecification>> kids = embeddedFiles.getKids();
+            List<PDNameTreeNode<PDComplexFileSpecification>> kids = efTree.getKids();
             if (kids == null) {
                 return;
             }
-            for (PDNameTreeNode<PDComplexFileSpecification> n : kids) {
-                Map<String, PDComplexFileSpecification> childNames = n.getNames();
-                if (childNames != null) {
-                    processEmbeddedDocNames(childNames);
+            for (PDNameTreeNode<PDComplexFileSpecification> node : kids) {
+                embeddedFileNames = node.getNames();
+                if (embeddedFileNames != null) {
+                    processEmbeddedDocNames(embeddedFileNames);
                 }
             }
         }
@@ -531,7 +591,8 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
     }
 
     private void extractMultiOSPDEmbeddedFiles(String defaultName,
-        PDComplexFileSpecification spec, EmbeddedDocumentExtractor extractor) throws IOException,
+                                               PDComplexFileSpecification spec,
+                                               EmbeddedDocumentExtractor extractor) throws IOException,
             SAXException, TikaException {
 
         if (spec == null) {
@@ -596,6 +657,23 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         if (form == null)
             return;
 
+        //if it has xfa, try that.
+        //if it doesn't exist or there's an exception,
+        //go with traditional AcroForm
+        PDXFAResource pdxfa = form.getXFA();
+
+        if (pdxfa != null) {
+            //if successful, return
+            XFAExtractor xfaExtractor = new XFAExtractor();
+            try (InputStream is = new BufferedInputStream(
+                    new ByteArrayInputStream(pdxfa.getBytes()))) {
+                xfaExtractor.extract(is, handler, metadata, context);
+                return;
+            } catch (XMLStreamException |IOException e) {
+                //if there was an xml parse exception in xfa, try the AcroForm
+            }
+        }
+
         @SuppressWarnings("rawtypes")
         List fields = form.getFields();
 
@@ -621,24 +699,19 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         handler.endElement("div");
     }
 
-    private void processAcroField(PDField field, XHTMLContentHandler handler, final int currentRecursiveDepth)
-            throws SAXException, IOException { 
+    private void processAcroField(PDField field,
+                                  XHTMLContentHandler handler, final int currentRecursiveDepth)
+            throws SAXException, IOException {
 
         if (currentRecursiveDepth >= MAX_ACROFORM_RECURSIONS) {
             return;
         }
-
         addFieldString(field, handler);
-
         if (field instanceof PDNonTerminalField) {
-            int r = currentRecursiveDepth+1;
+            int r = currentRecursiveDepth + 1;
             handler.startElement("ol");
-            //TODO: can generate <ol/>. Rework to avoid that.
-            for (PDField kid : ((PDNonTerminalField)field).getChildren()) {
-                if (kid != null) {
-                    //recurse
-                    processAcroField(kid, handler, r);
-                }
+            for (PDField child : ((PDNonTerminalField)field).getChildren()) {
+                processAcroField(child, handler, r);
             }
             handler.endElement("ol");
         }
@@ -664,14 +737,9 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             handleSignature(attrs, (PDSignatureField)field, handler);
             return;
         }
-        try {
-            //getValue can throw an IOException if there is no value
-            String value = field.getValueAsString();
-            if (value != null && ! value.equals("null")) {
-                sb.append(value);
-            }
-        } catch (NullPointerException e) {
-            //TODO: remove once PDFBOX-2161 is fixed
+        String value = field.getValueAsString();
+        if (value != null && !value.equals("null")) {
+            sb.append(value);
         }
 
         if (attrs.getLength() > 0 || sb.length() > 0) {
@@ -729,5 +797,34 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             handler.endElement("li");
         }
     }
+
+    private void handleCatchableIOE(IOException e) throws IOException {
+        if (config.isCatchIntermediateIOExceptions()) {
+            String msg = e.getMessage();
+            if (msg == null) {
+                msg = "IOException, no message";
+            }
+            metadata.add(TikaCoreProperties.TIKA_META_EXCEPTION_WARNING, msg);
+            exceptions.add(e);
+        } else {
+            throw e;
+        }
+    }
+    
+    private static void configure(PDFParserConfig config, EnhancedPDF2XHTML pdf2XHTML) {
+        pdf2XHTML.setSortByPosition(config.getSortByPosition());
+        if (config.getEnableAutoSpace()) {
+            pdf2XHTML.setWordSeparator(" ");
+        } else {
+            pdf2XHTML.setWordSeparator("");
+        }
+        if (config.getAverageCharTolerance() != null) {
+            pdf2XHTML.setAverageCharTolerance(config.getAverageCharTolerance());
+        }
+        if (config.getSpacingTolerance() != null) {
+            pdf2XHTML.setSpacingTolerance(config.getSpacingTolerance());
+        }
+        pdf2XHTML.setSuppressDuplicateOverlappingText(config.getSuppressDuplicateOverlappingText());
+    }    
 }
 

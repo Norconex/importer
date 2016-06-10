@@ -7,6 +7,16 @@
   </properties>
   <body>
 
+    <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="update">
+        Now validates configuration and variable file paths when launched on 
+        the command line (throws errors on invalid paths).
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Tika 1.13 (which now uses PDFBox 2.x).
+      </action>
+    </release>
+
     <release version="2.5.3-SNAPSHOT" date="2016-??-??" description="Bug fix release">
       <action dev="essiembre" type="fix" issue="21">
         Fixed DOMTagger ignoring subsequent selectors when one selector 

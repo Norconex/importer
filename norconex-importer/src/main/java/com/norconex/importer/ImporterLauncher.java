@@ -61,11 +61,30 @@ public final class ImporterLauncher {
 
     public static void launch(String[] args) {
         CommandLine cmd = parseCommandLineArguments(args);
+        
         File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
         File varFile = null;
+        File configFile = null;
+
+        // Validate arguments
         if (cmd.hasOption(ARG_VARIABLES)) {
             varFile = new File(cmd.getOptionValue(ARG_VARIABLES));
+            if (!varFile.isFile()) {
+                System.err.println("Invalid variable file path: "
+                        + varFile.getAbsolutePath());
+                System.exit(-1);
+            }
         }
+        if (cmd.hasOption(ARG_CONFIG)) {
+            configFile = new File(cmd.getOptionValue(ARG_CONFIG));
+            if (!configFile.isFile()) {
+                System.err.println("Invalid configuration file path: "
+                        + configFile.getAbsolutePath());
+                System.exit(-1);
+            }
+        }        
+
+        // Proceed
         ContentType contentType = 
                 ContentType.valueOf(cmd.getOptionValue(ARG_CONTENTTYPE));
         String contentEncoding = cmd.getOptionValue(ARG_CONTENTENCODING);
@@ -77,9 +96,9 @@ public final class ImporterLauncher {
         Properties metadata = new Properties();
         try {
             ImporterConfig config = null;
-            if (cmd.hasOption(ARG_CONFIG)) {
+            if (configFile != null) {
                 config = ImporterConfigLoader.loadImporterConfig(
-                        new File(cmd.getOptionValue(ARG_CONFIG)), varFile);
+                        configFile, varFile);
             }
             ImporterResponse response = new Importer(config).importDocument(
                     inputFile, contentType, contentEncoding, 
@@ -89,6 +108,7 @@ public final class ImporterLauncher {
             System.err.println(
                     "A problem occured while importing " + inputFile);
             e.printStackTrace(System.err);
+            System.exit(-1);
         }
     }
     

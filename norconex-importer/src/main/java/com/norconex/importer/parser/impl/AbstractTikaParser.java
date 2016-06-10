@@ -461,9 +461,9 @@ public class AbstractTikaParser implements IDocumentParser {
         public MediaType detect(InputStream input, Metadata metadata)
                 throws IOException {
             MediaType type = mediaType.get();
-            String reference = this.reference.get();
+            String ref = this.reference.get();
             if (type == null || !Objects.equal(
-                    reference, metadata.get(Metadata.RESOURCE_NAME_KEY))) {
+                    ref, metadata.get(Metadata.RESOURCE_NAME_KEY))) {
                 type = originalDetector.detect(input, metadata);
             }
             return type;
