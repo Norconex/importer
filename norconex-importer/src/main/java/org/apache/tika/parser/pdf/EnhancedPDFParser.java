@@ -21,8 +21,6 @@
  */
 package org.apache.tika.parser.pdf;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +30,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.jempbox.xmp.XMPMetadata;
@@ -51,7 +52,6 @@ import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
-import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.AccessPermissions;
 import org.apache.tika.metadata.Metadata;
@@ -126,7 +126,6 @@ public class EnhancedPDFParser extends AbstractParser {
             throws IOException, SAXException, TikaException {
        
         PDDocument pdfDocument = null;
-        TemporaryResources tmp = new TemporaryResources();
         //config from context, or default if not set via context
         PDFParserConfig localConfig = context.get(PDFParserConfig.class, defaultConfig);
         
@@ -199,6 +198,7 @@ public class EnhancedPDFParser extends AbstractParser {
     }
     
 
+    @SuppressWarnings("deprecation")
     private void extractMetadata(PDDocument document, Metadata metadata, ParseContext context)
             throws TikaException {
 

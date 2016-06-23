@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
 import org.w3c.dom.Document;
@@ -167,5 +171,26 @@ public class XFDLParser implements IDocumentParser {
             out.append(value).append("\n");
         }
         return stillEmpty;
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof XFDLParser)) {
+            return false;
+        }
+        return new EqualsBuilder()
+                .append(getClass(), other.getClass())
+                .isEquals();
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(getClass().getCanonicalName().hashCode())
+                .toHashCode();
+    }
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.parser;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -68,19 +69,26 @@ public class OCRConfig {
     }
 
     /**
-     * Gets content types to restrict OCR to.
+     * Gets the regular expression matching content types to restrict OCR to.
      * @return content types
      */
     public String getContentTypes() {
         return contentTypes;
     }
     /**
-     * Sets content types to restrict OCR to.
+     * Sets the regular expression matching content types to restrict OCR to.
      * @param contentTypes content types
      */
     public void setContentTypes(String contentTypes) {
         this.contentTypes = contentTypes;
     }
+    
+    public boolean isEmpty() {
+        return  StringUtils.isBlank(path)
+                && StringUtils.isBlank(languages)
+                && StringUtils.isBlank(contentTypes);
+    }
+
     
     @Override
     public boolean equals(final Object other) {

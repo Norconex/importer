@@ -89,6 +89,14 @@
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-translate</artifactId>
         <version>${tika.version}</version>
+        <!--  TODO: Consider dropping the one used by the Importer for this
+              one? -->
+        <exclusions>
+          <exclusion>
+            <artifactId>language-detector</artifactId>
+            <groupId>com.optimaize.languagedetector</groupId>
+          </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
     	<groupId>commons-cli</groupId>

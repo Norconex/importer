@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public abstract class AbstractParserTest {
         ImporterConfig config = new ImporterConfig();
         if (splitEmbedded) {
             GenericDocumentParserFactory f = new GenericDocumentParserFactory();
-            f.setSplitEmbedded(true);
+            f.getParseHints().getEmbeddedConfig().setSplitContentTypes(".*");
             config.setParserFactory(f);
         }
         

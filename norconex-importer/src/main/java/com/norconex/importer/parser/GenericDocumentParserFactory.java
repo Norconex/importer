@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,20 @@ package com.norconex.importer.parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -51,15 +55,18 @@ import com.norconex.importer.response.ImporterResponse;
  * its supported content types.  For unknown
  * content types, it falls back to Tika generic media detector/parser.</p>
  * 
+ * <p>As of 2.6.0, it is possible to register your own parsers.</p>
+ * 
  * <h3>Ignoring content types:</h3>
  * <p>As of version 2.0.0, you can "ignore" content-types so they do not get
- * parsed.  Unparsed documents will be sent as is to the post handlers 
+ * parsed. Unparsed documents will be sent as is to the post handlers 
  * and the calling application.   Use caution when using that feature since
  * post-parsing handlers (or applications) usually expect text-only content for 
  * them to execute properly.  Unless you really know what you are doing, <b> 
  * avoid excluding binary content types from parsing.</b></p>
  * 
- * <p>Parsing a document also attempts to detect the <b>character encoding</b> 
+ * <h3>Character encoding:</h3> 
+ * <p>Parsing a document also attempts to detect the character encoding 
  * (charset) of the extracted text to converts it to UTF-8. When ignoring
  * content-types, the character encoding conversion to UTF-8 cannot
  * take place and your documents will likely retain their original encoding.
@@ -75,7 +82,15 @@ import com.norconex.importer.response.ImporterResponse;
  * going through your handlers and even this parser again
  * (just like any regular document would).  The resulting 
  * {@link ImporterResponse} should then contain nested documents, which in turn,
- * might contain some (tree-like structure).</p>
+ * might contain some (tree-like structure). As of 2.6.0, this is enabled by 
+ * specifying a regular expression to match content types of container 
+ * documents you want to "split".
+ * </p>
+ * 
+ * <p>In addition, since 2.6.0 you can control which embedded documents you
+ * do not want extracted from their containers, as well as which documents 
+ * containers you do not want to extract their embedded documents.
+ * </p>
  * 
  * <h3>Optical character recognition (OCR):</h3>
  * <p>Starting with version 2.1.0, you can configure this parser to use the
@@ -103,8 +118,8 @@ import com.norconex.importer.response.ImporterResponse;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;documentParserFactory 
- *          class="com.norconex.importer.parser.GenericDocumentParserFactory" 
- *          splitEmbedded="(false|true)" &gt;
+ *         class="com.norconex.importer.parser.GenericDocumentParserFactory"&gt;
+ *          
  *      &lt;ocr path="(path to Tesseract OCR software install)"&gt;
  *          &lt;languages&gt;
  *              (optional coma-separated list of Tesseract languages)
@@ -113,14 +128,46 @@ import com.norconex.importer.response.ImporterResponse;
  *              (optional regex matching content types to limit OCR on)
  *          &lt;/contentTypes&gt;
  *      &lt;/ocr&gt;
+ *
  *      &lt;ignoredContentTypes&gt;
  *          (optional regex matching content types to ignore for parsing, 
- *           i.e., not parsed.)
+ *           i.e., not parsed)
  *      &lt;/ignoredContentTypes&gt;
+ *      
+ *      &lt;!-- Since 2.6.0: --&gt;
+ *      
+ *      &lt;embedded&gt;
+ *          &lt;splitContentTypes&gt;
+ *              (optional regex matching content types of containing files
+ *               you want to "split" and have their embedded documents
+ *               treated as individual documents)
+ *          &lt;/splitContentTypes&gt;
+ *          &lt;noExtractEmbeddedContentTypes&gt;
+ *              (optional regex matching content types of embedded files you do
+ *               not want to extract from containing documents, regardless of 
+ *               the container content type)
+ *          &lt;/noExtractEmbeddedContentTypes&gt;
+ *          &lt;noExtractContainerContentTypes&gt;
+ *              (optional regex matching content types of containing files you
+ *               do not want to see their embedded files extracted, regardless
+ *               of the embedded content types)
+ *          &lt;/noExtractContainerContentTypes&gt;
+ *      &lt;/embedded&gt;
+ *      
+ *      &lt;fallbackParser 
+ *          class="(optionally overwrite the fallback parser)" /&gt;
+ *      
+ *      &lt;parsers&gt;
+ *          &lt;!-- Optionally overwrite default parsers. 
+ *               You can configure many parsers. --&gt;
+ *          &lt;parser 
+ *              contentType="(content type)" 
+ *              class="(IDocumentParser implementing class)" /&gt;
+ *      &lt;/parsers&gt;
+ *      
  *  &lt;/documentParserFactory&gt;
  * </pre>
  * @author Pascal Essiembre
- * @see Pattern
  */
 @SuppressWarnings("nls")
 public class GenericDocumentParserFactory 
@@ -129,13 +176,12 @@ public class GenericDocumentParserFactory
     private static final Logger LOG = 
             LogManager.getLogger(GenericDocumentParserFactory.class);
     
-    private final Map<ContentType, IDocumentParser> namedParsers = 
+    private final Map<ContentType, IDocumentParser> parsers = 
             new HashMap<>();
+    private final ParseHints parseHints = new ParseHints();
     private IDocumentParser fallbackParser;
 
     private String ignoredContentTypesRegex;
-    private OCRConfig ocrConfig;
-    private boolean splitEmbedded;
     
     private boolean parsersAreUpToDate = false;
     
@@ -144,29 +190,59 @@ public class GenericDocumentParserFactory
      */
     public GenericDocumentParserFactory() {
         super();
+        //have all parsers lazy loaded instead?
+        initDefaultParsers();
     }
     
-    /**
-     * Gets the OCR configuration.
-     * @return the ocrConfig
-     */
-    public OCRConfig getOCRConfig() {
-        return ocrConfig;
-    }
-    /**
-     * Sets the OCR configuration.
-     * @param ocrConfig the ocrConfig to set
-     */
-    public synchronized void setOCRConfig(OCRConfig ocrConfig) {
-        if (!Objects.equals(this.ocrConfig, ocrConfig)) {
-            parsersAreUpToDate = false;
-        }
-        this.ocrConfig = ocrConfig;
+    protected void initDefaultParsers() {
+        // Fallback parser
+        fallbackParser = new FallbackParser();
+        
+        // Word Perfect
+        IDocumentParser wp = new WordPerfectParser();
+        parsers.put(ContentType.valueOf("application/wordperfect"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect6.0"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect6.1"), wp);
+        parsers.put(ContentType.valueOf("application/x-corel-wordperfect"), wp);
+        parsers.put(ContentType.valueOf("application/wordperfect5.1"), wp);
+        parsers.put(ContentType.valueOf("application/vnd.wordperfect"), wp);
+        
+        // PureEdge XLDF
+        parsers.put(
+                ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
+              
+        // Quattro Pro:
+        parsers.put(ContentType.valueOf(
+                "application/x-quattro-pro"), new QuattroProParser());
     }
 
     /**
+     * Gets parse hints.
+     * @return parse hints
+     * @since 2.6.0
+     */
+    public ParseHints getParseHints() {
+        return parseHints;
+    }
+    
+    /**
+     * Registers a parser to use for the given content type. The provided
+     * parser will never be used if the content type
+     * is ignored by {@link #getIgnoredContentTypesRegex()}.
+     * @param contentType content type
+     * @param parser parser
+     * @since 2.6.0
+     */
+    public void registerParser(
+            ContentType contentType, IDocumentParser parser) {
+        parsers.put(contentType, parser);
+    }
+    
+    /**
      * Gets a parser based on content type, regardless of document reference
      * (ignoring it).
+     * All parsers are assumed to have been configured properly
+     * before the first call to this method.
      */
     @Override
     public final IDocumentParser getParser(
@@ -178,8 +254,8 @@ public class GenericDocumentParserFactory
             return null;
         }
         
-        ensureParsersAreUpToDate();
-        IDocumentParser parser = namedParsers.get(contentType);
+        ensureParseHintsState();
+        IDocumentParser parser = parsers.get(contentType);
         if (parser == null) {
             return fallbackParser;
         }
@@ -203,87 +279,22 @@ public class GenericDocumentParserFactory
         this.ignoredContentTypesRegex = ignoredContentTypesRegex;
     }
 
-    /**
-     * Gets whether embedded documents should be split to become "standalone"
-     * distinct documents.
-     * @return <code>true</code> if parser should split embedded documents.
-     */
-    public boolean isSplitEmbedded() {
-        return splitEmbedded;
-    }
-    /**
-     * Sets whether embedded documents should be split to become "standalone"
-     * distinct documents.
-     * @param splitEmbedded <code>true</code> if parser should split 
-     *                      embedded documents.
-     */
-    public synchronized void setSplitEmbedded(boolean splitEmbedded) {
-        if (this.splitEmbedded != splitEmbedded) {
-            parsersAreUpToDate = false;
-        }
-        this.splitEmbedded = splitEmbedded;
-    }
-
-    /**
-     * Creates associations between specific content types and the parsers
-     * that should be used to parse them.  Content types not having 
-     * a parser explicitly associated by this method will be parsed by the 
-     * fall-back parser (if not ignored and a fall-back parser exists).
-     * @return association between content types and parsers
-     * @since 2.1.0
-     */
-    protected Map<ContentType, IDocumentParser> createNamedParsers() {
-        Map<ContentType, IDocumentParser> parsers = new HashMap<>();
-        
-        // Word Perfect
-        IDocumentParser wp = new WordPerfectParser();
-        parsers.put(ContentType.valueOf("application/wordperfect"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect6.0"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect6.1"), wp);
-        parsers.put(ContentType.valueOf("application/x-corel-wordperfect"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect5.1"), wp);
-        parsers.put(ContentType.valueOf("application/vnd.wordperfect"), wp);
-        
-        // PureEdge XLDF
-        parsers.put(
-                ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
-              
-        // Quattro Pro:
-        parsers.put(ContentType.valueOf(
-                "application/x-quattro-pro"), new QuattroProParser());
-        
-        return parsers;
-    }
-    
-    /**
-     * Creates a parser that will act as the default parser when no 
-     * associated parser is found for any given content type.
-     * @return document parser
-     * @since 2.1.0
-     */
-    protected IDocumentParser createFallbackParser() {
-        FallbackParser parser = new FallbackParser();
-        parser.setSplitEmbedded(splitEmbedded);
-        parser.setOCRConfig(ocrConfig);
-        return parser;
-    }
-    
-    private synchronized void ensureParsersAreUpToDate() {
+    private synchronized void ensureParseHintsState() {
         if (!parsersAreUpToDate) {
-            namedParsers.clear();
-            Map<ContentType, IDocumentParser> parsers = createNamedParsers();
-            if (parsers == null) {
-                LOG.info("No named parsers created.");
-            } else {
-                namedParsers.putAll(parsers);
+            for (Entry<ContentType, IDocumentParser> entry : 
+                parsers.entrySet()) {
+                IDocumentParser parser = entry.getValue();
+                initParseHints(parser);
             }
-            fallbackParser = createFallbackParser();
-            if (fallbackParser == null) {
-                LOG.info("No fallback parser.");
-            }
+            initParseHints(fallbackParser);
             parsersAreUpToDate = true;
-
             validateOCRInstall();
+        }
+    }
+    private void initParseHints(IDocumentParser parser) {
+        if (parser instanceof IHintsAwareParser) {
+            IHintsAwareParser p = (IHintsAwareParser) parser;
+            p.initialize(parseHints);
         }
     }
     
@@ -291,33 +302,28 @@ public class GenericDocumentParserFactory
     //TODO Validate languagues in config matches those installed.
     //TODO Print out Tesseract version and path on startup?
     private void validateOCRInstall() {
-        if (ocrConfig == null) {
-            LOG.debug("OCR parsing is disabled.");
+        OCRConfig ocrConfig = parseHints.getOcrConfig();
+        if (StringUtils.isBlank(ocrConfig.getPath())) {
+            LOG.debug("OCR parsing is disabled (no path provided).");
             return;
         }
-        
-        if (StringUtils.isBlank(ocrConfig.getPath())) {
-            LOG.error("Parser OCR configuration supplied without a path.");
+        String exePath = ocrConfig.getPath();
+        if(!exePath.endsWith(File.separator)) {
+            exePath += File.separator;
+        }
+        File exeFile = new File(exePath + (System.getProperty(
+                "os.name").startsWith("Windows") 
+                                ? "tesseract.exe" : "tesseract"));
+        if (!exeFile.exists()) {
+            LOG.error("OCR path specified but the Tesseract executable "
+                    + "was not found: " + exeFile.getAbsolutePath());
+        } else if (!exeFile.isFile()) {
+            LOG.error("OCR path does not point to a file: "
+                    + exeFile.getAbsolutePath());
         } else {
-            String exePath = ocrConfig.getPath();
-            if(!exePath.endsWith(File.separator)) {
-                exePath += File.separator;
-            }
-            File exeFile = new File(exePath + (System.getProperty(
-                    "os.name").startsWith("Windows") 
-                                    ? "tesseract.exe" : "tesseract"));
-            if (!exeFile.exists()) {
-                LOG.error("OCR path specified but the Tesseract executable "
-                        + "was not found: " + exeFile.getAbsolutePath());
-            } else if (!exeFile.isFile()) {
-                LOG.error("OCR path does not point to a file: "
-                        + exeFile.getAbsolutePath());
-            } else {
-                LOG.info("OCR parsing is enabled.");
-            }
+            LOG.info("OCR parsing is enabled.");
         }
     }
-    
     
     @Override
     public void loadFromXML(Reader in) throws IOException {
@@ -325,42 +331,116 @@ public class GenericDocumentParserFactory
             XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
             setIgnoredContentTypesRegex(xml.getString(
                     "ignoredContentTypes", getIgnoredContentTypesRegex()));
-            setSplitEmbedded(xml.getBoolean(
-                    "[@splitEmbedded]", isSplitEmbedded()));
-            Configuration ocrXml = xml.subset("ocr");
-            OCRConfig ocrConfig = null;
-            if (!ocrXml.isEmpty()) {
-                ocrConfig = new OCRConfig();
-                ocrConfig.setPath(ocrXml.getString("[@path]"));
-                ocrConfig.setLanguages(ocrXml.getString("languages"));
-                ocrConfig.setContentTypes(ocrXml.getString("contentTypes"));
+
+            // Parse hints
+            loadParseHintsFromXML(xml);
+            
+            // Fallback parser
+            fallbackParser = ConfigurationUtil.newInstance(
+                    xml, "fallbackParser", fallbackParser);
+            
+            // Parsers
+            List<HierarchicalConfiguration> parserNodes = 
+                    xml.configurationsAt("parsers.parser");
+            for (HierarchicalConfiguration node : parserNodes) {
+                IDocumentParser parser = ConfigurationUtil.newInstance(node);
+                String contentType = node.getString("[@contentType]");
+                if (StringUtils.isBlank(contentType)) {
+                    throw new ConfigurationException(
+                            "Attribute \"contentType\" missing for parser: "
+                          + node.getString("[@class]"));
+                }
+                parsers.put(ContentType.valueOf(contentType), parser);
             }
-            setOCRConfig(ocrConfig);
+            
         } catch (ConfigurationException e) {
             throw new IOException("Cannot load XML.", e);
         }
     }
+    private void loadParseHintsFromXML(XMLConfiguration xml) {
+        // Embedded Config
+        String splitEmbAttr = xml.getString("[@splitEmbedded]", null);
+        if (StringUtils.isNotBlank(splitEmbAttr)) {
+            LOG.warn("The \"splitEmbedded\" attribute is now deprecated. "
+                    + "Use <embedded split=\"[false|true\"/> instead. "
+                    + "See documentation for more details.");
+            setSplitEmbedded(BooleanUtils.toBooleanObject(splitEmbAttr));
+        }
+        Configuration embXml = xml.subset("embedded");
+        EmbeddedConfig embCfg = parseHints.getEmbeddedConfig();
+        if (!embXml.isEmpty()) {
+            embCfg.setSplitContentTypes(
+                    embXml.getString("splitContentTypes", null));
+            embCfg.setNoExtractContainerContentTypes(
+                    embXml.getString("noExtractContainerContentTypes", null));
+            embCfg.setNoExtractEmbeddedContentTypes(
+                    embXml.getString("noExtractEmbeddedContentTypes", null));
+        }
+        
+        // OCR Config
+        Configuration ocrXml = xml.subset("ocr");
+        OCRConfig ocrCfg = parseHints.getOcrConfig();
+        if (!ocrXml.isEmpty()) {
+            ocrCfg.setPath(ocrXml.getString("[@path]"));
+            ocrCfg.setLanguages(ocrXml.getString("languages"));
+            ocrCfg.setContentTypes(ocrXml.getString("contentTypes"));
+        }
+    }
+    
 
     @Override
     public void saveToXML(Writer out) throws IOException {
         try {
             EnhancedXMLStreamWriter xml = new EnhancedXMLStreamWriter(out);
-            xml.writeStartElement("tagger");
+            xml.writeStartElement("documentParserFactory");
             xml.writeAttribute("class", getClass().getCanonicalName());
-            xml.writeAttribute("splitEmbedded", 
-                    Boolean.toString(isSplitEmbedded()));
+
             if (ignoredContentTypesRegex != null) {
                 xml.writeStartElement("ignoredContentTypes");
                 xml.writeCharacters(ignoredContentTypesRegex);
                 xml.writeEndElement();
             }
-            if (ocrConfig != null) {
-                xml.writeStartElement("ocr");
-                xml.writeAttributeString("path", ocrConfig.getPath());
-                xml.writeElementString("languages", ocrConfig.getLanguages());
-                xml.writeElementString("contentTypes", ocrConfig.getContentTypes());
-                xml.writeEndElement();
+            
+            saveParseHintsToXML(xml);
+            
+            if (fallbackParser != null) {
+                if (fallbackParser instanceof IXMLConfigurable) {
+                    xml.flush();
+                    ((IXMLConfigurable) fallbackParser).saveToXML(out);
+                    out.flush();
+                } else {
+                    xml.writeStartElement("fallbackParser");
+                    xml.writeAttributeString("class", 
+                            fallbackParser.getClass().getCanonicalName());
+                    xml.writeEndElement();
+                }
             }
+
+            xml.writeStartElement("parsers");
+            for (Entry<ContentType, IDocumentParser> entry: 
+                    parsers.entrySet()) {
+                ContentType ct = entry.getKey();
+                IDocumentParser parser = entry.getValue();
+                if (parser instanceof IXMLConfigurable) {
+                    xml.flush();
+                    StringWriter sout = new StringWriter();
+                    ((IXMLConfigurable) parser).saveToXML(sout);
+                    String parserXML = sout.toString(); 
+                    parserXML = parserXML.replaceFirst("^<parser", 
+                            "<parser contentType=\"" + ct.toString() + "\"");
+                    out.write(parserXML);
+                    out.flush();
+                } else {
+                    xml.writeStartElement("parser");
+                    xml.writeAttributeString("class", 
+                            parser.getClass().getCanonicalName());
+                    xml.writeAttributeString("contentType", ct.toString());
+                    xml.writeEndElement();
+                }
+                
+            }
+            xml.writeEndElement();
+
             xml.writeEndElement();
             xml.flush();
             xml.close();
@@ -369,43 +449,146 @@ public class GenericDocumentParserFactory
         }
     }
 
+    private void saveParseHintsToXML(EnhancedXMLStreamWriter xml)
+            throws IOException, XMLStreamException {
+        EmbeddedConfig emb = parseHints.getEmbeddedConfig();
+        if (!emb.isEmpty()) {
+            xml.writeStartElement("embedded");
+            xml.writeElementString("splitContentTypes", 
+                    emb.getSplitContentTypes());
+            xml.writeElementString("noExtractEmbeddedContentTypes", 
+                    emb.getNoExtractEmbeddedContentTypes());
+            xml.writeElementString("noExtractContainerContentTypes", 
+                    emb.getNoExtractContainerContentTypes());
+            xml.writeEndElement();
+        }
+        OCRConfig ocr = parseHints.getOcrConfig();
+        if (!ocr.isEmpty()) {
+            xml.writeStartElement("ocr");
+            xml.writeAttributeString("path", ocr.getPath());
+            xml.writeElementString("languages", ocr.getLanguages());
+            xml.writeElementString(
+                    "contentTypes", ocr.getContentTypes());
+            xml.writeEndElement();
+        }
+    }
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof GenericDocumentParserFactory)) {
             return false;
         }
-        GenericDocumentParserFactory castOther = (GenericDocumentParserFactory) other;
-        return new EqualsBuilder()
-                .append(namedParsers, castOther.namedParsers)
-                .append(fallbackParser, castOther.fallbackParser)
-                .append(ignoredContentTypesRegex, castOther.ignoredContentTypesRegex)
-                .append(ocrConfig, castOther.ocrConfig)
-                .append(splitEmbedded, castOther.splitEmbedded)
+        GenericDocumentParserFactory castOther = 
+                (GenericDocumentParserFactory) other;
+        
+        if (!new EqualsBuilder()
+                .append(ignoredContentTypesRegex, 
+                        castOther.ignoredContentTypesRegex)
+                .append(parseHints, castOther.parseHints)
                 .append(parsersAreUpToDate, castOther.parsersAreUpToDate)
-                .isEquals();
+                .append(parsers.size(), castOther.parsers.size())
+                .append(fallbackParser, castOther.fallbackParser)
+                .isEquals()) {
+            return false;
+        }
+
+        for (Entry<ContentType, IDocumentParser> entry : parsers.entrySet()) {
+            IDocumentParser otherParser = castOther.parsers.get(entry.getKey());
+            if (otherParser == null) {
+                return false;
+            }
+            IDocumentParser parser = entry.getValue();
+            if (!Objects.equals(parser,  otherParser)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(namedParsers)
-                .append(fallbackParser)
+        int hash = new HashCodeBuilder()
                 .append(ignoredContentTypesRegex)
-                .append(ocrConfig)
-                .append(splitEmbedded)
+                .append(parseHints)
                 .append(parsersAreUpToDate)
+                .append(parsers.size())
                 .toHashCode();
+        hash += fallbackParser.hashCode();
+        for (Entry<ContentType, IDocumentParser> entry : parsers.entrySet()) {
+            ContentType ct = entry.getKey();
+            hash += ct.hashCode();
+            IDocumentParser parser = entry.getValue();
+            if (parser == null) {
+                continue;
+            }
+            hash += parser.hashCode();
+        }
+        return hash;
     }
 
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("namedParsers", namedParsers)
+                .append("namedParsers", parsers)
                 .append("fallbackParser", fallbackParser)
                 .append("ignoredContentTypesRegex", ignoredContentTypesRegex)
-                .append("ocrConfig", ocrConfig)
-                .append("splitEmbedded", splitEmbedded)
+                .append("parseHints", parseHints)
                 .append("parsersAreUpToDate", parsersAreUpToDate)
                 .toString();
-    }    
+    }
+    
+    //--- Deprecated methods ---------------------------------------------------
+    
+    /**
+     * Gets the OCR configuration.
+     * @return the ocrConfig
+     * @deprecated Since 2.6.0, use {@link #getParseHints()}
+     */
+    @Deprecated
+    public OCRConfig getOCRConfig() {
+        return parseHints.getOcrConfig();
+    }
+    /**
+     * Sets the OCR configuration.
+     * @param ocrConfig the ocrConfig to set
+     * @deprecated Since 2.6.0, use {@link #getParseHints()}
+     */
+    @Deprecated
+    public synchronized void setOCRConfig(OCRConfig ocrConfig) {
+        if (!Objects.equals(parseHints.getOcrConfig(), ocrConfig)) {
+            parsersAreUpToDate = false;
+        }
+        OCRConfig ocr = parseHints.getOcrConfig();
+        ocr.setContentTypes(ocrConfig.getContentTypes());
+        ocr.setLanguages(ocrConfig.getLanguages());
+        ocr.setPath(ocrConfig.getPath());
+    }
+
+    /**
+     * Gets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @return <code>true</code> if parser should split embedded documents.
+     * @deprecated Since 2.6.0, use {@link #getParseHints()}
+     */
+    @Deprecated
+    public boolean isSplitEmbedded() {
+        return StringUtils.isNotBlank(
+                parseHints.getEmbeddedConfig().getSplitContentTypes());
+    }
+    /**
+     * Sets whether embedded documents should be split to become "standalone"
+     * distinct documents.
+     * @param splitEmbedded <code>true</code> if parser should split 
+     *                      embedded documents.
+     * @deprecated Since 2.6.0, use {@link #getParseHints()}
+     */
+    @Deprecated
+    public synchronized void setSplitEmbedded(boolean splitEmbedded) {
+        parsersAreUpToDate = false;
+        if (splitEmbedded) {
+            parseHints.getEmbeddedConfig().setSplitContentTypes(".*");
+        } else {
+            parseHints.getEmbeddedConfig().setSplitContentTypes(null);
+        }
+    }
 }

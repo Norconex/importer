@@ -40,3 +40,4 @@ TODO:
   format of choice. This could allow for instance to convert some 
   formats non-supported by Tesseract OCR into some that are.
     
+- Have a maximum recursivity setting somewhere in GenericDocumentParserFactory?

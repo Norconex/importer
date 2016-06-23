@@ -8,6 +8,52 @@
   <body>
 
     <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        GenericDocumentParserFactory/AbstractTikaParser now allows you to 
+        control which embedded documents you do not want extracted from their 
+        containers.
+      </action>
+      <action dev="essiembre" type="add">
+        GenericDocumentParserFactory/AbstractTikaParser now allows you to 
+        control which documents containers you do not want to extract their 
+        embedded documents.
+      </action>
+      <action dev="essiembre" type="add">
+        GenericDocumentParserFactory/AbstractTikaParser now allows you to 
+        specify which content types to "split" their embedded documents 
+        via regular expression.
+      </action>
+      <action dev="essiembre" type="add">
+        GenericDocumentParserFactory now allows you to define and configure
+        parsers via XML.
+      </action>
+      <action dev="essiembre" type="add">
+        New IHintsAwareParser interface for parsers that can benefit from
+        global configuration settings.
+      </action>
+      <action dev="essiembre" type="add">
+        New ParseHints class holding generic configuration settings to 
+        be set on parsers implementing the new IHintsAwareParser.
+      </action>
+      <action dev="essiembre" type="add">
+        New EmbeddedConfig class holding configuration settings related
+        to embedded documents.  Used by ParseHints on 
+        GenericDocumentParserFactory.
+      </action>
+      <action dev="essiembre" type="update">
+        GenericDocumentParserFactory has been modified to introduce the 
+        concept of ParseHints which holds configuration settings every
+        parsers have the option to support or not. Generic embedded and OCR 
+        configuration settings have been moved to the new ParseHints class.
+      </action>
+      <action dev="essiembre" type="update">
+        The following GenericDocumentParserFactory method are now deprecated:
+        setSplitEmbedded(boolean), isSplitEmbedded(), setOCRConfig(OCRConfig),
+        and getOCRConfig().
+      </action>
+      <action dev="essiembre" type="update">
+        It is now possible to configure ExternalParser via XML.
+      </action>
       <action dev="essiembre" type="update">
         Now validates configuration and variable file paths when launched on 
         the command line (throws errors on invalid paths).
@@ -15,12 +61,18 @@
       <action dev="essiembre" type="update">
         Maven dependency updates: Tika 1.13 (which now uses PDFBox 2.x).
       </action>
-    </release>
-
-    <release version="2.5.3-SNAPSHOT" date="2016-??-??" description="Bug fix release">
+      <action dev="essiembre" type="update">
+        OCRConfig#setContentTypes(String) and equivalent configuration option
+        in GenericDocumentParserFactory now expects a regular expression as
+        opposed to a coma-separated list of content types.
+      </action>
       <action dev="essiembre" type="fix" issue="21">
         Fixed DOMTagger ignoring subsequent selectors when one selector 
         has no match. 
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed ContentTypeDetector not closing TikaInputStream properly resulting
+        in temporary "apache-tika-XXX.tmp" files not being deleted properly.
       </action>
     </release>
 

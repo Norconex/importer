@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@ package com.norconex.importer.parser.impl.wordperfect;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.parser.DocumentParserException;
@@ -43,5 +48,26 @@ public class WordPerfectParser implements IDocumentParser {
                             + doc.getReference(), e);
         }
         return null;
+    }
+    
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof WordPerfectParser)) {
+            return false;
+        }
+        return new EqualsBuilder()
+                .append(getClass(), other.getClass())
+                .isEquals();
+    }
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(getClass().getCanonicalName().hashCode())
+                .toHashCode();
+    }
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .toString();
     }
 }

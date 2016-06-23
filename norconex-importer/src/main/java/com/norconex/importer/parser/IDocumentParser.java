@@ -21,7 +21,8 @@ import com.norconex.importer.doc.ImporterDocument;
 
 /**
  * Implementations are responsible for parsing a document to 
- * extract its text and metadata, as well as any embedded documents.
+ * extract its text and metadata, as well as any embedded documents
+ * (when applicable).
  * @author Pascal Essiembre
  * @see IDocumentParserFactory
  */
