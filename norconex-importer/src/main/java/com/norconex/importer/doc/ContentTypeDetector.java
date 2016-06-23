@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,13 +45,28 @@ public class ContentTypeDetector {
     
     private TikaConfig tikaConfig;
 
+    /**
+     * Constructor.
+     */
     public ContentTypeDetector() {
         super();
     }
-    
+    /**
+     * Detects the content type of the given file.
+     * @param file file on which to detect content type
+     * @return the detected content type
+     * @throws IOException problem detecting content type
+     */
     public ContentType detect(File file) throws IOException {
         return detect(file, file.getName());
     }
+    /**
+     * Detects the content type of the given file.
+     * @param file file on which to detect content type
+     * @param fileName a file name which can help influence detection
+     * @return the detected content type
+     * @throws IOException problem detecting content type
+     */
     public ContentType detect(
             File file, String fileName) throws IOException {
         String safeFileName = fileName;
@@ -60,6 +75,12 @@ public class ContentTypeDetector {
         }
         return doDetect(TikaInputStream.get(file.toPath()), safeFileName);
     }
+    /**
+     * Detects the content type from the given input stream.
+     * @param content the content on which to detect content type
+     * @return the detected content type
+     * @throws IOException problem detecting content type
+     */
     public ContentType detect(InputStream content)
             throws IOException {
         Tika tika = new Tika();
@@ -70,6 +91,13 @@ public class ContentTypeDetector {
         }
         return ContentType.valueOf(contentType);
     }
+    /**
+     * Detects the content type from the given input stream.
+     * @param content the content on which to detect content type
+     * @param fileName a file name which can help influence detection
+     * @return the detected content type
+     * @throws IOException problem detecting content type
+     */
     public ContentType detect(InputStream content, String fileName)
             throws IOException {
         return doDetect(content, fileName);
@@ -101,19 +129,18 @@ public class ContentTypeDetector {
     
     private ContentType doDetect(
             InputStream is, String fileName) throws IOException {
-
-        TikaInputStream tikaStream = TikaInputStream.get(is);
-        
-        Metadata meta = new Metadata();
-        String extension = extPattern.matcher(fileName).replaceFirst("$1");
-        meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
-        MediaType media = 
-                getTikaConfig().getDetector().detect(tikaStream, meta);
-        
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Detected \"" + media.toString()
-                    + "\" content-type for: " + fileName);
+        try (TikaInputStream tikaStream = TikaInputStream.get(is)) {
+            Metadata meta = new Metadata();
+            String extension = extPattern.matcher(fileName).replaceFirst("$1");
+            meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
+            MediaType media = 
+                    getTikaConfig().getDetector().detect(tikaStream, meta);
+            
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Detected \"" + media.toString()
+                        + "\" content-type for: " + fileName);
+            }
+            return ContentType.valueOf(media.toString());
         }
-        return ContentType.valueOf(media.toString());
     }
 }
