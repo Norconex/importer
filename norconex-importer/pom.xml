@@ -288,14 +288,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.2</version>
+        <version>2.10.4</version>
         <configuration>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
-          <detectLinks>true</detectLinks>
-          <link>http://junit.org/javadoc/4.12/</link>
-          <link>http://tika.apache.org/1.7/api/</link>
+          <detectLinks>false</detectLinks>
+          <links>
+            <link>https://tika.apache.org/${tika.version}/api/</link>
+            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+          </links>
           <source>1.7</source>
+          <excludePackageNames>org.apache.tika.*</excludePackageNames>
         </configuration>
         <executions>
           <execution>
@@ -435,7 +438,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="http://www.norconex.com/collectors/importer">Norconex Importer</a>
+              <a target="_top" href="https://www.norconex.com/collectors/importer">Norconex Importer</a>
             </span>
             ]]>
           </header>
@@ -453,13 +456,17 @@
             </script>
             <a style="font-size: 1.4em;" target="_top" href="https://github.com/norconex/importer/issues">Submit an Issue</a>
             &nbsp;&nbsp;|&nbsp;&nbsp; 
-            <a style="font-size: 1.4em;" target="_top" href="http://www.norconex.com">www.norconex.com</a>
+            <a style="font-size: 1.4em;" target="_top" href="https://www.norconex.com">www.norconex.com</a>
             ]]>
           </footer>
           <show>protected</show>
-          <detectLinks>true</detectLinks>
-          <link>http://junit.org/javadoc/4.11/</link>
-          <link>http://tika.apache.org/1.5/api/</link>
+          <detectLinks>false</detectLinks>
+          <links>
+            <link>https://tika.apache.org/${tika.version}/api/</link>
+            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+          </links>
+          <source>1.7</source>
+          <excludePackageNames>org.apache.tika.*</excludePackageNames>
         </configuration>
         <reportSets>
           <reportSet>
@@ -477,9 +484,9 @@
 
   <organization>
   	<name>Norconex Inc.</name>
-  	<url>http://www.norconex.com</url>
+  	<url>https://www.norconex.com</url>
   </organization>
-  <url>http://norconex.com/collectors/importer</url>
+  <url>https://norconex.com/collectors/importer</url>
   <description>Norconex Importer is a Java library and command-line application meant to &quot;parse&quot; and &quot;extract&quot; content out of a computer file as plain text, whatever its format (HTML, PDF, Word, etc). In addition, it allows you to perform any manipulation on the extracted text before importing/using it in your own service or application.</description>
   <issueManagement>
   	<system>GitHub</system>
@@ -497,7 +504,7 @@
         <name>Pascal Essiembre</name>
         <email>pascal.essiembre@norconex.com</email>
         <organization>Norconex Inc.</organization>
-        <organizationUrl>http://www.norconex.com</organizationUrl>
+        <organizationUrl>https://www.norconex.com</organizationUrl>
         <roles>
           <role>project leader</role>
           <role>developer</role>
@@ -509,7 +516,7 @@
         <name>Pascal Dimassimo</name>
         <email>pascal.dimassimo@norconex.com</email>
         <organization>Norconex Inc.</organization>
-        <organizationUrl>http://www.norconex.com</organizationUrl>
+        <organizationUrl>https://www.norconex.com</organizationUrl>
         <roles>
           <role>developer</role>
         </roles>
