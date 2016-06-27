@@ -58,6 +58,8 @@ public final class DOMUtil {
      *       attribute matching your replacement for "attributeKey"
      *       (e.g. "attr(title)" will extract the "title" attribute).</li>
      * </ul> 
+     * @param element the element to extract value on
+     * @param extract the type of extraction to perform
      * @see {@link Element}
      */
     public static String getElementValue(Element element, String extract) {
