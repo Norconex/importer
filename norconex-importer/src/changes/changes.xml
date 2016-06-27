@@ -9,6 +9,11 @@
 
     <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New DOM extraction possibility for DOMContentFilter and DOMTagger:
+        ownText, data, id, tagName, val, className, cssSelector, 
+        and attr(attributeKey).
+      </action>
+      <action dev="essiembre" type="add">
         GenericDocumentParserFactory/AbstractTikaParser now allows you to 
         control which embedded documents you do not want extracted from their 
         containers.

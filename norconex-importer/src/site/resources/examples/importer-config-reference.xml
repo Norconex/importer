@@ -58,7 +58,7 @@
     </postParseHandlers>
 
     <responseProcessors>
-        <!-- Can process the importer reponse before it is returned. -->
+        <!-- Can process the importer response before it is returned. -->
         <responseProcessor class="..." />
     </responseProcessors>
 

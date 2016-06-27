@@ -1,0 +1,110 @@
+/* Copyright 2016 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.norconex.importer.util;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.jsoup.nodes.Element;
+
+/**
+ * Utility methods related to DOM manipulation.
+ * @since 2.6.0
+ */
+public final class DOMUtil {
+
+    private static final Logger LOG = LogManager.getLogger(DOMUtil.class);
+    
+    private DOMUtil() {
+    }
+
+    /**
+     * <p>Gets an element value based on JSoup DOM.  You control what gets 
+     * extracted exactly thanks to the "extract" argument. 
+     * Possible values are:</p>
+     * <ul>
+     *   <li><b>text</b>: Default option when extract is blank. The text of 
+     *       the element, including combined children.</li>
+     *   <li><b>html</b>: Extracts an element inner 
+     *       HTML (including children).</li>
+     *   <li><b>outerHtml</b>: Extracts an element outer 
+     *       HTML (like "html", but includes the "current" tag).</li>
+     *   <li><b>ownText</b>: Extracts the text owned by this element only; 
+     *       does not get the combined text of all children.</li>
+     *   <li><b>data</b>: Extracts the combined data of a data-element (e.g. 
+     *       &lt;script&gt;).</li>
+     *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
+     *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
+     *   <li><b>val</b>: Extracts the value of a form element 
+     *       (input, textarea, etc).</li>
+     *   <li><b>className</b>: Extracts the literal value of the element's 
+     *       "class" attribute, which may include multiple class names, 
+     *       space separated.</li>
+     *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely 
+     *       select (identify) this element.</li>
+     *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
+     *       attribute matching your replacement for "attributeKey"
+     *       (e.g. "attr(title)" will extract the "title" attribute).</li>
+     * </ul> 
+     * @see {@link Element}
+     */
+    public static String getElementValue(Element element, String extract) {
+        String ext = StringUtils.lowerCase(extract);
+        if (StringUtils.isBlank(ext) || "text".equals(ext)) {
+            return element.text();
+        } 
+        if ("html".equals(ext)) {
+            return element.html();
+        } 
+        if ("outerhtml".equals(ext)) {
+            return element.outerHtml();
+        }
+        if ("data".equals(ext)) {
+            return element.data();
+        }
+        if ("id".equals(ext)) {
+            return element.id();
+        }
+        if ("owntext".equals(ext)) {
+            return element.ownText();
+        }
+        if ("tagname".equals(ext)) {
+            return element.tagName();
+        }
+        if ("val".equals(ext)) {
+            return element.val();
+        }
+        if ("classname".equals(ext)) {
+            return element.className();
+        }
+        if ("cssselector".equals(ext)) {
+            return element.cssSelector();
+        }
+        if (ext.startsWith("attr(")) {
+            String attr = StringUtils.substringBetween(ext, "(", ")");
+            if (StringUtils.isNotBlank(attr)) {
+                return element.attr(attr);
+            } else {
+                LOG.warn("\"" + ext + "\" attribute is not valid.");
+                return null;
+            }
+        }
+
+        // if it reaches here... extract is not supported
+        LOG.warn("\"" + extract + "\" is not a supported extract type. "
+                + "\"text\" will be used.");
+        return element.text();
+    }
+}

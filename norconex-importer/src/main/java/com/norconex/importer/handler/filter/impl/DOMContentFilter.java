@@ -26,8 +26,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -39,6 +37,7 @@ import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.util.DOMUtil;
 
 /**
  * <p>Uses a Document Object Model (DOM) representation of an HTML, XHTML, or 
@@ -88,14 +87,32 @@ import com.norconex.importer.handler.filter.OnMatch;
  * 
  * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
  * exactly for matching purposes thanks to the "extract" argument of the 
- * new method {@link #setExtract(String)}.  Possible values are:</p>
+ * new method {@link #setExtract(String)}.  Version 2.6.0
+ * introduced several more extract options. Possible values are:</p>
  * <ul>
- *   <li><b>html</b>: Default option. Extracts an element inner 
+ *   <li><b>text</b>: Default option when extract is blank. The text of 
+ *       the element, including combined children.</li>
+ *   <li><b>html</b>: Extracts an element inner 
  *       HTML (including children).</li>
  *   <li><b>outerHtml</b>: Extracts an element outer 
  *       HTML (like "html", but includes the "current" tag).</li>
- *   <li><b>text</b>: The text of the element, including combined children.</li>
- * </ul>
+ *   <li><b>ownText</b>: Extracts the text owned by this element only; 
+ *       does not get the combined text of all children.</li>
+ *   <li><b>data</b>: Extracts the combined data of a data-element (e.g. 
+ *       &lt;script&gt;).</li>
+ *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
+ *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
+ *   <li><b>val</b>: Extracts the value of a form element 
+ *       (input, textarea, etc).</li>
+ *   <li><b>className</b>: Extracts the literal value of the element's 
+ *       "class" attribute, which may include multiple class names, 
+ *       space separated.</li>
+ *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely 
+ *       select (identify) this element.</li>
+ *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
+ *       attribute matching your replacement for "attributeKey"
+ *       (e.g. "attr(title)" will extract the "title" attribute).</li>
+ * </ul> 
  * 
  * <h3>
  * XML configuration usage:
@@ -137,9 +154,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * @see Pattern
  */
 public class DOMContentFilter extends AbstractDocumentFilter {
-    
-    private static final Logger LOG = 
-            LogManager.getLogger(DOMContentFilter.class);
     
     private boolean caseSensitive;
     private String regex;
@@ -253,7 +267,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 return true;
             }
             for (Element elm : elms) {
-                String value = getElementValue(elm, getExtract());
+                String value = DOMUtil.getElementValue(elm, getExtract());
                 if (pattern.matcher(value).find()) {
                     return true;
                 }
@@ -264,24 +278,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                     "Cannot parse document into a DOM-tree.", e);
         }
     }
-    
-    //TODO same method found in DOMTagger. Move this to a DOMUtil or similar?
-    // Also have constant values if doing so? (emums)
-    private String getElementValue(Element element, String extract) {
-        if ("html".equalsIgnoreCase(extract)) {
-            return element.html();
-        }
-        if ("outerhtml".equalsIgnoreCase(extract)) {
-            return element.outerHtml();
-        }
-        if (StringUtils.isNotBlank(extract) 
-                && !"text".equalsIgnoreCase(extract)) {
-            LOG.warn("\"" + extract + "\" is not a supported extract type. "
-                    + "\"text\" will be used (other options are \"html\" "
-                    + "and \"outerHtml\").");
-        }
-        return element.text();
-    }    
     
     @Override
     protected void saveFilterToXML(EnhancedXMLStreamWriter writer)

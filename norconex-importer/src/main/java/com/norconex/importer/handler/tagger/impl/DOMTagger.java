@@ -29,8 +29,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -41,6 +39,7 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.util.DOMUtil;
 
 /**
  * <p>Extract the value of one or more elements or attributes into 
@@ -83,16 +82,32 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
  * exactly thanks to the "extract" argument of the new method 
- * {@link #addDOMExtractDetails(String, String, boolean, String)}.
- * Possible values are:</p>
+ * {@link #addDOMExtractDetails(String, String, boolean, String)}. Version 2.6.0
+ * introduced several more extract options. Possible values are:</p>
  * <ul>
- *   <li><b>text</b>: Default option. The text of the element, including 
- *       combined children.</li>
+ *   <li><b>text</b>: Default option when extract is blank. The text of 
+ *       the element, including combined children.</li>
  *   <li><b>html</b>: Extracts an element inner 
  *       HTML (including children).</li>
  *   <li><b>outerHtml</b>: Extracts an element outer 
  *       HTML (like "html", but includes the "current" tag).</li>
- * </ul>
+ *   <li><b>ownText</b>: Extracts the text owned by this element only; 
+ *       does not get the combined text of all children.</li>
+ *   <li><b>data</b>: Extracts the combined data of a data-element (e.g. 
+ *       &lt;script&gt;).</li>
+ *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
+ *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
+ *   <li><b>val</b>: Extracts the value of a form element 
+ *       (input, textarea, etc).</li>
+ *   <li><b>className</b>: Extracts the literal value of the element's 
+ *       "class" attribute, which may include multiple class names, 
+ *       space separated.</li>
+ *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely 
+ *       select (identify) this element.</li>
+ *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
+ *       attribute matching your replacement for "attributeKey"
+ *       (e.g. "attr(title)" will extract the "title" attribute).</li>
+ * </ul> 
  * 
  * <h3>
  * XML configuration usage:
@@ -118,8 +133,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class DOMTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG = LogManager.getLogger(DOMTagger.class);
-    
     private final List<DOMExtractDetails> extractions = new ArrayList<>();
     private String sourceCharset = null;
     
@@ -177,7 +190,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         // one or more elements matching
         List<String> values = new ArrayList<>();
         for (Element elm : elms) {
-            String value = getElementValue(elm, details.extract);
+            String value = DOMUtil.getElementValue(elm, details.extract);
             if (StringUtils.isNotBlank(value)) {
                 values.add(value);
             }
@@ -193,22 +206,6 @@ public class DOMTagger extends AbstractDocumentTagger {
         }
     }
     
-    private String getElementValue(Element element, String extract) {
-        if ("html".equalsIgnoreCase(extract)) {
-            return element.html();
-        }
-        if ("outerhtml".equalsIgnoreCase(extract)) {
-            return element.outerHtml();
-        }
-        if (StringUtils.isNotBlank(extract) 
-                && !"text".equalsIgnoreCase(extract)) {
-            LOG.warn("\"" + extract + "\" is not a supported extract type. "
-                    + "\"text\" will be used (other options are \"html\" "
-                    + "and \"outerHtml\").");
-        }
-        return element.text();
-    }
-
     /**
      * Adds DOM element value extraction instructions. Extracts
      * the value as text (stripped of HTML tags).
