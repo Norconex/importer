@@ -60,7 +60,7 @@ public final class DOMUtil {
      * </ul> 
      * @param element the element to extract value on
      * @param extract the type of extraction to perform
-     * @see {@link Element}
+     * @see Element
      */
     public static String getElementValue(Element element, String extract) {
         String ext = StringUtils.lowerCase(extract);
