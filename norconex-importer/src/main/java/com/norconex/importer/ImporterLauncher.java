@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import com.norconex.importer.response.ImporterResponse;
  */
 public final class ImporterLauncher {
 
-    
     private static final String ARG_INPUTFILE = "inputFile";
     private static final String ARG_OUTPUTFILE = "outputFile";
     private static final String ARG_CONTENTTYPE = "contentType";
@@ -50,7 +49,6 @@ public final class ImporterLauncher {
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
     public static final String ARG_VARIABLES = "variables";
-    
     
     /**
      * Constructor.
@@ -171,16 +169,16 @@ public final class ImporterLauncher {
     
     private static CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
-        options.addOption("i", "inputFile", true, 
+        options.addOption("i", ARG_INPUTFILE, true, 
                 "Required: File to be imported.");
-        options.addOption("o", "outputFile", true, 
+        options.addOption("o", ARG_OUTPUTFILE, true, 
                 "Optional: File where the imported content will be stored.");
-        options.addOption("t", "contentType", true, 
+        options.addOption("t", ARG_CONTENTTYPE, true, 
                 "Optional: The MIME Content-type of the input file.");
-        options.addOption("r", "reference", true, 
+        options.addOption("r", ARG_REFERENCE, true, 
                 "Optional: Alternate unique qualifier for the input file "
               + "(e.g. URL).");
-        options.addOption("c", "config", true, 
+        options.addOption("c", ARG_CONFIG, true, 
                 "Optional: Importer XML configuration file.");
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
@@ -189,7 +187,7 @@ public final class ImporterLauncher {
         CommandLine cmd = null;
         try {
             cmd = parser.parse( options, args);
-            if(!cmd.hasOption("inputFile")) {
+            if(!cmd.hasOption(ARG_INPUTFILE)) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "importer[.bat|.sh]", options );
                 System.exit(-1);

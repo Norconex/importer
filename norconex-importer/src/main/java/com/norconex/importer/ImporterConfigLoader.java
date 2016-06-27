@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,8 @@ public final class ImporterConfigLoader {
      */    
     public static ImporterConfig loadImporterConfig(Reader config)  {
         try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(config);
+            XMLConfiguration xml = 
+                    ConfigurationUtil.newXMLConfiguration(config);
             return loadImporterConfig(xml);
         } catch (Exception e) {
             throw configurationException(

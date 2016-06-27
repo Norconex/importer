@@ -26,12 +26,6 @@ TODO:
 - Added Yandex translation support now in Tika: 
   https://issues.apache.org/jira/browse/TIKA-1943
 
-- Have content type parsers configurable via XML.
-
-- Have global way to configure disabling parsing of embedded resources 
-  (either content and metadata, or just metadata -- which seems to cause 
-  OOM Exceptions in rare cases).
-
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support (requires external app install, like
   Tesserac OCR feature).
