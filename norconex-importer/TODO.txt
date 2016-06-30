@@ -2,6 +2,9 @@
 TODO:
 ==============
 
+- Find out if we can reduce metadata extraction on images to avoid 
+  OOMException on some images with massive amount of metadata.
+
 - Remove custom PDF parser given latest Tika now supports PDFBox 2.0.1.
   (make sure any custom tweaks are still supported, and that XFA extracation
   is enabled out of the box).
