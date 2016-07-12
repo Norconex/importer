@@ -175,6 +175,8 @@ public final class ImporterLauncher {
                 "Optional: File where the imported content will be stored.");
         options.addOption("t", ARG_CONTENTTYPE, true, 
                 "Optional: The MIME Content-type of the input file.");
+        options.addOption("e", ARG_CONTENTENCODING, true, 
+                "Optional: The content encoding (charset) of the input file.");
         options.addOption("r", ARG_REFERENCE, true, 
                 "Optional: Alternate unique qualifier for the input file "
               + "(e.g. URL).");

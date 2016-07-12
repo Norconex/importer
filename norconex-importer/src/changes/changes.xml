@@ -45,6 +45,10 @@
         to embedded documents.  Used by ParseHints on 
         GenericDocumentParserFactory.
       </action>
+      <action dev="essiembre" type="add">
+        Can now pass optional -e or --contentEncoding to command line
+        to explicitly set the character encoding (charset).
+      </action>
       <action dev="essiembre" type="update">
         GenericDocumentParserFactory has been modified to introduce the 
         concept of ParseHints which holds configuration settings every
