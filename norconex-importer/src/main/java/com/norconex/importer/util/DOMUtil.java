@@ -60,6 +60,7 @@ public final class DOMUtil {
      * </ul> 
      * @param element the element to extract value on
      * @param extract the type of extraction to perform
+     * @return the element value
      * @see Element
      */
     public static String getElementValue(Element element, String extract) {
