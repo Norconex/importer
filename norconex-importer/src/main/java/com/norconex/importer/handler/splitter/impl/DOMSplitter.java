@@ -144,6 +144,19 @@ public class DOMSplitter extends AbstractDocumentSplitter
             Document soupDoc = Jsoup.parse(
                     doc.getInput(), inputCharset, doc.getReference());
             Elements elms = soupDoc.select(selector);
+            
+            // if there only 1 element matched, make sure it is not the same as
+            // the parent document to avoid infinite loops (the parent
+            // matching itself recursively).
+            if (elms.size() == 1) {
+                Element matchedElement = elms.get(0);
+                Element parentElement = getBodyElement(soupDoc); 
+                if (matchedElement.equals(parentElement)) {
+                    return docs;
+                }
+            }
+
+            // process "legit" child elements
             for (Element elm : elms) {
                 ImporterMetadata childMeta = new ImporterMetadata();
                 childMeta.load(doc.getMetadata());
@@ -171,6 +184,14 @@ public class DOMSplitter extends AbstractDocumentSplitter
         return docs;
     }
 
+    private Element getBodyElement(Document soupDoc) {
+        Element body = soupDoc.body();
+        if (body.childNodeSize() == 1) {
+            return body.child(0);
+        }
+        return null;
+    }
+    
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) {
         setSelector(xml.getString("[@selector]", getSelector()));

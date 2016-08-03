@@ -83,6 +83,10 @@
         Fixed ContentTypeDetector not closing TikaInputStream properly resulting
         in temporary "apache-tika-XXX.tmp" files not being deleted properly.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed infinite loop with DOMSplitter when some selectors are too 
+        generic.
+      </action>
     </release>
 
     <release version="2.5.2" date="2016-05-31" description="Maintenance release">
