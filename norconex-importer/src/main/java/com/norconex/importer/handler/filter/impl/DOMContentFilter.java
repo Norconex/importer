@@ -123,7 +123,7 @@ import com.norconex.importer.util.DOMUtil;
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"          
  *          selector="(selector syntax)"
- *          extract="[text|html|outerHtml]" &gt;
+ *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" &gt;
  *    &lt;regex&gt;(optional regular expression of value to match)&lt;/regex&gt;
  *    &lt;restrictTo caseSensitive="[false|true]"
  *            field="(name of header/metadata field name to match)"&gt;

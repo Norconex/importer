@@ -117,7 +117,7 @@ import com.norconex.importer.util.DOMUtil;
  *          sourceCharset="(character encoding)"&gt;
  *      &lt;dom selector="(selector syntax)" toField="(target field)"
  *              overwrite="[false|true]"
- *              extract="[text|html|outerHtml]" /&gt;
+ *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" /&gt;
  *      &lt;!-- multiple "dom" tags allowed --&gt;
  *          
  *      &lt;restrictTo
