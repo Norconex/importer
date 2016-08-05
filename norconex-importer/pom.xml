@@ -50,17 +50,12 @@
       </snapshots>
     </repository> 
     
-    <!-- The following repos may no longer be needed once a version of 
-         Tika is released with PDBBox 2.0.0 support. -->
-     <repository>
-        <id>apache.groups.snapshots</id>
-        <url>https://repository.apache.org/content/groups/snapshots/</url>
-     </repository>
-     <repository>
-       <id>apache.snapshots</id>
-       <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
-       <!-- url>http://repository.apache.org/snapshots/</url -->
-     </repository>
+    <!-- The following repo is required for jai-imageio-jpeg2000 support. -->
+    <repository>
+      <id>apache.snapshots</id>
+      <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
+      <!-- url>http://repository.apache.org/snapshots/</url -->
+    </repository>
   </repositories>
 
   <dependencies>
@@ -89,14 +84,6 @@
         <groupId>org.apache.tika</groupId>
         <artifactId>tika-translate</artifactId>
         <version>${tika.version}</version>
-        <!--  TODO: Consider dropping the one used by the Importer for this
-              one? -->
-        <exclusions>
-          <exclusion>
-            <artifactId>language-detector</artifactId>
-            <groupId>com.optimaize.languagedetector</groupId>
-          </exclusion>
-        </exclusions>
     </dependency>
     <dependency>
     	<groupId>commons-cli</groupId>
@@ -117,11 +104,6 @@
       <groupId>net.sf.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.norconex.language</groupId>
-      <artifactId>norconex-language-detector</artifactId>
-      <version>1.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>

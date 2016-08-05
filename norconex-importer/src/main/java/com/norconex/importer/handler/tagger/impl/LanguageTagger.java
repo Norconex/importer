@@ -15,7 +15,11 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.io.Reader;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -28,19 +32,19 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.tika.langdetect.OptimaizeLangDetector;
+import org.apache.tika.language.detect.LanguageDetector;
+import org.apache.tika.language.detect.LanguageResult;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
-import com.norconex.language.detector.DetectedLanguage;
-import com.norconex.language.detector.DetectedLanguages;
-import com.norconex.language.detector.LanguageDetector;
-import com.norconex.language.detector.LanguageDetectorException;
+import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
- * <p>Detects a document language and adds it to the 
+ * <p>Detects a document language based on Tika language detection capability.
+ * It adds the detected language to the 
  * "<code>document.language</code>" metadata field.  
  * Optionally adds all potential languages detected with their 
  * probability score as well as additional fields following this pattern:</p>
@@ -54,314 +58,118 @@ import com.norconex.language.detector.LanguageDetectorException;
  * <p>This tagger can be used both as a pre-parse (on text only) 
  * or post-parse handler.</p>
  * 
- * <h3>Short vs Long Text:</h3>
- * <p>To obtain optimal detection, long enough text is expected.  The default
- * detection algorithm is optimized for document with lots of text.  
- * If you know the documents to 
- * be analyzed are primarily made of short text (e.g. tweets, comments, etc), 
- * you can try to get better detection by configuring this tagger to 
- * use short-text optimization.</p>
+ * <h3>Accuracy:</h3>
+ * <p>
+ * To obtain optimal detection, long enough text is expected.  The default
+ * detection algorithm is optimized for document with lots of text.
+ * This tagger relies on Tika language detection capabilities and future 
+ * versions may provide better precision for documents made of short 
+ * text (e.g. tweets, comments, etc).
+ * </p>
+ * <p>
+ * If you know what mix of languages are used by your site(s), you can increase
+ * accuracy in many cases by limiting the set of languages supported
+ * for detection.
+ * </p>
  * 
  * <h3>Supported Languages:</h3>
- * <p>Languages are represented as 
- * <a href="http://tools.ietf.org/html/bcp47">IETF BCP 47 language tags</a>.
- * The list of supported languages can vary
- * slightly depending on whether you chose long or short text optimization.
- * They are:</p>
+ * <p>
+ * Languages are represented as code values. As of 2.6.0, at least the 
+ * following 70 languages are supported by the Tika version used:
+ * </p>
  * 
- * <table>
- *  <caption>Supported languages</caption>
- *  <tr>
- *   <td><b>Tag</b></td>
- *   <td><b>Name</b></td>
- *   <td><b>Note</b></td>
- *  </tr>
- *  <tr>
- *   <td>af</td>
- *   <td>Afrikaans</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>ar</td>
- *   <td>Arabic</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>bg</td>
- *   <td>Bulgarian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>bn</td>
- *   <td>Bengali</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ca</td>
- *   <td>Catalan</td>
- *   <td>Short text only</td>
- *  </tr>
- *  <tr>
- *   <td>cs</td>
- *   <td>Czech</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>da</td>
- *   <td>Danish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>de</td>
- *   <td>German</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>el</td>
- *   <td>Greek</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>en</td>
- *   <td>English</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>es</td>
- *   <td>Spanish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>et</td>
- *   <td>Estonian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>fa</td>
- *   <td>Persian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>fi</td>
- *   <td>Finnish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>fr</td>
- *   <td>French</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>gu</td>
- *   <td>Gujarati</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>he</td>
- *   <td>Hebrew</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>hi</td>
- *   <td>Hindi</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>hr</td>
- *   <td>Croatian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>hu</td>
- *   <td>Hungarian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>id</td>
- *   <td>Indonesian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>it</td>
- *   <td>Italian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ja</td>
- *   <td>Japanese</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>kn</td>
- *   <td>Kannada</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>ko</td>
- *   <td>Korean</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>lt</td>
- *   <td>Lithuanian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>lv</td>
- *   <td>Latvian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>mk</td>
- *   <td>Macedonian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ml</td>
- *   <td>Malayalam</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>mr</td>
- *   <td>Marathi</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>ne</td>
- *   <td>Nepali</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>nl</td>
- *   <td>Dutch</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>no</td>
- *   <td>Norwegian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>pa</td>
- *   <td>Punjabi</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>pl</td>
- *   <td>Polish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>pt</td>
- *   <td>Portuguese</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ro</td>
- *   <td>Romanian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ru</td>
- *   <td>Russian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>si</td>
- *   <td>Sinhala</td>
- *   <td>Short text only</td>
- *  </tr>
- *  <tr>
- *   <td>sk</td>
- *   <td>Slovak</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>sl</td>
- *   <td>Slovene</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>so</td>
- *   <td>Somali</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>sq</td>
- *   <td>Albanian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>sv</td>
- *   <td>Swedish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>sw</td>
- *   <td>Swahili</td>
- *   <td>Long text only</td>
- *  </tr>
- *  <tr>
- *   <td>ta</td>
- *   <td>Tamil</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>te</td>
- *   <td>Telugu</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>th</td>
- *   <td>Thai</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>tl</td>
- *   <td>Tagalog</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>tr</td>
- *   <td>Turkish</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>uk</td>
- *   <td>Ukrainian</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>ur</td>
- *   <td>Urdu</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>vi</td>
- *   <td>Vietnamese</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>zh-cn</td>
- *   <td>Simplified Chinese</td>
- *   <td></td>
- *  </tr>
- *  <tr>
- *   <td>zh-tw</td>
- *   <td>Traditional Chinese</td>
- *   <td></td>
- *  </tr>
- * </table>
+ * <ul>
+ *   <li>af Afrikaans</li>
+ *   <li>an Aragonese</li>
+ *   <li>ar Arabic</li>
+ *   <li>ast Asturian</li>
+ *   <li>be Belarusian</li>
+ *   <li>br Breton</li>
+ *   <li>ca Catalan</li>
+ *   <li>bg Bulgarian</li>
+ *   <li>bn Bengali</li>
+ *   <li>cs Czech</li>
+ *   <li>cy Welsh</li>
+ *   <li>da Danish</li>
+ *   <li>de German</li>
+ *   <li>el Greek</li>
+ *   <li>en English</li>
+ *   <li>es Spanish</li>
+ *   <li>et Estonian</li>
+ *   <li>eu Basque</li>
+ *   <li>fa Persian</li>
+ *   <li>fi Finnish</li>
+ *   <li>fr French</li>
+ *   <li>ga Irish</li>
+ *   <li>gl Galician</li>
+ *   <li>gu Gujarati</li>
+ *   <li>he Hebrew</li>
+ *   <li>hi Hindi</li>
+ *   <li>hr Croatian</li>
+ *   <li>ht Haitian</li>
+ *   <li>hu Hungarian</li>
+ *   <li>id Indonesian</li>
+ *   <li>is Icelandic</li>
+ *   <li>it Italian</li>
+ *   <li>ja Japanese</li>
+ *   <li>km Khmer</li>
+ *   <li>kn Kannada</li>
+ *   <li>ko Korean</li>
+ *   <li>lt Lithuanian</li>
+ *   <li>lv Latvian</li>
+ *   <li>mk Macedonian</li>
+ *   <li>ml Malayalam</li>
+ *   <li>mr Marathi</li>
+ *   <li>ms Malay</li>
+ *   <li>mt Maltese</li>
+ *   <li>ne Nepali</li>
+ *   <li>nl Dutch</li>
+ *   <li>no Norwegian</li>
+ *   <li>oc Occitan</li>
+ *   <li>pa Punjabi</li>
+ *   <li>pl Polish</li>
+ *   <li>pt Portuguese</li>
+ *   <li>ro Romanian</li>
+ *   <li>ru Russian</li>
+ *   <li>sk Slovak</li>
+ *   <li>sl Slovene</li>
+ *   <li>so Somali</li>
+ *   <li>sq Albanian</li>
+ *   <li>sr Serbian</li>
+ *   <li>sv Swedish</li>
+ *   <li>sw Swahili</li>
+ *   <li>ta Tamil</li>
+ *   <li>te Telugu</li>
+ *   <li>th Thai</li>
+ *   <li>tl Tagalog</li>
+ *   <li>tr Turkish</li>
+ *   <li>uk Ukrainian</li>
+ *   <li>ur Urdu</li>
+ *   <li>vi Vietnamese</li>
+ *   <li>yi Yiddish</li>
+ *   <li>zh-cn Simplified Chinese</li>
+ *   <li>zh-tw Traditional Chinese</li>
+ * </ul>
  * 
- * <p>If you do not restrict the list of language candidates to detect, the default
- * behavior is to try match all languages currently supported for your 
- * selected long/short text optimization.</p>
+ * <p>
+ * It is possible more will be supported automatically with future Tika 
+ * upgrades.
+ * </p>
+ * 
+ * <p>If you do not restrict the list of language candidates to detect, 
+ * the default behavior is to try match all languages currently supported.
+ * </p>
+ * 
+ * <p>
+ * <b>Since 2.6.0</b>, this tagger uses Tika for language detection. As a
+ * result, more languages are supported, at the expense of less accuracy with
+ * short text.
+ * </p>
  * 
  * <h3>XML configuration usage:</h3>
  * 
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
- *          shortText="(false|true)"
  *          keepProbabilities="(false|true)"
  *          sourceCharset="(character encoding)"
  *          fallbackLanguage="" &gt;
@@ -379,8 +187,7 @@ import com.norconex.language.detector.LanguageDetectorException;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-@SuppressWarnings("nls")
-public class LanguageTagger extends AbstractCharStreamTagger
+public class LanguageTagger extends AbstractStringTagger
         implements IXMLConfigurable {
 
     //TODO Check if doc.size is defined in metadata? If so, use it to 
@@ -393,64 +200,80 @@ public class LanguageTagger extends AbstractCharStreamTagger
             LogManager.getLogger(LanguageTagger.class);
     
     private LanguageDetector detector;
-    private boolean shortText;
     private boolean keepProbabilities;
     private String[] languages;
     private String fallbackLanguage;
     
+    private final Comparator<LanguageResult> langResultComparator = 
+            new Comparator<LanguageResult>() {
+        @Override
+        public int compare(LanguageResult o1, LanguageResult o2) {
+            return Float.compare(o1.getRawScore(), o2.getRawScore());
+        }
+    };
+    
     @Override
-    protected void tagTextDocument(
-            String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
-
+    protected void tagStringContent(
+            String reference, StringBuilder content, 
+            ImporterMetadata metadata, boolean parsed,
+            int sectionIndex) throws ImporterHandlerException {
         
-        String languageTag = null;
+        // For massive docs: only use first section of document to detect langs
+        if (sectionIndex > 0) {
+            return;
+        }
 
-        try {
-            LanguageDetector detector = getInitializedDetector();
-            DetectedLanguages langs = detector.detect(input);
-            if (!langs.isEmpty()) {
-                languageTag = langs.getBestLanguage().getTag();
+        ensureDetectorInitialization();
+        
+        List<LanguageResult> results = detector.detectAll(content.toString());
+        
+        // leave now if no matches
+        if (results.isEmpty()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("No language found, using fallback language for " 
+                        + reference);
             }
-            if (StringUtils.isBlank(languageTag)) {
-                languageTag = fallbackLanguage;
-            }
-            if (StringUtils.isNotBlank(languageTag)) {
-                metadata.setLanguage(languageTag);
-            }
-            if (keepProbabilities) {
-                int count = 0;
-                for (DetectedLanguage lang : langs) {
-                    count++;
-                    String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
-                    metadata.setString(prefix + ".tag", lang.getTag());
-                    metadata.setDouble(
-                            prefix + ".probability", lang.getProbability());
-                }
-            }
-        } catch (LanguageDetectorException e) {
-            LOG.warn("Could not detect language. Using fallback language \""
-                    + fallbackLanguage + "\" for: " + reference);
-            LOG.debug("", e);
-            if (StringUtils.isNotBlank(fallbackLanguage)) {
-                metadata.setLanguage(fallbackLanguage);
+            metadata.setLanguage(fallbackLanguage);
+            return;
+        }
+        
+        Collections.sort(results, langResultComparator);
+        metadata.setLanguage(results.get(0).getLanguage());
+        
+        if (keepProbabilities) {
+            int count = 0;
+            for (LanguageResult lang : results) {
+                count++;
+                String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
+                metadata.setString(prefix + ".tag", lang.getLanguage());
+                metadata.setDouble(prefix + ".probability", lang.getRawScore());
             }
         }
     }
 
+    /**
+     * Gets whether to enable short text detection. 
+     * @return <code>true</code> to use short text detection
+     * @deprecated Since 2.6.0, no special optimization exists for short text
+     * and this method always returns false
+     */
+    @Deprecated
     public boolean isShortText() {
-        return shortText;
+        return false;
     }
     /**
      * Sets whether to use a detection algorithm optimized for short text.
      * Default is <code>false</code> (optimized for long text).
      * @param shortText <code>true</code> to use a detection algorithm 
      *                  optimized for short text
+     * @deprecated Since 2.6.0, no special optimization exists for short text
+     * and calling this method has no effect
      */
+    @Deprecated
     public void setShortText(boolean shortText) {
-        ensureNotInitialized();
-        this.shortText = shortText;
+        LOG.warn("Since 2.6.0, short text optimization is no longer"
+                + "supported. It may come back in a future release with "
+                + "based on Tika language detection improvements.");
     }
 
     public boolean isKeepProbabilities() {
@@ -480,15 +303,24 @@ public class LanguageTagger extends AbstractCharStreamTagger
         this.fallbackLanguage = fallbackLanguage;
     }
 
-    private LanguageDetector getInitializedDetector() {
+    private synchronized void ensureDetectorInitialization() 
+            throws ImporterHandlerException {
         if (detector == null) {
-            if (ArrayUtils.isEmpty(languages)) {
-                detector = new LanguageDetector(shortText);
-            } else {
-                detector = new LanguageDetector(shortText, languages);
+            OptimaizeLangDetector d = new OptimaizeLangDetector();
+            d.setShortText(isShortText());
+           // d.setMixedLanguages(mixedLanguages)
+            try {
+                if (ArrayUtils.isEmpty(languages)) {
+                    d.loadModels();
+                } else {
+                    d.loadModels(new HashSet<String>(Arrays.asList(languages)));
+                }
+            } catch (IOException e) {
+                LOG.error("Cannot initialize language detector.", e);
+                throw new ImporterHandlerException(e);
             }
+            detector = d;
         }
-        return detector;
     }
 
     public String[] getLanguages() {
@@ -512,8 +344,8 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
     
     @Override
-    protected void loadCharStreamTaggerFromXML(XMLConfiguration xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(
+            XMLConfiguration xml) throws IOException {
         setShortText(xml.getBoolean("[@shortText]", isShortText()));
         setKeepProbabilities(xml.getBoolean(
                 "[@keepProbabilities]", isKeepProbabilities()));
@@ -527,9 +359,8 @@ public class LanguageTagger extends AbstractCharStreamTagger
     }
 
     @Override
-    protected void saveCharStreamTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("shortText", Boolean.toString(shortText));
+    protected void saveStringTaggerToXML(
+            EnhancedXMLStreamWriter writer) throws XMLStreamException {
         writer.writeAttribute(
                 "keepProbabilities", Boolean.toString(keepProbabilities));
         writer.writeAttribute("fallbackLanguage", fallbackLanguage);
@@ -549,7 +380,6 @@ public class LanguageTagger extends AbstractCharStreamTagger
         return new EqualsBuilder()
                 .appendSuper(super.equals(other))
                 .append(detector, castOther.detector)
-                .append(shortText, castOther.shortText)
                 .append(keepProbabilities, castOther.keepProbabilities)
                 .append(languages, castOther.languages)
                 .append(fallbackLanguage, castOther.fallbackLanguage)
@@ -561,7 +391,6 @@ public class LanguageTagger extends AbstractCharStreamTagger
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
                 .append(detector)
-                .append(shortText)
                 .append(keepProbabilities)
                 .append(languages)
                 .append(fallbackLanguage)
@@ -573,7 +402,6 @@ public class LanguageTagger extends AbstractCharStreamTagger
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("detector", detector)
-                .append("shortText", shortText)
                 .append("keepProbabilities", keepProbabilities)
                 .append("languages", languages)
                 .append("fallbackLanguage", fallbackLanguage)

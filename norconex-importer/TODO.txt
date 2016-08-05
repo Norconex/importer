@@ -9,9 +9,6 @@ TODO:
   (make sure any custom tweaks are still supported, and that XFA extracation
   is enabled out of the box).
 
-- Use Tika improved Language detection module instead of 
-  current one.
-
 - Remove FixedHtmlEncodingDetector in favor of Tika original one
   when Tika 1.11 is released.  See:
     https://issues.apache.org/jira/browse/TIKA-1837

@@ -14,6 +14,9 @@
         and attr(attributeKey).
       </action>
       <action dev="essiembre" type="add">
+        TranslatorSplitter now supports Yandex translation service.
+      </action>
+      <action dev="essiembre" type="add">
         GenericDocumentParserFactory/AbstractTikaParser now allows you to 
         control which embedded documents you do not want extracted from their 
         containers.
@@ -48,6 +51,10 @@
       <action dev="essiembre" type="add">
         Can now pass optional -e or --contentEncoding to command line
         to explicitly set the character encoding (charset).
+      </action>
+      <action dev="essiembre" type="update">
+        LanguageTagger now uses Tika language detection (supports at least
+        70 languages). 
       </action>
       <action dev="essiembre" type="update">
         GenericDocumentParserFactory has been modified to introduce the 

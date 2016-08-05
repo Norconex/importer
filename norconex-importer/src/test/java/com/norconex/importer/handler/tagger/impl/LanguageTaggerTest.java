@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ public class LanguageTaggerTest {
         CachedStreamFactory factory = 
                 new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
+        tagger.setLanguages("en", "fr", "it", "es");
         
         for (String lang : sampleTexts.keySet()) {
             ImporterDocument doc = new ImporterDocument(
@@ -79,7 +80,6 @@ public class LanguageTaggerTest {
     public void testWriteRead() throws IOException {
         LanguageTagger tagger = new LanguageTagger();
         tagger.setKeepProbabilities(true);
-        tagger.setShortText(true);
         tagger.setFallbackLanguage("fr");
 
         ConfigurationUtil.assertWriteRead(tagger);

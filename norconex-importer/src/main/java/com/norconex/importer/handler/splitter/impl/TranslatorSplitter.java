@@ -40,6 +40,7 @@ import org.apache.tika.language.translate.CachedTranslator;
 import org.apache.tika.language.translate.MicrosoftTranslator;
 import org.apache.tika.language.translate.MosesTranslator;
 import org.apache.tika.language.translate.Translator;
+import org.apache.tika.language.translate.YandexTranslator;
 
 import com.memetix.mst.language.Language;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -57,8 +58,8 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
  * <p>Translate documents using one of the supported translation API.  The 
- * following lists the supported APIs, along with the authentication properties
- * required by each:</p>
+ * following lists the supported APIs, along with the required authentication 
+ * properties or settings for each:</p>
  * <ul>
  *   <li><a href="http://blogs.msdn.com/b/translation/p/gettingstarted1.aspx">microsoft</a>
  *     <ul>
@@ -80,6 +81,11 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *     <ul>
  *       <li>smtPath</li>
  *       <li>scriptPath</li>
+ *     </ul>
+ *   </li>
+ *   <li><a href="https://tech.yandex.com/translate/">yandex</a>
+ *     <ul>
+ *       <li>apiKey</li>
  *     </ul>
  *   </li>
  * </ul>
@@ -123,6 +129,9 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;!-- Moses --&gt;
  *      &lt;smtPath&gt;...&lt;/smtPath&gt;
  *      &lt;scriptPath&gt;...&lt;/scriptPath&gt;
+ *      
+ *      &lt;!-- Yandex --&gt;
+ *      &lt;apiKey&gt;...&lt;/apiKey&gt;
  *          
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -141,6 +150,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     public static final String API_GOOGLE = "google";
     public static final String API_LINGO24 = "lingo24";
     public static final String API_MOSES = "moses";
+    public static final String API_YANDEX = "yandex";
     
     private final Map<String, TranslatorStrategy> translators = new HashMap<>();
     
@@ -162,7 +172,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     private String clientId;
     private String clientSecret;
 
-    // Google
+    // Google and Yandex
     private String apiKey;
 
     // Lingo24
@@ -171,7 +181,6 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     // Moses
     private String smtPath;
     private String scriptPath;
-    
     
     /**
      * Constructor.
@@ -234,6 +243,21 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
                 if (StringUtils.isAnyBlank(getSmtPath(), getScriptPath())) {
                     throw new ImporterHandlerException(
                            "Both smtPath and scriptPath must be specified.");
+                }
+            }
+        });
+        translators.put(API_YANDEX, new TranslatorStrategy() {
+            @Override
+            public Translator createTranslator() {
+                YandexTranslator t = new YandexTranslator();
+                t.setApiKey(apiKey);
+                return t;
+            }
+            @Override
+            public void validateProperties() throws ImporterHandlerException {
+                if (StringUtils.isAnyBlank(getApiKey())) {
+                    throw new ImporterHandlerException(
+                           "apiKey must be specified.");
                 }
             }
         });
