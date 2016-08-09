@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -89,7 +90,8 @@ public class GenericDocumentParserFactoryTest {
                         metadata, "n/a").getDocument();
         
         try (InputStream is = doc.getContent()) {
-            String output = IOUtils.toString(is).substring(0, 100);
+            String output = IOUtils.toString(
+                    is, CharEncoding.UTF_8).substring(0, 100);
             output = StringUtils.remove(output, '\n');
             Assert.assertTrue("Non-parsed output expected to be binary.",
                     !StringUtils.isAsciiPrintable(output));

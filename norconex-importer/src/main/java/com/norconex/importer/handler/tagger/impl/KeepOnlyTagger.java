@@ -93,22 +93,20 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
         } else {
             // Remove metadata not in fields
             Iterator<String> iter = metadata.keySet().iterator();
-            List<String> removed = null;
+            List<String> removeList = new ArrayList<>();
             while (iter.hasNext()) {
                 String name = iter.next();
                 if (!mustKeep(name)) {
-                    if (LOG.isDebugEnabled()) {
-                        if (removed == null) {
-                            removed = new ArrayList<String>();
-                        }
-                        removed.add(name);
-                    }
-                    iter.remove();
+                    removeList.add(name);
                 }
             }
+            for (String key : removeList) {
+                metadata.remove(key);
+            }
+            
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Removed metadata fields \""
-                        + StringUtils.join(removed, ",")
+                        + StringUtils.join(removeList, ",")
                         + "\" from " + reference);
             }
         }

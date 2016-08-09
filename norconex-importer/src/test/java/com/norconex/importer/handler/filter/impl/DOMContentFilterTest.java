@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.norconex.importer.handler.filter.impl;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -90,9 +91,9 @@ public class DOMContentFilterTest {
     
     private boolean filter(DOMContentFilter filter, 
             String content, ImporterMetadata metadata) 
-                    throws ImporterHandlerException {
-        return filter.acceptDocument("n/a", 
-                IOUtils.toInputStream(content), metadata, false);
+                    throws ImporterHandlerException, IOException {
+        return filter.acceptDocument("n/a", IOUtils.toInputStream(
+                content, CharEncoding.UTF_8), metadata, false);
     }
     
     @Test

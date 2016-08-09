@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -53,15 +54,16 @@ public class DOMSplitterTest {
         
         Assert.assertEquals(3, docs.size());
         
-        String content = IOUtils.toString(docs.get(2).getContent());
+        String content = IOUtils.toString(
+                docs.get(2).getContent(), CharEncoding.UTF_8);
         Assert.assertTrue(content.contains("Dalton"));
     }
     
     private List<ImporterDocument> split(DOMSplitter splitter) 
             throws IOException, ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
-        SplittableDocument doc = new SplittableDocument(
-                "n/a", IOUtils.toInputStream(xml), metadata);
+        SplittableDocument doc = new SplittableDocument("n/a", 
+                IOUtils.toInputStream(xml, CharEncoding.UTF_8), metadata);
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
         List<ImporterDocument> docs = splitter.splitApplicableDocument(

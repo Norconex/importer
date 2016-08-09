@@ -68,7 +68,7 @@ import com.norconex.importer.util.FormatUtil;
  * relative to the current type. There is a distinction to be made between
  * TODAY and NOW.  TODAY is the current day without the hours, minutes, and 
  * seconds, where as NOW is the current day with the hours, minutes, and 
- * seconds. You can also decide whether you want the currend date to be fixed
+ * seconds. You can also decide whether you want the current date to be fixed
  * (does not change after being set for the first time), or whether
  * it should be refreshed on every call to reflect system date time changes.
  * </p>

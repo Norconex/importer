@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -55,12 +56,12 @@ public class ImporterTest {
                 try {
                     // Clean up what we know is extra noise for a given format
                     Pattern pattern = Pattern.compile("[^a-zA-Z ]");
-                    String txt = IOUtils.toString(input);
+                    String txt = IOUtils.toString(input, CharEncoding.UTF_8);
                     txt = pattern.matcher(txt).replaceAll("");
                     txt = txt.replaceAll("DowntheRabbitHole", "");
                     txt = StringUtils.replace(txt, " ", "");
                     txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
-                    IOUtils.write(txt, output);
+                    IOUtils.write(txt, output, CharEncoding.UTF_8);
                 } catch (IOException e) {
                     throw new ImporterHandlerException(e);
                 }

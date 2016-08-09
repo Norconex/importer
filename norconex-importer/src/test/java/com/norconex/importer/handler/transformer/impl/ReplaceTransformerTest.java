@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -84,11 +85,11 @@ public class ReplaceTransformerTest {
         ReplaceTransformer t = new ReplaceTransformer();
 
         Reader reader = new InputStreamReader(
-                IOUtils.toInputStream(config));
+                IOUtils.toInputStream(config, CharEncoding.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         
-        InputStream is = IOUtils.toInputStream(content);
+        InputStream is = IOUtils.toInputStream(content, CharEncoding.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         ImporterMetadata metadata = new ImporterMetadata();
@@ -107,7 +108,8 @@ public class ReplaceTransformerTest {
     public void testWriteRead() throws IOException {
         ReplaceTransformer t = new ReplaceTransformer();
         t.setMaxReadSize(128);
-        Reader reader = new InputStreamReader(IOUtils.toInputStream(restrictionTestConfig));
+        Reader reader = new InputStreamReader(IOUtils.toInputStream(
+                restrictionTestConfig, CharEncoding.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);

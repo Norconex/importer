@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -36,13 +37,15 @@ public class ReduceConsecutivesTransformerTest {
             + "<reduce>\\s</reduce><reduce>.</reduce></transformer>";
     
     @Test
-    public void testTransformTextDocument() throws ImporterHandlerException {
+    public void testTransformTextDocument() 
+            throws ImporterHandlerException, IOException {
         String text = "\t\tThis is the text TeXt I want to modify...\n\r\n\r"
                 + "     Too much space.";
         
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
 
-        Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
+        Reader reader = new InputStreamReader(
+                IOUtils.toInputStream(xml, CharEncoding.UTF_8));
         try {
             t.loadFromXML(reader);
         } catch (IOException e) {
@@ -52,11 +55,12 @@ public class ReduceConsecutivesTransformerTest {
             IOUtils.closeQuietly(reader);
         }
         
-        InputStream is = IOUtils.toInputStream(text);
+        InputStream is = IOUtils.toInputStream(text, CharEncoding.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
         try { 
-            t.transformDocument("dummyRef", is, os, new ImporterMetadata(), true);
+            t.transformDocument(
+                    "dummyRef", is, os, new ImporterMetadata(), true);
             String response = os.toString();
             System.out.println(response);
             Assert.assertEquals(
@@ -72,7 +76,8 @@ public class ReduceConsecutivesTransformerTest {
     @Test
     public void testWriteRead() throws IOException {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
-        Reader reader = new InputStreamReader(IOUtils.toInputStream(xml));
+        Reader reader = new InputStreamReader(
+                IOUtils.toInputStream(xml, CharEncoding.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);

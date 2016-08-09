@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -103,7 +104,8 @@ public class DebugTagger extends AbstractDocumentTagger {
 
         if (logContent) {
             try {
-                LOG.log(level, "CONTENT=" + IOUtils.toString(document));
+                LOG.log(level, "CONTENT=" + IOUtils.toString(
+                        document, CharEncoding.UTF_8));
             } catch (IOException e) {
                 throw new ImporterHandlerException(
                         "Count not stream content.", e);

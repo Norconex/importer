@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public class TestStatisticsTaggerTest {
           + "true.)";
 
         TextStatisticsTagger t = new TextStatisticsTagger();
-        InputStream is = IOUtils.toInputStream(txt);
+        InputStream is = IOUtils.toInputStream(txt, CharEncoding.UTF_8);
 
         ImporterMetadata meta = new ImporterMetadata();
         meta.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");

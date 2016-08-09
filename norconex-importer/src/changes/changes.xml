@@ -75,12 +75,17 @@
         the command line (throws errors on invalid paths).
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Tika 1.13 (which now uses PDFBox 2.x).
+        Dependency updates: Tika 1.13 (which now uses PDFBox 2.x),
+        Norconex Commons Lang 1.9.1.
       </action>
       <action dev="essiembre" type="update">
         OCRConfig#setContentTypes(String) and equivalent configuration option
         in GenericDocumentParserFactory now expects a regular expression as
         opposed to a coma-separated list of content types.
+      </action>
+      <action dev="essiembre" type="update">
+        DebugTagger now assumes UTF-8 instead of OS default charset when 
+        printing content.
       </action>
       <action dev="essiembre" type="fix" issue="21">
         Fixed DOMTagger ignoring subsequent selectors when one selector 
@@ -102,7 +107,7 @@
         with CurrentDateTagger and DateFormatTagger.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: PDFBox 2.0.0 (final release).
+        Dependency updates: PDFBox 2.0.0 (final release).
       </action>
     </release>
 
@@ -154,7 +159,7 @@
         to importDocument method.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Apache Tika 1.12, Norconex Commons Lang 1.9.0.
+        Dependency updates: Apache Tika 1.12, Norconex Commons Lang 1.9.0.
         Jempbox 1.8.11 (still required by Tika JPegParser), PDFBox 2.0.0-RC3,
         Apache Commons CLI 1.3.1.
       </action>
@@ -218,7 +223,7 @@
         GCMD DIF, Geographic ISO 19139 files, CBOR. 
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Apache Tika 1.10, JSoup 1.8.3, 
+        Dependency updates: Apache Tika 1.10, JSoup 1.8.3, 
         Norconex Commons Lang 1.8.0.
       </action>
       <action dev="essiembre" type="update">
@@ -241,7 +246,7 @@
 
     <release version="2.3.1" date="2015-08-07" description="Maintenance release">
       <action dev="essiembre" type="update">
-        Maven dependency updates: Norconex Commons Lang 1.7.0.
+        Dependency updates: Norconex Commons Lang 1.7.0.
       </action>
     </release>
 

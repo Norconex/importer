@@ -20,7 +20,6 @@
  */
 package org.apache.tika.parser.pdf;
 
-import javax.xml.stream.XMLStreamException;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -41,7 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.io.IOExceptionWithCause;
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
@@ -232,7 +232,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.startDocument();
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to start a document", e);
+            throw new IOException("Unable to start a document", e);
         }
     }
 
@@ -257,9 +257,9 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
             }
             handler.endDocument();
         } catch (TikaException e) {
-           throw new IOExceptionWithCause("Unable to end a document", e);
+           throw new IOException("Unable to end a document", e);
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to end a document", e);
+            throw new IOException("Unable to end a document", e);
         }
     }
 
@@ -268,7 +268,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.startElement("div", "class", "page");
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to start a page", e);
+            throw new IOException("Unable to start a page", e);
         }
         writeParagraphStart();
     }
@@ -292,9 +292,9 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
                     try {
                         extractMultiOSPDEmbeddedFiles("", fileSpec, extractor);
                     } catch (SAXException e) {
-                        throw new IOExceptionWithCause("file embedded in annotation sax exception", e);
+                        throw new IOException("file embedded in annotation sax exception", e);
                     } catch (TikaException e) {
-                        throw new IOExceptionWithCause("file embedded in annotation tika exception", e);
+                        throw new IOException("file embedded in annotation tika exception", e);
                     }
                 }
                 // TODO: remove once PDFBOX-1143 is fixed:
@@ -351,7 +351,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
 
             handler.endElement("div");
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to end a page", e);
+            throw new IOException("Unable to end a page", e);
         } catch (IOException e) {
             exceptions.add(e);
         }
@@ -492,7 +492,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.startElement("p");
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to start a paragraph", e);
+            throw new IOException("Unable to start a paragraph", e);
         }
     }
 
@@ -502,7 +502,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.endElement("p");
         } catch (SAXException e) {
-            throw new IOExceptionWithCause("Unable to end a paragraph", e);
+            throw new IOException("Unable to end a paragraph", e);
         }
     }
 
@@ -511,7 +511,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.characters(text);
         } catch (SAXException e) {
-            throw new IOExceptionWithCause(
+            throw new IOException(
                     "Unable to write a string: " + text, e);
         }
     }
@@ -521,7 +521,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.characters(text.getUnicode());
         } catch (SAXException e) {
-            throw new IOExceptionWithCause(
+            throw new IOException(
                     "Unable to write a character: " + text.getUnicode(), e);
         }
     }
@@ -531,7 +531,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.characters(getWordSeparator());
         } catch (SAXException e) {
-            throw new IOExceptionWithCause(
+            throw new IOException(
                     "Unable to write a space character", e);
         }
     }
@@ -541,7 +541,7 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
         try {
             handler.newline();
         } catch (SAXException e) {
-            throw new IOExceptionWithCause(
+            throw new IOException(
                     "Unable to write a newline character", e);
         }
     }

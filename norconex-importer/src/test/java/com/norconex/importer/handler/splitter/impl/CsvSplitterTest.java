@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -85,7 +86,7 @@ public class CsvSplitterTest {
 
         List<ImporterDocument> docs = split(splitter);
         Assert.assertEquals("William Dalton 654-0987", 
-                IOUtils.toString(docs.get(2).getContent()));
+                IOUtils.toString(docs.get(2).getContent(), CharEncoding.UTF_8));
     }
     
     

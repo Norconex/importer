@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.StringReader;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
+import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,8 +48,8 @@ public class RegexContentFilterTest {
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assert.assertFalse("Should have been rejected.", 
-                filter.acceptDocument("n/a", 
-                        IOUtils.toInputStream("a string that matches"),
+                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                        "a string that matches", CharEncoding.UTF_8),
                         null, false));
     }    
     @Test
@@ -58,8 +59,8 @@ public class RegexContentFilterTest {
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assert.assertTrue("Should have been accepted.", 
-                filter.acceptDocument("n/a", 
-                        IOUtils.toInputStream("a string that matches"),
+                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                        "a string that matches", CharEncoding.UTF_8),
                         null, false));
     }    
     @Test
@@ -69,8 +70,8 @@ public class RegexContentFilterTest {
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assert.assertTrue("Should have been accepted.", 
-                filter.acceptDocument("n/a", 
-                        IOUtils.toInputStream("a text that does not match"),
+                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                        "a text that does not match", CharEncoding.UTF_8),
                         null, false));
     }    
     @Test
@@ -81,8 +82,8 @@ public class RegexContentFilterTest {
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assert.assertFalse("Should have been rejected.", 
-                filter.acceptDocument("n/a", 
-                        IOUtils.toInputStream("a text that does not match"),
+                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                        "a text that does not match", CharEncoding.UTF_8),
                         null, false));
     }    
 
@@ -106,7 +107,8 @@ public class RegexContentFilterTest {
         
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
-                        new StringReader("a string that matches")),
+                        new StringReader("a string that matches"), 
+                        CharEncoding.UTF_8),
                 new ImporterMetadata(), "N/A");
         Assert.assertEquals("Status should have been SUCCESS",
                 Status.SUCCESS, response.getImporterStatus().getStatus());
@@ -131,7 +133,8 @@ public class RegexContentFilterTest {
         config.setPostParseHandlers(filter1, filter2, filter3);
         
         ImporterResponse response = new Importer(config).importDocument(
-                new ReaderInputStream(new StringReader("no matches")),
+                new ReaderInputStream(
+                        new StringReader("no matches"), CharEncoding.UTF_8),
                 new ImporterMetadata(), "N/A");
         Assert.assertEquals("Status should have been REJECTED",
                 Status.REJECTED, response.getImporterStatus().getStatus());

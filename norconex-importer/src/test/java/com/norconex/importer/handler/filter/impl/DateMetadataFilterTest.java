@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class DateMetadataFilterTest {
 
         filter = new DateMetadataFilter();
         filter.setField("field1");
-        filter.setFormat("yyyy-MM-dd'T'hh:mm:ss.SSS");
+        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
         filter.addCondition(Operator.LOWER_EQUAL, 
                 DateFormatUtils.ISO_DATE_FORMAT.parse("1980-12-21"));
@@ -60,7 +60,7 @@ public class DateMetadataFilterTest {
         
         filter = new DateMetadataFilter();
         filter.setField("field1");
-        filter.setFormat("yyyy-MM-dd'T'hh:mm:ss.SSS");
+        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         filter.addCondition(Operator.LOWER_EQUAL, 
                 DateFormatUtils.ISO_DATE_FORMAT.parse("1980-12-22"));
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
@@ -72,7 +72,7 @@ public class DateMetadataFilterTest {
 
         filter = new DateMetadataFilter();
         filter.setField("field2");
-        filter.setFormat("yyyy-MM-dd'T'hh:mm:ss");
+        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss");
         filter.addConditionFromNow(
                 Operator.GREATER_THAN, TimeUnit.MINUTE, -1, true);
         filter.addConditionFromNow(

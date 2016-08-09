@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -127,7 +128,7 @@ public abstract class AbstractParserTest {
 
         Assert.assertNotNull("Document is null", doc);
         
-        String content = IOUtils.toString(doc.getContent());
+        String content = IOUtils.toString(doc.getContent(), CharEncoding.UTF_8);
         Assert.assertEquals(testType + " content-type detection failed for \"" 
                 + resourcePath + "\".", ContentType.valueOf(contentType), 
                 doc.getContentType());

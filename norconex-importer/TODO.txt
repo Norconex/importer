@@ -4,6 +4,8 @@ TODO:
 
 - Add an optional fromField to DOMTagger.
 
+- Allow multiple formats for DateFormatTagger? 
+
 - Find out if we can reduce metadata extraction on images to avoid 
   OOMException on some images with massive amount of metadata.
 
