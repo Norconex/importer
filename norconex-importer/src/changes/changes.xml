@@ -8,8 +8,12 @@
   <body>
 
     <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add" issue="28">
+        DOMTagger can now apply DOM selection on an optional "fromField" and
+        can also use a "defaultValue" when there is no match.
+      </action>
       <action dev="essiembre" type="add">
-        New DOM extraction possibility for DOMContentFilter and DOMTagger:
+        New DOM selector possibility for DOMContentFilter and DOMTagger:
         ownText, data, id, tagName, val, className, cssSelector, 
         and attr(attributeKey).
       </action>

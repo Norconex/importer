@@ -19,15 +19,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
 
 /**
  * @author Pascal Essiembre
@@ -35,16 +42,84 @@ import com.norconex.importer.handler.ImporterHandlerException;
  */
 public class DOMTaggerTest {
 
+    @Before
+    public void before() {
+        Logger logger = Logger.getRootLogger();
+        logger.setLevel(Level.INFO);
+        logger.setAdditivity(false);
+        logger.addAppender(new ConsoleAppender(
+                new PatternLayout("%-5p [%C{1}] %m%n"), 
+                ConsoleAppender.SYSTEM_OUT));
+    }
     
+    
+    // This is a test for "fromField" and "defaultValue" feature request: 
+    // https://github.com/Norconex/importer/issues/28 
     @Test
+    public void testFromField()
+                throws IOException, ImporterHandlerException {
+        
+        String html = "<html><body>"
+                + "<whatever/>"
+                + "<div class=\"contact\">"
+                + "  <div class=\"firstName\">JoeFirstOnly</div>"
+                + "</div>"
+                + "<whatever class=\"contact\"></whatever>"
+                + "<div class=\"contact\">"
+                + "  <div class=\"firstName\">John</div>"
+                + "  <div class=\"lastName\">Smith</div>"
+                + "</div>"
+                + "<whatever/>"
+                + "<div class=\"contact\">"
+                + "  <div class=\"lastName\">JackLastOnly</div>"
+                + "</div>"
+                + "<whatever/>"
+                + "</body></html>";
+
+        ImporterMetadata metadata = new ImporterMetadata();
+        
+        DOMTagger parentTagger = new DOMTagger();
+        parentTagger.addDOMExtractDetails(new DOMExtractDetails(
+                "div.contact", "htmlContacts", false, "html"));
+        performTagging(metadata, parentTagger, html);
+
+        DOMTagger childTagger = new DOMTagger();
+        childTagger.setFromField("htmlContacts");
+        
+        DOMExtractDetails firstNameDetails = new DOMExtractDetails(
+                "div.firstName", "firstName", false, "html");
+        firstNameDetails.setDefaultValue("NoFirstName");
+        childTagger.addDOMExtractDetails(firstNameDetails);
+
+        DOMExtractDetails lastNameDetails = new DOMExtractDetails(
+                "div.lastName", "lastName", false, "html");
+        lastNameDetails.setDefaultValue("NoLastName");
+        childTagger.addDOMExtractDetails(lastNameDetails);
+
+        performTagging(metadata, childTagger, html);
+        
+
+        List<String> firstNames = metadata.getStrings("firstName");
+        List<String> lastNames = metadata.getStrings("lastName");
+        
+        Assert.assertEquals(Arrays.asList(
+                "JoeFirstOnly", "John", "NoFirstName"), firstNames);
+        Assert.assertEquals(Arrays.asList(
+                "NoLastName", "Smith", "JackLastOnly"), lastNames);
+    }    
+    
     // This is a test for: https://github.com/Norconex/importer/issues/21 
+    @Test
     public void testNotAllSelectorsMatching()
             throws IOException, ImporterHandlerException { 
 
         DOMTagger t = new DOMTagger();
-        t.addDOMExtractDetails("div.class1", "match1", false);
-        t.addDOMExtractDetails("div.classNoMatch", "match2", false);
-        t.addDOMExtractDetails("div.class3", "match3", false);
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.class1", "match1", false));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.classNoMatch", "match2", false));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.class3", "match3", false));
 
         String html = "<html><body>"
                 + "<div class=\"class1\">text1</div>"
@@ -53,10 +128,7 @@ public class DOMTaggerTest {
                 + "</body></html>";
         
         ImporterMetadata metadata = new ImporterMetadata();
-        InputStream is = new ByteArrayInputStream(html.getBytes());
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
-        t.tagDocument("n/a", is, metadata, false);
-        is.close();
+        performTagging(metadata, t, html);
 
         String match1 = metadata.getString("match1");
         String match2 = metadata.getString("match2");
@@ -71,8 +143,10 @@ public class DOMTaggerTest {
     public void testExtractFromDOM() 
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
-        t.addDOMExtractDetails("h2", "headings", false);
-        t.addDOMExtractDetails("a[href]", "links", true, "html");
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "h2", "headings", false));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "a[href]", "links", true, "html"));
         
         File htmlFile = TestUtil.getAliceHtmlFile();
         FileInputStream is = new FileInputStream(htmlFile);
@@ -97,9 +171,12 @@ public class DOMTaggerTest {
     public void testExtractionTypes() 
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
-        t.addDOMExtractDetails("head", "fhtml", false, "html");
-        t.addDOMExtractDetails("head", "fouter", false, "outerhtml");
-        t.addDOMExtractDetails("head", "ftext", false, "text");
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "head", "fhtml", false, "html"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "head", "fouter", false, "outerhtml"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "head", "ftext", false, "text"));
 
         File htmlFile = TestUtil.getAliceHtmlFile();
         FileInputStream is = new FileInputStream(htmlFile);
@@ -121,6 +198,18 @@ public class DOMTaggerTest {
         Assert.assertEquals(expectedOuter, 
                 cleanHTML(metadata.getString("fouter")));
     }
+
+    private void performTagging(
+            ImporterMetadata metadata, DOMTagger tagger, String html)
+            throws ImporterHandlerException, IOException {
+        InputStream is = new ByteArrayInputStream(html.getBytes());
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        tagger.tagDocument("n/a", is, metadata, false);
+        is.close();
+    }
+    
+
+    
     private String cleanHTML(String html) {
         String clean = html;
         clean = clean.replaceAll("[\\r\\n]", "");
@@ -128,23 +217,35 @@ public class DOMTaggerTest {
         return clean;
     }
     
+    
     @Test
     public void testAllExtractionTypes() 
             throws IOException, ImporterHandlerException {
         
         
         DOMTagger t = new DOMTagger();
-        t.addDOMExtractDetails("div.parent", "text", false, "text");
-        t.addDOMExtractDetails("span.child1", "html", false, "html");
-        t.addDOMExtractDetails("span.child1", "outerHtml", false, "outerHtml");
-        t.addDOMExtractDetails("script", "data", false, "data");
-        t.addDOMExtractDetails("div.parent", "id", false, "id");
-        t.addDOMExtractDetails("div.parent", "ownText", false, "ownText");
-        t.addDOMExtractDetails("div.parent", "tagName", false, "tagName");
-        t.addDOMExtractDetails(".formElement", "val", false, "val");
-        t.addDOMExtractDetails("textarea", "className", false, "className");
-        t.addDOMExtractDetails(".child2", "cssSelector", false, "cssSelector");
-        t.addDOMExtractDetails("textarea", "attr", false, "attr(title)");
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.parent", "text", false, "text"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "span.child1", "html", false, "html"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "span.child1", "outerHtml", false, "outerHtml"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "script", "data", false, "data"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.parent", "id", false, "id"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.parent", "ownText", false, "ownText"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "div.parent", "tagName", false, "tagName"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                ".formElement", "val", false, "val"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "textarea", "className", false, "className"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                ".child2", "cssSelector", false, "cssSelector"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "textarea", "attr", false, "attr(title)"));
 
         String content = "<html><body>"
                 + "<script>This is data, not HTML.</script>"
@@ -193,9 +294,15 @@ public class DOMTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
-        tagger.addDOMExtractDetails("p.blah > a", "myField", true);
-        tagger.addDOMExtractDetails("div.blah > a", "myOtherField", true);
-        tagger.addRestriction("afield", "aregex", true);
+//        tagger.addDOMExtractDetails(new DOMExtractDetails(
+//                "p.blah > a", "myField", true));
+//        
+//        DOMExtractDetails details = new DOMExtractDetails(
+//                "div.blah > a", "myOtherField", true, "html");
+//        details.setDefaultValue("myDefaultValue");
+//        tagger.addDOMExtractDetails(details);
+//        tagger.addRestriction("afield", "aregex", true);
+//        tagger.setFromField("myfromfield");
         System.out.println("Writing/Reading this: " + tagger);
         ConfigurationUtil.assertWriteRead(tagger);
     }

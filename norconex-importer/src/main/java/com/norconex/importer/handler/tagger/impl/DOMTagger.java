@@ -17,7 +17,9 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -29,6 +31,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -107,17 +111,32 @@ import com.norconex.importer.util.DOMUtil;
  *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
  *       attribute matching your replacement for "attributeKey"
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
- * </ul> 
+ * </ul>
+ *  
+ * <p><b>Since 2.6.0</b>, it is possible to specify a <code>fromField</code>
+ * as the source of the HTML to parse instead of using the document content.
+ * If multiple values are present for that source field, DOM extraction will be
+ * applied to each value.
+ * </p>
  * 
+ * <p><b>Since 2.6.0</b>, it is possible to specify a <code>defaultValue</code>
+ * on each DOM extraction details. When no match occurred for a given selector,
+ * the default value will be stored in the <code>toField</code> (as opposed
+ * to not storing anything).
+ * </p>
+ *  
  * <h3>
  * XML configuration usage:
  * </h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+ *          fromField="(optional source field)" 
  *          sourceCharset="(character encoding)"&gt;
- *      &lt;dom selector="(selector syntax)" toField="(target field)"
+ *      &lt;dom selector="(selector syntax)"
+ *              toField="(target field)"
  *              overwrite="[false|true]"
- *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" /&gt;
+ *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+ *              defaultValue="(optional value to use when no match)" /&gt;
  *      &lt;!-- multiple "dom" tags allowed --&gt;
  *          
  *      &lt;restrictTo
@@ -133,8 +152,11 @@ import com.norconex.importer.util.DOMUtil;
  */
 public class DOMTagger extends AbstractDocumentTagger {
 
+    private static final Logger LOG = LogManager.getLogger(DOMTagger.class);
+    
     private final List<DOMExtractDetails> extractions = new ArrayList<>();
     private String sourceCharset = null;
+    private String fromField = null;
     
     /**
      * Constructor.
@@ -160,49 +182,137 @@ public class DOMTagger extends AbstractDocumentTagger {
     public void setSourceCharset(String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
-    
+
+    /**
+     * Gets optional source field holding the HTML content to apply DOM
+     * extraction to.
+     * @return from field
+     * @since 2.6.0
+     */
+    public String getFromField() {
+        return fromField;
+    }
+    /**
+     * Sets optional source field holding the HTML content to apply DOM
+     * extraction to.
+     * @param fromField from field
+     * @since 2.6.0
+     */
+    public void setFromField(String fromField) {
+        this.fromField = fromField;
+    }
+
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
         
-        String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, document, metadata, parsed);
         try {
-            Document doc = Jsoup.parse(document, inputCharset, reference);
-            for (DOMExtractDetails details : extractions) {
-                domExtract(doc, details, metadata);
+            List<Document> jsoupDocs = new ArrayList<>();
+            
+            // Use "fromField" as content
+            if (StringUtils.isNotBlank(getFromField())) {
+                List<String> htmls = metadata.getStrings(getFromField());
+                if (htmls.isEmpty()) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Field \"" + getFromField() + "\" has no "
+                                + "value. No DOM extraction performed.");
+                    }
+                    return;
+                }
+                for (String html : htmls) {
+                    jsoupDocs.add(Jsoup.parse(html, reference));
+                }
+            // Use doc content 
+            } else {
+                String inputCharset = detectCharsetIfBlank(
+                        sourceCharset, reference, document, metadata, parsed);
+                jsoupDocs.add(Jsoup.parse(document, inputCharset, reference));
             }
+            domExtractDocList(jsoupDocs, metadata);
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot extract DOM element(s) from DOM-tree.", e);
         }
     }
     
-    private void domExtract(
+    private void domExtractDocList(
+            List<Document> jsoupDocs, ImporterMetadata metadata) {
+        for (DOMExtractDetails details : extractions) {
+            List<String> extractedValues = new ArrayList<>();
+            for (Document doc : jsoupDocs) {
+                domExtractDoc(extractedValues, doc, details, metadata);
+            }
+            if (!extractedValues.isEmpty()) {
+                String[] vals = extractedValues.toArray(
+                        ArrayUtils.EMPTY_STRING_ARRAY);
+                if (details.overwrite) {
+                    metadata.setString(details.toField, vals);
+                } else {
+                    metadata.addString(details.toField, vals);
+                }
+            }
+        }
+    }
+    
+    private void domExtractDoc(List<String> extractedValues,
             Document doc, DOMExtractDetails details, ImporterMetadata meta) {
         Elements elms = doc.select(details.selector);
+        boolean hasDefault = StringUtils.isNotBlank(details.getDefaultValue());
+        
         // no elements matching
         if (elms.isEmpty()) {
+            if (hasDefault) {
+                extractedValues.add(details.getDefaultValue());
+            }
             return;
         }
         
         // one or more elements matching
-        List<String> values = new ArrayList<>();
         for (Element elm : elms) {
             String value = DOMUtil.getElementValue(elm, details.extract);
             if (StringUtils.isNotBlank(value)) {
-                values.add(value);
+                extractedValues.add(value);
+            } else if (hasDefault) {
+                extractedValues.add(details.getDefaultValue());
             }
         }
-        if (values.isEmpty()) {
-            return;
+    }
+
+    /**
+     * Adds DOM extraction details.
+     * @param extractDetails DOM extraction details
+     * @since 2.6.0
+     */
+    public void addDOMExtractDetails(DOMExtractDetails extractDetails) {
+        if (extractDetails != null) {
+            extractions.add(extractDetails);
         }
-        String[] vals = values.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-        if (details.overwrite) {
-            meta.setString(details.toField, vals);
-        } else {
-            meta.addString(details.toField, vals);
+    }
+
+    /**
+     * Gets a list of DOM extraction details.
+     * @return list of DOM extraction details.
+     * @since 2.6.0
+     */
+    public List<DOMExtractDetails> getDOMExtractDetailsList() {
+        return Collections.unmodifiableList(extractions);
+    }
+
+    /**
+     * Removes the DOM extraction details matching the given selector
+     * @param selector DOM selector
+     * @since 2.6.0
+     */
+    public void removeDOMExtractDetails(String selector) {
+        List<DOMExtractDetails> toRemove = new ArrayList<>();
+        for (DOMExtractDetails details : extractions) {
+            if (Objects.equals(details.getSelector(), selector)) {
+                toRemove.add(details);
+            }
+        }
+        synchronized (extractions) {
+            extractions.removeAll(toRemove);
         }
     }
     
@@ -212,7 +322,10 @@ public class DOMTagger extends AbstractDocumentTagger {
      * @param selector selector
      * @param toField target field name
      * @param overwrite whether toField overwrite target field if it exists
+     * @deprecated Since 2.6.0, use 
+     *             {@link #addDOMExtractDetails(DOMExtractDetails)} instead.
      */
+    @Deprecated
     public void addDOMExtractDetails(
             String selector, String toField, boolean overwrite) {
         addDOMExtractDetails(selector, toField, overwrite, "text");
@@ -222,9 +335,13 @@ public class DOMTagger extends AbstractDocumentTagger {
      * @param selector selector
      * @param toField target field name
      * @param overwrite whether toField overwrite target field if it exists
-     * @param extract one of "html", "outerHtml", "text"
+     * @param extract one of: html, outerHtml, text, ownText, data, tagName,
+     *                        val, className, cssSelector, or attr(attributeKey)
      * @since 2.5.0
+     * @deprecated Since 2.6.0, use 
+     *             {@link #addDOMExtractDetails(DOMExtractDetails)} instead.
      */
+    @Deprecated
     public void addDOMExtractDetails(
             String selector, String toField, 
             boolean overwrite, String extract) {
@@ -243,15 +360,19 @@ public class DOMTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+        setFromField(xml.getString("[@fromField]", getFromField()));
         List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
         if (!nodes.isEmpty()) {
             extractions.clear();
         }
         for (HierarchicalConfiguration node : nodes) {
-            addDOMExtractDetails(node.getString("[@selector]", null),
-                      node.getString("[@toField]", null),
-                      node.getBoolean("[@overwrite]", false),
-                      node.getString("[@extract]", null));
+            DOMExtractDetails details = new DOMExtractDetails(
+                    node.getString("[@selector]", null),
+                    node.getString("[@toField]", null),
+                    node.getBoolean("[@overwrite]", false),
+                    node.getString("[@extract]", null));
+            details.setDefaultValue(node.getString("[@defaultValue]", null));
+            addDOMExtractDetails(details);
         }
     }
 
@@ -259,13 +380,15 @@ public class DOMTagger extends AbstractDocumentTagger {
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
+        writer.writeAttributeString("fromField", getFromField());
         for (DOMExtractDetails details : extractions) {
             writer.writeStartElement("dom");
-            writer.writeAttribute("selector", details.selector);
-            writer.writeAttribute("toField", details.toField);
-            writer.writeAttribute("overwrite", 
-                    Boolean.toString(details.overwrite));
-            writer.writeAttribute("extract", details.extract);
+            writer.writeAttributeString("selector", details.getSelector());
+            writer.writeAttributeString("toField", details.getToField());
+            writer.writeAttributeBoolean("overwrite", details.isOverwrite());
+            writer.writeAttributeString("extract", details.getExtract());
+            writer.writeAttributeString(
+                    "defaultValue", details.getDefaultValue());
             writer.writeEndElement();
         }
     }
@@ -279,7 +402,8 @@ public class DOMTagger extends AbstractDocumentTagger {
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(extractions, castOther.extractions)
-                .append(sourceCharset, castOther.sourceCharset)
+                .append(sourceCharset, sourceCharset)
+                .append(fromField, fromField)
                 .isEquals();
     }
 
@@ -289,6 +413,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                 .appendSuper(super.hashCode())
                 .append(extractions)
                 .append(sourceCharset)
+                .append(fromField)
                 .toHashCode();
     }
 
@@ -298,21 +423,66 @@ public class DOMTagger extends AbstractDocumentTagger {
                 .appendSuper(super.toString())
                 .append("list", extractions)
                 .append("sourceCharset", sourceCharset)
+                .append("fromField", fromField)
                 .toString();
     }
     
-    private static class DOMExtractDetails {
-        private final String selector;
-        private final String toField;
-        private final boolean overwrite;
-        private final String extract;
+    /**
+     * DOM Extraction Details
+     * @author Pascal Essiembre
+     * @since 2.6.0
+     */
+    public static class DOMExtractDetails {
+        private String selector;
+        private String toField;
+        private boolean overwrite;
+        private String extract;
+        private String defaultValue;
         
-        DOMExtractDetails(
+        public DOMExtractDetails() {
+            super();
+        }
+        public DOMExtractDetails(
+                String selector, String to, boolean overwrite) {
+            this(selector, to, overwrite, null);
+        }
+        public DOMExtractDetails(
                 String selector, String to, boolean overwrite, String extract) {
             this.selector = selector;
             this.toField = to;
             this.overwrite = overwrite;
             this.extract = extract;
+        }
+        
+        public String getSelector() {
+            return selector;
+        }
+        public void setSelector(String selector) {
+            this.selector = selector;
+        }
+        public String getToField() {
+            return toField;
+        }
+        public void setToField(String toField) {
+            this.toField = toField;
+        }
+        public boolean isOverwrite() {
+            return overwrite;
+        }
+        public void setOverwrite(boolean overwrite) {
+            this.overwrite = overwrite;
+        }
+        public String getExtract() {
+            return extract;
+        }
+        public void setExtract(String extract) {
+            this.extract = extract;
+        }
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+        public void setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
         }
         
         @Override
@@ -323,6 +493,7 @@ public class DOMTagger extends AbstractDocumentTagger {
             builder.append("toField", toField);
             builder.append("overwrite", overwrite);
             builder.append("extract", extract);
+            builder.append("defaultValue", defaultValue);
             return builder.toString();
         }
 
@@ -336,6 +507,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     .append(toField, castOther.toField)
                     .append(overwrite, castOther.overwrite)
                     .append(extract, castOther.extract)
+                    .append(defaultValue, castOther.defaultValue)
                     .isEquals();
         }
         @Override
@@ -345,6 +517,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     .append(toField)
                     .append(overwrite)
                     .append(extract)
+                    .append(defaultValue)
                     .toHashCode();
         }
     }    
