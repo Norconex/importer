@@ -22,12 +22,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.ConfigurationUtil;
@@ -42,15 +37,15 @@ import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
  */
 public class DOMTaggerTest {
 
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
     
     
     // This is a test for "fromField" and "defaultValue" feature request: 
@@ -87,7 +82,7 @@ public class DOMTaggerTest {
         childTagger.setFromField("htmlContacts");
         
         DOMExtractDetails firstNameDetails = new DOMExtractDetails(
-                "div.firstName", "firstName", false, "html");
+                "div.firstName", "firstName", false);
         firstNameDetails.setDefaultValue("NoFirstName");
         childTagger.addDOMExtractDetails(firstNameDetails);
 

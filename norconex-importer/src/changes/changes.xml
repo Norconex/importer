@@ -8,6 +8,10 @@
   <body>
 
     <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        DateFormatTagger now accepts multiple source formats when 
+        attempting to convert dates, trying them in order provided.
+      </action>
       <action dev="essiembre" type="add" issue="28">
         DOMTagger can now apply DOM selection on an optional "fromField" and
         can also use a "defaultValue" when there is no match.

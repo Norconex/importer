@@ -94,13 +94,15 @@ public final class FormatUtil {
             sourceLocale = Locale.US;
         }
         Date date;
-        if (StringUtils.isBlank(fromFormat)) {
+        if (isEpochFormat(fromFormat)) {
             // From date format is EPOCH
             long millis = NumberUtils.toLong(dateString, -1);
             if (millis == -1) {
-                LOG.warn("Invalid date format" + formatFieldMsg(fieldName)
-                        + "When no \"fromFormat\" is specified, the date "
-                        + "value is expected to be of EPOCH format.");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Invalid date format" + formatFieldMsg(fieldName)
+                            + "The date is expected to be of EPOCH format: "
+                            + dateString);
+                }
                 return null;
             }
             date = new Date(millis);
@@ -110,7 +112,10 @@ public final class FormatUtil {
                 date = new SimpleDateFormat(
                         fromFormat, sourceLocale).parse(dateString);
             } catch (ParseException e) {
-                LOG.warn("Invalid date format" + formatFieldMsg(fieldName), e);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Invalid date format" 
+                            + formatFieldMsg(fieldName) + e.getMessage());
+                }
                 return null;
             }
         }
@@ -121,8 +126,8 @@ public final class FormatUtil {
             targetLocale = Locale.US;
         }
         String toDate;
-        if (StringUtils.isBlank(toFormat)) {
-            // To date foramt is EPOCH
+        if (isEpochFormat(toFormat)) {
+            // To date format is EPOCH
             toDate = Long.toString(date.getTime());
         } else {
             toDate = new SimpleDateFormat(
@@ -130,6 +135,12 @@ public final class FormatUtil {
         }
         return toDate;
     }
+    
+    // returns true if blank or "EPOCH" (case insensitive).
+    private static boolean isEpochFormat(String format) {
+        return StringUtils.isBlank(format) || "EPOCH".equalsIgnoreCase(format);
+    }
+    
     private static String formatFieldMsg(String fieldName) {
         String fieldMsg = ". ";
         if (StringUtils.isNotBlank(fieldName)) {
