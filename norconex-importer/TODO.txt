@@ -2,8 +2,6 @@
 TODO:
 ==============
 
-- Add an optional fromField to DOMTagger.
-
 - Allow multiple formats for DateFormatTagger? 
 
 - Find out if we can reduce metadata extraction on images to avoid 
@@ -26,9 +24,6 @@ TODO:
 
 - Maybe ship with a default tika-config on a given path so it can easily be
   modified: https://tika.apache.org/1.12/configuring.html
-
-- Added Yandex translation support now in Tika: 
-  https://issues.apache.org/jira/browse/TIKA-1943
 
 - Add better defined Geospatial Data Abstraction Library (GDAL) support, 
   leveraging Tika GDAL support (requires external app install, like
