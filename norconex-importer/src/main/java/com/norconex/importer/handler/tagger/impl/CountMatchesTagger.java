@@ -89,7 +89,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;countMatches 
  *              fromField="document.reference" 
  *              toField="urlSegmentCount"
- *              regex="[false|true]"&gt;
+ *              regex="true"&gt;
  *          /[^/]+
  *      &lt;/countMatches&gt;
  *  &lt;/tagger&gt;
