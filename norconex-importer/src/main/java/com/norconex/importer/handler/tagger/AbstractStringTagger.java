@@ -84,12 +84,20 @@ public abstract class AbstractStringTagger
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
         String text = null;
+        boolean atLeastOnce = false;
         try (TextReader reader = new TextReader(input, maxReadSize)) {
             while ((text = reader.readText()) != null) {
                 b.append(text);
                 tagStringContent(reference, b, metadata, parsed, sectionIndex);
                 sectionIndex++;
                 b.setLength(0);
+                atLeastOnce = true;
+            }
+            // If no content, go at least once in it in case the tagger
+            // supports has metadata-related operations that should work
+            // even if no content exists.
+            if (!atLeastOnce) {
+                tagStringContent(reference, b, metadata, parsed, 0);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(

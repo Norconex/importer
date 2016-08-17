@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -88,11 +89,16 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed) 
                     throws ImporterHandlerException {
+        InputStream nonNullDocument = document;
+        if (nonNullDocument == null) {
+            nonNullDocument = new NullInputStream(0);
+        }
+
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, document, metadata, parsed);
+                sourceCharset, reference, nonNullDocument, metadata, parsed);
         try {
             InputStreamReader is = 
-                    new InputStreamReader(document, inputCharset);
+                    new InputStreamReader(nonNullDocument, inputCharset);
             tagTextDocument(reference, is, metadata, parsed);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);

@@ -172,6 +172,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
  *          keepProbabilities="(false|true)"
  *          sourceCharset="(character encoding)"
+ *          maxReadSize="(max characters to read at once)"
  *          fallbackLanguage="" &gt;
  *      &lt;languages&gt;
  *        (CSV list of language tag candidates. Defaults to the above list.)

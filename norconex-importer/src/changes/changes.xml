@@ -9,6 +9,11 @@
 
     <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New CountMatchesTagger that will count occurrences of matching
+        substring or regular expression in a field value or document content
+        and store the count in a target field.
+      </action>
+      <action dev="essiembre" type="add">
         DateFormatTagger now accepts multiple source formats when 
         attempting to convert dates, trying them in order provided.
       </action>
@@ -95,6 +100,10 @@
         DebugTagger now assumes UTF-8 instead of OS default charset when 
         printing content.
       </action>
+      <action dev="essiembre" type="update">
+        Subclasses of AbstractStringTagger will now see tagTextDocument(...)
+        method invoked at least once even if there is no content supplied.
+      </action>
       <action dev="essiembre" type="fix" issue="21">
         Fixed DOMTagger ignoring subsequent selectors when one selector 
         has no match. 
@@ -106,6 +115,9 @@
       <action dev="essiembre" type="fix">
         Fixed infinite loop with DOMSplitter when some selectors are too 
         generic.
+      </action>
+      <action dev="essiembre" type="fix">
+        AbstractCharStreamTagger now tolerates null content stream.
       </action>
     </release>
 
