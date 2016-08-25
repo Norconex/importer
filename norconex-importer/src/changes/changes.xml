@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.6.0-SNAPSHOT" date="2016-??-??" description="Feature release">
+    <release version="2.6.0" date="2016-08-25" description="Feature release">
       <action dev="essiembre" type="add">
         New CountMatchesTagger that will count occurrences of matching
         substring or regular expression in a field value or document content
@@ -89,7 +89,7 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Tika 1.13 (which now uses PDFBox 2.x),
-        Norconex Commons Lang 1.9.1.
+        Norconex Commons Lang 1.9.1, JSoup 1.9.2.
       </action>
       <action dev="essiembre" type="update">
         OCRConfig#setContentTypes(String) and equivalent configuration option

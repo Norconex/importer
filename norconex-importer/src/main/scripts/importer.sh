@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd $(dirname $0)
-export IMPORTER_ROOT_DIR=$(dirname $0)
+export IMPORTER_ROOT_DIR=$(realpath $(dirname $0))
 
 # Third-party libraries sometimes have to create and write to temporary files.
 # By default those are created in your system "temp" folder
