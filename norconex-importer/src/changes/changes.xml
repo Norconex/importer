@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="2.6.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
+      <action dev="essiembre" type="fix" issue="29">
+        Fixed ReplaceTagger not adding replaced value to "toField" when it
+        is the same as original value.
+      </action>
+    </release>
+
     <release version="2.6.0" date="2016-08-25" description="Feature release">
       <action dev="essiembre" type="add">
         New CountMatchesTagger that will count occurrences of matching

@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,60 @@ import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
 
 public class ReplaceTaggerTest {
 
+    //This is a test for https://github.com/Norconex/importer/issues/29
+    //where the replaced value is equal to the original (EXP_NAME1), it should 
+    //still store it (was a bug).
+    @Test
+    public void testMatchReturnSameValue() throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("EXP_NAME+COUNTRY1", "LAZARUS ANDREW"); 
+        meta.addString("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]"); 
+        
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        // Author 1
+        r = new Replacement();
+        r.setFromField("EXP_NAME+COUNTRY1");
+        r.setToField("EXP_NAME1");
+        r.setRegex(true);
+        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setToValue("$1");
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromField("EXP_NAME+COUNTRY1");
+        r.setToField("EXP_COUNTRY1");
+        r.setRegex(true);
+        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setToValue("$3");
+        tagger.addReplacement(r);
+
+        // Author 2
+        r = new Replacement();
+        r.setFromField("EXP_NAME+COUNTRY2");
+        r.setToField("EXP_NAME2");
+        r.setRegex(true);
+        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setToValue("$1");
+        tagger.addReplacement(r);
+        
+        r = new Replacement();
+        r.setFromField("EXP_NAME+COUNTRY2");
+        r.setToField("EXP_COUNTRY2");
+        r.setRegex(true);
+        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setToValue("$3");
+        tagger.addReplacement(r);
+
+        tagger.tagDocument("n/a", null, meta, true);
+        
+        Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME1"));
+        Assert.assertEquals("", meta.getString("EXP_COUNTRY1"));
+        Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME2"));
+        Assert.assertEquals("US", meta.getString("EXP_COUNTRY2"));
+    }
+    
     @Test
     public void testWriteRead() throws IOException {
         Replacement r = null;
@@ -111,7 +165,6 @@ public class ReplaceTaggerTest {
         r.setFromField("caseField");
         r.setCaseSensitive(false);
         tagger.addReplacement(r);
-        
         
         tagger.tagDocument("n/a", null, meta, true);
 

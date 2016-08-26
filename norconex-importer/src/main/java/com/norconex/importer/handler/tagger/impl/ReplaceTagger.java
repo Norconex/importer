@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
@@ -41,8 +42,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * <p>Replaces an existing metadata value with another one. The "toField" 
- * argument is optional (the same field will be used for the replacement if no
- * "toField" is specified").</p>
+ * argument is optional. The same field will be used for the replacement if no
+ * "toField" is specified. If there are no matches and a "toField" is 
+ * specified, no value will be added to the "toField".  To have the original
+ * value copied in the "toField" when there are no matches, first copy the 
+ * original value using {@link CopyTagger} to your target field then use this 
+ * class on that new field without a "toField". 
+ * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <p>
  * XML configuration usage:
@@ -67,7 +73,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * @author Pascal Essiembre
  * @see Pattern
  */
-@SuppressWarnings("nls")
 public class ReplaceTagger extends AbstractDocumentTagger {
 
     private final List<Replacement> replacements = new ArrayList<>();
@@ -94,7 +99,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                                 repl.getFromValue(), repl.getToValue(),
                                 repl.isCaseSensitive());
                     }
-                    if (!Objects.equals(metaValue, newValue)) {
+                    if (newValue != null) {
                         if (StringUtils.isNotBlank(repl.getToField())) {
                             metadata.addString(repl.getToField(), newValue);
                         } else {
@@ -107,7 +112,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
     }
     
-
+    // if no matches, return null
     private String regexReplace(String metaValue, String fromValue, 
             String toValue, boolean caseSensitive) {
         int flags = Pattern.DOTALL;
@@ -115,8 +120,13 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         }
         Pattern p = Pattern.compile(fromValue, flags);
-        return p.matcher(metaValue).replaceFirst(toValue);
+        Matcher m = p.matcher(metaValue);
+        if (m.find()) {
+            return m.replaceFirst(toValue);
+        }
+        return null;
     }
+    // if no matches, return null
     private String regularReplace(String metaValue, String fromValue, 
             String toValue, boolean caseSensitive) {
         String mv = metaValue;
@@ -128,7 +138,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         if (Objects.equals(mv, fv)) {
             return toValue;
         }
-        return metaValue;
+        return null;
     }
         
     public List<Replacement> getReplacements() {
