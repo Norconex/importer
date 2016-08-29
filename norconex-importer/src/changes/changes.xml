@@ -12,6 +12,10 @@
         Fixed ReplaceTagger not adding replaced value to "toField" when it
         is the same as original value.
       </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Commons Lang 1.12.0, 
+        Apache HTTP Client 4.5.2, Apache HTTP Core 4.4.5.
+      </action>
     </release>
 
     <release version="2.6.0" date="2016-08-25" description="Feature release">
