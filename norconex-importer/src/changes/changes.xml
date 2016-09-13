@@ -8,13 +8,22 @@
   <body>
 
     <release version="2.6.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
+      <action dev="essiembre" type="update">
+        Dependency updates: Norconex Commons Lang 1.12.0, Joda Time 2.9.4, 
+        Apache HTTP Client 4.5.2, Apache HTTP Core 4.4.5, JJ2000 5.3,
+        JAI ImageIO jpeg2000 1.3.1
+      </action>
       <action dev="essiembre" type="fix" issue="29">
         Fixed ReplaceTagger not adding replaced value to "toField" when it
         is the same as original value.
       </action>
-      <action dev="essiembre" type="update">
-        Dependency updates: Norconex Commons Lang 1.12.0, Joda Time 2.9.4, 
-        Apache HTTP Client 4.5.2, Apache HTTP Core 4.4.5.
+      <action dev="essiembre" type="fix">
+        Fixed NoSuchMethodError when performing OCR on some PDFs with JPEG 
+        2000 images in them. 
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed "No ImageWriter found for 'jpx' format" when performing OCR on 
+        some PDFs with JPX images in them. 
       </action>
     </release>
 

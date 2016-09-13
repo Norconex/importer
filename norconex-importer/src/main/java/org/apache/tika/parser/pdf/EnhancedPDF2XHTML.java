@@ -396,7 +396,10 @@ class EnhancedPDF2XHTML extends PDFTextStripper {
                     extension = "png";
                 } else if (extension.equals("jpx")) {
                     metadata.set(Metadata.CONTENT_TYPE, "image/jpx");
-                    extension = "jpx";
+                    // extension = "jpx";
+                    // changing extension to jpeg forces a proper
+                    // SPI ImageWriter to be used (prevent errors).
+                    extension = "jpeg";
                 } else {
                     //TODO: determine if we need to add more image types
                     //throw new RuntimeException("EXTEN:" + extension);
