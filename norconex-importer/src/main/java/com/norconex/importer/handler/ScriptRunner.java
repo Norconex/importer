@@ -44,13 +44,18 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * allows to "plug" any script engines to support your favorite scripting
  * language.
  * </p><p>
- * The "JavaScript" script engine should already be present as part of 
- * your Java installation and is the default script engine used by this class
- * when none is specified. The Oracle implementation of Java includes
- * a JavaScript engine based on Mozilla Rhino and you can find extensive 
- * documentation on it on the 
+ * The JavaScript (ECMAScript) script engine should already be present as 
+ * part of your Java installation and is the default script engine used by 
+ * this class when none is specified. 
+ * As of Java 8, the Oracle version of Java uses the
+ * <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/scripting/nashorn/">
+ * Nashorn</a> engine, an implementation of the 
+ * <a href="http://www.ecma-international.org/ecma-262/5.1/">
+ * ECMAScript Edition 5.1 language specification</a> (greater version of Java
+ * may use a more recent edition).
+ * Prior to version 8, Java used a JavaScript engine based on 
  * <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/Rhino">
- * Mozilla Rhino</a> site.
+ * Mozilla Rhino</a>.
  * </p><p>
  * Several third-party script engines already exist to support additional
  * languages such as Groovy, JRuby, Scala, Fantom, Jython, etc. Refer to 
