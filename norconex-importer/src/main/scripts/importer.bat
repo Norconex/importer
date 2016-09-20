@@ -10,4 +10,12 @@ REM following to the java command below (replacing the path):
 REM
 REM     -Djava.io.tmpdir="C:\temp"
 
+REM If you are experiencing memory problems or simply wish to increase crawling
+REM performance you can specify the amount of memory allocated by increasing
+REM the Java heap space. You can do so by adding the following to the Java
+REM command below (using 2G as an example):  
+REM
+REM     -Xmx2G
+
+
 java -Dlog4j.configuration="file:///%IMPORTER_ROOT_DIR%log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*;./classes" com.norconex.importer.Importer %*
