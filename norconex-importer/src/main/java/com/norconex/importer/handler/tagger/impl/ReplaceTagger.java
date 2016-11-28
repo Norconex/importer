@@ -68,8 +68,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *               caseSensitive="[false|true]"
  *               regex="[false|true]" 
  *               wholeMatch="[false|true]" 
- *               replaceAll="[false|true]"
- *               &gt;
+ *               replaceAll="[false|true]"&gt;
  *          &lt;fromValue&gt;Source Value&lt;/fromValue&gt;
  *          &lt;toValue&gt;Target Value&lt;/toValue&gt;
  *      &lt;/replace&gt;
