@@ -22,7 +22,6 @@ import org.junit.Test;
 import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.ReplaceTagger;
 import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
 
 public class ReplaceTaggerTest {
@@ -31,7 +30,8 @@ public class ReplaceTaggerTest {
     //where the replaced value is equal to the original (EXP_NAME1), it should 
     //still store it (was a bug).
     @Test
-    public void testMatchReturnSameValue() throws IOException, ImporterHandlerException {
+    public void testMatchReturnSameValue() 
+            throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("EXP_NAME+COUNTRY1", "LAZARUS ANDREW"); 
         meta.addString("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]"); 
@@ -220,6 +220,286 @@ public class ReplaceTaggerTest {
                 "/that/is/a/path/file.doc", meta.getString("path2"));
         Assert.assertEquals(
                 "/That/Is/A/Path/something.doc", meta.getString("path3"));
+    }
+
+    @Test
+    public void testWholeAndPartialMatches() 
+             throws IOException, ImporterHandlerException {
+        String originalValue = "One dog, two dogs, three dogs";
+
+        
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("field", originalValue);
+
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        //--- Whole-match regular replace, case insensitive --------------------
+        r = new Replacement();
+        r.setFromValue("One dog");
+        r.setToValue("One cat");
+        r.setFromField("field");
+        r.setToField("wholeNrmlInsensitiveUnchanged");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("One DOG, two DOGS, three DOGS");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeNrmlInsensitiveCats");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        //--- Whole-match regular replace, case sensitive ----------------------
+        r = new Replacement();
+        r.setFromValue("One dog");
+        r.setToValue("One cat");
+        r.setFromField("field");
+        r.setToField("wholeNrmlSensitiveUnchanged1");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+        
+        r = new Replacement();
+        r.setFromValue("One DOG, two DOGS, three DOGS");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeNrmlSensitiveUnchanged2");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("One dog, two dogs, three dogs");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeNrmlSensitiveCats");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        //--- Whole-match regex replace, case insensitive ----------------------
+        r = new Replacement();
+        r.setFromValue("One dog");
+        r.setToValue("One cat");
+        r.setFromField("field");
+        r.setToField("wholeRgxInsensitiveUnchanged");
+        r.setWholeMatch(true);
+        r.setRegex(true);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("One DOG.*");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeRgxInsensitiveCats");
+        r.setWholeMatch(true);
+        r.setRegex(true);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        //--- Whole-match regex replace, case sensitive ------------------------
+        r = new Replacement();
+        r.setFromValue("One DOG.*");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeRgxSensitiveUnchanged");
+        r.setWholeMatch(true);
+        r.setRegex(true);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("One dog.*");
+        r.setToValue("One cat, two cats, three cats");
+        r.setFromField("field");
+        r.setToField("wholeRgxSensitiveCats");
+        r.setWholeMatch(true);
+        r.setRegex(true);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        //--- Partial-match regular replace, case insensitive ------------------
+        r = new Replacement();
+        r.setFromValue("DOG");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partNrmlInsensitive1Cat");
+        r.setWholeMatch(false);
+        r.setRegex(false);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        //--- Partial-match regular replace, case sensitive --------------------
+        r = new Replacement();
+        r.setFromValue("DOG");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partNrmlSensitiveUnchanged");
+        r.setWholeMatch(false);
+        r.setRegex(false);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("dog");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partNrmlSensitive1Cat");
+        r.setWholeMatch(false);
+        r.setRegex(false);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        //--- Partial-match regex replace, case insensitive --------------------
+        r = new Replacement();
+        r.setFromValue("DOG");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partRgxInsensitive1Cat");
+        r.setWholeMatch(false);
+        r.setRegex(true);
+        r.setCaseSensitive(false);
+        tagger.addReplacement(r);
+
+        //--- Partial-match regex replace, case sensitive ----------------------
+        r = new Replacement();
+        r.setFromValue("DOG");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partRgxSensitiveUnchanged");
+        r.setWholeMatch(false);
+        r.setRegex(true);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("dog");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partRgxSensitive1Cat");
+        r.setWholeMatch(false);
+        r.setRegex(true);
+        r.setCaseSensitive(true);
+        tagger.addReplacement(r);
+        
+        //=== Asserts ==========================================================
+        tagger.tagDocument("n/a", null, meta, true);
+
+        //--- Whole-match regular replace, case insensitive --------------------
+        Assert.assertNull(meta.getString("wholeNrmlInsensitiveUnchanged"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("wholeNrmlInsensitiveCats"));
+
+        //--- Whole-match regular replace, case sensitive ----------------------
+        Assert.assertNull(meta.getString("wholeNrmlSensitiveUnchanged1"));
+        Assert.assertNull(meta.getString("wholeNrmlSensitiveUnchanged2"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("wholeNrmlSensitiveCats"));
+
+        //--- Whole-match regex replace, case insensitive ----------------------
+        Assert.assertNull(meta.getString("wholeRgxInsensitiveUnchanged"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("wholeRgxInsensitiveCats"));
+
+        //--- Whole-match regex replace, case sensitive ------------------------
+        Assert.assertNull(meta.getString("wholeRgxSensitiveUnchanged"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("wholeRgxSensitiveCats"));
+
+        //--- Partial-match regular replace, case insensitive ------------------
+        Assert.assertEquals("One cat, two dogs, three dogs",
+                meta.getString("partNrmlInsensitive1Cat"));
+
+        //--- Partial-match regular replace, case sensitive --------------------
+        Assert.assertNull(meta.getString("partNrmlSensitiveUnchanged"));
+        Assert.assertEquals("One cat, two dogs, three dogs",
+                meta.getString("partNrmlSensitive1Cat"));
+
+        //--- Partial-match regex replace, case insensitive --------------------
+        Assert.assertEquals("One cat, two dogs, three dogs",
+                meta.getString("partRgxInsensitive1Cat"));
+
+        //--- Partial-match regex replace, case sensitive ----------------------
+        Assert.assertNull(meta.getString("partRgxSensitiveUnchanged"));
+        Assert.assertEquals("One cat, two dogs, three dogs",
+                meta.getString("partRgxSensitive1Cat"));
+    }
+
+    @Test
+    public void testReplaceAll() 
+             throws IOException, ImporterHandlerException {
+
+        
+        String originalValue = "One dog, two dogs, three dogs";
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("field", originalValue);
+
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        //--- Whole-match regular replace all ----------------------------------
+        r = new Replacement();
+        r.setFromValue("dog");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("wholeNrmlUnchanged");
+        r.setWholeMatch(true);
+        r.setRegex(false);
+        r.setReplaceAll(true);
+        tagger.addReplacement(r);
+
+        //--- Whole-match regex replace all ------------------------------------
+        r = new Replacement();
+        r.setFromValue("dog");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("wholeRegexUnchanged");
+        r.setWholeMatch(true);
+        r.setRegex(true);
+        r.setReplaceAll(true);
+        tagger.addReplacement(r);
+        
+        //--- Partial-match regular replace all --------------------------------
+        r = new Replacement();
+        r.setFromValue("DOG");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partialNrmlCats");
+        r.setWholeMatch(false);
+        r.setRegex(false);
+        r.setReplaceAll(true);
+        tagger.addReplacement(r);
+        
+        //--- Partial-match regex replace all ----------------------------------
+        r = new Replacement();
+        r.setFromValue("D.G");
+        r.setToValue("cat");
+        r.setFromField("field");
+        r.setToField("partialRegexCats");
+        r.setWholeMatch(false);
+        r.setRegex(true);
+        r.setReplaceAll(true);
+        tagger.addReplacement(r);
+        
+        //=== Asserts ==========================================================
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assert.assertNull(meta.getString("wholeNrmlUnchanged"));
+        Assert.assertNull(meta.getString("wholeRegexUnchanged"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("partialNrmlCats"));
+        Assert.assertEquals("One cat, two cats, three cats",
+                meta.getString("partialRegexCats"));
     }
 
 }

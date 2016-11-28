@@ -9,6 +9,9 @@
 
     <release version="2.6.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
       <action dev="essiembre" type="update">
+        ReplaceTagger now supports new flags: "wholeMatch" and "replaceAll".
+      </action>
+      <action dev="essiembre" type="update">
         Dependency updates: Norconex Commons Lang 1.12.3, Joda Time 2.9.4, 
         Apache HTTP Client 4.5.2, Apache HTTP Core 4.4.5, JJ2000 5.3,
         JAI ImageIO jpeg2000 1.3.1
