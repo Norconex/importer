@@ -19,9 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,6 +50,100 @@ public class DOMTaggerTest {
 //                ConsoleAppender.SYSTEM_OUT));
 //    }
     
+    // This is a test for: https://github.com/Norconex/importer/issues/39
+    @Test
+    public void testMatchBlanks()
+            throws IOException, ImporterHandlerException { 
+
+        DOMTagger t = new DOMTagger();
+        DOMExtractDetails d = null;
+        
+        d = new DOMExtractDetails("author name", "blanksON", false);
+        d.setMatchBlanks(true);
+        t.addDOMExtractDetails(d);
+
+        d = new DOMExtractDetails("author name", "blanksOFF", false);
+        d.setMatchBlanks(false);
+        t.addDOMExtractDetails(d);
+
+        d = new DOMExtractDetails("author name", "blanksONDefault", false);
+        d.setMatchBlanks(true);
+        d.setDefaultValue("Joe");
+        t.addDOMExtractDetails(d);
+
+        d = new DOMExtractDetails("author name", "blanksOFFDefault", false);
+        d.setMatchBlanks(false);
+        d.setDefaultValue("Joe");
+        t.addDOMExtractDetails(d);
+
+        String xml = "<test>"
+                // present
+                + "<author><name>John</name></author>"
+                // empty
+                + "<author><name></name></author>"
+                // blank
+                + "<author><name>   </name></author>"
+                // missing/null
+                + "<author></author>"
+                + "</test>";
+        
+        
+        ImporterMetadata metadata = new ImporterMetadata();
+        performTagging(metadata, t, xml);
+
+        String[] blanksON = getSortedArray(metadata, "blanksON");
+        String[] blanksOFF = getSortedArray(metadata, "blanksOFF");
+        String[] blanksONDefault = getSortedArray(metadata, "blanksONDefault");
+        String[] blanksOFFDefault = 
+                getSortedArray(metadata, "blanksOFFDefault");
+        
+        Assert.assertArrayEquals(new String[]{"", "", "John"}, blanksON);
+        Assert.assertArrayEquals(new String[]{"John"}, blanksOFF);
+
+        Assert.assertArrayEquals(new String[]{"", "", "John"}, blanksONDefault);
+        Assert.assertArrayEquals(
+                new String[]{"Joe", "Joe", "John"}, blanksOFFDefault);
+    }
+
+
+    private String[] getSortedArray(ImporterMetadata metadata, String key) {
+        List<String> list = metadata.getStrings(key);
+        Collections.sort(list);
+        return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+    }
+
+    // This is a test for: https://github.com/Norconex/importer/issues/39
+    // where default value should not be trimmed.
+    @Test
+    public void testDefaultValue()
+            throws IOException, ImporterHandlerException { 
+        
+        String cfg = "<tagger class=\""
+                + "com.norconex.importer.handler.tagger.impl.DOMTagger\">"
+                + "<dom selector=\"author name\" toField=\"noDefault\"/>"
+                + "<dom selector=\"author name\" toField=\"emptyDefault\" "
+                + "defaultValue=\"\"/>"
+                + "<dom selector=\"author name\" toField=\"spaceDefault\" "
+                + "defaultValue=\"   \"/>"
+                + "</tagger>";
+        DOMTagger t = new DOMTagger();
+        t.loadFromXML(new StringReader(cfg));
+        
+        String xml = "<test><author><name></name></author></test>";
+        
+        
+        ImporterMetadata metadata = new ImporterMetadata();
+        performTagging(metadata, t, xml);
+
+        String noDefault = metadata.getString("noDefault");
+        String emptyDefault = metadata.getString("emptyDefault");
+        String spaceDefault = metadata.getString("spaceDefault");
+        
+        Assert.assertEquals(null, noDefault);
+        Assert.assertEquals("", emptyDefault);
+        Assert.assertEquals("   ", spaceDefault);
+    }
+
     
     // This is a test for "fromField" and "defaultValue" feature request: 
     // https://github.com/Norconex/importer/issues/28 

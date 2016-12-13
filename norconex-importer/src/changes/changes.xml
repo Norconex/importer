@@ -8,8 +8,16 @@
   <body>
 
     <release version="2.6.1-SNAPSHOT" date="2016-??-??" description="Bugfix release">
-      <action dev="essiembre" type="update">
+      <action dev="essiembre" type="add" issue="39">
+        DOMTagger now supports a new flags called "matchBlanks" to extract
+        elements that contain empty values or values made of white spaces only. 
+      </action>
+      <action dev="essiembre" type="add">
         ReplaceTagger now supports new flags: "wholeMatch" and "replaceAll".
+      </action>
+      <action dev="essiembre" type="update" issue="39">
+        The default value in DOMTagger can how be an empty string or a 
+        string made of white spaces.
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Norconex Commons Lang 1.12.3, Joda Time 2.9.4, 

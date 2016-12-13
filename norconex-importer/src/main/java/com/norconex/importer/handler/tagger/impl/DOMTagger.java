@@ -86,7 +86,7 @@ import com.norconex.importer.util.DOMUtil;
  * 
  * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
  * exactly thanks to the "extract" argument of the new method 
- * {@link #addDOMExtractDetails(String, String, boolean, String)}. Version 2.6.0
+ * {@link DOMExtractDetails#setExtract(String)}. Version 2.6.0
  * introduced several more extract options. Possible values are:</p>
  * <ul>
  *   <li><b>text</b>: Default option when extract is blank. The text of 
@@ -122,7 +122,18 @@ import com.norconex.importer.util.DOMUtil;
  * <p><b>Since 2.6.0</b>, it is possible to specify a <code>defaultValue</code>
  * on each DOM extraction details. When no match occurred for a given selector,
  * the default value will be stored in the <code>toField</code> (as opposed
- * to not storing anything).
+ * to not storing anything).  When matching blanks (see below) you will get
+ * an empty string as opposed to the default value.
+ * As of 2.6.1, empty strings and spaces are supported as default values
+ * (the default value is now taken litterally).
+ * </p>
+ * 
+ * <p><b>Since 2.6.1</b>, you can set <code>matchBlanks</code> to 
+ * <code>true</code> to match elements that are present
+ * but have blank values. Blank values are empty values or values containing
+ * white spaces only. Because white spaces are normalized by the DOM parser,
+ * such matches will always return an empty string (spaces will be trimmed). 
+ * By default elements with blank values are not matched and are ignored.   
  * </p>
  *  
  * <h3>
@@ -136,6 +147,7 @@ import com.norconex.importer.util.DOMUtil;
  *              toField="(target field)"
  *              overwrite="[false|true]"
  *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+ *              matchBlanks="[false|true]"
  *              defaultValue="(optional value to use when no match)" /&gt;
  *      &lt;!-- multiple "dom" tags allowed --&gt;
  *          
@@ -258,8 +270,8 @@ public class DOMTagger extends AbstractDocumentTagger {
     private void domExtractDoc(List<String> extractedValues,
             Document doc, DOMExtractDetails details, ImporterMetadata meta) {
         Elements elms = doc.select(details.selector);
-        boolean hasDefault = StringUtils.isNotBlank(details.getDefaultValue());
-        
+        boolean hasDefault = details.getDefaultValue() != null;
+
         // no elements matching
         if (elms.isEmpty()) {
             if (hasDefault) {
@@ -271,7 +283,12 @@ public class DOMTagger extends AbstractDocumentTagger {
         // one or more elements matching
         for (Element elm : elms) {
             String value = DOMUtil.getElementValue(elm, details.extract);
-            if (StringUtils.isNotBlank(value)) {
+            // JSoup normalizes white spaces and should always trim them,
+            // but we force it here to ensure 100% consistency.
+            value = StringUtils.trim(value);
+            boolean matches = !(value == null 
+                    || !details.matchBlanks && StringUtils.isBlank(value));
+            if (matches) {
                 extractedValues.add(value);
             } else if (hasDefault) {
                 extractedValues.add(details.getDefaultValue());
@@ -371,6 +388,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     node.getString("[@toField]", null),
                     node.getBoolean("[@overwrite]", false),
                     node.getString("[@extract]", null));
+            details.setMatchBlanks(node.getBoolean("[@matchBlanks]", false));
             details.setDefaultValue(node.getString("[@defaultValue]", null));
             addDOMExtractDetails(details);
         }
@@ -387,6 +405,8 @@ public class DOMTagger extends AbstractDocumentTagger {
             writer.writeAttributeString("toField", details.getToField());
             writer.writeAttributeBoolean("overwrite", details.isOverwrite());
             writer.writeAttributeString("extract", details.getExtract());
+            writer.writeAttributeBoolean(
+                    "matchBlanks", details.isMatchBlanks());
             writer.writeAttributeString(
                     "defaultValue", details.getDefaultValue());
             writer.writeEndElement();
@@ -437,6 +457,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         private String toField;
         private boolean overwrite;
         private String extract;
+        private boolean matchBlanks;
         private String defaultValue;
         
         public DOMExtractDetails() {
@@ -478,6 +499,26 @@ public class DOMTagger extends AbstractDocumentTagger {
         public void setExtract(String extract) {
             this.extract = extract;
         }
+        /**
+         * Gets whether lements with blank values should be considered a 
+         * match and have an empty string returned as opposed to nothing at all.
+         * Default is <code>false</code>;
+         * @return <code>true</code> if elements with blank values are supported
+         * @since 2.6.1 
+         */
+        public boolean isMatchBlanks() {
+            return matchBlanks;
+        }
+        /**
+         * Sets whether elements with blank values should be considered a 
+         * match and have an empty string returned as opposed to nothing at all.
+         * @param matchBlanks <code>true</code> to support elements with 
+         *                    blank values
+         * @since 2.6.1 
+         */
+        public void setMatchBlanks(boolean matchBlanks) {
+            this.matchBlanks = matchBlanks;
+        }
         public String getDefaultValue() {
             return defaultValue;
         }
@@ -493,6 +534,7 @@ public class DOMTagger extends AbstractDocumentTagger {
             builder.append("toField", toField);
             builder.append("overwrite", overwrite);
             builder.append("extract", extract);
+            builder.append("matchBlanks", matchBlanks);
             builder.append("defaultValue", defaultValue);
             return builder.toString();
         }
@@ -507,6 +549,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     .append(toField, castOther.toField)
                     .append(overwrite, castOther.overwrite)
                     .append(extract, castOther.extract)
+                    .append(matchBlanks, castOther.matchBlanks)
                     .append(defaultValue, castOther.defaultValue)
                     .isEquals();
         }
@@ -517,6 +560,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     .append(toField)
                     .append(overwrite)
                     .append(extract)
+                    .append(matchBlanks)
                     .append(defaultValue)
                     .toHashCode();
         }
