@@ -2,10 +2,7 @@
 TODO:
 ==============
 
-- Refactor/modify ReplaceTagger so it can do a replace all instead of just once
-  for regex, and a replace "whole" value vs partial for regular replace.
-  Maybe create two taggers for regular/regex? Or add flags for 
-  "substring match" and "multiple replace" (both false by default?).
+- Have a MergeTagger to merge two or more field values.
 
 - Find out if we can reduce metadata extraction on images to avoid 
   OOMException on some images with massive amount of metadata.
