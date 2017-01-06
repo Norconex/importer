@@ -30,6 +30,16 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class LanguageTaggerTest {
 
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
+    
     private static Map<String, String> sampleTexts;
     
     @BeforeClass
