@@ -69,9 +69,9 @@ public class ImageParserTest extends AbstractParserTest {
         ImporterMetadata meta = responses[0].getDocument().getMetadata();
         
         Assert.assertEquals("Image 'width' not extracted or invalid",
-                "496", meta.getString("width"));
+                "125", meta.getString("width"));
         Assert.assertEquals("Image 'height' not extracted or invalid",
-                "702", meta.getString("height"));
+                "16", meta.getString("height"));
     }
 
     private void testParsing(String contentType, String extension)
