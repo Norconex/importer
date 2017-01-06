@@ -16,11 +16,6 @@ TODO:
       (make sure any custom tweaks are still supported, and that XFA extracation
       is enabled out of the box).
 
-    - Remove FixedHtmlEncodingDetector in favor of Tika original one
-      when Tika 1.11 is released.  See:
-        https://issues.apache.org/jira/browse/TIKA-1837
-        https://github.com/Norconex/collector-http/issues/223
-        
     - Remove JBIG2-related code/files if accepted:
       https://issues.apache.org/jira/browse/TIKA-2232
 

@@ -21,6 +21,10 @@
         http://central.maven.org/maven2/com/github/jai-imageio/jai-imageio-jpeg2000/
         http://central.maven.org/maven2/com/levigo/jbig2/levigo-jbig2-imageio/
       </action>
+      <action dev="essiembre" type="remove">
+        Removed FixedHtmlEncodingDetector class in favor of the fixed version 
+        of HtmlEncodingDetector. https://issues.apache.org/jira/browse/TIKA-1837
+      </action>
     </release>
 
     <release version="2.6.1" date="2016-12-14" description="Minor release">
