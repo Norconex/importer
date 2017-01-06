@@ -7,6 +7,22 @@
   </properties>
   <body>
 
+    <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New MergeTagger for combining multiple fields into one.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: Apache Tika 1.14.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependent libraries for JPEG200 and JBIG2 image formats are no longer
+        distributed with this product for licensing incompatibilities.
+        To enable them, you will need JAR files found at these locations: 
+        http://central.maven.org/maven2/com/github/jai-imageio/jai-imageio-jpeg2000/
+        http://central.maven.org/maven2/com/levigo/jbig2/levigo-jbig2-imageio/
+      </action>
+    </release>
+
     <release version="2.6.1" date="2016-12-14" description="Minor release">
       <action dev="essiembre" type="add" issue="39">
         DOMTagger now supports a new flags called "matchBlanks" to extract

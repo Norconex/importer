@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,7 +197,9 @@ public class GenericDocumentParserFactory
     protected void initDefaultParsers() {
         // Fallback parser
         fallbackParser = new FallbackParser();
-        
+
+        //TODO delete when released in Tika:
+        //https://issues.apache.org/jira/browse/TIKA-1946        
         // Word Perfect
         IDocumentParser wp = new WordPerfectParser();
         parsers.put(ContentType.valueOf("application/wordperfect"), wp);
@@ -207,10 +209,14 @@ public class GenericDocumentParserFactory
         parsers.put(ContentType.valueOf("application/wordperfect5.1"), wp);
         parsers.put(ContentType.valueOf("application/vnd.wordperfect"), wp);
         
-        // PureEdge XLDF
+        //TODO delete when released in Tika:
+        //https://issues.apache.org/jira/browse/TIKA-2222       
+        // PureEdge XFDL
         parsers.put(
                 ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
-              
+
+        //TODO delete when released in Tika:
+        //https://issues.apache.org/jira/browse/TIKA-1946        
         // Quattro Pro:
         parsers.put(ContentType.valueOf(
                 "application/x-quattro-pro"), new QuattroProParser());

@@ -61,7 +61,19 @@ public class ImageParserTest extends AbstractParserTest {
         testParsing("/parser/image/importer.tif",
                 "image/tiff", ".*", "tiff", "Image");        
     }
-    
+
+    @Test
+    public void testJBIG2() throws Exception {
+        ImporterResponse[] responses = testParsing("/parser/image/importer.jb2",
+                "image/x-jbig2", ".*", "jb2", "Image");        
+        ImporterMetadata meta = responses[0].getDocument().getMetadata();
+        
+        Assert.assertEquals("Image 'width' not extracted or invalid",
+                "496", meta.getString("width"));
+        Assert.assertEquals("Image 'height' not extracted or invalid",
+                "702", meta.getString("height"));
+    }
+
     private void testParsing(String contentType, String extension)
             throws Exception {
         testParsing("/parser/image/importer." + extension,

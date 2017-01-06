@@ -34,6 +34,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.config.ConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -152,10 +153,8 @@ public class DebugTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setLogContent(xml.getBoolean("[@logContent]", isLogContent()));
-        String csvFields = xml.getString("[@logFields]", null);
-        if (StringUtils.isNotBlank(csvFields)) {
-            setLogFields(StringUtils.split(csvFields, ','));
-        }
+        setLogFields(ConfigurationUtil.getCSVArray(
+                xml, "[@logFields]", getLogFields()));
         setLogLevel(xml.getString("[@logLevel]", getLogLevel()));
     }
     

@@ -1,20 +1,33 @@
-
 TODO:
 ==============
+
+- To remove/adjust when released in Apache Tika:
+
+    - Remove CharsetDetector in favor of Tika original one once fixed:
+      https://issues.apache.org/jira/browse/TIKA-2219
+
+    - Remove WordPerfect, Quattro Pro, ans XFDL from 
+      GenericDocumentParserFactory as well as from custom-mimetypes.xml.
+      https://issues.apache.org/jira/browse/TIKA-1946
+      https://issues.apache.org/jira/browse/TIKA-2228
+      https://issues.apache.org/jira/browse/TIKA-2222
+      
+    - Remove custom PDF parser given latest Tika now supports PDFBox 2.0.1.
+      (make sure any custom tweaks are still supported, and that XFA extracation
+      is enabled out of the box).
+
+    - Remove FixedHtmlEncodingDetector in favor of Tika original one
+      when Tika 1.11 is released.  See:
+        https://issues.apache.org/jira/browse/TIKA-1837
+        https://github.com/Norconex/collector-http/issues/223
+        
+    - Remove JBIG2-related code/files if accepted:
+      https://issues.apache.org/jira/browse/TIKA-2232
 
 - Have a MergeTagger to merge two or more field values.
 
 - Find out if we can reduce metadata extraction on images to avoid 
   OOMException on some images with massive amount of metadata.
-
-- Remove custom PDF parser given latest Tika now supports PDFBox 2.0.1.
-  (make sure any custom tweaks are still supported, and that XFA extracation
-  is enabled out of the box).
-
-- Remove FixedHtmlEncodingDetector in favor of Tika original one
-  when Tika 1.11 is released.  See:
-    https://issues.apache.org/jira/browse/TIKA-1837
-    https://github.com/Norconex/collector-http/issues/223
 
 - Investigate Tika Named Entity Parser: 
   https://wiki.apache.org/tika/TikaAndNER

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2016 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,21 @@
 package com.norconex.importer.parser;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
+import org.apache.tika.exception.TikaException;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.RecursiveParserWrapper;
+import org.apache.tika.parser.pdf.PDFParserConfig;
+import org.apache.tika.sax.BasicContentHandlerFactory;
+import org.apache.tika.sax.BodyContentHandler;
+import org.junit.Assert;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import com.norconex.importer.ImporterException;
 
@@ -38,9 +51,35 @@ public class PDFParserTest extends AbstractParserTest {
 
     @Test
     public void test_PDF_jbig2() 
-            throws IOException, ImporterException {
-        testParsing("/parser/pdf/jbig2.pdf", "application/pdf", 
-                ".*test images compressed using JBIG2.*", "pdf", 
-                        PDF_FAMILY, true);
+            throws IOException, ImporterException, SAXException, TikaException {
+        
+        RecursiveParserWrapper p = new RecursiveParserWrapper(
+                new AutoDetectParser(), new BasicContentHandlerFactory(
+                        BasicContentHandlerFactory.HANDLER_TYPE.IGNORE, -1));
+        ParseContext context = new ParseContext();
+        PDFParserConfig config = new PDFParserConfig();
+        config.setExtractInlineImages(true);
+        config.setExtractUniqueInlineImagesOnly(false);
+        context.set(PDFParserConfig.class, config);
+        context.set(Parser.class, p);
+
+        try (InputStream stream = getInputStream("/parser/pdf/jbig2.pdf")) {
+            p.parse(stream, 
+                    new BodyContentHandler(-1), new Metadata(), context);
+        }
+        List<Metadata> metadatas = p.getMetadata();
+
+        
+        Assert.assertNull("Exception found: " + metadatas.get(0).get(
+                "X-TIKA:EXCEPTION:warn"), metadatas.get(0).get(
+                        "X-TIKA:EXCEPTION:warn"));
+        Assert.assertEquals(
+                "Invalid height.", "91", metadatas.get(1).get("height"));
+        Assert.assertEquals(
+                "Invalid width.", "352", metadatas.get(1).get("width"));
+        
+//        System.out.println("OUTPUT:" + output);
+//        System.out.println("METADATA:" + metadatas.get(1));
+        
     }
 }

@@ -21,13 +21,9 @@
 <mime-info>
 
   <!-- XFDL ====================================================================
-    TODO: Shall we add these aliases:
-        <alias type="application/uwi_form"/>
-        <alias type="application/vnd.ufdl"/>
-        <alias type="application/x-xfdl"/>
-
-    TODO: Shall we add the ".frm" extension, which conflicts with some
-    other mime-types?
+    -->
+  <!-- Submitted pull-request to to Apache:
+     https://issues.apache.org/jira/browse/TIKA-2222
     -->
   <mime-type type="application/vnd.xfdl">
     <acronym>XFDL</acronym>
@@ -39,14 +35,16 @@
       <match value="application/vnd.xfdl;content-encoding=&quot;base64-gzip&quot;" type="string" offset="0"></match>
       <match value="&lt;XFDL xmlns" type="string" offset="0:100"></match>
     </magic>
-
+    <!-- Glob could also be .frm, but that's already taken -->
    	<glob pattern="*.xfdl" />
    	<glob pattern="*.xfd" />
-  
     <sub-class-of type="application/xml"/>
   </mime-type>  
 
   <!-- WordPerfect =============================================================
+    -->
+  <!-- Submitted pull-request to to Apache:
+     https://issues.apache.org/jira/browse/TIKA-1946
     -->
   <mime-type type="application/vnd.wordperfect">
     <alias type="application/wordperfect"/>
@@ -57,7 +55,7 @@
     <acronym>WPD</acronym>
     <_comment>WordPerfect - Corel Word Processing</_comment>
     <tika:link>http://en.wikipedia.org/wiki/WordPerfect</tika:link>
-    <tika:link>http://www.f13-labs.net/blog/2014/files/WP6%20File%20Format%20SDK.zip</tika:link>
+    <tika:link>http://www.columbia.edu/~em36/wpdos/wpcsoftware.html</tika:link>
     <tika:uti>com.corel.wordperfect.doc</tika:uti>
     <magic priority="60">
       <match value="0xFF575043" type="big32" offset="0"/>
@@ -76,6 +74,9 @@
 
   <!-- Quattro Pro =============================================================
     -->
+  <!-- Submitted pull-request to to Apache:
+     https://issues.apache.org/jira/browse/TIKA-1946
+    -->
   <mime-type type="application/x-quattro-pro">
     <!-- Conflicts with MS Word .doc format (handled by ContentTypeDetector):
     <magic priority="90">
@@ -93,6 +94,9 @@
 
   <!-- JBIG2 ===================================================================
     -->
+  <!-- Submitted pull-request to to Apache:
+    https://issues.apache.org/jira/browse/TIKA-2232
+    -->
   <mime-type type="image/x-jbig2">
     <alias type="image/x-jb2"/>
     <acronym>JBIG2</acronym>
@@ -104,12 +108,8 @@
     <magic priority="50">
       <match value="0x974A42320D0A1A0A" type="string" offset="0"/>
     </magic>
-    <magic priority="70">
-      <match value="0x0000000130000100" type="string" offset="0"/>
-    </magic>
     <glob pattern="*.jb2"/>
     <glob pattern="*.jbig2"/>
-    <glob pattern="*.jbig"/>
   </mime-type>  
 
 </mime-info>
