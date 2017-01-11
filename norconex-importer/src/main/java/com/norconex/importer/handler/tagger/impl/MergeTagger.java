@@ -260,7 +260,7 @@ public class MergeTagger extends AbstractDocumentTagger {
             m.setSingleValue(node.getBoolean("[@singleValue]"));
             m.setSingleValueSeparator(
                     node.getString("[@singleValueSeparator]"));
-            m.setFromFields(ConfigurationUtil.getCSVArray(
+            m.setFromFields(ConfigurationUtil.getCSVStringArray(
                     node, "fromFields", m.getFromFields()));
             m.setFromFieldsRegex(node.getString("fromFieldsRegex"));
             addMerge(m);

@@ -353,7 +353,7 @@ public class LanguageTagger extends AbstractStringTagger
                 "[@keepProbabilities]", isKeepProbabilities()));
         setFallbackLanguage(xml.getString(
                 "[@fallbackLanguage]", getFallbackLanguage()));
-        setLanguages(ConfigurationUtil.getCSVArray(
+        setLanguages(ConfigurationUtil.getCSVStringArray(
                 xml, "languages", getLanguages()));
     }
 

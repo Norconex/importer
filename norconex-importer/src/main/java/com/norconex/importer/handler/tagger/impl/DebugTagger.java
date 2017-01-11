@@ -153,7 +153,7 @@ public class DebugTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setLogContent(xml.getBoolean("[@logContent]", isLogContent()));
-        setLogFields(ConfigurationUtil.getCSVArray(
+        setLogFields(ConfigurationUtil.getCSVStringArray(
                 xml, "[@logFields]", getLogFields()));
         setLogLevel(xml.getString("[@logLevel]", getLogLevel()));
     }

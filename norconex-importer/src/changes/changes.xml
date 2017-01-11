@@ -12,7 +12,7 @@
         New MergeTagger for combining multiple fields into one.
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Apache Tika 1.14.
+        Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0.
       </action>
       <action dev="essiembre" type="update">
         Dependent libraries for JPEG200 and JBIG2 image formats are no longer

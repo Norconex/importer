@@ -17,6 +17,10 @@ TODO:
     - Remove JBIG2-related code/files if accepted:
       https://issues.apache.org/jira/browse/TIKA-2232
 
+- Wherever a duration is specified in milliseconds, allow to have a string
+  representation instead, that will be converted to milliseconds 
+  (e.g. 2.5s, or 2 minutes and 30 secondes)
+
 - Find out if we can reduce metadata extraction on images to avoid 
   OOMException on some images with massive amount of metadata.
 
