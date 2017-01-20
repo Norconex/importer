@@ -39,7 +39,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -146,7 +146,7 @@ public class ImporterConfig implements IXMLConfigurable {
         if (in == null) {
             return;
         }
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         try {
             //--- Temp directory -----------------------------------------------
             setTempDir(new File(xml.getString(
@@ -171,7 +171,7 @@ public class ImporterConfig implements IXMLConfigurable {
             setPreParseHandlers(loadImportHandlers(xml, "preParseHandlers"));
     
             //--- Document Parser Factory --------------------------------------
-            setParserFactory(ConfigurationUtil.newInstance(
+            setParserFactory(XMLConfigurationUtil.newInstance(
                     xml, "documentParserFactory", getParserFactory()));
     
             //--- Post-Import Handlers -----------------------------------------
@@ -201,7 +201,7 @@ public class ImporterConfig implements IXMLConfigurable {
         for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
             IImporterHandler handler = (IImporterHandler) 
-                    ConfigurationUtil.newInstance(xmlHandler);
+                    XMLConfigurationUtil.newInstance(xmlHandler);
             if (handler != null) {
                 handlers.add(handler);
                 //TODO throw exception here?
@@ -222,7 +222,7 @@ public class ImporterConfig implements IXMLConfigurable {
                 xml.configurationsAt(xmlPath);
         for (HierarchicalConfiguration procNode : procNodes) {
             IImporterResponseProcessor proc = 
-                    ConfigurationUtil.newInstance(procNode);
+                    XMLConfigurationUtil.newInstance(procNode);
             if (proc != null) {
                 processors.add(proc);
                 LOG.info("Reponse processor loaded: " + proc);

@@ -20,7 +20,7 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.HierarchyTagger;
@@ -39,7 +39,7 @@ public class HierarchyTaggerTest {
         tagger.addHierarcyDetails(
                 "fromField4", "toField4", "fromSep4", "toSep4", true);
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
     public void testTagDocument() throws IOException, ImporterHandlerException {

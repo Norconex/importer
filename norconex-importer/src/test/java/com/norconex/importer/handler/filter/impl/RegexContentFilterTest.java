@@ -23,7 +23,7 @@ import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
@@ -148,6 +148,6 @@ public class RegexContentFilterTest {
         filter.setMaxReadSize(256);
         filter.setOnMatch(OnMatch.INCLUDE);
         System.out.println("Writing/Reading this: " + filter);
-        ConfigurationUtil.assertWriteRead(filter);
+        XMLConfigurationUtil.assertWriteRead(filter);
     }
 }

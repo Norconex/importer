@@ -35,7 +35,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -260,7 +260,7 @@ public class MergeTagger extends AbstractDocumentTagger {
             m.setSingleValue(node.getBoolean("[@singleValue]"));
             m.setSingleValueSeparator(
                     node.getString("[@singleValueSeparator]"));
-            m.setFromFields(ConfigurationUtil.getCSVStringArray(
+            m.setFromFields(XMLConfigurationUtil.getCSVStringArray(
                     node, "fromFields", m.getFromFields()));
             m.setFromFieldsRegex(node.getString("fromFieldsRegex"));
             addMerge(m);

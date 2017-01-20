@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -75,7 +75,7 @@ public class ScriptFilterTest {
         f.setEngineName("an engine name");
         f.setMaxReadSize(256);
         System.out.println("Writing/Reading this: " + f);
-        ConfigurationUtil.assertWriteRead(f);
+        XMLConfigurationUtil.assertWriteRead(f);
     }
 
 }

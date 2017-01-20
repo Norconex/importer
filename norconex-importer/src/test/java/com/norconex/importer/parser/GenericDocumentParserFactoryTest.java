@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
@@ -55,7 +55,7 @@ public class GenericDocumentParserFactoryTest {
         GenericDocumentParserFactory f = new GenericDocumentParserFactory();
         
         // default read/write
-        ConfigurationUtil.assertWriteRead(f);
+        XMLConfigurationUtil.assertWriteRead(f);
 
         // more complex read/write
         f.setIgnoredContentTypesRegex("test");
@@ -70,7 +70,7 @@ public class GenericDocumentParserFactoryTest {
         ocr.setPath("ocrPath");
         
         f.registerParser(ContentType.BMP, new ExternalParser());
-        ConfigurationUtil.assertWriteRead(f);
+        XMLConfigurationUtil.assertWriteRead(f);
     }
     
     @Test

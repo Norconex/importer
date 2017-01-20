@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -83,6 +83,6 @@ public class NumericMetadataFilterTest {
         filter.addCondition(Operator.GREATER_EQUAL, 20);
         filter.addCondition(Operator.LOWER_THAN, 30);
         System.out.println("Writing/Reading this: " + filter);
-        ConfigurationUtil.assertWriteRead(filter);
+        XMLConfigurationUtil.assertWriteRead(filter);
     }
 }

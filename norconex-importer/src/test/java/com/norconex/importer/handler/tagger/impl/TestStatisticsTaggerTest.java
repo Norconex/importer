@@ -22,7 +22,7 @@ import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -82,7 +82,7 @@ public class TestStatisticsTaggerTest {
         TextStatisticsTagger tagger = new TextStatisticsTagger();
         tagger.setFieldName("afield");
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
 }

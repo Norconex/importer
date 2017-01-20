@@ -37,7 +37,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.tika.utils.CharsetUtils;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -252,7 +252,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     
     @Override
     public final void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         List<HierarchicalConfiguration> nodes = 
                 xml.configurationsAt("restrictTo");
         if (!nodes.isEmpty()) {

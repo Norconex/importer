@@ -21,7 +21,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.SplitTagger;
@@ -36,7 +36,7 @@ public class SplitTaggerTest {
         tagger.addSplit("fromName3", "sep3", true);
         tagger.addSplit("fromName4", "sep4", false);
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
     

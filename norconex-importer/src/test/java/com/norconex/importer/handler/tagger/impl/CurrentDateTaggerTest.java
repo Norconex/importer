@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.Sleeper;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -93,6 +93,6 @@ public class CurrentDateTaggerTest {
         tagger.setFormat("yyyy-MM-dd");
         tagger.setOverwrite(true);
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 }

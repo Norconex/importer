@@ -40,7 +40,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
@@ -334,7 +334,7 @@ public class GenericDocumentParserFactory
     @Override
     public void loadFromXML(Reader in) throws IOException {
         try {
-            XMLConfiguration xml = ConfigurationUtil.newXMLConfiguration(in);
+            XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
             setIgnoredContentTypesRegex(xml.getString(
                     "ignoredContentTypes", getIgnoredContentTypesRegex()));
 
@@ -342,14 +342,14 @@ public class GenericDocumentParserFactory
             loadParseHintsFromXML(xml);
             
             // Fallback parser
-            fallbackParser = ConfigurationUtil.newInstance(
+            fallbackParser = XMLConfigurationUtil.newInstance(
                     xml, "fallbackParser", fallbackParser);
             
             // Parsers
             List<HierarchicalConfiguration> parserNodes = 
                     xml.configurationsAt("parsers.parser");
             for (HierarchicalConfiguration node : parserNodes) {
-                IDocumentParser parser = ConfigurationUtil.newInstance(node);
+                IDocumentParser parser = XMLConfigurationUtil.newInstance(node);
                 String contentType = node.getString("[@contentType]");
                 if (StringUtils.isBlank(contentType)) {
                     throw new ConfigurationException(

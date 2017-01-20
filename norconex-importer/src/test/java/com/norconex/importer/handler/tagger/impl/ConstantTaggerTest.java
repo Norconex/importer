@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.handler.tagger.impl.ConstantTagger;
 
 public class ConstantTaggerTest {
@@ -32,7 +32,7 @@ public class ConstantTaggerTest {
         tagger.addConstant("constant2", "valueA");
         tagger.addConstant("constant3", "valueZ");
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
 }

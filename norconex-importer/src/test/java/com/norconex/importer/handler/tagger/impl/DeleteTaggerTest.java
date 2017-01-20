@@ -26,7 +26,7 @@ import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -58,7 +58,7 @@ public class DeleteTaggerTest {
         tagger.addField("carrot");
         tagger.setFieldsRegex("document\\.*");
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
     
     @Test

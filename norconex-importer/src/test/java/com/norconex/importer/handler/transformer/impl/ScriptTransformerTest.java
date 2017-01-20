@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -70,7 +70,7 @@ public class ScriptTransformerTest {
         t.setEngineName("an engine name");
         t.setMaxReadSize(256);
         System.out.println("Writing/Reading this: " + t);
-        ConfigurationUtil.assertWriteRead(t);
+        XMLConfigurationUtil.assertWriteRead(t);
     }
 
 }

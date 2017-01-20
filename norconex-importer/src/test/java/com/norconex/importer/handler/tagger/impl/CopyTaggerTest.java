@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.handler.tagger.impl.CopyTagger;
 
 public class CopyTaggerTest {
@@ -29,7 +29,7 @@ public class CopyTaggerTest {
         tagger.addCopyDetails("from1", "to1", false);
         tagger.addCopyDetails("from2", "to2", true);
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
 }

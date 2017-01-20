@@ -36,7 +36,7 @@ import org.apache.tika.langdetect.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -353,7 +353,7 @@ public class LanguageTagger extends AbstractStringTagger
                 "[@keepProbabilities]", isKeepProbabilities()));
         setFallbackLanguage(xml.getString(
                 "[@fallbackLanguage]", getFallbackLanguage()));
-        setLanguages(ConfigurationUtil.getCSVStringArray(
+        setLanguages(XMLConfigurationUtil.getCSVStringArray(
                 xml, "languages", getLanguages()));
     }
 

@@ -23,7 +23,7 @@ import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -161,7 +161,7 @@ public class CharsetTransformerTest {
         CharsetTransformer t = new CharsetTransformer();
         t.setTargetCharset(CharEncoding.ISO_8859_1);
         System.out.println("Writing/Reading this: " + t);
-        ConfigurationUtil.assertWriteRead(t);
+        XMLConfigurationUtil.assertWriteRead(t);
     }
 
 }

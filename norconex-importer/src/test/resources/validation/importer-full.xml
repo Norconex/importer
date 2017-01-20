@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+   Copyright 2017 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<!-- This is a config file with as many configuration options being set,
+     so that we can test the max out of validation.
+     -->
+<importer>
+
+    <tempDir>/some/path/</tempDir>
+    <maxFileCacheSize>99</maxFileCacheSize>
+    <maxFilePoolCacheSize>99</maxFilePoolCacheSize>
+    <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
+
+    <preParseHandlers>
+        <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+                fromField="PUB_AUTHORS">
+          <dom selector="author firstname"
+               toField="EXP_FIRST-NAME-AUX"
+               extract="ownText"
+               defaultValue="NO_FIRST-NAME" />
+          <dom selector="author middlename"
+               toField="EXP_MIDDLE-NAME-AUX"
+               extract="ownText"
+               defaultValue="NO_MIDDLE-NAME" />
+          <dom selector="author lastname"
+               extract="ownText"
+               toField="EXP_LAST-NAME"
+               defaultValue="NO_LAST-NAME" />
+          <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
+          <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
+        </tagger>
+        <!-- 
+        <transformer class="..." />
+        <filter class="..." />
+        <splitter class="..." />
+         -->
+    </preParseHandlers>
+
+    <!-- 
+    <documentParserFactory class="..." />
+    -->
+
+    <!-- No point re-testing them all here, do just a few. -->
+    <!-- 
+    <postParseHandlers>
+        <tagger class="..." />
+        <transformer class="..." />
+        <filter class="..." />
+        <splitter class="..." />
+    </postParseHandlers>
+    -->
+
+    <!-- 
+    <responseProcessors>
+        <responseProcessor class="..." />
+    </responseProcessors>
+    -->
+
+</importer>

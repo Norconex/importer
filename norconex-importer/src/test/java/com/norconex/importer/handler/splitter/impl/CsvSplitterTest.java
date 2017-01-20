@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -129,7 +129,7 @@ public class CsvSplitterTest {
         splitter.setSeparatorCharacter('@');
         splitter.setUseFirstRowAsFields(true);
         System.out.println("Writing/Reading this: " + splitter);
-        ConfigurationUtil.assertWriteRead(splitter);
+        XMLConfigurationUtil.assertWriteRead(splitter);
     }
 
 

@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger;
 
 public class ForceSingleValueTaggerTest {
@@ -30,7 +30,7 @@ public class ForceSingleValueTaggerTest {
         tagger.addSingleValueField("field2", "keepFirst");
         tagger.addSingleValueField("field3", "keepFirst");
         System.out.println("Writing/Reading this: " + tagger);
-        ConfigurationUtil.assertWriteRead(tagger);
+        XMLConfigurationUtil.assertWriteRead(tagger);
     }
 
 }

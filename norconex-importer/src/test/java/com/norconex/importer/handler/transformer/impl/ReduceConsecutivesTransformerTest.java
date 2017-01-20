@@ -25,7 +25,7 @@ import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer;
@@ -81,7 +81,7 @@ public class ReduceConsecutivesTransformerTest {
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);
-        ConfigurationUtil.assertWriteRead(t);
+        XMLConfigurationUtil.assertWriteRead(t);
     }
 
 }

@@ -21,7 +21,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 
 /**
  * Importer configuration loader.  Configuration options are defined
@@ -65,7 +65,7 @@ public final class ImporterConfigLoader {
     public static ImporterConfig loadImporterConfig(Reader config)  {
         try {
             XMLConfiguration xml = 
-                    ConfigurationUtil.newXMLConfiguration(config);
+                    XMLConfigurationUtil.newXMLConfiguration(config);
             return loadImporterConfig(xml);
         } catch (Exception e) {
             throw configurationException(
@@ -86,7 +86,7 @@ public final class ImporterConfigLoader {
         }
         ImporterConfig config = new ImporterConfig();
         try {
-            config.loadFromXML(ConfigurationUtil.newReader(xml));
+            config.loadFromXML(XMLConfigurationUtil.newReader(xml));
         } catch (Exception e) {
             throw configurationException("Could not load configuration "
                     + "from XMLConfiguration instance.", e);

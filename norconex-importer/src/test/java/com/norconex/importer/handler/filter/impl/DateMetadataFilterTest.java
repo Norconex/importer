@@ -23,7 +23,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationUtil;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -94,6 +94,6 @@ public class DateMetadataFilterTest {
         // time will vary. So test with last argument false.
         filter.addConditionFromNow(Operator.EQUALS, TimeUnit.YEAR, -2, false);
         System.out.println("Writing/Reading this: " + filter);
-        ConfigurationUtil.assertWriteRead(filter);
+        XMLConfigurationUtil.assertWriteRead(filter);
     }
 }
