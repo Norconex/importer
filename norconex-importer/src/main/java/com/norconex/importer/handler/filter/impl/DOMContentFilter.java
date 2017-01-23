@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,9 +114,7 @@ import com.norconex.importer.util.DOMUtil;
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
  * </ul> 
  * 
- * <h3>
- * XML configuration usage:
- * </h3>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          onMatch="[include|exclude]" 
@@ -124,17 +122,17 @@ import com.norconex.importer.util.DOMUtil;
  *          sourceCharset="(character encoding)"          
  *          selector="(selector syntax)"
  *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" &gt;
- *    &lt;regex&gt;(optional regular expression of value to match)&lt;/regex&gt;
+ *          
  *    &lt;restrictTo caseSensitive="[false|true]"
  *            field="(name of header/metadata field name to match)"&gt;
  *        (regular expression of value to match)
  *    &lt;/restrictTo&gt;
  *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *
+ *    &lt;regex&gt;(optional regular expression matching selector extracted value)&lt;/regex&gt;
  *  &lt;/filter&gt;
  * </pre>
- * <h3>
- * Configuration samples:
- * </h3>
+ * <h3>Examples:</h3>
  * <p>To exclude an HTML page that has one or more GIF images in it:</p>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"

@@ -15,59 +15,104 @@
    limitations under the License.
 -->
 
-<!-- This is a config file with as many configuration options being set,
-     so that we can test the max out of validation.
+<!-- This is a config file with as many configuration options being set
+     as possible, to test validation as much we can.
      -->
 <importer>
+  <tempDir>/some/path/</tempDir>
+  <maxFileCacheSize>99</maxFileCacheSize>
+  <maxFilePoolCacheSize>99</maxFilePoolCacheSize>
+  <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
 
-    <tempDir>/some/path/</tempDir>
-    <maxFileCacheSize>99</maxFileCacheSize>
-    <maxFilePoolCacheSize>99</maxFilePoolCacheSize>
-    <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
-
-    <preParseHandlers>
-        <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
-                fromField="PUB_AUTHORS">
-          <dom selector="author firstname"
-               toField="EXP_FIRST-NAME-AUX"
-               extract="ownText"
-               defaultValue="NO_FIRST-NAME" />
-          <dom selector="author middlename"
-               toField="EXP_MIDDLE-NAME-AUX"
-               extract="ownText"
-               defaultValue="NO_MIDDLE-NAME" />
-          <dom selector="author lastname"
-               extract="ownText"
-               toField="EXP_LAST-NAME"
-               defaultValue="NO_LAST-NAME" />
-          <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
-          <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
-        </tagger>
-        <!-- 
-        <transformer class="..." />
-        <filter class="..." />
-        <splitter class="..." />
-         -->
-    </preParseHandlers>
-
+  <preParseHandlers>
+    <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+            fromField="FROMFIELD" sourceCharset="UTF-8">
+      <dom selector="a selector" toField="TODOFIELD1"
+           overwrite="false"     extract="ownText" 
+           matchBlanks="false"   defaultValue="NOVALUE1" />
+      <dom selector="another selector" toField="TODOFIELD2"
+           extract="tagName"     defaultValue="NOVALUE2" />
+      <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
+      <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
+    </tagger>
+    <filter class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+        onMatch="include" field="FIELD" format="FORMAT" >
+      <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
+      <condition operator="ge" date="TODAY-7" />
+      <condition operator="lt" date="TODAY" />
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+            onMatch="exclude"  caseSensitive="true" sourceCharset="UTF-8" 
+            selector="selector" extract="text" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <regex>.*</regex>
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+            onMatch="include" fields="FIELD1, FIELD2" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+            onMatch="include" field="age" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <condition operator="ge" number="20" />
+      <condition operator="lt" number="30" />
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
+            onMatch="include"  caseSensitive="true"
+            sourceCharset="UTF-8" maxReadSize="9999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <regex>.*regex.*</regex>
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
+          onMatch="include" field="title" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <regex>.*potato.*</regex>
+    </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"
+            engineName="MyEngine" onMatch="include" 
+            sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <script>[CDATA[
+        var myvar = "test";
+      ]]</script>
+    </filter>    
     <!-- 
-    <documentParserFactory class="..." />
-    -->
+    <transformer class="..." />
+    <splitter class="..." />
+     -->
+  </preParseHandlers>
 
-    <!-- No point re-testing them all here, do just a few. -->
-    <!-- 
-    <postParseHandlers>
-        <tagger class="..." />
-        <transformer class="..." />
-        <filter class="..." />
-        <splitter class="..." />
-    </postParseHandlers>
-    -->
+  <documentParserFactory>
+    <ocr path="/path/example/">
+        <languages>en, fr</languages>
+        <contentTypes>image/jpeg, image/png</contentTypes>
+    </ocr>
+    <ignoredContentTypes>application/xml</ignoredContentTypes>
+    <embedded>
+      <splitContentTypes>application/zip</splitContentTypes>
+      <noExtractEmbeddedContentTypes>image/.*</noExtractEmbeddedContentTypes>
+      <noExtractContainerContentTypes>application/pdf</noExtractContainerContentTypes>
+    </embedded>
+    <fallbackParser class="com.norconex.importer.parser.impl.FallbackParser" />
+    <parsers>
+      <parser contentType="text/html" class="com.norconex.importer.parser.impl.External" />
+    </parsers>
+  </documentParserFactory>
 
-    <!-- 
-    <responseProcessors>
-        <responseProcessor class="..." />
-    </responseProcessors>
-    -->
+
+  <!-- No point re-testing them all here, do just a few. -->
+  <!-- 
+  <postParseHandlers>
+    <tagger class="..." />
+    <transformer class="..." />
+    <filter class="..." />
+    <splitter class="..." />
+  </postParseHandlers>
+  -->
+
+  <responseProcessors>
+    <responseProcessor 
+        class="com.norconex.importer.response.DummyResponseProcessor" />
+  </responseProcessors>
 
 </importer>

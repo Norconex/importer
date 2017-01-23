@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
+ * <p>
  * Accepts or rejects a document based on the numeric value(s) of a metadata
  * field, supporting decimals. If multiple values are found for a field, only
  * one of them needs to match for this filter to take effect. 
@@ -47,14 +48,19 @@ import com.norconex.importer.handler.filter.OnMatch;
  * The decimal character is expected to be a dot. 
  * To reject decimals or to deal with
  * non-numeric fields in your own way, you can use {@link RegexMetadataFilter}.
- * <p>
- * XML configuration usage:
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
  *          onMatch="[include|exclude]" 
  *          field="(name of metadata field to match)" &gt;
  *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *
  *      &lt;!-- Use one or two (for ranges) conditions,
  *           where possible operators are: 
  *
@@ -69,6 +75,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      
  *  &lt;/filter&gt;
  * </pre>
+ * <h3>XML example:</h3> 
  * <p>For example, let's say you are importing customer profile documents
  *    and you have a field called "age" and you need to only consider documents
  *    for customers in their twenties (greater or equal to

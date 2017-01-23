@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -35,24 +37,45 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * Accepts or rejects a document based on its field values using 
- * regular expression.  
- * <p>
- * XML configuration usage:
+ * <p>Accepts or rejects a document based on its field values using 
+ * regular expression.
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
  *          field="(name of metadata name to match)" &gt;
- *      (regular expression of value to match)
+ *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *          
+ *      &lt;regex&gt;(regular expression of value to match)&lt;/regex&gt;
  *  &lt;/filter&gt;
  * </pre>
+ * <h3>XML example:</h3> 
+ * <p>
+ * This example will accept only documents containing word "potato"
+ * in the title.
+ * </p>
+ * <pre>
+ *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
+ *          onMatch="include" field="title" &gt;
+ *      &lt;regex&gt;.*potato.*&lt;/regex&gt;
+ *  &lt;/filter&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @see Pattern
  */
 public class RegexMetadataFilter extends AbstractDocumentFilter {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(RegexMetadataFilter.class);
+    
     private boolean caseSensitive;
     private String field;
     private String regex;
@@ -128,8 +151,16 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
     @Override
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setField(xml.getString("[@field]"));
-        setRegex(xml.getString(""));
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
+        String regexOld = xml.getString("");
+        if (StringUtils.isNotBlank(regexOld)) {
+            LOG.warn("Regular expression must now be in <regex> tag.");
+        }
+        String theRegex = xml.getString("regex");
+        if (StringUtils.isBlank(theRegex)) {
+            theRegex = regexOld;
+        }
+        setRegex(theRegex);
     }
     
     @Override
@@ -137,7 +168,7 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
             throws XMLStreamException {
         writer.writeAttributeString("field", field);
         writer.writeAttributeBoolean("caseSensitive", caseSensitive);
-        writer.writeCharacters(regex == null ? "" : regex);
+        writer.writeElementString("regex", regex);
     }
     
     @Override

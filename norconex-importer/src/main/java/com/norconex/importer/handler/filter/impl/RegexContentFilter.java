@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -45,16 +47,31 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <b>Since 2.2.0</b>, the following regular expression flags are always
  * active: {@link Pattern#MULTILINE} and {@link Pattern#DOTALL}.
  * </p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      (regular expression of value to match)
+ *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *          
+ *      &lt;regex&gt;(regular expression of value to match)&lt;/regex&gt;
+ *  &lt;/filter&gt;
+ * </pre>
+ * <h3>XML example:</h3> 
+ * <p>
+ * This example will accept only documents containing word "apple".
+ * </p>
+ * <pre>
+ *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
+ *          onMatch="include" &gt;
+ *      &lt;regex&gt;.*apple.*&lt;/regex&gt;
  *  &lt;/filter&gt;
  * </pre>
  * 
@@ -64,6 +81,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 public class RegexContentFilter extends AbstractStringFilter {
 
+    private static final Logger LOG = 
+            LogManager.getLogger(RegexContentFilter.class);
+    
     private boolean caseSensitive;
     private String regex;
     private Pattern pattern;
@@ -128,12 +148,20 @@ public class RegexContentFilter extends AbstractStringFilter {
             throws XMLStreamException {
         writer.writeAttribute("caseSensitive", 
                 Boolean.toString(caseSensitive));
-        writer.writeCharacters(regex == null ? "" : regex);
+        writer.writeElementString("regex", regex);
     }
     @Override
     protected void loadStringFilterFromXML(XMLConfiguration xml)
             throws IOException {
-        setRegex(xml.getString(""));
+        String regexOld = xml.getString("");
+        if (StringUtils.isNotBlank(regexOld)) {
+            LOG.warn("Regular expression must now be in <regex> tag.");
+        }
+        String theRegex = xml.getString("regex");
+        if (StringUtils.isBlank(theRegex)) {
+            theRegex = regexOld;
+        }
+        setRegex(theRegex);
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
     }
     

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,12 @@ import com.norconex.importer.util.FormatUtil;
  *          onMatch="[include|exclude]" 
  *          field="(name of metadata field to match)"
  *          format="(date format)" &gt;
+ *
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *          
  *      &lt;!-- Use one or two (for ranges) conditions where:
  *           
@@ -114,6 +120,7 @@ import com.norconex.importer.util.FormatUtil;
  *      
  *  &lt;/filter&gt;
  * </pre>
+ * <h3>XML example:</h3>
  * <p>For example, let's say you want to keep only documents from the last
  *    seven days, not including today. The following would achieve that:</p>
  * <pre>

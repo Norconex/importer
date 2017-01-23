@@ -9,6 +9,9 @@
 
     <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        Added schema-based XML configuration validation.
+      </action>
+      <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.
       </action>
       <action dev="essiembre" type="update">

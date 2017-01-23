@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,19 +58,14 @@ public final class ImporterConfigLoader {
 
     /**
      * Loads importer configuration.
-     * @param config reader for the configuration file
+     * @param reader reader for the configuration file
      * @return importer configuration
      * @throws ConfigurationException problem loading configuration
      */    
-    public static ImporterConfig loadImporterConfig(Reader config)  {
-        try {
-            XMLConfiguration xml = 
-                    XMLConfigurationUtil.newXMLConfiguration(config);
-            return loadImporterConfig(xml);
-        } catch (Exception e) {
-            throw configurationException(
-                    "Could not load configuration file from Reader.", e);
-        }
+    public static ImporterConfig loadImporterConfig(Reader reader)  {
+        ImporterConfig config = new ImporterConfig();
+        XMLConfigurationUtil.loadFromXML(config, reader);
+        return config;
     }
     
     /**
@@ -81,16 +76,8 @@ public final class ImporterConfigLoader {
      */
     public static ImporterConfig loadImporterConfig(
             XMLConfiguration xml) {
-        if (xml == null) {
-            return null;
-        }
         ImporterConfig config = new ImporterConfig();
-        try {
-            config.loadFromXML(XMLConfigurationUtil.newReader(xml));
-        } catch (Exception e) {
-            throw configurationException("Could not load configuration "
-                    + "from XMLConfiguration instance.", e);
-        }
+        XMLConfigurationUtil.loadFromXML(config, xml);
         return config;
     }
     

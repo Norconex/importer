@@ -16,38 +16,32 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractDocumentTagger.xsd"></xs:include>
+  <xs:include schemaLocation="../AbstractDocumentFilter.xsd"></xs:include>
   
-  <xs:element name="tagger">
+  <xs:element name="filter">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractDocumentTagger"> 
+        <xs:extension base="AbstractDocumentFilter"> 
           <xs:sequence>
-              <xs:element ref="dom" minOccurs="1" maxOccurs="unbounded" />
-              <xs:element ref="restrictTo" minOccurs="0" maxOccurs="unbounded" />              
+              <xs:element ref="condition" minOccurs="1" maxOccurs="unbounded" />
           </xs:sequence>
-          <xs:attribute name="fromField" type="xs:string"></xs:attribute>
-          <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
+          <xs:attribute name="field" type="xs:string" use="required"></xs:attribute>
+          <xs:attribute name="format" type="xs:string"></xs:attribute>
         </xs:extension> 
       </xs:complexContent>   
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="dom">
+  <xs:element name="condition">
     <xs:complexType>
-      <xs:attribute name="selector" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="toField" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="overwrite" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="extract">
+      <xs:attribute name="operator" use="required">
         <xs:simpleType>
           <xs:restriction base="xs:string">
-            <xs:pattern
-              value="text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|(attr\(.*\))" />
+            <xs:pattern value="gt|ge|lt|le|eq" />
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>
-      <xs:attribute name="matchBlanks" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="defaultValue" type="xs:string"></xs:attribute>
+      <xs:attribute name="date" type="xs:string" use="required"></xs:attribute>
     </xs:complexType>
   </xs:element>
 

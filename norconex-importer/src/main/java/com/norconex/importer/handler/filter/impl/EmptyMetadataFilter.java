@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,32 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * <p>Accepts or rejects a document based on whether specified metadata fields
- * are empty or not.  Any control characters (char &lt;= 32) are removed 
- * before evaluating if a property is empty or not.</p>
+ * <p>Accepts or rejects a document based on whether any of the specified 
+ * metadata fields are empty or not.  Any control characters (char &lt;= 32) 
+ * are removed before evaluating if a property is empty or not.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="[include|exclude]" 
- *          fields="(coma separated list of fields to match)" /&gt;
+ *          fields="(coma separated list of fields to match)" &gt;
+ *          
+ *    &lt;restrictTo caseSensitive="[false|true]"
+ *            field="(name of header/metadata field name to match)"&gt;
+ *        (regular expression of value to match)
+ *    &lt;/restrictTo&gt;
+ *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/filter&gt;
  * </pre>
+ * <h3>XML example:</h3> 
+ * <p>
+ * To exclude documents without titles:
+ * </p>
+ * <pre>
+ *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *          onMatch="exclude" fields="title,dc:title" /&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 1.2
  */
