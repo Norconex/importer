@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * <p>Can be used both as a pre-parse (text documents) or post-parse handler
  * documents.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=""
@@ -62,13 +62,37 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          linesToSkip="(integer)"
  *          referenceColumn="(column name or position from 1)"
  *          contentColumns="(csv list of column/position to use as content)" &gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]"
+ *
+ *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;   
+ *
  *  &lt;/splitter&gt;
+ * </pre>
+ * <h3>XML example:</h3> 
+ * <p>
+ * Given this sample CSV file content...
+ * </p> 
+ * <pre>
+ * 'clientId','clientName','clientOrg','orgDesc'
+ * '123','Joe Dalton','ACME Inc.','Organization\'s description' 
+ * '345','Avrel Dalton','Daisy Town','Another one' 
+ * </pre>
+ * <p>
+ * ... this example will split the file into two documents (one for each row 
+ * after the header row):
+ * </p>
+ * <pre>
+ *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ *          separatorCharacter=","
+ *          quoteCharacter="'"
+ *          escapeCharacter="\"
+ *          useFirstRowAsFields="true"
+ *          linesToSkip="0"
+ *          referenceColumn="clientId"
+ *          contentColumns="orgDesc" /&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0

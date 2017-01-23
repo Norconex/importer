@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,12 +103,10 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * will create children documents for each translation performed.  The parent
  * document will always remain the original document, while the children
  * will always be the translations.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
- *          api="(microsoft|google|lingo24|moses)" &gt;
+ *          api="(microsoft|google|lingo24|moses|yandex)" &gt;
  *      &lt;ignoreContent&gt;(false|true)&lt;/ignoreContent&gt;
  *      &lt;ignoreNonTranslatedFields&gt;(false|true)&lt;/ignoreNonTranslatedFields&gt;
  *      &lt;fieldsToTranslate&gt;(coma-separated list of fields)&lt;/fieldsToTranslate&gt;
@@ -140,7 +138,19 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/splitter&gt;
  * </pre>
- * 
+ * <h3>XML example:</h3> 
+ * <p>
+ * The following uses the Google translation API to translate documents into
+ * French, taking the source document language from a field called "langField".
+ * </p> 
+ * <pre>
+ *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+ *          api="google" &gt;
+ *      &lt;sourceLanguageField&gt;langField&lt;/sourceLanguageField&gt;
+ *      &lt;targetLanguages&gt;fr&lt;/targetLanguages&gt;
+ *      &lt;apiKey&gt;...MYKEYHERE...&lt;/apiKey&gt;
+ *  &lt;/splitter&gt;
+ * </pre>
  * @author Pascal Essiembre
  * @since 2.1.0
  */

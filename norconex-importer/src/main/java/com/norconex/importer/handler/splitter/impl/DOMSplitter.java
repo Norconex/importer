@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,22 +76,29 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * used as a post-parse handler.
  * </p>
  * 
- * <h3>
- * XML configuration usage:
- * </h3>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
  *          selector="(selector syntax)"
  *          sourceCharset="(character encoding)" &gt;
- *      &lt;restrictTo
- *              caseSensitive="[false|true]"
- *              field="(name of metadata field name to match)"&gt;
+ *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
  *  &lt;/splitter&gt;
  * </pre>
- * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following split contacts found in an HTML document, each one being
+ * stored within a div with a class named "contact".
+ * <pre>
+ *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+ *          selector="div.contact" /&gt;
+ * </pre>
+ * </p> 
  * @author Pascal Essiembre
  * @since 2.4.0
  */

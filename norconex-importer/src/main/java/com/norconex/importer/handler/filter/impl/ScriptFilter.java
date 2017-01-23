@@ -67,6 +67,13 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  *          onMatch="[include|exclude]" 
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
+ *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;          
+ *          
  *      &lt;script&gt;(your script)&lt;/script&gt;
  *  &lt;/filter&gt;
  * </pre>

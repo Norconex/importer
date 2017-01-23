@@ -25,16 +25,6 @@
   <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
 
   <preParseHandlers>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
-            fromField="FROMFIELD" sourceCharset="UTF-8">
-      <dom selector="a selector" toField="TODOFIELD1"
-           overwrite="false"     extract="ownText" 
-           matchBlanks="false"   defaultValue="NOVALUE1" />
-      <dom selector="another selector" toField="TODOFIELD2"
-           extract="tagName"     defaultValue="NOVALUE2" />
-      <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
-      <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
-    </tagger>
     <filter class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
         onMatch="include" field="FIELD" format="FORMAT" >
       <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
@@ -76,10 +66,45 @@
         var myvar = "test";
       ]]</script>
     </filter>    
+    <splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+          separatorCharacter="A" quoteCharacter="B" escapeCharacter="C"
+          useFirstRowAsFields="false" linesToSkip="0" referenceColumn="columnA"
+          contentColumns="columnB, columnC, columnD" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </splitter>
+    <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+          selector="div.contact" sourceCharset="UTF-8" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </splitter>    
+    <splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+          api="microsoft" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <ignoreContent>true</ignoreContent>
+      <ignoreNonTranslatedFields>false</ignoreNonTranslatedFields>
+      <fieldsToTranslate>field1, field2</fieldsToTranslate>
+      <sourceLanguageField>lang</sourceLanguageField>
+      <sourceLanguage>en</sourceLanguage>
+      <targetLanguages>fr,it</targetLanguages>
+      <clientId>blahid</clientId>
+      <clientSecret>blahsecret</clientSecret>
+    </splitter>
+    
     <!-- 
     <transformer class="..." />
     <splitter class="..." />
      -->
+     
+    <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+            fromField="FROMFIELD" sourceCharset="UTF-8">
+      <dom selector="a selector" toField="TODOFIELD1"
+           overwrite="false"     extract="ownText" 
+           matchBlanks="false"   defaultValue="NOVALUE1" />
+      <dom selector="another selector" toField="TODOFIELD2"
+           extract="tagName"     defaultValue="NOVALUE2" />
+      <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
+      <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
+    </tagger>
+     
   </preParseHandlers>
 
   <documentParserFactory>

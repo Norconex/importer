@@ -18,6 +18,10 @@
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0.
       </action>
       <action dev="essiembre" type="update">
+        Modified Javadoc to include an XML usage example for all 
+        XML-configurable classes.
+      </action>
+      <action dev="essiembre" type="update">
         Dependent libraries for JPEG200 and JBIG2 image formats are no longer
         distributed with this product for licensing incompatibilities.
         To enable them, you will need JAR files found at these locations: 
