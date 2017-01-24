@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
-
 /**
  * <p>
  * Counts the number of matches of a given string (or string pattern) and
@@ -56,13 +55,18 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <p>Can be used as a pre-parse tagger on text document only when matching
  * strings on document content, or both as a pre-parse or post-parse handler
  * when the "fromField" is used.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;  
+ *          
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *          
  *      &lt;countMatches 
  *              fromField="(optional source field)" 
  *              toField="(target field)"
@@ -71,16 +75,11 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *          (text to match or regular expression)
  *      &lt;/countMatches&gt;
  *      &lt;!-- multiple countMatches tags allowed --&gt;
- *      
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>Example</h3>
+ * <h3>XML example:</h3>
  * <p>
  * The following will count the number of segments in a URL: 
  * </p>

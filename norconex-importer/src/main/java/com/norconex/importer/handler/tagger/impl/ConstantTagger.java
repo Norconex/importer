@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,21 +41,31 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * different value.
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
- *      &lt;constant name="CONSTANT_NAME"&gt;Constant Value&lt;/constant&gt;
- *      &lt;!-- multiple constant tags allowed --&gt;
- *      
+ *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *
+ *      &lt;constant name="CONSTANT_NAME"&gt;Constant Value&lt;/constant&gt;
+ *      &lt;!-- multiple constant tags allowed --&gt;
+ *      
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * Adds a constant to incoming documents to identify they were web documents. 
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
+ *      &lt;constant name="source"&gt;web&lt;/constant&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  */
 @SuppressWarnings("nls")

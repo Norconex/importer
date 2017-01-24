@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -40,8 +43,6 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
-//TODO offer sentences and capitalizations?
-
 /**
  * <p>Changes the character case of field values according to one of the 
  * following methods:</p>
@@ -49,7 +50,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <li>uppper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
  *   <li>words: Converts the first letter of each words to upper case, and the
- *              rest to lowercase.</li>
+ *           rest to lower case.</li>
+ *   <li>string: Converts the first letter of a string if not numeric, and 
+ *           leaves the character case of other characters unchanged 
+ *           (since 2.7.0).</li>
+ *   <li>swap: Converts all upper case characters to lower case, and all 
+ *           lower case to upper case (since 2.7.0).</li>
+ *              
  * </ul>
  * <p>Since 2.3.0, the change of character case can be applied to one of the 
  * following (defaults to "value" when unspecified):</p>
@@ -59,21 +66,33 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <li>both: Applies to both the field name and its values.</li>
  * </ul>
  * <p>Field names are referenced in a case insensitive manner.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
- *      &lt;characterCase fieldName="(field to change)"
- *                     type="[upper|lower|words]" 
- *                     applyTo="[value|field|both]" /&gt;
- *      &lt;!-- multiple characterCase tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;characterCase fieldName="(field to change)"
+ *                     type="[upper|lower|words|string|swap]" 
+ *                     applyTo="[value|field|both]" /&gt;
+ *      &lt;!-- multiple characterCase tags allowed --&gt;
+ *      
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * Documents can use different character case for their title field names.
+ * This example makes them all lower case. We also make sure the value
+ * starts with an upper case.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
+ *      &lt;characterCase fieldName="title" type="lower" applyTo="field" /&gt;
+ *      &lt;characterCase fieldName="title" type="string" applyTo="value" /&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -88,6 +107,8 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     public static final String CASE_WORDS = "words";
     public static final String CASE_UPPER = "upper";
     public static final String CASE_LOWER = "lower";
+    public static final String CASE_SWAP = "swap";
+    public static final String CASE_STRING = "string";
 
     public static final String APPLY_VALUE = "value";
     public static final String APPLY_FIELD = "field";
@@ -158,6 +179,10 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             return StringUtils.lowerCase(value);
         } else if (CASE_WORDS.equals(type)) {
             return WordUtils.capitalizeFully(value);
+        } else if (CASE_SWAP.equals(type)) {
+            return WordUtils.swapCase(value);
+        } else if (CASE_STRING.equals(type)) {
+            return capitalizeString(value);
         } else {
             LOG.warn("Unsupported character case type: " + type);
             return value;
@@ -228,6 +253,19 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             }
             writer.writeEndElement();
         }
+    }
+    
+    private String capitalizeString(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            Matcher m = Pattern.compile(
+                    "^(.*?)([\\p{IsAlphabetic}\\p{IsDigit}])").matcher(value);
+            if (m.find()) {
+                String firstChar = 
+                        StringUtils.upperCase(m.group(2), Locale.ENGLISH);
+                return m.replaceFirst("$1" + firstChar);
+            }
+        }
+        return value;
     }
     
     @Override

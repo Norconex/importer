@@ -94,11 +94,11 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * <p>
  * The following split contacts found in an HTML document, each one being
  * stored within a div with a class named "contact".
+ * </p> 
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
  *          selector="div.contact" /&gt;
  * </pre>
- * </p> 
  * @author Pascal Essiembre
  * @since 2.4.0
  */

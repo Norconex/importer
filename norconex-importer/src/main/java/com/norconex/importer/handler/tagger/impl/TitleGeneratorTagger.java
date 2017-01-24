@@ -51,7 +51,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * consider text found in &lt;H1&gt; tags more importantly than other
  * text in HTML documents.</p>
  * 
- * <p>If {@link #detectHeading} is set to <code>true</code>, this handler 
+ * <p>If {@link #isDetectHeading()} returns <code>true</code>, this handler 
  * will check if the content starts with a stand-alone, single-sentence line
  * (which could be the actual title).  
  * That is, a line of text with only one sentence in it, followed by one or 

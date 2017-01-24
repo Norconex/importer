@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,20 +71,31 @@ import com.norconex.importer.util.CharsetUtil;
  * documents sometime mix different encoding, there is no guarantee this
  * class will handle ALL character encoding conversions properly.
  * </p>
- * <h3>
- * XML configuration usage:
- * </h3>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
  *          sourceCharset="(character encoding)"
  *          targetCharset="(character encoding)"&gt;
- *      &lt;fieldsRegex&gt;(regex matching fields to detect encoding)&lt;/fieldsRegex&gt;
- *      
+ *          
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;fieldsRegex&gt;(regex matching fields to detect encoding)&lt;/fieldsRegex&gt;
+ *      
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * Converts the characters of a "description" field from "ISO-8859-1"
+ * to "UTF-8".
+ * </p> 
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ *          sourceCharset="ISO-8859-1" targetCharset="UTF-8"&gt;
+ *      &lt;fieldsRegex&gt;description&lt;/fieldsRegex&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre

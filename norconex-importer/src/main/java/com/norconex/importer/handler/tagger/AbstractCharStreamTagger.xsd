@@ -16,11 +16,12 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractImportHandler.xsd"></xs:include>
+  <xs:include schemaLocation="AbstractDocumentTagger.xsd"></xs:include>
 
-  <xs:complexType name="AbstractDocumentTagger" abstract="true">
-    <xs:complexContent>
-      <xs:extension base="AbstractImportHandler"> 
+  <xs:complexType name="AbstractCharStreamTagger" abstract="true">
+    <xs:complexContent> 
+      <xs:extension base="AbstractDocumentTagger"> 
+        <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
       </xs:extension> 
     </xs:complexContent>   
   </xs:complexType>

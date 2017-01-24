@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,18 +83,18 @@ import com.norconex.importer.util.FormatUtil;
  *          keepBadDates="(false|true)"
  *          overwrite="[false|true]" &gt;
  *      
- *      &lt;fromFormat&gt;(date format)&lt;/fromFormat&gt;
- *      &lt;!-- multiple "fromFormat" tags allowed (only one needs to match) --&gt;
- *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;fromFormat&gt;(date format)&lt;/fromFormat&gt;
+ *      &lt;!-- multiple "fromFormat" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>Example:</h3>
+ * <h3>XML example:</h3>
  * <p>
  * The following converts a date that is sometimes obtained from the 
  * HTTP header "Last-Modified" and sometimes is an EPOCH date, 

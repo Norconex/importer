@@ -70,6 +70,44 @@ public class CharacterCaseTaggerTest {
                     "Fieldmustbecapitalized"));
         }
     }    
+
+    @Test
+    public void testSwapCase() 
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("fieldMustBeSwapped", "ValUe Swap. \n  OK.");
+
+        CharacterCaseTagger tagger = new CharacterCaseTagger();
+        tagger.addFieldCase("fieldMustBeSwapped", "swap", "value");
+
+        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+
+        Assert.assertEquals("vALuE sWAP. \n  ok.", 
+                meta.getString("fieldMustBeSwapped"));
+    }    
+
+    @Test
+    public void testCapitalizeString() 
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("string1", "normal string.");
+        meta.addString("string2", " string starting with a space.");
+        meta.addString("string3", "1 string starting with a number.");
+
+        CharacterCaseTagger tagger = new CharacterCaseTagger();
+        tagger.addFieldCase("string1", "string", "value");
+        tagger.addFieldCase("string2", "string", "value");
+        tagger.addFieldCase("string3", "string", "value");
+
+        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+
+        Assert.assertEquals("Normal string.", meta.getString("string1"));
+        Assert.assertEquals(" String starting with a space.", 
+                meta.getString("string2"));
+        Assert.assertEquals("1 string starting with a number.", 
+                meta.getString("string3"));
+    }    
+
     
     @Test
     public void testWriteRead() throws IOException {

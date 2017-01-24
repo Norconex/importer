@@ -85,7 +85,7 @@ class PDF2XHTML extends AbstractPDF2XHTML {
     /**
      * This keeps track of the pdf object ids for inline
      * images that have been processed.
-     * If {@link PDFParserConfig#getExtractUniqueInlineImagesOnly()
+     * If {@link PDFParserConfig#getExtractUniqueInlineImagesOnly()}
      * is true, this will be checked before extracting an embedded image.
      * The integer keeps track of the inlineImageCounter for that image.
      * This integer is used to identify images in the markup.

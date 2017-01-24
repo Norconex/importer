@@ -14,6 +14,10 @@
       <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.
       </action>
+      <action dev="essiembre" type="add">
+        CharacterCaseTagger now support "swap" and "string" to swap 
+        character case and capitalize beginning of a string, respectively.
+      </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0.
       </action>

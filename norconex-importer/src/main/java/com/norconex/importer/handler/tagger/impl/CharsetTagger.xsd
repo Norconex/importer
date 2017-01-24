@@ -16,14 +16,20 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractImportHandler.xsd"></xs:include>
-
-  <xs:complexType name="AbstractDocumentTagger" abstract="true">
-    <xs:complexContent>
-      <xs:extension base="AbstractImportHandler"> 
-      </xs:extension> 
-    </xs:complexContent>   
-  </xs:complexType>
+  <xs:include schemaLocation="../AbstractDocumentTagger.xsd"></xs:include>
+  
+  <xs:element name="tagger">
+    <xs:complexType>
+      <xs:complexContent> 
+        <xs:extension base="AbstractDocumentTagger"> 
+          <xs:sequence>
+            <xs:element name="fieldsRegex" type="xs:string" minOccurs="1" maxOccurs="1" />
+          </xs:sequence>
+          <xs:attribute name="sourceCharset" type="xs:string"/>
+          <xs:attribute name="targetCharset" type="xs:string"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
 </xs:schema>
-

@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,16 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
+ * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following will store the current date along with hours and minutes
+ * in a "crawl_date" field. 
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *      field="crawl_date" format="yyyy-MM-dd HH:mm" /&gt;
  * </pre>
  * 
  * @author Pascal Essiembre

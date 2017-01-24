@@ -16,14 +16,19 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractImportHandler.xsd"></xs:include>
-
-  <xs:complexType name="AbstractDocumentTagger" abstract="true">
-    <xs:complexContent>
-      <xs:extension base="AbstractImportHandler"> 
-      </xs:extension> 
-    </xs:complexContent>   
-  </xs:complexType>
+  <xs:include schemaLocation="../AbstractDocumentTagger.xsd"></xs:include>
+  
+  <xs:element name="tagger">
+    <xs:complexType>
+      <xs:complexContent> 
+        <xs:extension base="AbstractDocumentTagger"> 
+          <xs:attribute name="field" type="xs:string" use="required"/>
+          <xs:attribute name="format" type="xs:string"/>
+          <xs:attribute name="locale" type="xs:string"/>
+          <xs:attribute name="overwrite" type="xs:boolean"/>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
 </xs:schema>
-

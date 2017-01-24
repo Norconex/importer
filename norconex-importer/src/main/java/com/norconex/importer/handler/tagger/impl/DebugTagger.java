@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,14 +56,12 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * content can result in memory exceptions.</p>
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
  *          logFields="(CSV list of fields to log)"
  *          logContent="(false|true)"
- *          logLevel="(ERROR|WARN|INFO|DEBUG)" &gt;
+ *          logLevel="(FATAL|ERROR|WARN|INFO|DEBUG|TRACE)" &gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -72,10 +70,18 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following logs the value of any "title" and "author" document metadata 
+ * fields.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
+ *          logFields="title,author" logLevel="INFO" /&gt;
+ * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-@SuppressWarnings("nls")
 public class DebugTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = 

@@ -88,7 +88,52 @@
       <clientId>blahid</clientId>
       <clientSecret>blahsecret</clientSecret>
     </splitter>
-    
+    <tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <characterCase fieldName="title" type="lower" applyTo="field" />
+      <characterCase fieldName="title" type="string" applyTo="value" />
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+          sourceCharset="ISO-8859-1" targetCharset="UTF-8">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <fieldsRegex>description</fieldsRegex>
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <constant name="source">web</constant>
+      <constant name="department">HR</constant>
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <copy fromField="creator"   toField="author" overwrite="true" />
+      <copy fromField="publisher" toField="author" overwrite="true" />
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+          sourceCharset="UTF-8" maxReadSize="999" >  
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <countMatches fromField="ff1" toField="tf1" 
+          caseSensitive="false" regex="true">.*</countMatches>
+      <countMatches fromField="ff2" toField="tf2"
+          caseSensitive="false" regex="true">.*</countMatches>
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+          field="datefield" format="yyy-MM-dd" locale="fr" overwrite="true" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+          fromField="FF"  toField="TF" fromLocale="fr" toLocale="en"
+          toFormat="EPOCH" keepBadDates="false" overwrite="true" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <fromFormat>yyyy-MM-dd</fromFormat>
+      <fromFormat>yy-MM-dd</fromFormat>
+    </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
+          logFields="field1,field2"
+          logContent="true"
+          logLevel="INFO" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </tagger>
+        
     <!-- 
     <transformer class="..." />
     <splitter class="..." />

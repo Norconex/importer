@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,20 +42,33 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
- *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
- *      &lt;-- multiple copy tags allowed --&gt;
- *      
+ *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
+ *      &lt;-- multiple copy tags allowed --&gt;
+ *      
  *  &lt;/tagger&gt;
  * </pre>
- * 
+ * <h3>XML example:</h3>
+ * <p>
+ * Copies the value of a "creator" and "publisher" fields into an "author" 
+ * field, adding to any existing values in the "author" field. 
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
+ *      &lt;copy fromField="creator"   toField="author" overwrite="true" /&gt;
+ *      &lt;copy fromField="publisher" toField="author" overwrite="true" /&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ *  
  * @author Pascal Dimassimo
  * @author Pascal Essiembre
  * @since 1.3.0
