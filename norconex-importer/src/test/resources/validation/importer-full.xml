@@ -237,12 +237,43 @@
           detectHeadingMaxLength="200" sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </tagger>
-
-
-    <!-- 
-    <transformer class="..." />
-     -->
-     
+    <transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+          sourceCharset="ISO-8859-1" targetCharset="UTF-8">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
+          caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <reduce>hello\s</reduce>
+      <reduce>\n\n</reduce>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
+          caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <replace><fromValue>apple</fromValue><toValue>orange</toValue></replace>
+      <replace><fromValue>one</fromValue><toValue>two</toValue></replace>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+          engineName="myEngine" sourceCharset="blah" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <script>var blah = 'blah';</script>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
+          inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <stripAfterRegex>blah</stripAfterRegex>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+          inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <stripBeforeRegex>blah</stripBeforeRegex>
+    </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+          inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <stripBetween><start>OPEN</start><end>CLOSE</end></stripBetween>
+      <stripBetween><start>A</start><end>Z</end></stripBetween>
+    </transformer>     
      
   </preParseHandlers>
 

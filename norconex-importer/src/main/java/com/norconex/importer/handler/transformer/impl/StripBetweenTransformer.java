@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,30 +46,45 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * 
  * <p>This class can be used as a pre-parsing (text content-types only) 
  * or post-parsing handlers.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      &lt;stripBetween&gt;
- *          &lt;start&gt;(regex)&lt;/start&gt;
- *          &lt;end&gt;(regex)&lt;/end&gt;
- *      &lt;/stripBetween&gt;
- *      &lt;-- multiple strignBetween tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;stripBetween&gt;
+ *          &lt;start&gt;(regex)&lt;/start&gt;
+ *          &lt;end&gt;(regex)&lt;/end&gt;
+ *      &lt;/stripBetween&gt;
+ *      &lt;!-- multiple strignBetween tags allowed --&gt;
+ *      
+ *  &lt;/transformer&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following will strip all text between (and including) these two 
+ * HTML comments: 
+ * <code>&lt;!-- SIDENAV_START --&gt;</code> and
+ * <code>&lt;!-- SIDENAV_END --&gt;</code>.
+ * </p>
+ * <pre>
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+ *          inclusive="true" &gt;
+ *      &lt;stripBetween&gt;
+ *          &lt;start&gt;&lt;![CDATA[&lt;!-- SIDENAV_START --&gt;]]&gt;&lt;/start&gt;
+ *          &lt;end&gt;&lt;![CDATA[&lt;!-- SIDENAV_END --&gt;]]&gt;&lt;/end&gt;
+ *      &lt;/stripBetween&gt;
  *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
- * @see Pattern
  */
 public class StripBetweenTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {

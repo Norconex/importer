@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,13 +68,15 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *          engineName="(script engine name)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
- *      &lt;script&gt;(your script)&lt;/script&gt;
- *      
+ *          
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;script&gt;(your script)&lt;/script&gt;
+ *      
  *  &lt;/transformer&gt;
  * </pre>
  * 

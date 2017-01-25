@@ -47,3 +47,17 @@ TODO:
 - Have a maximum recursivity setting somewhere in GenericDocumentParserFactory?
   Alternatively, consider moving to using RecursiveParserWrapper which 
   already supports that.
+
+- MAYBE: Have <restrictTo> being optional wrapping tag that can group
+  multiple other handlers, so the condition does not have to be repeated in 
+  each. E.g.:
+  
+  <preParseHandlers>
+    <tagger>
+    <filter>
+    <restrictTo>
+      <tagger>
+      <transformer>
+    </restrictTo>
+  Have this in addition or as a replacement to current approach?
+  

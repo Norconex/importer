@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,26 +38,37 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * 
  * <p>This class can be used as a pre-parsing (text content-types only) 
  * or post-parsing handlers.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      &lt;stripAfterRegex&gt;(regex)&lt;/stripAfterRegex&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;stripAfterRegex&gt;(regex)&lt;/stripAfterRegex&gt;
+ *      
  *  &lt;/transformer&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following will strip all text starting with this HTML comment and
+ * everything after it: 
+ * <code>&lt;!-- FOOTER --&gt;</code>.
+ * </p>
+ * <pre>
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
+ *          inclusive="true"&gt;
+ *      &lt;stripAfterRegex&gt;&lt;![CDATA[&lt;!-- FOOTER --&gt;]]&gt;&lt;/stripAfterRegex&gt;
+ *  &lt;/transformer&gt;
+ * </pre> 
  * @author Pascal Essiembre
- * @see Pattern
  */
 public class StripAfterTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
@@ -96,8 +107,7 @@ public class StripAfterTransformer extends AbstractStringTransformer
         return inclusive;
     }
     /**
-     * Sets whether start and end text pairs should themselves be stripped or 
-     * not.
+     * Sets whether the match itself should be stripped or not.
      * @param inclusive <code>true</code> to strip start and end text
      */
     public void setInclusive(boolean inclusive) {
@@ -107,7 +117,7 @@ public class StripAfterTransformer extends AbstractStringTransformer
         return caseSensitive;
     }
     /**
-     * Sets whether to ignore case when matching start and end text.
+     * Sets whether to ignore case when matching text.
      * @param caseSensitive <code>true</code> to consider character case
      */
     public void setCaseSensitive(boolean caseSensitive) {

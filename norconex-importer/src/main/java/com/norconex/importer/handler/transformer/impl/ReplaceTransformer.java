@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,12 +41,18 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <p>This class can be used as a pre-parsing (text content-types only) 
  * or post-parsing handlers.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *          
  *      &lt;replace&gt;
  *          &lt;fromValue&gt;(regex of value to replace)&lt;/fromValue&gt;
@@ -54,11 +60,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/transformer&gt;
  * </pre>
  * <p>
@@ -68,9 +69,22 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <pre>
  *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
  * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following reduces all occurrences of "junk food" with "healthy food".
+ * </p> 
+ * <pre>
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"&gt;
+ *      &lt;replace&gt;
+ *          &lt;fromValue&gt;junk food&lt;/fromValue&gt;
+ *          &lt;toValue&gt;healthy food&lt;/toValue&gt;
+ *      &lt;/replace&gt;
+ *  &lt;/transformer&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 1.2.0
- * @see Pattern
  */
 public class ReplaceTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {

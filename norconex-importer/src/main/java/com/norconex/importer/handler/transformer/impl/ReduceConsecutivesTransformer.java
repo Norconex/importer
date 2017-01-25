@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,38 +39,54 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * If reducing duplicate words, you usually have to add a space at the 
  * Beginning or end of the word.
  * </p>
- * 
- * <p>This class can be used as a pre-parsing (text content-types only) 
- * or post-parsing handlers.</p>
  * <p>
- * XML configuration usage:
+ * This class can be used as a pre-parsing (text content-types only) 
+ * or post-parsing handlers.
  * </p>
+ * <p>
+ * For more advanced replacement needs, consider using 
+ * {@link ReplaceTransformer} instead.
+ * </p>
+ * 
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"         
  *          maxReadSize="(max characters to read at once)" &gt;
- *          
- *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
- *      &lt;!-- multiple reduce tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *          
+ *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
+ *      &lt;!-- multiple reduce tags allowed --&gt;
+ *      
  *  &lt;/transformer&gt;
  * </pre>
+ * <p>
  * You can specify these special characters in your XML:
+ * </p>
  * <ul>
  *   <li>\r (carriage returns)</li>
  *   <li>\n (line feed)</li>
  *   <li>\t (tab)</li>
  *   <li>\s (space)</li>
  * </ul>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following reduces multiple spaces into a single one.
+ * </p> 
+ * <pre>
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"&gt;
+ *      &lt;reduce&gt;\s&lt;/reduce&gt;
+ *  &lt;/transformer&gt;
+ * </pre> 
+ *             
  * @author Pascal Essiembre
  * @since 1.2.0
- * @see Pattern
  */
 public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
