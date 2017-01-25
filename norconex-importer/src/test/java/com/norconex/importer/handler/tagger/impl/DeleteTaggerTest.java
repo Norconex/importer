@@ -124,7 +124,7 @@ public class DeleteTaggerTest {
         DeleteTagger tagger = new DeleteTagger();
         
         Reader r = new StringReader(
-                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
+                "<tagger><fieldsRegex>^[Xx]-.*</fieldsRegex></tagger>");
         tagger.loadFromXML(r);
         
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);

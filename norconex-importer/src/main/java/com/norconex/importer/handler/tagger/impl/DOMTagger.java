@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,20 +136,11 @@ import com.norconex.importer.util.DOMUtil;
  * By default elements with blank values are not matched and are ignored.   
  * </p>
  *  
- * <h3>
- * XML configuration usage:
- * </h3>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
  *          fromField="(optional source field)" 
  *          sourceCharset="(character encoding)"&gt;
- *      &lt;dom selector="(selector syntax)"
- *              toField="(target field)"
- *              overwrite="[false|true]"
- *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
- *              matchBlanks="[false|true]"
- *              defaultValue="(optional value to use when no match)" /&gt;
- *      &lt;!-- multiple "dom" tags allowed --&gt;
  *          
  *      &lt;restrictTo
  *              caseSensitive="[false|true]"
@@ -157,8 +148,35 @@ import com.norconex.importer.util.DOMUtil;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;dom selector="(selector syntax)"
+ *              toField="(target field)"
+ *              overwrite="[false|true]"
+ *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+ *              matchBlanks="[false|true]"
+ *              defaultValue="(optional value to use when no match)" /&gt;
+ *      &lt;!-- multiple "dom" tags allowed --&gt;
  *  &lt;/tagger&gt;
  * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * Given this HTML snippet... 
+ * </p>
+ * <pre>
+ * &lt;div class="firstName"&gt;Joe&lt;/div&gt;
+ * &lt;div class="lastName"&gt;Dalton&lt;/div&gt;
+ * </pre>
+ * <p>
+ * ... the following will store "Joe" in a "firstName" field and "Dalton"
+ * in a "lastName" field. 
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"&gt;
+ *      &lt;dom selector="div.firstName" toField="firstName" /&gt;
+ *      &lt;dom selector="div.lastName"  toField="lastName" /&gt;
+ *  &lt;/tagger&gt;
+ * </pre> 
  * @author Pascal Essiembre
  * @since 2.4.0
  */

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
  *      field="(mandatory target field)"
@@ -64,7 +64,14 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
- * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following stores the document lenght into a "docSize" field.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
+ *      field="docSize" /&gt;
+ * </pre>
  * @author Pascal Essiembre
  * @since 2.2.0
  */

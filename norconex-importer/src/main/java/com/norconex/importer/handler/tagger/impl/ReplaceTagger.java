@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
-
 /**
  * <p>Replaces an existing metadata value with another one. The "toField" 
  * argument is optional. The same field will be used for the replacement if no
@@ -59,11 +58,16 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * occurrences. This last option is only applicable when whole value matching
  * is <code>false</code>.
  * </p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
+ *  
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
  *      &lt;replace fromField="sourceFieldName" toField="targetFieldName"
  *               caseSensitive="[false|true]"
  *               regex="[false|true]" 
@@ -74,15 +78,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following example replaces occurrences of "apple" to "orange"
+ * in the "fruit" field.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
+ *      &lt;replace fromField="fruit" replaceAll="true"&gt;
+ *          &lt;fromValue&gt;apple&lt;/fromValue&gt;
+ *          &lt;toValue&gt;orange&lt;/toValue&gt;
+ *      &lt;/replace&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
- * @see Pattern
  */
 public class ReplaceTagger extends AbstractDocumentTagger {
 

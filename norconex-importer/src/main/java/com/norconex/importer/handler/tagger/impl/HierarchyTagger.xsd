@@ -23,31 +23,20 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
           <xs:sequence>
-              <xs:element ref="dom" minOccurs="1" maxOccurs="unbounded" />
+            <xs:element ref="hierarchy" minOccurs="1" maxOccurs="unbounded" />
           </xs:sequence>
-          <xs:attribute name="fromField" type="xs:string"></xs:attribute>
-          <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
-        </xs:extension> 
-      </xs:complexContent>   
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="dom">
+  <xs:element name="hierarchy">
     <xs:complexType>
-      <xs:attribute name="selector" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="toField" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="overwrite" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="extract">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:pattern
-              value="text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|(attr\(.*\))" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="matchBlanks" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="defaultValue" type="xs:string"></xs:attribute>
+      <xs:attribute name="fromField" type="xs:string" use="required"/>
+      <xs:attribute name="toField" type="xs:string"/>
+      <xs:attribute name="fromSeparator" type="xs:string" use="required"/>
+      <xs:attribute name="toSeparator" type="xs:string"/>
+      <xs:attribute name="overwrite" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
-
 </xs:schema>

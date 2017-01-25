@@ -21,6 +21,9 @@ TODO:
   representation instead, that will be converted to milliseconds 
   (e.g. 2.5s, or 2 minutes and 30 secondes)
 
+- Allow to specify data unit for DocumentLengthTagger (with locale and decimal
+  precision).
+
 - Find out if we can reduce metadata extraction on images to avoid 
   OOMException on some images with massive amount of metadata.
 

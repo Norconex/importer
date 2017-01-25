@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 /**
  * <p>Given a separator, split a field string into multiple segments 
  * representing each node of a hierarchical branch. This is useful
- * when mixed when faceting, to find out how much documents fall under each 
+ * when faceting, to find out how many documents fall under each 
  * node of a hierarchy. For example, take this hierarchical string:</p>
  * <pre>
  *   /vegetable/potato/sweet
@@ -52,21 +52,42 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   /vegetable/potato/sweet
  * </pre>
  * <p>
+ * If no target field is specified (<code>toField</code>) the 
+ * source field (<code>fromField</code>) will be used to store the resulting 
+ * values. The same applies to the source and target hierarchy separators 
+ * (<code>fromSeparator</code> and <code>toSeparator</code>).
+ * </p>
+ * <p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
- *      &lt;hierarchy fromField="(from field)" toField="(to field)" 
- *                 fromSeparator="(original separator)" toSeparator="(new separator)"
- *                 overwrite="[false|true]" /&gt;
- *      &lt;-- multiple hierarchy tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;hierarchy fromField="(from field)" 
+ *              toField="(optional to field)" 
+ *              fromSeparator="(original separator)" 
+ *              toSeparator="(optional new separator)"
+ *              overwrite="[false|true]" /&gt;
+ *      &lt;!-- multiple hierarchy tags allowed --&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following will expand a slash-separated vegetable hierarchy found in a 
+ * "vegetable" field into a "vegetableHierarchy" field.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
+ *      &lt;hierarchy fromField="vegetable" toField="vegetableHierarchy" 
+ *                 fromSeparator="/"/&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * 

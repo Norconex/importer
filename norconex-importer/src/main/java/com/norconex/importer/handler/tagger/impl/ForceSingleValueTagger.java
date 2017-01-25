@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,24 +51,34 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * If you do not specify any action, the default behavior is to merge all
  * occurrences, joining values with a comma.
  * </p> 
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
- *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
- *      &lt;-- multiple single value fields allowed --&gt;
- *      
+ *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  
+ *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
+ *      &lt;!-- multiple single value fields allowed --&gt;
+ *      
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * For documents where multiple title fields are found, the following only 
+ * keeps the first title value captured. 
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
+ *      &lt;singleValue field="title" action="keepFirst"/&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
     private final Map<String, String> singleFields = 

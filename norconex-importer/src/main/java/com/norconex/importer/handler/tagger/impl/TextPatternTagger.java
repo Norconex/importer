@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,28 +49,39 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * This class can be used as a pre-parsing handler on text documents only
  * or a post-parsing handler.
  * </p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      &lt;pattern field="targetFieldName" group="(optional match group index)"&gt;
- *          (regular expression)
- *      &lt;/pattern&gt;
- *      &lt;-- multiple pattern tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;pattern field="targetFieldName" group="(optional match group index)"&gt;
+ *          (regular expression)
+ *      &lt;/pattern&gt;
+ *      &lt;!-- multiple pattern tags allowed --&gt;
+ * 
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following extracts what look like email addresses (simplified regex):
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger" &gt;
+ *      &lt;pattern field="emails"&gt;
+ *          [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
+ *      &lt;/pattern&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ *  
  * @author Pascal Essiembre
- * @see Pattern
  * @since 2.3.0
  */
 public class TextPatternTagger 

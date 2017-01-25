@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,11 +80,16 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.MergeTagger"&gt;
+ *      
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
  *      &lt;merge toField="(name of target field for merged values)"
  *             deleteFromFields="[false|true]"             
  *             singleValue="[false|true]"
@@ -94,13 +99,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/merge&gt;
  *      &lt;!-- multiple merge tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following merges several title fields into one, joining multiple 
+ * occurrences with a coma, and deleting original fields.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.MergeTagger"&gt;
+ *      &lt;merge toField="title" deleteFromFields="true"             
+ *             singleValue="true" singleValueSeparator="," &gt;
+ *        &lt;fromFields&gt;title,dc.title,dc:title,doctitle&lt;/fromFields&gt;
+ *      &lt;/merge&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 2.7.0
  */
@@ -255,14 +269,17 @@ public class MergeTagger extends AbstractDocumentTagger {
                 xml.configurationsAt("merge");
         for (HierarchicalConfiguration node : nodes) {
             Merge m = new Merge();
-            m.setToField(node.getString("[@toField]"));
-            m.setDeleteFromFields(node.getBoolean("[@deleteFromFields]"));
-            m.setSingleValue(node.getBoolean("[@singleValue]"));
-            m.setSingleValueSeparator(
-                    node.getString("[@singleValueSeparator]"));
+            m.setToField(node.getString("[@toField]", m.getToField()));
+            m.setDeleteFromFields(node.getBoolean(
+                    "[@deleteFromFields]", m.isDeleteFromFields()));
+            m.setSingleValue(node.getBoolean(
+                    "[@singleValue]", m.isSingleValue()));
+            m.setSingleValueSeparator(node.getString(
+                    "[@singleValueSeparator]", m.getSingleValueSeparator()));
             m.setFromFields(XMLConfigurationUtil.getCSVStringArray(
                     node, "fromFields", m.getFromFields()));
-            m.setFromFieldsRegex(node.getString("fromFieldsRegex"));
+            m.setFromFieldsRegex(node.getString(
+                    "fromFieldsRegex", m.getFromFieldsRegex()));
             addMerge(m);
         }
     }

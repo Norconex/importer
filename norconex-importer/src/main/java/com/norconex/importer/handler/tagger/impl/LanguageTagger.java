@@ -175,17 +175,31 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)"
  *          fallbackLanguage="(default language when detection failed)" &gt;
- *      &lt;languages&gt;
- *        (CSV list of language tag candidates. Defaults to the above list.)
- *      &lt;/languages&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;languages&gt;
+ *        (CSV list of language tag candidates. Defaults to the above list.)
+ *      &lt;/languages&gt;
+ *      
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following detects whether pages are English or French, falling back to
+ * English if detection failed.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
+ *          fallbackLanguage="en" &gt;
+ *      &lt;languages&gt;en, fr&lt;/languages&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 2.0.0
  */

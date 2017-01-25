@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,24 +41,33 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * "overwrite" is set to <code>true</code>. 
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
- *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
- *      &lt;-- multiple rename tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
+ *      &lt;-- multiple rename tags allowed --&gt;
+ *      
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following example renames a "dc.title" field to "title", overwriting
+ * any existing values in "title".
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
+ *      &lt;rename fromField="dc.title" toField="title" overwrite="true" /&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class RenameTagger extends AbstractDocumentTagger {
 
     private final Map<String, RenameDetails> renames = 

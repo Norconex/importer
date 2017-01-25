@@ -52,24 +52,36 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
- * <p>XML configuration usage:</p>
- * 
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
- *      &lt;fields&gt;(coma-separated list of fields to keep)&lt;/fields&gt;
- *      &lt;fieldsRegex&gt;(regular expression matching fields to keep)&lt;/fieldsRegex&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;fields&gt;(coma-separated list of fields to keep)&lt;/fields&gt;
+ *      &lt;fieldsRegex&gt;(regular expression matching fields to keep)&lt;/fieldsRegex&gt;
+ *      
  *  &lt;/tagger&gt;
  * </pre>
+ * 
+ * <h3>XML example:</h3>
+ * <p>
+ * The following keeps only the title and description fields from all
+ * extracted fields.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
+ *      &lt;fields&gt;title, description&lt;/fields&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @see Pattern
  */
-@SuppressWarnings("nls")
 public class KeepOnlyTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = 

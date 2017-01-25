@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,35 +46,48 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * The matching string end-points are defined in pairs and multiple ones 
  * can be specified at once. The field specified for a pair of end-points
  * is considered a multi-value field.</p>
- * 
  * <p>
  * This class can be used as a pre-parsing handler on text documents only
- * or a post-parsing handler.</p>
- * <p>
- * XML configuration usage:
+ * or a post-parsing handler.
  * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      &lt;textBetween name="targetFieldName"&gt;
- *          &lt;start&gt;(regex)&lt;/start&gt;
- *          &lt;end&gt;(regex)&lt;/end&gt;
- *      &lt;/textBetween&gt;
- *      &lt;-- multiple textBetween tags allowed --&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * 
+ *      &lt;textBetween name="targetFieldName"&gt;
+ *          &lt;start&gt;(regex)&lt;/start&gt;
+ *          &lt;end&gt;(regex)&lt;/end&gt;
+ *      &lt;/textBetween&gt;
+ *      &lt;!-- multiple textBetween tags allowed --&gt;
+ * 
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following example extract the content between "OPEN" and 
+ * "CLOSE" strings, excluding these strings, and store it in a "content"
+ * field.
+ * </p> 
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger" &gt;
+ *      &lt;textBetween name="content"&gt;
+ *          &lt;start&gt;OPEN&lt;/start&gt;
+ *          &lt;end&gt;CLOSE&lt;/end&gt;
+ *      &lt;/textBetween&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Khalid AlHomoud
  * @author Pascal Essiembre
- * @see Pattern
  */
 public class TextBetweenTagger 
         extends AbstractStringTagger implements IXMLConfigurable {

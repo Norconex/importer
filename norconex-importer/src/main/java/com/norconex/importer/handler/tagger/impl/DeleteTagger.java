@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,28 +41,37 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>
  * Delete the metadata fields provided. Exact field names (case-insensitive)
  * to delete can be provided as well as a regular expression that matches
- * one or many fields (since 2.1.0).
+ * one or many fields.
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger"&gt;
- *      &lt;fields&gt;(coma-separated list of fields to delete)&lt;/fields&gt;
- *      &lt;fieldsRegex&gt;(regular expression matching fields to delete)&lt;/fieldsRegex&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      
+ *      &lt;fields&gt;(coma-separated list of fields to delete)&lt;/fields&gt;
+ *      &lt;fieldsRegex&gt;(regular expression matching fields to delete)&lt;/fieldsRegex&gt;
+ *      
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following deletes all metadata fields starting with "X-" 
+ * (sometimes found after parsing):
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger"&gt;
+ *      &lt;fieldsRegex&gt;^[Xx]-.*&lt;/fieldsRegex&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
- * @see Pattern
  */
-@SuppressWarnings("nls")
 public class DeleteTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = LogManager.getLogger(DeleteTagger.class);

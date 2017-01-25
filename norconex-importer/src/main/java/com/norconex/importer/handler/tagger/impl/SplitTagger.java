@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -40,36 +39,45 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
-
 /**
  * <p>Splits an existing metadata value into multiple values based on a given
  * value separator.  The "toField" argument
  * is optional (the same field will be used to store the splits if no
  * "toField" is specified").</p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <p>
- * XML configuration usage:
- * </p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
+ *  
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+
  *      &lt;split fromField="sourceFieldName" toField="targetFieldName" 
  *               regex="[false|true]"&gt;
  *          &lt;separator&gt;(separator value)&lt;/separator&gt;
  *      &lt;/split&gt;
  *      &lt;!-- multiple split tags allowed --&gt;
  *      
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following example splits a single value field holding a comma-separated
+ * list into multiple values.
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
+ *      &lt;split fromField="myField" regex="true"&gt;
+ *          &lt;separator&gt;\s*,\s*&lt;/separator&gt;
+ *      &lt;/split&gt;
  *  &lt;/tagger&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 1.3.0
- * @see Pattern
  */
-@SuppressWarnings("nls")
 public class SplitTagger extends AbstractDocumentTagger {
 
     private final List<Split> splits = new ArrayList<>();

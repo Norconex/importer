@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * 
  * <p>Can be used both as a pre-parse (text-only) or post-parse handler.</p>
  * 
- * <p>XML configuration usage:</p>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          sourceCharset="(character encoding)"
@@ -115,11 +115,18 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
+ * <h3>XML example:</h3>
+ * <p>
+ * The following store the statistics in a field called "statistics".
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+ *          fieldName="statistics" /&gt;
+ * </pre>
+ * 
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see Pattern
  */
-@SuppressWarnings("nls")
 public class TextStatisticsTagger extends AbstractCharStreamTagger 
         implements IXMLConfigurable {
 
