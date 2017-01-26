@@ -83,7 +83,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * Documents can use different character case for their title field names.
  * This example makes them all lower case. We also make sure the value

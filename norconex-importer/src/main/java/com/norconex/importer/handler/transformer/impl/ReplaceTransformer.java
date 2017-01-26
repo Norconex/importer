@@ -70,7 +70,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following reduces all occurrences of "junk food" with "healthy food".
  * </p> 

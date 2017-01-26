@@ -159,7 +159,7 @@ import com.norconex.importer.util.DOMUtil;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * Given this HTML snippet... 
  * </p>

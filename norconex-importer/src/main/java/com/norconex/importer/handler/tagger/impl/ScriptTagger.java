@@ -78,7 +78,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>The following example simply adds new metadata field indicating which
  * fruit is a document about.</p>
  * <pre>

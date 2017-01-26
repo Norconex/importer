@@ -63,7 +63,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following example splits a single value field holding a comma-separated
  * list into multiple values.

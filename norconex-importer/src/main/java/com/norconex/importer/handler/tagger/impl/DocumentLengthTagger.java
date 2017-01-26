@@ -64,7 +64,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following stores the document lenght into a "docSize" field.
  * </p>

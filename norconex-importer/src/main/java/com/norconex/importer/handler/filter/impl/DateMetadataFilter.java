@@ -120,7 +120,7 @@ import com.norconex.importer.util.FormatUtil;
  *      
  *  &lt;/filter&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>For example, let's say you want to keep only documents from the last
  *    seven days, not including today. The following would achieve that:</p>
  * <pre>

@@ -40,6 +40,9 @@
         Removed deprecated Importer HTMLParser and PDFParser classes.
       </action>
       <action dev="essiembre" type="remove">
+        Removed deprecated IDocumentSplittableEmbeddedParser interface.
+      </action>
+      <action dev="essiembre" type="remove">
         Removed Importer EnhancedPDFParser and EnhancedPDF2XHTML in favor of 
         upgraded TIKA PDFParser and PDF2XHTML versions.
       </action>

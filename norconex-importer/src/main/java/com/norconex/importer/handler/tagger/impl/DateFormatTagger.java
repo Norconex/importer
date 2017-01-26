@@ -94,7 +94,7 @@ import com.norconex.importer.util.FormatUtil;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following converts a date that is sometimes obtained from the 
  * HTTP header "Last-Modified" and sometimes is an EPOCH date, 

@@ -80,7 +80,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following example replaces occurrences of "apple" to "orange"
  * in the "fruit" field.

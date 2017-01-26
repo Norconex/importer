@@ -109,7 +109,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will check if the first line looks like a title and if not,
  * it will store the first sentence, up to 200 characters, in a field called

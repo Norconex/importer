@@ -56,7 +56,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      
  *  &lt;/transformer&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will strip all text starting with this HTML comment and
  * everything after it: 

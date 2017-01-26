@@ -56,7 +56,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      
  *  &lt;/transformer&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will strip all text up to and including this HTML comment: 
  * <code>&lt;!-- HEADER_END --&gt;</code>.

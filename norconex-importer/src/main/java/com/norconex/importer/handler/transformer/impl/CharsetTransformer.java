@@ -80,7 +80,7 @@ import com.norconex.importer.util.CharsetUtil;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/transformer&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following converts the content of a document from "ISO-8859-1"
  * to "UTF-8".

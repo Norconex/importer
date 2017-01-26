@@ -290,20 +290,26 @@
     </embedded>
     <fallbackParser class="com.norconex.importer.parser.impl.FallbackParser" />
     <parsers>
-      <parser contentType="text/html" class="com.norconex.importer.parser.impl.External" />
+      <parser contentType="application/pdf" 
+            class="com.norconex.importer.parser.impl.ExternalParser" >
+        <command>/command/exe</command>
+        <metadata>
+          <match key="k1">regex1</match>
+          <match key="k2">regex2</match>
+        </metadata>
+      </parser>      
     </parsers>
   </documentParserFactory>
 
 
-  <!-- No point re-testing them all here, do just a few. -->
-  <!-- 
+  <!-- No point re-testing them all here, just have a few short ones in mixed order. -->
   <postParseHandlers>
-    <tagger class="..." />
-    <transformer class="..." />
-    <filter class="..." />
-    <splitter class="..." />
+    <tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"/>
+    <transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"/>
+    <tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"/>
+    <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter" selector="blah"/>
+    <filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter" fields="FIELD1" />
   </postParseHandlers>
-  -->
 
   <responseProcessors>
     <responseProcessor 

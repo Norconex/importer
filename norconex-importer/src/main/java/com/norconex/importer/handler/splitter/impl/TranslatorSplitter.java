@@ -138,7 +138,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/splitter&gt;
  * </pre>
- * <h3>XML example:</h3> 
+ * <h4>Usage example:</h4> 
  * <p>
  * The following uses the Google translation API to translate documents into
  * French, taking the source document language from a field called "langField".

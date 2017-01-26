@@ -90,7 +90,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      
  *  &lt;/splitter&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following split contacts found in an HTML document, each one being
  * stored within a div with a class named "contact".

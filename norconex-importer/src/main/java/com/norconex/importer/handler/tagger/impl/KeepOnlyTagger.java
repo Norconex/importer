@@ -68,7 +68,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following keeps only the title and description fields from all
  * extracted fields.

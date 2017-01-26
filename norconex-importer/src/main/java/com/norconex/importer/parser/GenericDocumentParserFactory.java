@@ -58,7 +58,7 @@ import com.norconex.importer.response.ImporterResponse;
  * <p>As of 2.6.0, it is possible to register your own parsers.</p>
  * 
  * <h3>Ignoring content types:</h3>
- * <p>As of version 2.0.0, you can "ignore" content-types so they do not get
+ * <p>You can "ignore" content-types so they do not get
  * parsed. Unparsed documents will be sent as is to the post handlers 
  * and the calling application.   Use caution when using that feature since
  * post-parsing handlers (or applications) usually expect text-only content for 
@@ -76,7 +76,7 @@ import com.norconex.importer.response.ImporterResponse;
  * <p>For documents containing embedded documents (e.g. zip files), the default 
  * behavior of this treat them as a single document, merging all
  * embedded documents content and metadata into the parent document.
- * As of version 2.0.0, you can tell this parser to "split" embedded
+ * You can tell this parser to "split" embedded
  * documents to have them treated as if they were individual documents.  When
  * split, each embedded documents will go through the entire import cycle, 
  * going through your handlers and even this parser again
@@ -93,7 +93,7 @@ import com.norconex.importer.response.ImporterResponse;
  * </p>
  * 
  * <h3>Optical character recognition (OCR):</h3>
- * <p>Starting with version 2.1.0, you can configure this parser to use the
+ * <p>You can configure this parser to use the
  * <b><a href="https://code.google.com/p/tesseract-ocr/">Tesseract</a></b> 
  * open-source OCR application to extract text out of images
  * or documents containing embedded images (e.g. PDF).  Supported image
@@ -134,8 +134,6 @@ import com.norconex.importer.response.ImporterResponse;
  *           i.e., not parsed)
  *      &lt;/ignoredContentTypes&gt;
  *      
- *      &lt;!-- Since 2.6.0: --&gt;
- *      
  *      &lt;embedded&gt;
  *          &lt;splitContentTypes&gt;
  *              (optional regex matching content types of containing files
@@ -167,9 +165,25 @@ import com.norconex.importer.response.ImporterResponse;
  *      
  *  &lt;/documentParserFactory&gt;
  * </pre>
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following uses Tesseract to convert English and French images in PDF 
+ * into text and it will also extract documents from Zip files and treat
+ * them as separate documents.
+ * </p>
+ * <pre>
+ *  &lt;documentParserFactory&gt;
+ *      &lt;ocr path="/app/tesseract/"&gt;
+ *          &lt;languages&gt;en, fr&lt;/languages&gt;
+ *          &lt;contentTypes&gt;application/pdf&lt;/contentTypes&gt;
+ *      &lt;/ocr&gt;
+ *      &lt;embedded&gt;
+ *          &lt;splitContentTypes&gt;application/zip&lt;/splitContentTypes&gt;
+ *      &lt;/embedded&gt;
+ *  &lt;/documentParserFactory&gt;
+ * </pre>
  * @author Pascal Essiembre
  */
-@SuppressWarnings("nls")
 public class GenericDocumentParserFactory 
         implements IDocumentParserFactory, IXMLConfigurable {
 
@@ -333,34 +347,29 @@ public class GenericDocumentParserFactory
     
     @Override
     public void loadFromXML(Reader in) throws IOException {
-        try {
-            XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-            setIgnoredContentTypesRegex(xml.getString(
-                    "ignoredContentTypes", getIgnoredContentTypesRegex()));
+        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
+        setIgnoredContentTypesRegex(xml.getString(
+                "ignoredContentTypes", getIgnoredContentTypesRegex()));
 
-            // Parse hints
-            loadParseHintsFromXML(xml);
-            
-            // Fallback parser
-            fallbackParser = XMLConfigurationUtil.newInstance(
-                    xml, "fallbackParser", fallbackParser);
-            
-            // Parsers
-            List<HierarchicalConfiguration> parserNodes = 
-                    xml.configurationsAt("parsers.parser");
-            for (HierarchicalConfiguration node : parserNodes) {
-                IDocumentParser parser = XMLConfigurationUtil.newInstance(node);
-                String contentType = node.getString("[@contentType]");
-                if (StringUtils.isBlank(contentType)) {
-                    throw new ConfigurationException(
-                            "Attribute \"contentType\" missing for parser: "
-                          + node.getString("[@class]"));
-                }
-                parsers.put(ContentType.valueOf(contentType), parser);
+        // Parse hints
+        loadParseHintsFromXML(xml);
+        
+        // Fallback parser
+        fallbackParser = XMLConfigurationUtil.newInstance(
+                xml, "fallbackParser", fallbackParser);
+        
+        // Parsers
+        List<HierarchicalConfiguration> parserNodes = 
+                xml.configurationsAt("parsers.parser");
+        for (HierarchicalConfiguration node : parserNodes) {
+            IDocumentParser parser = XMLConfigurationUtil.newInstance(node);
+            String contentType = node.getString("[@contentType]");
+            if (StringUtils.isBlank(contentType)) {
+                throw new ConfigurationException(
+                        "Attribute \"contentType\" missing for parser: "
+                      + node.getString("[@class]"));
             }
-            
-        } catch (ConfigurationException e) {
-            throw new IOException("Cannot load XML.", e);
+            parsers.put(ContentType.valueOf(contentType), parser);
         }
     }
     private void loadParseHintsFromXML(XMLConfiguration xml) {

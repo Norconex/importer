@@ -87,7 +87,7 @@ import com.norconex.importer.util.CharsetUtil;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * Converts the characters of a "description" field from "ISO-8859-1"
  * to "UTF-8".

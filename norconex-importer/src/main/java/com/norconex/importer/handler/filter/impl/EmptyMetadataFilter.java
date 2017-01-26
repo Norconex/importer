@@ -51,7 +51,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/filter&gt;
  * </pre>
- * <h3>XML example:</h3> 
+ * <h4>Usage example:</h4> 
  * <p>
  * To exclude documents without titles:
  * </p>

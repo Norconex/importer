@@ -67,7 +67,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * For documents where multiple title fields are found, the following only 
  * keeps the first title value captured. 

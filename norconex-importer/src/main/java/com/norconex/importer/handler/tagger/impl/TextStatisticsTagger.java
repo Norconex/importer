@@ -115,7 +115,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following store the statistics in a field called "statistics".
  * </p>

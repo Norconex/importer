@@ -79,7 +79,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will expand a slash-separated vegetable hierarchy found in a 
  * "vegetable" field into a "vegetableHierarchy" field.

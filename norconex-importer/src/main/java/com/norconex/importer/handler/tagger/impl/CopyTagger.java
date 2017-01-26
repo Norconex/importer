@@ -57,7 +57,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * Copies the value of a "creator" and "publisher" fields into an "author" 
  * field, adding to any existing values in the "author" field. 

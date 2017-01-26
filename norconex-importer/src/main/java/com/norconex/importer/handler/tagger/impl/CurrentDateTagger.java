@@ -77,7 +77,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will store the current date along with hours and minutes
  * in a "crawl_date" field. 

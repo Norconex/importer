@@ -79,7 +79,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *  &lt;/tagger&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will count the number of segments in a URL: 
  * </p>

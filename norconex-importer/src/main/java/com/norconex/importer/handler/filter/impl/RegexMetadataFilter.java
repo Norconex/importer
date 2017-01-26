@@ -56,7 +56,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      &lt;regex&gt;(regular expression of value to match)&lt;/regex&gt;
  *  &lt;/filter&gt;
  * </pre>
- * <h3>XML example:</h3> 
+ * <h4>Usage example:</h4> 
  * <p>
  * This example will accept only documents containing word "potato"
  * in the title.

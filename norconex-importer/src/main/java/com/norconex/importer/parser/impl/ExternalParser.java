@@ -71,9 +71,7 @@ import com.norconex.importer.parser.IDocumentParser;
  * (regex group).
  * </p>
  * 
- * <h3>
- * XML configuration usage:
- * </h3>
+ * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;parser contentType="(content type)" 
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;

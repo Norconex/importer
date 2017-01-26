@@ -188,7 +188,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following detects whether pages are English or French, falling back to
  * English if detection failed.

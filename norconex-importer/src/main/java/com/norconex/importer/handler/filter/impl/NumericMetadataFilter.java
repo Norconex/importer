@@ -75,7 +75,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      
  *  &lt;/filter&gt;
  * </pre>
- * <h3>XML example:</h3> 
+ * <h4>Usage example:</h4> 
  * <p>For example, let's say you are importing customer profile documents
  *    and you have a field called "age" and you need to only consider documents
  *    for customers in their twenties (greater or equal to

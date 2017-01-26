@@ -75,7 +75,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *   <li>\t (tab)</li>
  *   <li>\s (space)</li>
  * </ul>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following reduces multiple spaces into a single one.
  * </p> 

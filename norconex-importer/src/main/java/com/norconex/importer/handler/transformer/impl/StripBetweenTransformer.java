@@ -68,7 +68,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      
  *  &lt;/transformer&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following will strip all text between (and including) these two 
  * HTML comments: 

@@ -56,7 +56,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <p>
  * The following example renames a "dc.title" field to "title", overwriting
  * any existing values in "title".

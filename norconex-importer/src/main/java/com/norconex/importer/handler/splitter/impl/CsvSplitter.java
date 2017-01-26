@@ -71,7 +71,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *
  *  &lt;/splitter&gt;
  * </pre>
- * <h3>XML example:</h3> 
+ * <h4>Usage example:</h4> 
  * <p>
  * Given this sample CSV file content...
  * </p> 

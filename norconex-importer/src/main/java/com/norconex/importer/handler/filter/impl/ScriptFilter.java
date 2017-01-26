@@ -78,7 +78,7 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  *  &lt;/filter&gt;
  * </pre>
  * 
- * <h3>XML example:</h3>
+ * <h4>Usage example:</h4>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"&gt;
  *    &lt;script&gt;&lt;![CDATA[
