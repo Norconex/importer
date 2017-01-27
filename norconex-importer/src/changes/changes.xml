@@ -9,7 +9,8 @@
 
     <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
-        Added schema-based XML configuration validation.
+        Added schema-based XML configuration validation which can be trigged
+        on command prompt with this new flag: -checkcfg
       </action>
       <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.

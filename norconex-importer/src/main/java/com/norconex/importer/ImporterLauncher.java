@@ -27,9 +27,14 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.log.CountingConsoleAppender;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.response.ImporterResponse;
@@ -49,6 +54,7 @@ public final class ImporterLauncher {
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
     public static final String ARG_VARIABLES = "variables";
+    public static final String ARG_CHECKCFG = "checkcfg";
     
     /**
      * Constructor.
@@ -60,7 +66,6 @@ public final class ImporterLauncher {
     public static void launch(String[] args) {
         CommandLine cmd = parseCommandLineArguments(args);
         
-        File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
         File varFile = null;
         File configFile = null;
 
@@ -92,12 +97,46 @@ public final class ImporterLauncher {
         }
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
+        ImporterConfig config = null;
         try {
-            ImporterConfig config = null;
             if (configFile != null) {
-                config = ImporterConfigLoader.loadImporterConfig(
-                        configFile, varFile);
+                Logger logger = null;
+                CountingConsoleAppender appender = null;
+                if (cmd.hasOption(ARG_CHECKCFG)) {
+                    appender = new CountingConsoleAppender();
+                    logger = LogManager.getLogger(XMLConfigurationUtil.class);
+                    logger.setLevel(Level.WARN);
+                    logger.setAdditivity(false);
+                    logger.addAppender(appender);
+                }
+                try {
+                    config = ImporterConfigLoader.loadImporterConfig(
+                            configFile, varFile);
+                    if (cmd.hasOption(ARG_CHECKCFG)) {
+                        if (!appender.isEmpty()) {
+                            System.err.println("There were " 
+                                    + appender.getCount()
+                                    + " XML configuration errors.");
+                            System.exit(-1);
+                        } else {
+                            System.out.println("No XML configuration errors.");
+                        }
+                    }
+                } finally {
+                    if (logger != null) {
+                        logger.removeAppender(appender);
+                    }
+                }
             }
+        } catch (Exception e) {
+            System.err.println("A problem occured loading configuration.");
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        }
+            
+
+        File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
+        try {
             ImporterResponse response = new Importer(config).importDocument(
                     inputFile, contentType, contentEncoding, 
                     metadata, reference);
@@ -170,7 +209,7 @@ public final class ImporterLauncher {
     private static CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
         options.addOption("i", ARG_INPUTFILE, true, 
-                "Required: File to be imported.");
+                "File to be imported (required unless \"checkcfg\" is used).");
         options.addOption("o", ARG_OUTPUTFILE, true, 
                 "Optional: File where the imported content will be stored.");
         options.addOption("t", ARG_CONTENTTYPE, true, 
@@ -184,12 +223,18 @@ public final class ImporterLauncher {
                 "Optional: Importer XML configuration file.");
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
+        options.addOption("checkcfg",   
+                "Validates XML configuration. When combined "
+              + "with -i, prevents execution on configuration "
+              + "error.");
    
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
-            cmd = parser.parse( options, args);
-            if(!cmd.hasOption(ARG_INPUTFILE)) {
+            cmd = parser.parse(options, args);
+            if(!cmd.hasOption(ARG_INPUTFILE) 
+                    && !(cmd.hasOption(ARG_CHECKCFG) 
+                            && cmd.hasOption(ARG_CONFIG))) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "importer[.bat|.sh]", options );
                 System.exit(-1);
