@@ -57,7 +57,7 @@ import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
  * When constructing the command to launch the external application, these 
  * placeholders will be replaced if provided (case-sensitive): 
  * </p>
- * <table>
+ * <table summary="Placeholder tokens">
  *   <tr>
  *     <td><code>${INPUT}</code></td>
  *     <td>File to transform.</td>
