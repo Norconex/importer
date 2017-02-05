@@ -117,7 +117,7 @@ public class CopyTagger extends AbstractDocumentTagger {
     }
     
     
-    private final List<CopyDetails> list = new ArrayList<CopyDetails>();
+    private final List<CopyDetails> list = new ArrayList<>();
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,

@@ -9,8 +9,12 @@
 
     <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        New ExternalTransformer for transforming documents and extracting
+        metadata using an external application.
+      </action>
+      <action dev="essiembre" type="add">
         Added schema-based XML configuration validation which can be trigged
-        on command prompt with this new flag: -checkcfg
+        on command prompt with this new flag: -k or -checkcfg
       </action>
       <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.
@@ -21,6 +25,10 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0.
+      </action>
+      <action dev="essiembre" type="update">
+        ExternalParser was rewritten. Now offers more metadata extraction
+        options and environment variable support.
       </action>
       <action dev="essiembre" type="update">
         Modified Javadoc to include an XML usage example for all 

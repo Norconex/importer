@@ -362,7 +362,10 @@ public class LanguageTagger extends AbstractStringTagger
     @Override
     protected void loadStringTaggerFromXML(
             XMLConfiguration xml) throws IOException {
-        setShortText(xml.getBoolean("[@shortText]", isShortText()));
+        Boolean isShortText = xml.getBoolean("[@shortText]", (Boolean) null);
+        if (isShortText != null) {
+            setShortText(xml.getBoolean("[@shortText]", isShortText()));
+        }
         setKeepProbabilities(xml.getBoolean(
                 "[@keepProbabilities]", isKeepProbabilities()));
         setFallbackLanguage(xml.getString(

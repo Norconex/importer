@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringTagger"> 
-          <xs:sequence>
+          <xs:all>
             <xs:element name="languages" minOccurs="0" maxOccurs="1" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="keepProbabilities" type="xs:boolean" />
           <xs:attribute name="fallbackLanguage" type="xs:string" />
         </xs:extension>

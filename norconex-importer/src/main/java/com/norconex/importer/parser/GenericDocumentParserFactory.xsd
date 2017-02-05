@@ -51,9 +51,9 @@
 
   <xs:element name="fallbackParser">
     <xs:complexType mixed="true">
-      <xs:sequence>
+      <xs:all>
         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-      </xs:sequence>
+      </xs:all>
       <xs:attribute name="class" type="xs:string" use="required"/>
       <xs:anyAttribute processContents="lax"/>
     </xs:complexType>
@@ -61,17 +61,17 @@
 
   <xs:element name="parsers">
     <xs:complexType mixed="true">
-      <xs:sequence>
+      <xs:all>
         <xs:element ref="parser" minOccurs="1" maxOccurs="unbounded" />
-      </xs:sequence>
+      </xs:all>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="parser">
     <xs:complexType mixed="true">
-      <xs:sequence>
+      <xs:all>
         <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-      </xs:sequence>
+      </xs:all>
       <xs:attribute name="contentType" type="xs:string" use="required"/>
       <xs:attribute name="class" type="xs:string" use="required"/>
       <xs:anyAttribute processContents="lax"/>

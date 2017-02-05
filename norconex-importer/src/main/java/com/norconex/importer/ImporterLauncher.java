@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.file.ContentType;
@@ -97,44 +95,8 @@ public final class ImporterLauncher {
         }
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
-        ImporterConfig config = null;
-        try {
-            if (configFile != null) {
-                Logger logger = null;
-                CountingConsoleAppender appender = null;
-                if (cmd.hasOption(ARG_CHECKCFG)) {
-                    appender = new CountingConsoleAppender();
-                    logger = LogManager.getLogger(XMLConfigurationUtil.class);
-                    logger.setLevel(Level.WARN);
-                    logger.setAdditivity(false);
-                    logger.addAppender(appender);
-                }
-                try {
-                    config = ImporterConfigLoader.loadImporterConfig(
-                            configFile, varFile);
-                    if (cmd.hasOption(ARG_CHECKCFG)) {
-                        if (!appender.isEmpty()) {
-                            System.err.println("There were " 
-                                    + appender.getCount()
-                                    + " XML configuration errors.");
-                            System.exit(-1);
-                        } else {
-                            System.out.println("No XML configuration errors.");
-                        }
-                    }
-                } finally {
-                    if (logger != null) {
-                        logger.removeAppender(appender);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("A problem occured loading configuration.");
-            e.printStackTrace(System.err);
-            System.exit(-1);
-        }
-            
-
+        ImporterConfig config = 
+                loadCommandLineConfig(cmd, configFile, varFile);
         File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
         try {
             ImporterResponse response = new Importer(config).importDocument(
@@ -147,6 +109,42 @@ public final class ImporterLauncher {
             e.printStackTrace(System.err);
             System.exit(-1);
         }
+    }
+    
+    private static ImporterConfig loadCommandLineConfig(
+            CommandLine cmd, File configFile, File varFile) {
+        if (configFile == null) {
+            return null;
+        }
+        ImporterConfig config = null;
+        CountingConsoleAppender appender = null;
+        try {
+            if (cmd.hasOption(ARG_CHECKCFG)) {
+                appender = new CountingConsoleAppender();
+                appender.startCountingFor(
+                        XMLConfigurationUtil.class, Level.WARN);
+            }
+            config = ImporterConfigLoader.loadImporterConfig(
+                    configFile, varFile);
+            if (cmd.hasOption(ARG_CHECKCFG)) {
+                if (!appender.isEmpty()) {
+                    System.err.println("There were " + appender.getCount()
+                            + " XML configuration error(s).");
+                    System.exit(-1);
+                } else {
+                    System.out.println("No XML configuration errors.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("A problem occured loading configuration.");
+            e.printStackTrace(System.err);
+            System.exit(-1);
+        } finally {
+            if (appender != null) {
+                appender.stopCountingFor(XMLConfigurationUtil.class);
+            }
+        }
+        return config;
     }
     
     private static void writeResponse(
@@ -223,7 +221,7 @@ public final class ImporterLauncher {
                 "Optional: Importer XML configuration file.");
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
-        options.addOption("checkcfg",   
+        options.addOption("k", ARG_CHECKCFG, false,   
                 "Validates XML configuration. When combined "
               + "with -i, prevents execution on configuration "
               + "error.");

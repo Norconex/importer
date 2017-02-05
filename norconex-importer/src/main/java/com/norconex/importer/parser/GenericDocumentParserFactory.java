@@ -431,30 +431,35 @@ public class GenericDocumentParserFactory
                 }
             }
 
-            xml.writeStartElement("parsers");
-            for (Entry<ContentType, IDocumentParser> entry: 
-                    parsers.entrySet()) {
-                ContentType ct = entry.getKey();
-                IDocumentParser parser = entry.getValue();
-                if (parser instanceof IXMLConfigurable) {
-                    xml.flush();
-                    StringWriter sout = new StringWriter();
-                    ((IXMLConfigurable) parser).saveToXML(sout);
-                    String parserXML = sout.toString(); 
-                    parserXML = parserXML.replaceFirst("^<parser", 
-                            "<parser contentType=\"" + ct.toString() + "\"");
-                    out.write(parserXML);
-                    out.flush();
-                } else {
-                    xml.writeStartElement("parser");
-                    xml.writeAttributeString("class", 
-                            parser.getClass().getCanonicalName());
-                    xml.writeAttributeString("contentType", ct.toString());
-                    xml.writeEndElement();
+            if (!parsers.isEmpty()) {
+                xml.writeStartElement("parsers");
+                for (Entry<ContentType, IDocumentParser> entry: 
+                        parsers.entrySet()) {
+                    ContentType ct = entry.getKey();
+                    IDocumentParser parser = entry.getValue();
+                    if (parser instanceof IXMLConfigurable) {
+                        xml.flush();
+                        StringWriter sout = new StringWriter();
+                        ((IXMLConfigurable) parser).saveToXML(sout);
+                        String parserXML = sout.toString(); 
+                        if (!parserXML.matches("\\S+contentType\\s*=")) {
+                            parserXML = parserXML.replaceFirst("^<parser", 
+                                    "<parser contentType=\"" 
+                                            + ct.toString() + "\"");
+                        }
+                        out.write(parserXML);
+                        out.flush();
+                    } else {
+                        xml.writeStartElement("parser");
+                        xml.writeAttributeString("class", 
+                                parser.getClass().getCanonicalName());
+                        xml.writeAttributeString("contentType", ct.toString());
+                        xml.writeEndElement();
+                    }
+                    
                 }
-                
+                xml.writeEndElement();
             }
-            xml.writeEndElement();
 
             xml.writeEndElement();
             xml.flush();

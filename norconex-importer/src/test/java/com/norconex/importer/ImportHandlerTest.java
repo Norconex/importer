@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  */
 package com.norconex.importer;
 
+import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -43,7 +45,8 @@ public class ImportHandlerTest {
     
     @Test
     public void testHandlers() throws IOException, ImporterException {
-        FileInputStream is = new FileInputStream(TestUtil.getAliceHtmlFile());
+        InputStream is = new BufferedInputStream(
+                new FileInputStream(TestUtil.getAliceHtmlFile()));
         importer.importDocument(is, metadata, "alice.html");
         is.close();
 

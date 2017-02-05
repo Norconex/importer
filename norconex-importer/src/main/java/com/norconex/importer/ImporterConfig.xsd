@@ -14,7 +14,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xml:base="http://example.org">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:element name="importer">
     <xs:complexType>
@@ -40,35 +40,33 @@
   </xs:element>
 
   <xs:complexType name="parseHandlerType">
-    <xs:sequence>
-      <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:element name="tagger"      type="anyComplexWithClassType" />
-        <xs:element name="transformer" type="anyComplexWithClassType" />
-        <xs:element name="filter"      type="anyComplexWithClassType" />
-        <xs:element name="splitter"    type="anyComplexWithClassType" />
-      </xs:choice>
-    </xs:sequence>
+    <xs:all>
+      <xs:element name="tagger"      type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="transformer" type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="filter"      type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="splitter"    type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:all>
   </xs:complexType>
 
   <xs:complexType name="anyComplexWithClassType" mixed="true">
-    <xs:sequence>
+    <xs:all>
       <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-    </xs:sequence>
+    </xs:all>
     <xs:attribute name="class" type="xs:string" use="required"></xs:attribute>
     <xs:anyAttribute processContents="lax"/>
   </xs:complexType>
   
   <xs:complexType name="anyComplexType" mixed="true">
-    <xs:sequence>
+    <xs:all>
       <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
-    </xs:sequence>
+    </xs:all>
     <xs:anyAttribute processContents="lax"/>
   </xs:complexType>
 
   <xs:complexType name="responseProcessorsType">
-    <xs:sequence>
+    <xs:all>
         <xs:element name="responseProcessor" type="anyComplexWithClassType" />
-    </xs:sequence>
+    </xs:all>
   </xs:complexType>
 
 </xs:schema>

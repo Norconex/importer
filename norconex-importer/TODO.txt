@@ -6,7 +6,7 @@ TODO:
     - Remove CharsetDetector in favor of Tika original one once fixed:
       https://issues.apache.org/jira/browse/TIKA-2219
 
-    - Remove WordPerfect, Quattro Pro, ans XFDL from 
+    - Remove WordPerfect, Quattro Pro, and XFDL from 
       GenericDocumentParserFactory as well as from custom-mimetypes.xml.
       https://issues.apache.org/jira/browse/TIKA-1946
       https://issues.apache.org/jira/browse/TIKA-2228
@@ -17,9 +17,14 @@ TODO:
     - Remove JBIG2-related code/files if accepted:
       https://issues.apache.org/jira/browse/TIKA-2232
 
+- Consider ExternalTagger which expects a .properties file or similar format,
+  or meta extraction pattern.
+
 - Wherever a duration is specified in milliseconds, allow to have a string
   representation instead, that will be converted to milliseconds 
   (e.g. 2.5s, or 2 minutes and 30 secondes)
+
+- Consider adding support for Lua scripting to Script* handlers. 
 
 - Allow to specify data unit for DocumentLengthTagger (with locale and decimal
   precision).

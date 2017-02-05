@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,13 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
@@ -33,15 +30,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ScriptFilterTest {
 
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
     
     @Test
     public void testJavaScript() 
@@ -56,7 +53,7 @@ public class ScriptFilterTest {
         f.setScript(script);
 
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString("fruit", "apple");

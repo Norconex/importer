@@ -166,16 +166,12 @@ public class ScriptTransformer extends AbstractStringTransformer
                 .append(scriptRunner)
                 .toHashCode();
     }
-    private transient String toString;
     @Override
     public String toString() {
-        if (toString == null) {
-            toString = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .appendSuper(super.toString())
-                    .append("scriptRunner", scriptRunner)
-                    .toString();
-        }
-        return toString;
+        return new ToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("scriptRunner", scriptRunner)
+                .toString();
     } 
 }

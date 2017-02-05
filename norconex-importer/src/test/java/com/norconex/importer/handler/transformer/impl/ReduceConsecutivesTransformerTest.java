@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class ReduceConsecutivesTransformerTest {
             t.transformDocument(
                     "dummyRef", is, os, new ImporterMetadata(), true);
             String response = os.toString();
-            System.out.println(response);
+//            System.out.println(response);
             Assert.assertEquals(
                     "\tthis is the text i want to modify.\n\r too much space.", 
                     response.toLowerCase());

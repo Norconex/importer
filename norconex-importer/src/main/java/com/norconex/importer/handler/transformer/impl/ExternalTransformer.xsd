@@ -16,24 +16,25 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:element name="parser">
+  <xs:include schemaLocation="../AbstractDocumentTransformer.xsd"/>
+  
+  <xs:element name="transformer">
     <xs:complexType>
-      <xs:all>
-        <xs:element name="command" type="nonEmptyValue" minOccurs="1" maxOccurs="1" />
-        <xs:element ref="metadata" minOccurs="0" maxOccurs="1" />
-        <xs:element ref="environment" minOccurs="0" maxOccurs="1" />
-      </xs:all>
-      <!-- contentType is required, but cause issues in testing since it is
-         - not a member of parsers, so it is validated directly by the importer.
-         -->
-      <xs:attribute name="contentType" type="xs:string" use="optional" />
-      <xs:attribute name="class" type="xs:string" use="required" />
+      <xs:complexContent> 
+        <xs:extension base="AbstractDocumentTransformer">
+          <xs:all>
+            <xs:element name="command" type="nonEmptyValue" minOccurs="1" maxOccurs="1" />
+            <xs:element ref="metadata" minOccurs="0" maxOccurs="1" />
+            <xs:element ref="environment" minOccurs="0" maxOccurs="1" />
+          </xs:all>
+        </xs:extension>
+      </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
   <xs:element name="metadata">
     <xs:complexType>
-      <xs:all>
+      <xs:sequence>
         <xs:element name="match" minOccurs="1" maxOccurs="unbounded">
           <xs:complexType>
             <xs:simpleContent>
@@ -44,13 +45,13 @@
             </xs:simpleContent>
           </xs:complexType>  
         </xs:element>   
-      </xs:all>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
   
   <xs:element name="environment">
     <xs:complexType>
-      <xs:all>
+      <xs:sequence>
         <xs:element name="variable" minOccurs="1" maxOccurs="unbounded">
           <xs:complexType>
             <xs:simpleContent>
@@ -60,7 +61,7 @@
             </xs:simpleContent>
           </xs:complexType>  
         </xs:element>   
-      </xs:all>
+      </xs:sequence>
     </xs:complexType>
   </xs:element>
 

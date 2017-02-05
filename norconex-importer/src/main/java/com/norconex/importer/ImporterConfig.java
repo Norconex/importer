@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ public class ImporterConfig implements IXMLConfigurable {
                     XMLConfigurationUtil.newInstance(procNode);
             if (proc != null) {
                 processors.add(proc);
-                LOG.info("Reponse processor loaded: " + proc);
+                LOG.debug("Reponse processor loaded: " + proc);
             } else {
                 LOG.error("Problem loading reponse processors, "
                         + "please check for other log messages.");

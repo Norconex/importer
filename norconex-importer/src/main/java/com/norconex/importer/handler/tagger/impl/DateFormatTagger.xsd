@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
-          <xs:sequence>
+          <xs:all>
             <xs:element name="fromFormat" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="fromField" type="xs:string" use="required" />
           <xs:attribute name="toField" type="xs:string" />
           <xs:attribute name="fromLocale" type="xs:string" />

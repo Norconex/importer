@@ -109,8 +109,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
             flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         }
         for (Pair<String, String> pair : stripPairs) {
-            List<Pair<Integer, Integer>> matches = 
-                    new ArrayList<Pair<Integer, Integer>>();
+            List<Pair<Integer, Integer>> matches = new ArrayList<>();
             Pattern leftPattern = Pattern.compile(pair.getLeft(), flags);
             Matcher leftMatch = leftPattern.matcher(content);
             while (leftMatch.find()) {
@@ -166,9 +165,10 @@ public class StripBetweenTransformer extends AbstractStringTransformer
         Collections.sort(stripPairs, stripComparator);
     }
     public List<Pair<String, String>> getStripEndpoints() {
-        return new ArrayList<Pair<String,String>>(stripPairs);
+        return new ArrayList<>(stripPairs);
     }
     
+    @Override
     protected void loadStringTransformerFromXML(XMLConfiguration xml)
             throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));

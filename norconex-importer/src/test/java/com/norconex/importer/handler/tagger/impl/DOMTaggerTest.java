@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -241,7 +242,7 @@ public class DOMTaggerTest {
                 "a[href]", "links", true, "html"));
         
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -271,7 +272,7 @@ public class DOMTaggerTest {
                 "head", "ftext", false, "text"));
 
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -386,15 +387,15 @@ public class DOMTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
-//        tagger.addDOMExtractDetails(new DOMExtractDetails(
-//                "p.blah > a", "myField", true));
-//        
-//        DOMExtractDetails details = new DOMExtractDetails(
-//                "div.blah > a", "myOtherField", true, "html");
-//        details.setDefaultValue("myDefaultValue");
-//        tagger.addDOMExtractDetails(details);
-//        tagger.addRestriction("afield", "aregex", true);
-//        tagger.setFromField("myfromfield");
+        tagger.addDOMExtractDetails(new DOMExtractDetails(
+                "p.blah > a", "myField", true));
+        
+        DOMExtractDetails details = new DOMExtractDetails(
+                "div.blah > a", "myOtherField", true, "html");
+        details.setDefaultValue("myDefaultValue");
+        tagger.addDOMExtractDetails(details);
+        tagger.addRestriction("afield", "aregex", true);
+        tagger.setFromField("myfromfield");
         System.out.println("Writing/Reading this: " + tagger);
         XMLConfigurationUtil.assertWriteRead(tagger);
     }

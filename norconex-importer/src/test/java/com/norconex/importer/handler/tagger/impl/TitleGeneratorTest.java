@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
@@ -40,15 +36,15 @@ public class TitleGeneratorTest {
     private static final Logger LOG = 
             LogManager.getLogger(TitleGeneratorTest.class);
     
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
     
     @Test
     public void testSummarizeTitle() 
@@ -82,7 +78,7 @@ public class TitleGeneratorTest {
         t.setDetectHeadingMinLength(5);
         
         File file = TestUtil.getAliceTextFile();
-        FileInputStream is = new FileInputStream(file);
+        InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");

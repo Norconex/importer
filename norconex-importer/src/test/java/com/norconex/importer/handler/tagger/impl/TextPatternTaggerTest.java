@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.junit.Assert;
@@ -41,7 +43,7 @@ public class TextPatternTaggerTest {
         t.addPattern("country", "\\w+\\sZealand");
         t.setCaseSensitive(false);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -70,7 +72,7 @@ public class TextPatternTaggerTest {
         t.addPattern("mytitle", "^.{0,100}");
         t.setCaseSensitive(false);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");

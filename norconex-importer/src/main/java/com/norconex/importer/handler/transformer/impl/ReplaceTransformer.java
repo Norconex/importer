@@ -90,8 +90,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
     private boolean caseSensitive;
-    private final Map<String, String> replacements = 
-            new ListOrderedMap<String, String>();
+    private final Map<String, String> replacements = new ListOrderedMap<>();
 
     @Override
     protected void transformStringContent(String reference,
@@ -100,7 +99,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
 
         String text = content.toString();
         content.setLength(0);
-        Pattern pattern = null;
+        Pattern pattern;
         
         for (String from : replacements.keySet()) {
             String to = replacements.get(from);

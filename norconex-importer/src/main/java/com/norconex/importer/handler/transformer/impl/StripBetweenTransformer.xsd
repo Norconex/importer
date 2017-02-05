@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringTransformer"> 
-          <xs:sequence>
+          <xs:all>
             <xs:element ref="stripBetween" minOccurs="1" maxOccurs="unbounded"/>
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="caseSensitive" type="xs:boolean"/>
           <xs:attribute name="inclusive" type="xs:boolean"/>
         </xs:extension>
@@ -34,7 +34,7 @@
 
   <xs:element name="stripBetween">
     <xs:complexType>
-      <xs:sequence>
+      <xs:all>
         <xs:element name="start" minOccurs="1" maxOccurs="1">
           <xs:simpleType>
             <xs:restriction base="xs:string">
@@ -49,7 +49,7 @@
             </xs:restriction>
           </xs:simpleType>        
         </xs:element>
-      </xs:sequence>
+      </xs:all>
     </xs:complexType>
   </xs:element>
 

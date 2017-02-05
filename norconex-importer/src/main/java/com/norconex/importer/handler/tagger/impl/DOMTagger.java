@@ -271,7 +271,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         for (DOMExtractDetails details : extractions) {
             List<String> extractedValues = new ArrayList<>();
             for (Document doc : jsoupDocs) {
-                domExtractDoc(extractedValues, doc, details, metadata);
+                domExtractDoc(extractedValues, doc, details);
             }
             if (!extractedValues.isEmpty()) {
                 String[] vals = extractedValues.toArray(
@@ -286,7 +286,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     }
     
     private void domExtractDoc(List<String> extractedValues,
-            Document doc, DOMExtractDetails details, ImporterMetadata meta) {
+            Document doc, DOMExtractDetails details) {
         Elements elms = doc.select(details.selector);
         boolean hasDefault = details.getDefaultValue() != null;
 

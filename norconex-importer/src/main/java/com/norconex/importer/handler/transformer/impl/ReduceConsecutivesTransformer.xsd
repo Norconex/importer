@@ -22,7 +22,7 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringTransformer">
-          <xs:sequence>
+          <xs:all>
             <xs:element name="reduce" minOccurs="1" maxOccurs="unbounded">
               <xs:simpleType>
                 <xs:restriction base="xs:string">
@@ -30,7 +30,7 @@
                 </xs:restriction>
               </xs:simpleType>        
             </xs:element>
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="caseSensitive" type="xs:boolean"/>
         </xs:extension>
       </xs:complexContent>

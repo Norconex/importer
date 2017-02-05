@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
@@ -34,15 +31,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TextBetweenTaggerTest {
 
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
     
     @Test
     public void testExtractMatchingRegex() 
@@ -52,8 +49,7 @@ public class TextBetweenTaggerTest {
         t.addTextEndpoints("field", "http://www\\..*?02a\\.gif", "\\b");
         t.setInclusive(true);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
-
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
         
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -77,7 +73,7 @@ public class TextBetweenTaggerTest {
         t.setCaseSensitive(false);
         t.setInclusive(true);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -104,7 +100,7 @@ public class TextBetweenTaggerTest {
         t.setCaseSensitive(false);
         t.setInclusive(true);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");

@@ -20,12 +20,7 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
@@ -40,15 +35,15 @@ import com.norconex.importer.parser.impl.ExternalParser;
 
 public class GenericDocumentParserFactoryTest {
 
-    @Before
-    public void before() {
-        Logger logger = Logger.getRootLogger();
-        logger.setLevel(Level.INFO);
-        logger.setAdditivity(false);
-        logger.addAppender(new ConsoleAppender(
-                new PatternLayout("%-5p [%C{1}] %m%n"), 
-                ConsoleAppender.SYSTEM_OUT));
-    }
+//    @Before
+//    public void before() {
+//        Logger logger = Logger.getRootLogger();
+//        logger.setLevel(Level.INFO);
+//        logger.setAdditivity(false);
+//        logger.addAppender(new ConsoleAppender(
+//                new PatternLayout("%-5p [%C{1}] %m%n"), 
+//                ConsoleAppender.SYSTEM_OUT));
+//    }
 
     @Test
     public void testWriteRead() throws IOException {
@@ -69,7 +64,9 @@ public class GenericDocumentParserFactoryTest {
         ocr.setLanguages("ocrLanguages");
         ocr.setPath("ocrPath");
         
-        f.registerParser(ContentType.BMP, new ExternalParser());
+        ExternalParser app = new ExternalParser();
+        app.setCommand("command.exe");
+        f.registerParser(ContentType.BMP, app);
         XMLConfigurationUtil.assertWriteRead(f);
     }
     

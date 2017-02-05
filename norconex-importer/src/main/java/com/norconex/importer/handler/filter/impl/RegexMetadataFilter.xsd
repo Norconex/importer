@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringFilter">
-          <xs:sequence>
+          <xs:all>
             <xs:element name="regex" type="xs:string" minOccurs="1" maxOccurs="1" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="caseSensitive" type="xs:boolean"></xs:attribute>
           <xs:attribute name="field" type="xs:string" use="required"></xs:attribute>
         </xs:extension> 

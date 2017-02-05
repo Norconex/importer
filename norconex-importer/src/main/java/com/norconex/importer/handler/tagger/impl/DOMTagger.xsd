@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
-          <xs:sequence>
+          <xs:all>
               <xs:element ref="dom" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="fromField" type="xs:string"></xs:attribute>
           <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
         </xs:extension> 

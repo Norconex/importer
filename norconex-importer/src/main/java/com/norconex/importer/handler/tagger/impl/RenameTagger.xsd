@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
-          <xs:sequence>
+          <xs:all>
             <xs:element ref="rename" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

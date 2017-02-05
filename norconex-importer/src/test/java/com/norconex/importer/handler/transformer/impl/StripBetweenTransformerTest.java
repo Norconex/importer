@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +43,7 @@ public class StripBetweenTransformerTest {
         t.setCaseSensitive(false);
         t.setInclusive(true);
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
@@ -49,7 +51,7 @@ public class StripBetweenTransformerTest {
         t.transformDocument(
                 htmlFile.getAbsolutePath(), 
                 is, os, metadata, false);
-        System.out.println(os.toString());
+//        System.out.println(os.toString());
         
         Assert.assertEquals(
                 "Length of doc content after transformation is incorrect.",

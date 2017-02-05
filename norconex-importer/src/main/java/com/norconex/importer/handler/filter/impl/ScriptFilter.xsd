@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringFilter">
-          <xs:sequence>
+          <xs:all>
             <xs:element name="script" type="xs:string" minOccurs="1" maxOccurs="1" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="engineName" type="xs:string"></xs:attribute>
         </xs:extension> 
       </xs:complexContent>   

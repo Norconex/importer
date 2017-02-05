@@ -91,7 +91,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     private boolean caseSensitive;
-    private final List<String> reductions = new ArrayList<String>();
+    private final List<String> reductions = new ArrayList<>();
 
     @Override
     protected void transformStringContent(String reference,
@@ -100,7 +100,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
         String text = content.toString();
         content.setLength(0);
-        Pattern pattern = null;
+        Pattern pattern;
         for (String reduction : reductions) {
             String regex = "(" + escapeRegex(reduction) + ")+";
             if (caseSensitive) {
@@ -114,7 +114,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
      
     public List<String> getReductions() {
-        return new ArrayList<String>(reductions);
+        return new ArrayList<>(reductions);
     }
     public void setReductions(String... reductions) {
         this.reductions.clear();

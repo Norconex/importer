@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
-          <xs:sequence>
+          <xs:all>
             <xs:element ref="merge" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -32,10 +32,10 @@
   
   <xs:element name="merge">
     <xs:complexType>
-      <xs:sequence>
+      <xs:all>
         <xs:element name="fromFields" minOccurs="0" maxOccurs="1" />
         <xs:element name="fromFieldsRegex" minOccurs="0" maxOccurs="1" />
-      </xs:sequence>
+      </xs:all>
       <xs:attribute name="toField" type="xs:string" use="required"/>
       <xs:attribute name="deleteFromFields" type="xs:boolean"/>
       <xs:attribute name="singleValue" type="xs:boolean"/>

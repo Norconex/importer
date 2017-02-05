@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractStringTransformer">
-          <xs:sequence>
+          <xs:all>
             <xs:element ref="replace" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="caseSensitive" type="xs:boolean"/>
         </xs:extension>
       </xs:complexContent>
@@ -33,7 +33,7 @@
 
   <xs:element name="replace">
     <xs:complexType>
-      <xs:sequence>
+      <xs:all>
         <xs:element name="fromValue" minOccurs="1" maxOccurs="1">
           <xs:simpleType>
             <xs:restriction base="xs:string">
@@ -48,7 +48,7 @@
             </xs:restriction>
           </xs:simpleType>        
         </xs:element>
-      </xs:sequence>
+      </xs:all>
     </xs:complexType>
   </xs:element>
 

@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-20176 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.tika.utils.CharsetUtils;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -133,7 +133,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         Iterator<PropertyMatcher> it = restrictions.iterator();
         int count = 0;
         while (it.hasNext()) {
-            PropertyMatcher r = (PropertyMatcher) it.next();
+            PropertyMatcher r = it.next();
             if (r.isCaseSensitive() && r.getKey().equals(field)
                     || !r.isCaseSensitive() 
                             && r.getKey().equalsIgnoreCase(field)) {
@@ -253,6 +253,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     @Override
     public final void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
+        loadHandlerFromXML(xml);
         List<HierarchicalConfiguration> nodes = 
                 xml.configurationsAt("restrictTo");
         if (!nodes.isEmpty()) {
@@ -264,7 +265,6 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                         node.getBoolean("[@caseSensitive]", false));
             }
         }
-        loadHandlerFromXML(xml);
     }
     /**
      * Loads configuration settings specific to the implementing class.
@@ -283,7 +283,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             writer.writeAttribute("class", getClass().getCanonicalName());
 
             saveHandlerToXML(writer);
-
+            
             for (PropertyMatcher restriction : restrictions) {
                 writer.writeStartElement("restrictTo");
                 if (restriction.getKey() != null) {
@@ -296,7 +296,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 }
                 writer.writeEndElement();
             }
-            
+
             writer.writeEndElement();
             writer.flush();
             writer.close();

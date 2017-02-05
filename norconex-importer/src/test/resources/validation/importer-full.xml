@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
 <!-- 
    Copyright 2017 Norconex Inc.
 
@@ -99,9 +100,9 @@
       <fieldsRegex>description</fieldsRegex>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
-      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <constant name="source">web</constant>
       <constant name="department">HR</constant>
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
@@ -241,6 +242,18 @@
           sourceCharset="ISO-8859-1" targetCharset="UTF-8">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
+      <metadata>
+        <match field="field1">&lt;title&gt;&lt;(title)&gt;</match>
+        <match reverseGroups="true">(.*?):(.*)</match>
+      </metadata>
+      <environment>
+        <variable name="var1">blah</variable>
+        <variable name="var2">blah blah</variable>
+      </environment>
+    </transformer>
     <transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
           caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
@@ -273,7 +286,7 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <stripBetween><start>OPEN</start><end>CLOSE</end></stripBetween>
       <stripBetween><start>A</start><end>Z</end></stripBetween>
-    </transformer>     
+    </transformer>
      
   </preParseHandlers>
 
@@ -292,11 +305,15 @@
     <parsers>
       <parser contentType="application/pdf" 
             class="com.norconex.importer.parser.impl.ExternalParser" >
-        <command>/command/exe</command>
+        <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
         <metadata>
-          <match key="k1">regex1</match>
-          <match key="k2">regex2</match>
+          <match field="field1">&lt;title&gt;&lt;(title)&gt;</match>
+          <match reverseGroups="true">(.*?):(.*)</match>
         </metadata>
+        <environment>
+          <variable name="var1">blah</variable>
+          <variable name="var2">blah blah</variable>
+        </environment>
       </parser>      
     </parsers>
   </documentParserFactory>

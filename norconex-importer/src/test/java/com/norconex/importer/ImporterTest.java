@@ -132,8 +132,9 @@ public class ImporterTest {
         ImporterResponse result = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
                         new ImporterMetadata(), "n/a");
-        System.out.println("Reject desc: "
-                        + result.getImporterStatus().getDescription());
+        
+//        System.out.println("Reject desc: "
+//                        + result.getImporterStatus().getDescription());
         Assert.assertTrue("PDF should have been rejected with proper "
                 + "status description.", 
                 result.getImporterStatus().isRejected() 

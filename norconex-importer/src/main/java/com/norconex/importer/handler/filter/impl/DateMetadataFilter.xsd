@@ -22,9 +22,9 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentFilter"> 
-          <xs:sequence>
+          <xs:all>
               <xs:element ref="condition" minOccurs="1" maxOccurs="unbounded" />
-          </xs:sequence>
+          </xs:all>
           <xs:attribute name="field" type="xs:string" use="required"></xs:attribute>
           <xs:attribute name="format" type="xs:string"></xs:attribute>
         </xs:extension> 

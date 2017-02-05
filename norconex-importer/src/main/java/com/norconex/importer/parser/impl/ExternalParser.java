@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,199 +15,307 @@
 package com.norconex.importer.parser.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.Writer;
-import java.util.HashMap;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.WriterOutputStream;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.HttpHeaders;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.metadata.TikaMetadataKeys;
-import org.apache.tika.mime.MediaType;
-import org.apache.tika.parser.ParseContext;
-import org.apache.tika.sax.BodyContentHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.tagger.impl.TextPatternTagger;
+import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParser;
 
 /**
  * <p>
- * Wrapper class around an external program used to extract the text
- * from a file (this class is an extension of 
- * {@link org.apache.tika.parser.external.ExternalParser}).
+ * Parses and extracts text from a file using an external application to do so.
  * </p>
  * <p>
  * Since 2.6.0, this parser can be made configurable via XML. See
  * {@link GenericDocumentParserFactory} for general indications how 
- * to configure all parsers.  It uses a similar configuration format
- * as Tika <code>tika-external-parsers.xml</code> file.
- * Use the strings <code>${INPUT}</code> and 
- * <code>${OUTPUT}</code> in the 
- * command to identify the input file that will be given by the Importer
- * and the output file that the Importer will read from the program.  For 
- * metadata, ensure you surround your value to be match in parenthesis
- * (regex group).
+ * to configure parsers.  
+ * </p>
+ * <p>
+ * Since 2.7.0, this parser no longer extends 
+ * {@link org.apache.tika.parser.external.ExternalParser}. 
+ * </p>
+ * <p>
+ * When constructing the command to launch the external application, these 
+ * placeholders will be replaced if provided (case-sensitive): 
+ * </p>
+ * <table>
+ *   <tr>
+ *     <td><code>${INPUT}</code></td>
+ *     <td>File to transform.</td>
+ *   </tr>
+ *   <tr>
+ *     <td><code>${OUTPUT}</code></td>
+ *     <td>Resulting file from the transformation.</td>
+ *   </tr>
+ * </table>
+ * <p>
+ * Both are optional and if not provided, the file input or output will be 
+ * STDIN or STDOUT respectively.
+ * </p>
+ * <p>
+ * Execution environment variables can be set to replace environment variables
+ * defined for the current process.
+ * </p>
+ * <p>
+ * It is also possible to specify metadata extraction patterns that will be
+ * applied on each line returned from STDOUT and STDERR.  With each pattern,
+ * there could be a matadata field name supplied. If the pattern does not 
+ * contain any match group, the entire matched expression will be used as the 
+ * metadata field value.  If the pattern has one match group, it will use the 
+ * group matched value instead. Finally, if the pattern holds two match groups,
+ * the first one is the metadata field name while the second one is the field
+ * value. In such case, the field name is used to indicate whether match groups
+ * should be reversed or not ("reverse:true"). Reverse match groups will take
+ * the first group has the value and the second as the field name.
+ * To extract metadata from
+ * a generated file instead of STDOUT, use an import handler such as 
+ * {@link TextPatternTagger} to do so.   
+ * </p>
+ * <p>
+ * The expected application output is expected to be UTF-8.
+ * </p>
+ * <p>
+ * To use an external application to change a file content after parsing has
+ * already occurred, consider using {@link ExternalTransformer} instead. 
  * </p>
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;parser contentType="(content type)" 
+ *  &lt;parser contentType="(content type this parser is associated to)" 
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
- *      &lt;command&gt;(your command with arguments)&lt;/command&gt;
+ *          
+ *      &lt;command&gt;c:\Apps\myapp.exe ${INPUT} ${OUTPUT}&lt;/command&gt;
+ *      
  *      &lt;metadata&gt;
- *          &lt;match key="(target field name)"&gt;(regular expression)&lt;/match&gt;
+ *          &lt;match field="(field name if not obtained form regex)"
+ *                  reverseGroups="[false|true]" &gt;
+ *              (Regular expression. No match group takes entire match as value.
+ *               One match group takes match as value.
+ *               Two match groups take first match as field name and second
+ *               as value, or the opposite if "reverseGroups" is "true".)
+ *          &lt;/match&gt;
  *          &lt;!-- repeat match tag as needed --&gt;
  *      &lt;/metadata&gt;
+ *      
+ *      &lt;environment&gt;
+ *          &lt;variable name="(environment variable name)"&gt;
+ *              (environment variable value)
+ *          &lt;/variable&gt;
+ *          &lt;!-- repeat variable tag as needed --&gt;
+ *      &lt;/environment&gt;
+ *      
  *  &lt;/parser&gt;
  * </pre> 
+ * 
  * <h4>Usage example:</h4>
+ * <p>
+ * The following example invokes an external application for simple text files
+ * that accepts two files as arguments: the first one being the file to 
+ * transform, the second one being holding the transformation result. 
+ * It also extract a document number from STDOUT, found as "DocNo:1234"
+ * and storing it as "docnumber".
+ * </p> 
  * <pre>
- *  &lt;parser contentType="application/pdf" 
+ *  &lt;parser contentType="text/plain" 
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
- *      &lt;command&gt;java -jar c:\Apps\pdfbox-app-2.0.2.jar ExtractText ${INPUT} ${OUTPUT}&lt;/command&gt;
- *  &lt;/parser&gt;
- * </pre> 
+ *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
+ *      &lt;metadata&gt;
+ *          &lt;match field="docnumber"&gt;DocNo:(\d+)&lt;/match&gt;
+ *      &lt;/metadata&gt;
+ *  &lt;/transformer&gt;
+ * </pre>
  * @author Pascal Essiembre
  * @since 2.2.0
  */
-public class ExternalParser 
-        extends org.apache.tika.parser.external.ExternalParser
-        implements IDocumentParser, IXMLConfigurable {
+public class ExternalParser implements IDocumentParser, IXMLConfigurable {
 
-    private static final long serialVersionUID = 3569996828422125700L;
+    private final ExternalTransformer t = new ExternalTransformer();
+    private String contentType;
+    
+    /**
+     * Gets the command to execute.
+     * @return the command
+     */
+    public String getCommand() {
+        return t.getCommand();
+    }
+    /**
+     * Sets the command to execute. Make sure to escape spaces in 
+     * executable path and its arguments as well as other special command
+     * line characters.
+     * @param command the command
+     */
+    public void setCommand(String command) {
+        t.setCommand(command);
+    }
+    
+    /**
+     * Gets metadata extraction patterns. See class documentation.
+     * @return map of patterns and field names
+     */
+    public Map<Pattern, String> getMetadataExtractionPatterns() {
+        return t.getMetadataExtractionPatterns();
+    }
+    /**
+     * Sets metadata extraction patterns. Clears any previously assigned 
+     * patterns.
+     * See class documentation.
+     * To reverse the match group order in a double match group pattern,
+     * set the field name to "reverse:true".
+     * @param patterns map of patterns and field names
+     */
+    public void setMetadataExtractionPatterns(Map<Pattern, String> patterns) {
+        t.setMetadataExtractionPatterns(patterns);
+    }
+    /**
+     * Adds metadata extraction patterns, keeping any patterns previously
+     * assigned.
+     * See class documentation.
+     * To reverse the match group order in a double match group pattern,
+     * set the field name to "reverse:true".
+     * @param patterns map of patterns and field names
+     */
+    public void addMetadataExtractionPatterns(Map<Pattern, String> patterns) {
+        t.addMetadataExtractionPatterns(patterns);
+    }
+    /**
+     * Adds a metadata extraction pattern. See class documentation.
+     * @param pattern pattern with two match groups
+     * @param reverse whether to reverse match groups (inverse key and value).
+     */
+    public void addMetadataExtractionPattern(Pattern pattern, boolean reverse) {
+        t.addMetadataExtractionPattern(pattern, reverse);
+    }
+    /**
+     * Adds a metadata extraction pattern. See class documentation.
+     * @param pattern pattern with no or one match group
+     * @param field field name where to store the matched pattern
+     */
+    public void addMetadataExtractionPattern(Pattern pattern, String field) {
+        t.addMetadataExtractionPattern(pattern, field);
+    }
+    
+    /**
+     * Gets environment variables.
+     * @return environment variables or <code>null</code> if using the current
+     *         process environment variables
+     */
+    public Map<String, String> getEnvironmentVariables() {
+        return t.getEnvironmentVariables();
+    }
+    /**
+     * Sets the environment variables. Clearing any prevously assigned
+     * environment variables. Set <code>null</code> to use
+     * the current process environment variables (default).
+     * @param environmentVariables environment variables
+     */
+    public void setEnvironmentVariables(
+            Map<String, String> environmentVariables) {
+        t.setEnvironmentVariables(environmentVariables);
+    }
+    /**
+     * Adds the environment variables, keeping environment variables previously
+     * assigned. Existing variables of the same name
+     * will be overwritten. To clear all previously assigned variables and use
+     * the current process environment variables, pass 
+     * <code>null</code> to 
+     * {@link ExternalParser#setEnvironmentVariables(Map)}.
+     * @param environmentVariables environment variables
+     */
+    public void addEnvironmentVariables(
+            Map<String, String> environmentVariables) {
+        t.addEnvironmentVariables(environmentVariables);
+    }
+    /**
+     * Adds an environment variables to the list of previously
+     * assigned variables (if any). Existing variables of the same name
+     * will be overwritten. Setting a variable with a 
+     * <code>null</code> name has no effect while <code>null</code>
+     * values are converted to empty strings.
+     * @param name environment variable name
+     * @param value environment variable value
+     */
+    public void addEnvironmentVariable(String name, String value) {
+        t.addEnvironmentVariable(name, value);
+    }
 
     @Override
     public List<ImporterDocument> parseDocument(ImporterDocument doc,
             Writer output) throws DocumentParserException {
-        Metadata tikaMetadata = new Metadata();
-        if (doc.getContentType() == null) {
-            throw new DocumentParserException(
-                    "ImporterDocument must have a content-type.");
-        }
-        String contentType = doc.getContentType().toString();
-        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, contentType);
-        tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
-                doc.getReference());
-        tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
-
-        ContentHandler handler = new BodyContentHandler(output);
-
-        InputStream stream = doc.getContent();
         try {
-            parse(stream, handler,  tikaMetadata, new ParseContext());
-        } catch (IOException | SAXException | TikaException e) {
-            throw new DocumentParserException(e);
+            t.transformDocument(doc.getReference(), doc.getContent(), 
+                    new WriterOutputStream(output, StandardCharsets.UTF_8), 
+                    doc.getMetadata(), false);
+        } catch (ImporterHandlerException e) {
+            throw new DocumentParserException("Could not parse document: "
+                    + doc.getReference(), e);
         }
         return null;
     }
     
     @Override
-    public void setSupportedTypes(Set<MediaType> supportedTypes) {
-        throw new UnsupportedOperationException(
-                "Cannot set supported types this way.");
-    }
-    
-    @Override
     public void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        String[] commands = StringUtils.split(
-                xml.getString("command", null), " ");
-        if (commands != null) {
-            setCommand(commands);
-        }
-
-        List<HierarchicalConfiguration> nodes = 
-                xml.configurationsAt("metadata.match");
-        if (!nodes.isEmpty()) {
-            Map<Pattern, String> patterns = new HashMap<>();
-            for (HierarchicalConfiguration node : nodes) {
-                patterns.put(Pattern.compile(node.getString("")),
-                        node.getString("[@key]"));
-            }
-            setMetadataExtractionPatterns(patterns);
-        }
+        String xml = IOUtils.toString(in);
+        xml = xml.replaceAll("<(/{0,1})parser", "<$1transformer");
+        contentType = xml.replaceFirst(
+                ".*?contentType\\s*=\\s*\"(.*?)\".*", "$1");
+        xml = xml.replaceFirst("(.*?)contentType\\s*=\\s*\".*?\"(.*)", "$1$2");
+        StringReader r = new StringReader(xml);
+        t.loadFromXML(r);
     }
     
     @Override
     public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("parser");
-            writer.writeAttribute("class", getClass().getCanonicalName());
-
-            writer.writeElementString(
-                    "command", StringUtils.join(getCommand(), " "));
-
-            if (getMetadataExtractionPatterns() != null) {
-                writer.writeStartElement("metadata");
-                for (Entry<Pattern, String> entry 
-                        : getMetadataExtractionPatterns().entrySet()) {
-                    writer.writeStartElement("match");
-                    writer.writeAttribute("key", entry.getValue());
-                    writer.writeCharacters(entry.getKey().toString());
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-            
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-            
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+        StringWriter w = new StringWriter();
+        t.saveToXML(w);
+        String xml = w.toString();
+        String ctAttrib = "";
+        if (!xml.contains("contentType") && contentType != null) {
+            ctAttrib = "contentType=\"" + contentType + "\" ";
         }
+        xml = xml.replaceFirst("<transformer class=\".*?\"", 
+                "<parser " + ctAttrib
+                + "class=\"" + getClass().getName() + "\"");
+        xml = xml.replace("</transformer>", "</parser>");
+        
+        out.write(xml);
+        out.flush();
+        out.close();
     }
-    
-    
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof ExternalParser)) {
             return false;
         }
-        ExternalParser castOther = (ExternalParser) other;        
-        return new EqualsBuilder()
-                .append(getCommand(), castOther.getCommand())
-                .append(getMetadataExtractionPatterns(), 
-                        castOther.getMetadataExtractionPatterns())
-                .isEquals();
+        ExternalParser castOther = (ExternalParser) other;
+        return t.equals(castOther.t);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(getCommand())
-                .append(getMetadataExtractionPatterns())
-                .toHashCode();
+        return t.hashCode();
     }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("command", getCommand())
-                .append("metadataExtractionPatterns", 
-                        getMetadataExtractionPatterns())
-                .toString();
-    }      
-    
+        String toString = t.toString();
+        toString = toString.replaceFirst(
+            "ExternalTransformer\\[xmltag=transformer,restrictions=\\[.*?\\],",
+            ExternalParser.class.getSimpleName() + "[");
+        return toString;
+    }
 }

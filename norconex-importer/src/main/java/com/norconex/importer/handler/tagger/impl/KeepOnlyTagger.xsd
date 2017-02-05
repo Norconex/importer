@@ -22,10 +22,10 @@
     <xs:complexType>
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger">
-          <xs:sequence>
+          <xs:all>
             <xs:element name="fields" type="xs:string" minOccurs="0" maxOccurs="1" />
             <xs:element name="fieldsRegex" type="xs:string" minOccurs="0" maxOccurs="1" />
-          </xs:sequence>
+          </xs:all>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

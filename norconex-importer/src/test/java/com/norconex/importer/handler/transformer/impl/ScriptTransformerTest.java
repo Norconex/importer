@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
@@ -43,7 +45,7 @@ public class ScriptTransformerTest {
         t.setScript(script);
 
         File htmlFile = TestUtil.getAliceHtmlFile();
-        FileInputStream is = new FileInputStream(htmlFile);
+        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         
