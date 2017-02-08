@@ -64,7 +64,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *          &lt;start&gt;(regex)&lt;/start&gt;
  *          &lt;end&gt;(regex)&lt;/end&gt;
  *      &lt;/stripBetween&gt;
- *      &lt;!-- multiple strignBetween tags allowed --&gt;
+ *      &lt;!-- multiple stripBetween tags allowed --&gt;
  *      
  *  &lt;/transformer&gt;
  * </pre>
