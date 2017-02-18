@@ -166,7 +166,7 @@
       <dependency>
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
-        <version>1.9.2</version>
+        <version>1.10.2</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -388,6 +388,9 @@
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
             </manifest>
           </archive>
+          <excludes>
+            <exclude>THIRD-PARTY.txt</exclude>
+          </excludes>
         </configuration>
         <executions>
           <execution>

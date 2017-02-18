@@ -14,7 +14,7 @@
       </action>
       <action dev="essiembre" type="add">
         Added schema-based XML configuration validation which can be trigged
-        on command prompt with this new flag: -k or -checkcfg
+        on command prompt with this new flag: -k or --checkcfg
       </action>
       <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.
@@ -24,7 +24,8 @@
         character case and capitalize beginning of a string, respectively.
       </action>
       <action dev="essiembre" type="update">
-        Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0.
+        Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0,
+        JSoup 1.10.2.
       </action>
       <action dev="essiembre" type="update">
         ExternalParser was rewritten. Now offers more metadata extraction
