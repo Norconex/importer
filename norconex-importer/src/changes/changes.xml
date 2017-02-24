@@ -9,6 +9,10 @@
 
     <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        Added Lua scripting support to ScriptFilter, ScriptTagger, and 
+        ScriptTransformer. 
+      </action>
+      <action dev="essiembre" type="add">
         New ExternalTransformer for transforming documents and extracting
         metadata using an external application.
       </action>

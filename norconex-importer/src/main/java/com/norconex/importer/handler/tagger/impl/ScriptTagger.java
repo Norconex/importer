@@ -81,10 +81,20 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <h4>Usage example:</h4>
  * <p>The following example simply adds new metadata field indicating which
  * fruit is a document about.</p>
+ * <h5>JavaScript:</h5>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"&gt;
  *    &lt;script&gt;&lt;![CDATA[
  *        metadata.addString('fruit', 'apple');
+ *    ]]&gt;&lt;/script&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h5>Lua:</h5>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ *      engineName="lua"&gt;
+ *    &lt;script&gt;&lt;![CDATA[
+ *        metadata:addString('fruit', {'apple'});
  *    ]]&gt;&lt;/script&gt;
  *  &lt;/tagger&gt;
  * </pre>

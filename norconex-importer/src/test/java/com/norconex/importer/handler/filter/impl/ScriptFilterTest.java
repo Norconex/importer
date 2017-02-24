@@ -27,29 +27,33 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.ScriptRunner;
 
 public class ScriptFilterTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
+    @Test
+    public void testLua() throws IOException, ImporterHandlerException {
+        testScriptFilter(ScriptRunner.LUA_ENGINE, 
+                "local test = metadata:getString('fruit') == 'apple' "
+              + " and content:find('Alice') ~= nil; "
+              + "return test;"
+        );
+    }
     
     @Test
-    public void testJavaScript() 
+    public void testJavaScript() throws IOException, ImporterHandlerException {
+        testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE, 
+                "var test = metadata.getString('fruit') == 'apple'"
+              + "  && content.indexOf('Alice') > -1;"
+              + "/*return*/ test;"
+        );
+    }
+    
+    private void testScriptFilter(String engineName, String script) 
             throws IOException, ImporterHandlerException {
 
-        String script =
-                "test = metadata.getString('fruit') == 'apple'"
-              + "  && content.indexOf('Alice') > -1;"
-              + "/*return*/ test;";
-        
         ScriptFilter f = new ScriptFilter();
+        f.setEngineName(engineName);
         f.setScript(script);
 
         File htmlFile = TestUtil.getAliceHtmlFile();
@@ -59,7 +63,7 @@ public class ScriptFilterTest {
         metadata.setString("fruit", "apple");
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         
-        Assert.assertTrue(f.acceptDocument(
+        Assert.assertTrue("Filter returned false.",  f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false));
 
         is.close();

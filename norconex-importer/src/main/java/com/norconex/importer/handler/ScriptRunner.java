@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,9 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * <a href="https://jcp.org/en/jsr/detail?id=223">JSR 223</a> API, which 
  * allows to "plug" any script engines to support your favorite scripting
  * language.
- * </p><p>
+ * </p>
+ * <h3>JavaScript</h3>
+ * <p>
  * The JavaScript (ECMAScript) script engine should already be present as 
  * part of your Java installation and is the default script engine used by 
  * this class when none is specified. 
@@ -56,7 +58,18 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * Prior to version 8, Java used a JavaScript engine based on 
  * <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/Rhino">
  * Mozilla Rhino</a>.
- * </p><p>
+ * </p>
+ * <h3>Lua</h3>
+ * <p>
+ * As of 2.7.0, support for the  
+ * <a href="https://www.lua.org/">Lua</a> script engine is available. 
+ * It relies on the
+ * <a href="https://sourceforge.net/projects/luaj/">LuaJ</a> project to do so.
+ * To use it, set "lua" as the scripting engine with 
+ * {@link #setEngineName(String)}. 
+ * </p>
+ * <h3>Others</h3>
+ * <p>
  * Several third-party script engines already exist to support additional
  * languages such as Groovy, JRuby, Scala, Fantom, Jython, etc. Refer to 
  * appropriate third-party documentation about these languages to find
@@ -78,7 +91,9 @@ public class ScriptRunner<T> {
 
     private static final Logger LOG = LogManager.getLogger(ScriptRunner.class);
     
-    public static final String DEFAULT_SCRIPT_ENGINE = "JavaScript";
+    public static final String LUA_ENGINE = "lua";
+    public static final String JAVASCRIPT_ENGINE = "JavaScript";
+    public static final String DEFAULT_SCRIPT_ENGINE = JAVASCRIPT_ENGINE;
     
     private ScriptEngine engine;
     private CompiledScript compiledScript;
@@ -119,7 +134,7 @@ public class ScriptRunner<T> {
     public T eval(Bindings bindings) throws ImporterHandlerException {
         try {
             ensureScriptEngine();
-            T value = null;
+            T value;
             if (compiledScript != null) {
                 value = (T) compiledScript.eval(bindings);
             } else {
@@ -136,11 +151,11 @@ public class ScriptRunner<T> {
         if (engine != null) {
             return;
         }
-        String engineName = this.engineName;
-        if (StringUtils.isBlank(engineName)) {
-            engineName = DEFAULT_SCRIPT_ENGINE;
+        String name = this.engineName;
+        if (StringUtils.isBlank(name)) {
+            name = DEFAULT_SCRIPT_ENGINE;
         }
-        engine = new ScriptEngineManager().getEngineByName(engineName);
+        engine = new ScriptEngineManager().getEngineByName(name);
         
         if (engine == null) {
             StringBuilder b = new StringBuilder();
@@ -160,11 +175,11 @@ public class ScriptRunner<T> {
                 b.append(langName);
                 b.append(" (" + langVersion + ")");
             }
-            LOG.error("Invalid Script Engine \"" + engineName 
+            LOG.error("Invalid Script Engine \"" + name 
                     + "\". Detected Script Engines are:\n" + b.toString());
             throw new ImporterHandlerException(
                     "No Script Engine found in your JVM matching the name \""
-                    + engineName + "\".");
+                    + name + "\".");
         }
         
         if (engine instanceof Compilable) {
@@ -197,16 +212,11 @@ public class ScriptRunner<T> {
                 .append(script)
                 .toHashCode();
     }
-    private transient String toString;
     @Override
     public String toString() {
-        if (toString == null) {
-            toString = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("engineName", engineName)
-                    .append("script", script)
-                    .toString();
-        }
-        return toString;
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("engineName", engineName)
+                .append("script", script)
+                .toString();
     }
 }

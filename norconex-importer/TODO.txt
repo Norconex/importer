@@ -24,8 +24,6 @@ TODO:
   representation instead, that will be converted to milliseconds 
   (e.g. 2.5s, or 2 minutes and 30 secondes)
 
-- Consider adding support for Lua scripting to Script* handlers. 
-
 - Allow to specify data unit for DocumentLengthTagger (with locale and decimal
   precision).
 

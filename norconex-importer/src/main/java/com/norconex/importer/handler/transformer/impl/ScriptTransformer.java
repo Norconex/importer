@@ -83,11 +83,22 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <h4>Usage example:</h4>
  * <p>The following example replaces all occurences of "Alice" with "Roger"
  * in a document content.</p>
+ * <h5>JavaScript:</h5>
  * <pre>
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"&gt;
  *    &lt;script&gt;&lt;![CDATA[
  *        modifiedContent = content.replace(/Alice/g, 'Roger');
  *        /&#42;return&#42;/ modifiedContent;
+ *    ]]&gt;&lt;/script&gt;
+ *  &lt;/transformer&gt;
+ * </pre>
+ * <h5>Lua:</h5>
+ * <pre>
+ *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ *      engineName="lua"&gt;
+ *    &lt;script&gt;&lt;![CDATA[
+ *        modifiedContent = content:gsub('Alice', 'Roger');
+ *        return modifiedContent;
  *    ]]&gt;&lt;/script&gt;
  *  &lt;/transformer&gt;
  * </pre>

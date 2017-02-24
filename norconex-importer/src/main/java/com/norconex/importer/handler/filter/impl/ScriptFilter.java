@@ -24,6 +24,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -79,12 +81,25 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  * </pre>
  * 
  * <h4>Usage example:</h4>
+ * <h5>JavaScript:</h5>
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"&gt;
  *    &lt;script&gt;&lt;![CDATA[
- *      isAppleDoc = metadata.getString('fruit') == 'apple'
+ *      var isAppleDoc = metadata.getString('fruit') == 'apple'
  *              || content.indexOf('Apple') &gt; -1;
  *      /&#42;return&#42;/ isAppleDoc;
+ *    ]]&gt;&lt;/script&gt;
+ *  &lt;/filter&gt;
+ * </pre>
+ * 
+ * <h5>Lua:</h5>
+ * <pre>
+ *  &lt;filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"
+ *      engineName="lua"&gt;
+ *    &lt;script&gt;&lt;![CDATA[
+ *      local isAppleDoc = metadata:getString('fruit') == 'apple'
+ *              and content:find('Apple') ~= nil;
+ *      return isAppleDoc;
  *    ]]&gt;&lt;/script&gt;
  *  &lt;/filter&gt;
  * </pre>
@@ -95,7 +110,9 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  */
 public class ScriptFilter extends AbstractStringFilter {
 
-    private final ScriptRunner<Boolean> scriptRunner = new ScriptRunner<>();
+    private static final Logger LOG = LogManager.getLogger(ScriptFilter.class);
+    
+    private final ScriptRunner<Object> scriptRunner = new ScriptRunner<>();
     
     public String getEngineName() {
         return scriptRunner.getEngineName();
@@ -122,10 +139,18 @@ public class ScriptFilter extends AbstractStringFilter {
         b.put("metadata", metadata);
         b.put("parsed", parsed);
         b.put("sectionIndex", sectionIndex);
-        return scriptRunner.eval(b);
+        Object obj = scriptRunner.eval(b);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Returned object from ScriptFilter: " + obj);
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof Boolean) {
+            return (boolean) obj;
+        }
+        return Boolean.valueOf(obj.toString());
     }
-
-    
     
     @Override
     protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer)
@@ -159,16 +184,11 @@ public class ScriptFilter extends AbstractStringFilter {
                 .append(scriptRunner)
                 .toHashCode();
     }
-    private transient String toString;
     @Override
     public String toString() {
-        if (toString == null) {
-            toString = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .appendSuper(super.toString())
-                    .append("scriptRunner", scriptRunner)
-                    .toString();
-        }
-        return toString;
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("scriptRunner", scriptRunner)
+                .toString();
     } 
 }

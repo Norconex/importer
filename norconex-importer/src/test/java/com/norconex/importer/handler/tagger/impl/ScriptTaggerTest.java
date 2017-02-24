@@ -28,19 +28,32 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.ScriptRunner;
 
 public class ScriptTaggerTest {
 
     @Test
-    public void testJavaScript() 
-            throws IOException, ImporterHandlerException {
-
-        String script =
+    public void testLua() throws IOException, ImporterHandlerException {
+        testScriptTagger("lua", 
+                "metadata:addString('test', {'success'});"
+              + "local story = content:gsub('Alice', 'Roger');"
+              + "metadata:addString('story', {story});"
+        );
+    }
+    
+    @Test
+    public void testJavaScript() throws IOException, ImporterHandlerException {
+        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE, 
                 "metadata.addString('test', 'success');"
               + "var story = content.replace(/Alice/g, 'Roger');"
-              + "metadata.addString('story', story);";
-        
+              + "metadata.addString('story', story);"
+        );
+    }
+    
+    private void testScriptTagger(String engineName, String script) 
+            throws IOException, ImporterHandlerException {    
         ScriptTagger t = new ScriptTagger();
+        t.setEngineName(engineName);
         t.setScript(script);
 
         File htmlFile = TestUtil.getAliceHtmlFile();
