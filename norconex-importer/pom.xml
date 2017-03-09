@@ -157,8 +157,17 @@
         <artifactId>levigo-jbig2-imageio</artifactId>
         <version>1.6.5</version>
         <scope>test</scope>
-    </dependency>   
+    </dependency>
 
+    <!-- Not included with Tika and required for parsing Visio XML-based files.
+         Consider removing (quite big) once included in poi-ooxml-schemas. See:
+         https://poi.apache.org/faq.html#faq-N10025
+      -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>ooxml-schemas</artifactId>
+      <version>1.3</version>
+    </dependency>
   </dependencies>
   
   <dependencyManagement>
@@ -213,6 +222,15 @@
         <groupId>edu.ucar</groupId>
         <artifactId>jj2000</artifactId>
         <version>5.3</version>
+      </dependency>
+
+      <!-- Ensures correct version, as ooxml-schemas 
+          (required for Visio-XML parsing) brings it down.
+        -->
+      <dependency>
+        <groupId>org.apache.xmlbeans</groupId>
+        <artifactId>xmlbeans</artifactId>
+        <version>2.6.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>  

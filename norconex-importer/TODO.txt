@@ -20,10 +20,6 @@ TODO:
 - Consider ExternalTagger which expects a .properties file or similar format,
   or meta extraction pattern.
 
-- Wherever a duration is specified in milliseconds, allow to have a string
-  representation instead, that will be converted to milliseconds 
-  (e.g. 2.5s, or 2 minutes and 30 secondes)
-
 - Allow to specify data unit for DocumentLengthTagger (with locale and decimal
   precision).
 

@@ -29,7 +29,7 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0,
-        JSoup 1.10.2.
+        JSoup 1.10.2, OOXML-Schemas 1.3 (fixes some bad Visio parsing).
       </action>
       <action dev="essiembre" type="update">
         ExternalParser was rewritten. Now offers more metadata extraction
@@ -45,6 +45,10 @@
         To enable them, you will need JAR files found at these locations: 
         http://central.maven.org/maven2/com/github/jai-imageio/jai-imageio-jpeg2000/
         http://central.maven.org/maven2/com/levigo/jbig2/levigo-jbig2-imageio/
+      </action>
+      <action dev="essiembre" type="fix">
+        Fixed NoClassDefFoundError on some MS Visio files: 
+        com/microsoft/schemas/office/visio/x2012/main/ConnectsType      
       </action>
       <action dev="essiembre" type="remove">
         Removed FixedHtmlEncodingDetector class in favor of the fixed version 

@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,16 +26,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class DateFormatTaggerTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @Test
     public void testMultiFromFormatTagger() throws ImporterHandlerException {
         String dateISOFormat = "yyyy-MM-dd'T'HH:mm:ss";

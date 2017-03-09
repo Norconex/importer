@@ -39,16 +39,6 @@ public class ExternalParserTest {
     public static final String INPUT = "1 2 3\n4 5 6\n7 8 9";
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
     
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.DEBUG);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @Test
     public void testWriteRead() throws IOException {
         ExternalParser p = new ExternalParser();

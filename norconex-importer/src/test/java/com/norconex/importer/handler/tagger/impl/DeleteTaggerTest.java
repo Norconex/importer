@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,24 +28,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class DeleteTaggerTest {
 
-//    static {
-//        // Root
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-////        // Crawler
-////        logger = Logger.getLogger(HttpCrawler.class);
-////        logger.setLevel(Level.DEBUG);
-//        
-////        // Apache
-////        logger = Logger.getLogger("org.apache");
-////        logger.setLevel(Level.WARN);
-//        
-//    }
-    
     @Test
     public void testWriteRead() throws IOException {
         DeleteTagger tagger = new DeleteTagger();
