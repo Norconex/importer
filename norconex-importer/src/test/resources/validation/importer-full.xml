@@ -99,7 +99,8 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <fieldsRegex>description</fieldsRegex>
     </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
+    <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
+          onConflict="replace">
       <constant name="source">web</constant>
       <constant name="department">HR</constant>
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>

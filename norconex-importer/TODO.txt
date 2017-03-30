@@ -1,6 +1,11 @@
 TODO:
 ==============
 
+- Have new taggers: 
+    - ExtensionTagger, given a URL, tries to get extension from content type 
+      if not found in reference.
+    - Add overwrite=true|false to ReplaceTagger? 
+
 - To remove/adjust when released in Apache Tika:
 
     - Remove CharsetDetector in favor of Tika original one once fixed:
@@ -17,8 +22,11 @@ TODO:
     - Remove JBIG2-related code/files if accepted:
       https://issues.apache.org/jira/browse/TIKA-2232
 
-- Consider ExternalTagger which expects a .properties file or similar format,
-  or meta extraction pattern.
+- Consider adding LIRE support (image info extraction for image search).
+  http://www.lire-project.net/
+
+- Consider creating an ExternalTagger which expects metadata extraction patterns
+  from STDOUT/STDERR or from output file.
 
 - Allow to specify data unit for DocumentLengthTagger (with locale and decimal
   precision).

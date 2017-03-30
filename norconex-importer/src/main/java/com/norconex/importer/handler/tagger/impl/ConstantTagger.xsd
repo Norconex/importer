@@ -25,6 +25,13 @@
           <xs:all>
             <xs:element ref="constant"  minOccurs="1" maxOccurs="unbounded"/>
           </xs:all>
+          <xs:attribute name="onConflict">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:pattern value="add|replace|noop" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
