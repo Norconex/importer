@@ -81,6 +81,7 @@
         <exclude>hamcrest-core*</exclude>
       </excludes>
       <outputDirectory>lib</outputDirectory>
+      <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>      
     </dependencySet>
   </dependencySets>
 </assembly>
