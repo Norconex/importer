@@ -43,7 +43,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * values under the same constant name, repeat the constant entry with a 
  * different value.  
  * </p>
- * <h3>Conflict resolutionP</h3>
+ * <h3>Conflict resolution</h3>
  * <p>
  * If a field with the same name already exists 
  * for a document, the constant value(s) will be added

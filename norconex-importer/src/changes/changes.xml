@@ -24,6 +24,10 @@
         New MergeTagger for combining multiple fields into one.
       </action>
       <action dev="essiembre" type="add">
+        New SubstringTransformer for reducing content (e.g., truncate) to 
+        a substring matching a begin and end indexes.
+      </action>
+      <action dev="essiembre" type="add">
         CharacterCaseTagger now support "swap" and "string" to swap 
         character case and capitalize beginning of a string, respectively.
       </action>

@@ -288,6 +288,8 @@
       <stripBetween><start>OPEN</start><end>CLOSE</end></stripBetween>
       <stripBetween><start>A</start><end>Z</end></stripBetween>
     </transformer>
+    <transformer class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
+          begin="100" end="10000"/>
      
   </preParseHandlers>
 
