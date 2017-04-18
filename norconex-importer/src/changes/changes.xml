@@ -39,6 +39,9 @@
         New ConstantTagger#setOnConflict(...) method to specify if the constant
         should be added to existing values, replace them, or do nothing.
       </action>
+      <action dev="essiembre" type="add">
+        Now distributed with utility scripts.
+      </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0,
         JSoup 1.10.2, OOXML-Schemas 1.3 (fixes some bad Visio parsing).

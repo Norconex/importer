@@ -23,13 +23,6 @@
   <includeSiteDirectory>false</includeSiteDirectory>
   <fileSets>
     <fileSet>
-      <directory>${basedir}/src/main/scripts</directory>
-      <includes>
-        <include>**</include>
-      </includes>
-      <outputDirectory>/</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>${basedir}/src/site/resources/examples</directory>
       <includes>
         <include>**</include>
@@ -45,12 +38,21 @@
       <includes>
         <include>third-party/**</include>
         <include>*.txt</include>
+        <include>importer.*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site/apidocs</directory>
       <outputDirectory>apidocs</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/shared-resources</directory>
+      <excludes>
+        <exclude>scripts/decrypt*</exclude>
+        <exclude>scripts/encrypt*</exclude>
+      </excludes>
+      <outputDirectory>/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-resources</directory>
