@@ -21,6 +21,10 @@
         on command prompt with this new flag: -k or --checkcfg
       </action>
       <action dev="essiembre" type="add">
+        New RegexReferenceFilter for filtering documents based on matching
+        references (e.g. URL).
+      </action>
+      <action dev="essiembre" type="add">
         New MergeTagger for combining multiple fields into one.
       </action>
       <action dev="essiembre" type="add">

@@ -16,12 +16,12 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractStringFilter.xsd"></xs:include>
+  <xs:include schemaLocation="../AbstractDocumentFilter.xsd"></xs:include>
   
   <xs:element name="filter">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractStringFilter">
+        <xs:extension base="AbstractDocumentFilter">
           <xs:all>
             <xs:element name="regex" type="xs:string" minOccurs="1" maxOccurs="1" />
           </xs:all>

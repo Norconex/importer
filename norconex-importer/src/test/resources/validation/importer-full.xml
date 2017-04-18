@@ -50,18 +50,23 @@
     </filter>
     <filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
             onMatch="include"  caseSensitive="true"
-            sourceCharset="UTF-8" maxReadSize="9999" >
+            sourceCharset="UTF-8" maxReadSize="9999">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*regex.*</regex>
     </filter>
     <filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
-          onMatch="include" field="title" >
+          onMatch="include" field="title">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*potato.*</regex>
     </filter>
+    <filter class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
+          onMatch="include">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <regex>.*/login/.*</regex>
+    </filter>
     <filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"
             engineName="MyEngine" onMatch="include" 
-            sourceCharset="UTF-8" maxReadSize="999" >
+            sourceCharset="UTF-8" maxReadSize="999">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <script>[CDATA[
         var myvar = "test";
@@ -70,7 +75,7 @@
     <splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
           separatorCharacter="A" quoteCharacter="B" escapeCharacter="C"
           useFirstRowAsFields="false" linesToSkip="0" referenceColumn="columnA"
-          contentColumns="columnB, columnC, columnD" >
+          contentColumns="columnB, columnC, columnD">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </splitter>
     <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
