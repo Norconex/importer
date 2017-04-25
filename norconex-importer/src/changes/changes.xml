@@ -32,7 +32,11 @@
         a substring matching a begin and end indexes.
       </action>
       <action dev="essiembre" type="add">
-        CharacterCaseTagger now support "swap" and "string" to swap 
+        New UUIDTagger for adding random Universally unique identifier (UUID)
+        to documents.
+      </action>
+      <action dev="essiembre" type="add">
+        CharacterCaseTagger now supports "swap" and "string" to swap 
         character case and capitalize beginning of a string, respectively.
       </action>
       <action dev="essiembre" type="add">

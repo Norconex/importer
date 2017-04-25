@@ -244,6 +244,10 @@
           detectHeadingMaxLength="200" sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+          field="uuidField" overwrite="true" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </tagger>
     <transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
           sourceCharset="ISO-8859-1" targetCharset="UTF-8">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
