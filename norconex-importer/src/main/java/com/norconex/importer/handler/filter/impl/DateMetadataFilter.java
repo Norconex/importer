@@ -482,14 +482,15 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 }
                 // yyyy-MM-ddThh:mm:ss
                 if (d.contains("T")) {
-                    return new Condition(operator, 
-                            DateFormatUtils.ISO_DATETIME_FORMAT.parse(
+                    return new Condition(operator, DateFormatUtils
+                            .ISO_8601_EXTENDED_DATETIME_FORMAT.parse(
                                     d).getTime());
                 }
 
                 // yyyy-MM-dd
                 return new Condition(operator, 
-                        DateFormatUtils.ISO_DATE_FORMAT.parse(d).getTime());
+                        DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
+                                d).getTime());
             } catch (ParseException e) {
                 LOG.debug("Date parse error for value: " + dateString, e);
             }

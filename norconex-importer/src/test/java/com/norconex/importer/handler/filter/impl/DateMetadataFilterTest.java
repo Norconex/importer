@@ -46,7 +46,8 @@ public class DateMetadataFilterTest {
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
         filter.addCondition(Operator.LOWER_EQUAL, 
-                DateFormatUtils.ISO_DATE_FORMAT.parse("1980-12-21"));
+                DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
+                        "1980-12-21"));
         Assert.assertFalse(filter.acceptDocument("n/a", null, meta, false));
 
         
@@ -54,7 +55,8 @@ public class DateMetadataFilterTest {
         filter.setField("field1");
         filter.setFormat("yyyy-MM-dd");
         filter.addCondition(Operator.LOWER_EQUAL, 
-                DateFormatUtils.ISO_DATE_FORMAT.parse("1980-12-21"));
+                DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
+                        "1980-12-21"));
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
         
@@ -62,13 +64,14 @@ public class DateMetadataFilterTest {
         filter.setField("field1");
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         filter.addCondition(Operator.LOWER_EQUAL, 
-                DateFormatUtils.ISO_DATE_FORMAT.parse("1980-12-22"));
+                DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
+                        "1980-12-22"));
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
         
         Calendar now = Calendar.getInstance();
         meta.addString("field2",  
-                DateFormatUtils.ISO_DATETIME_FORMAT.format(now));
+                DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(now));
 
         filter = new DateMetadataFilter();
         filter.setField("field2");

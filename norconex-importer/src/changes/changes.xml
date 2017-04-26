@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.7.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+    <release version="2.7.0" date="2017-04-26" description="Feature release">
       <action dev="essiembre" type="add">
         Added Lua scripting support to ScriptFilter, ScriptTagger, and 
         ScriptTransformer. 
@@ -48,7 +48,8 @@
       </action>
       <action dev="essiembre" type="update">
         Dependency updates: Apache Tika 1.14, Norconex Commons Lang 1.13.0,
-        JSoup 1.10.2, OOXML-Schemas 1.3 (fixes some bad Visio parsing).
+        JSoup 1.10.2, OOXML-Schemas 1.3 (fixes some bad Visio parsing),
+        Apache Commons Collections 3.2.2.
       </action>
       <action dev="essiembre" type="update">
         ExternalParser was rewritten. Now offers more metadata extraction

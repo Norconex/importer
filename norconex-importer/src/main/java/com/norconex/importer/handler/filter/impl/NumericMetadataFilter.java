@@ -190,7 +190,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
     
     private boolean meetsAllConditions(String fieldValue) {
-        if (!NumberUtils.isNumber(fieldValue)) {
+        if (!NumberUtils.isCreatable(fieldValue)) {
             return false;
         }
         double fieldNumber = NumberUtils.toDouble(fieldValue);
@@ -220,7 +220,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
                 LOG.warn("Unsupported operator: " + op);
                 break;
             }
-            if (!NumberUtils.isNumber(num)) {
+            if (!NumberUtils.isCreatable(num)) {
                 LOG.debug("Not a valid number: " + num);
                 break;
             }
