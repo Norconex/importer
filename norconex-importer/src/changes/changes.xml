@@ -7,6 +7,15 @@
   </properties>
   <body>
 
+    <release version="2.7.1-SNAPSHOT" date="2017-??-??" description="Maintenance release">
+      <action dev="essiembre" type="update">
+        ImporterConfig#saveToXML(...) now written with xml:space="preserve".
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Norconex Commons Lang 1.13.1.
+      </action>
+    </release>
+
     <release version="2.7.0" date="2017-04-26" description="Feature release">
       <action dev="essiembre" type="add">
         Added Lua scripting support to ScriptFilter, ScriptTagger, and 

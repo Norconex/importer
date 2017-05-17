@@ -1,6 +1,10 @@
 TODO:
 ==============
 
+- Add ability to do batch rename of field names (e.g. replacing dots with ...)
+
+- Add support for tika SentimentParser.
+
 - Have new taggers: 
     - ExtensionTagger, given a URL, tries to get extension from content type 
       if not found in reference.
@@ -54,6 +58,8 @@ TODO:
 - Have a maximum recursivity setting somewhere in GenericDocumentParserFactory?
   Alternatively, consider moving to using RecursiveParserWrapper which 
   already supports that.
+
+- MAYBE: Consider interactive shell script invoking the importer.
 
 - MAYBE: Have <restrictTo> being optional wrapping tag that can group
   multiple other handlers, so the condition does not have to be repeated in 

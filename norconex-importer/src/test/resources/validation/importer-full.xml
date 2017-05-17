@@ -202,6 +202,10 @@
                regex="false" wholeMatch="false" replaceAll="true">
           <fromValue>apple</fromValue><toValue>orange</toValue>
       </replace>
+      <replace fromField="FF2" toField="TF2" caseSensitive="true"
+               regex="false" wholeMatch="false" replaceAll="true">
+          <fromValue>_</fromValue><toValue xml:space="preserve"> </toValue>
+      </replace>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
           engineName="myEngine" sourceCharset="UTF8" maxReadSize="999" >

@@ -36,6 +36,7 @@ public class ConstantTaggerTest {
         tagger.addConstant("constant2", "valueA");
         tagger.addConstant("constant2", "valueA");
         tagger.addConstant("constant3", "valueZ");
+        tagger.addConstant("constantSpace", "  ");
         tagger.setOnConflict(OnConflict.REPLACE);
         System.out.println("Writing/Reading this: " + tagger);
         XMLConfigurationUtil.assertWriteRead(tagger);

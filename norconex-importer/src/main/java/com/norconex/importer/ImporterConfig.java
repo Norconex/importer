@@ -242,6 +242,7 @@ public class ImporterConfig implements IXMLConfigurable {
         try {
             EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
             writer.writeStartElement("importer");
+            writer.writeAttributeString("xml:space", "preserve");
             writer.writeElementString(
                     "tempDir", Objects.toString(getTempDir(), null));
             writer.writeElementString("parseErrorsSaveDir", 
