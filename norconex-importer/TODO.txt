@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Have a tagger that looks up metadata in a relational database?
+
 - Add ability to do batch rename of field names (e.g. replacing dots with ...)
 
 - Add support for tika SentimentParser.

@@ -97,6 +97,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class ReplaceTagger extends AbstractDocumentTagger {
 
+    //TODO add "applyTo=field|value" to replace tag, and remove "fromField"
+    // and "toField" and rename from|toValue to just from and to.
+    
     private final List<Replacement> replacements = new ArrayList<>();
     
     @Override
