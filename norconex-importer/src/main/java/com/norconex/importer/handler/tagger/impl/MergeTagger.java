@@ -46,7 +46,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * Merge multiple metadata fields into a single one.
  * </p>
  * <p>
- * Use <code>fromFields</code> to list all fields to merge, separated by comas.
+ * Use <code>fromFields</code> to list all fields to merge, separated by commas.
  * Use <code>fromFieldsRegex</code> to match fields to merge using a regular 
  * expression.
  * Both <code>fromFields</code> and <code>fromFieldsRegex</code> can be used

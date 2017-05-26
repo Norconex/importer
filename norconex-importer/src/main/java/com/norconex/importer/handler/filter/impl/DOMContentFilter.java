@@ -149,13 +149,12 @@ import com.norconex.importer.util.DOMUtil;
  * 
  * @author Pascal Essiembre
  * @since 2.4.0
- * @see Pattern
  */
 public class DOMContentFilter extends AbstractDocumentFilter {
     
     private boolean caseSensitive;
     private String regex;
-    private Pattern pattern;
+    private Pattern cachedPattern;
     private String selector;
     private String extract;
     private String sourceCharset = null;    
@@ -181,25 +180,16 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     public String getRegex() {
         return regex;
     }
+    public final void setRegex(String regex) {
+        this.regex = regex;
+        cachedPattern = null;
+    }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
-    }
-    public final void setRegex(String regex) {
-        this.regex = regex;
-        int baseFlags = Pattern.DOTALL;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex, baseFlags);
-            } else {
-                this.pattern = Pattern.compile(regex, baseFlags 
-                        | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+        cachedPattern = null;
     }
     public String getSelector() {
         return selector;
@@ -266,7 +256,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
             }
             for (Element elm : elms) {
                 String value = DOMUtil.getElementValue(elm, getExtract());
-                if (pattern.matcher(value).find()) {
+                if (getCachedPattern().matcher(value).find()) {
                     return true;
                 }
             }
@@ -275,6 +265,24 @@ public class DOMContentFilter extends AbstractDocumentFilter {
             throw new ImporterHandlerException(
                     "Cannot parse document into a DOM-tree.", e);
         }
+    }
+    
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
     }
     
     @Override

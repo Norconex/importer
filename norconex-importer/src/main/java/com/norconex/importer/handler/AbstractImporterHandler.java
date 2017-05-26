@@ -21,7 +21,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -73,7 +72,6 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see Pattern
  */
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
 

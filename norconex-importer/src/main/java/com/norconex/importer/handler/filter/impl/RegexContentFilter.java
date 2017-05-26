@@ -77,7 +77,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * 
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see Pattern
  */
 public class RegexContentFilter extends AbstractStringFilter {
 
@@ -86,8 +85,7 @@ public class RegexContentFilter extends AbstractStringFilter {
     
     private boolean caseSensitive;
     private String regex;
-    private Pattern pattern;
-
+    private Pattern cachedPattern;
     
     public RegexContentFilter() {
         this(null, OnMatch.INCLUDE);
@@ -109,25 +107,16 @@ public class RegexContentFilter extends AbstractStringFilter {
     public String getRegex() {
         return regex;
     }
+    public final void setRegex(String regex) {
+        this.regex = regex;
+        cachedPattern = null;
+    }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
-    }
-    public final void setRegex(String regex) {
-        this.regex = regex;
-        int baseFlags = Pattern.DOTALL;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex, baseFlags);
-            } else {
-                this.pattern = Pattern.compile(regex, baseFlags 
-                        | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+        cachedPattern = null;
     }
     
     @Override
@@ -138,11 +127,27 @@ public class RegexContentFilter extends AbstractStringFilter {
         if (StringUtils.isBlank(regex)) {
             return true;
         }
-        if (pattern.matcher(content).matches()) {
-            return true;
-        }
-        return false;
+        return getCachedPattern().matcher(content).matches();
     }
+    
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
+    }
+    
     @Override
     protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer) 
             throws XMLStreamException {

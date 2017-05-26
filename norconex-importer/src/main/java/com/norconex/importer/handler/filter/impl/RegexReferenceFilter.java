@@ -70,7 +70,7 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
 
     private boolean caseSensitive;
     private String regex;
-    private Pattern pattern;
+    private Pattern cachedPattern;
 
     public RegexReferenceFilter() {
         this(null, OnMatch.INCLUDE);
@@ -97,20 +97,11 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
     }
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        cachedPattern = null;
     }
     public final void setRegex(String regex) {
         this.regex = regex;
-        int baseFlags = Pattern.DOTALL;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex, baseFlags);
-            } else {
-                this.pattern = Pattern.compile(regex, baseFlags
-                        | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
+        cachedPattern = null;
     }
 
     @Override
@@ -121,7 +112,25 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
         if (StringUtils.isBlank(regex)) {
             return true;
         }
-        return pattern.matcher(reference).matches();
+        return getCachedPattern().matcher(reference).matches();
+    }
+    
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
     }
 
     @Override

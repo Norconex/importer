@@ -69,7 +69,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </pre>
  * 
  * @author Pascal Essiembre
- * @see Pattern
  */
 public class RegexMetadataFilter extends AbstractDocumentFilter {
 
@@ -79,7 +78,7 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
     private boolean caseSensitive;
     private String field;
     private String regex;
-    private Pattern pattern;
+    private Pattern cachedPattern;
 
     public RegexMetadataFilter() {
         this(null, null, OnMatch.INCLUDE);
@@ -103,6 +102,10 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
     public String getRegex() {
         return regex;
     }
+    public final void setRegex(String regex) {
+        this.regex = regex;
+        cachedPattern = null;
+    }
     public boolean isCaseSensitive() {
         return caseSensitive;
     }
@@ -111,23 +114,10 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
     }
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        cachedPattern = null;
     }
     public void setField(String property) {
         this.field = property;
-    }
-    public final void setRegex(String regex) {
-        this.regex = regex;
-        int baseFlags = Pattern.DOTALL;
-        if (regex != null) {
-            if (caseSensitive) {
-                this.pattern = Pattern.compile(regex, baseFlags);
-            } else {
-                this.pattern = Pattern.compile(regex, baseFlags
-                        | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-            }
-        } else {
-            this.pattern = Pattern.compile(".*");
-        }
     }
 
     @Override
@@ -141,13 +131,31 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
         Collection<String> values =  metadata.getStrings(field);
         for (Object value : values) {
             String strVal = Objects.toString(value, StringUtils.EMPTY);
-            if (pattern.matcher(strVal).matches()) {
+            if (getCachedPattern().matcher(strVal).matches()) {
                 return true;
             }
         }
         return false;
     }
 
+    private synchronized Pattern getCachedPattern() {
+        if (cachedPattern != null) {
+            return cachedPattern;
+        }
+        Pattern p;
+        if (regex == null) {
+            p = Pattern.compile(".*");
+        } else {
+            int flags = Pattern.DOTALL;
+            if (!caseSensitive) {
+                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+            }
+            p = Pattern.compile(regex, flags);
+        }
+        cachedPattern = p;
+        return p;
+    }    
+    
     @Override
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setField(xml.getString("[@field]"));

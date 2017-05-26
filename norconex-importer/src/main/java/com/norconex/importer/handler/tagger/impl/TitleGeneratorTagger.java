@@ -122,7 +122,6 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * 
  * @author Pascal Essiembre
  * @since 2.1.0
- * @see Pattern
  */
 public class TitleGeneratorTagger 
         extends AbstractStringTagger implements IXMLConfigurable {

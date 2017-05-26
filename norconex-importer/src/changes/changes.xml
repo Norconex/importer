@@ -7,6 +7,14 @@
   </properties>
   <body>
 
+    <release version="2.7.2-SNAPSHOT" date="2017-??-??" description="Bugfix release">
+      <action dev="essiembre" type="fix">
+        Fixed "caseSensitive" flag sometimes having no effect in 
+        DOMContentFilter, RegexContentFilter, RegexMetadataFilter, 
+        and RegexReferenceFilter.
+      </action>
+    </release>
+
     <release version="2.7.1" date="2017-05-25" description="Maintenance release">
       <action dev="essiembre" type="update">
         ImporterConfig#saveToXML(...) now written with xml:space="preserve".
