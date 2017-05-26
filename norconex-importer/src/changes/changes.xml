@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="2.7.2-SNAPSHOT" date="2017-??-??" description="Bugfix release">
+    <release version="2.7.2" date="2017-05-26" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed "caseSensitive" flag sometimes having no effect in 
         DOMContentFilter, RegexContentFilter, RegexMetadataFilter, 
