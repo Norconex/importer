@@ -80,6 +80,14 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      
  *  &lt;/tagger&gt;
  * </pre>
+ * <p>
+ * <b>Note:</b> To preserve white space add <code>xml:space="preserve"</code>
+ * to the "toValue" tag, like this:
+ * </p>
+ * <pre>
+ *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
+ * </pre>
+ *  
  * <h4>Usage example:</h4>
  * <p>
  * The following example replaces occurrences of "apple" to "orange"
