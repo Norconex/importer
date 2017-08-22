@@ -78,7 +78,8 @@ import com.norconex.importer.util.regex.RegexUtil;
  *      
  *      &lt;pattern field="(target field name)" 
  *              fieldGroup="(field name match group index)"
- *              valueGroup="(field value match group index)"&gt;
+ *              valueGroup="(field value match group index)"
+ *              caseSensitive="[false|true]"&gt;
  *          (regular expression)
  *      &lt;/pattern&gt;
  *      &lt;!-- multiple pattern tags allowed --&gt;
