@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,8 +30,8 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
-import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.impl.ExternalParser;
+import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 public class ExternalParserTest {
     
@@ -43,10 +42,11 @@ public class ExternalParserTest {
     public void testWriteRead() throws IOException {
         ExternalParser p = new ExternalParser();
         p.setCommand("my command");
-        Map<Pattern, String> patterns = new HashMap<>();
-        patterns.put(Pattern.compile("asdf.*"), "blah");
-        patterns.put(Pattern.compile("qwer.*"), "halb");
-        p.setMetadataExtractionPatterns(patterns);
+        
+        p.setMetadataExtractionPatterns(
+            new RegexFieldExtractor("asdf.*", "blah"),
+            new RegexFieldExtractor("qwer.*", "halb")
+        );
         
         Map<String, String> envs = new HashMap<>();
         envs.put("env1", "value1");
@@ -123,13 +123,12 @@ public class ExternalParserTest {
         envs.put(ExternalApp.ENV_STDERR_AFTER, "StdErrAfter:field4");
         p.setEnvironmentVariables(envs);
 
-        Map<Pattern, String> patterns = new HashMap<>();
-        patterns.put(Pattern.compile("^(f.*):(.*)"), null);
-        patterns.put(Pattern.compile("^<field2>(.*)</field2>"), "field2");
-        patterns.put(Pattern.compile("^f.*StdErr.*"), "field3");
-        patterns.put(Pattern.compile("^(S.*?):(.*)"), 
-                ExternalTransformer.REVERSE_FLAG);
-        p.setMetadataExtractionPatterns(patterns);
+        p.setMetadataExtractionPatterns(
+            new RegexFieldExtractor("^(f.*):(.*)", 1, 2),
+            new RegexFieldExtractor("^<field2>(.*)</field2>", "field2", 1),
+            new RegexFieldExtractor("^f.*StdErr.*", "field3", 1),
+            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1)
+        );        
     }
     
     private InputStream inputAsStream() throws IOException {

@@ -35,6 +35,7 @@ import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParser;
+import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 /**
  * <p>
@@ -76,18 +77,30 @@ import com.norconex.importer.parser.IDocumentParser;
  * applied on each line returned from STDOUT and STDERR.  With each pattern,
  * there could be a matadata field name supplied. If the pattern does not 
  * contain any match group, the entire matched expression will be used as the 
- * metadata field value.  If the pattern has one match group, it will use the 
- * group matched value instead. Finally, if the pattern holds two match groups,
- * the first one is the metadata field name while the second one is the field
- * value. In such case, the field name is used to indicate whether match groups
- * should be reversed or not ("reverse:true"). Reverse match groups will take
- * the first group has the value and the second as the field name.
+ * metadata field value.  
+ * </p>
+ * <p>
+ * <b>Since 2.8.0</b>, match group indexes can be specified 
+ * to extract field names and values using the same regular 
+ * expression.  This is done by using
+ * match groups in your regular expressions (parenthesis).  For each pattern
+ * you define, you can specify which match group hold the field name and 
+ * which one holds the value.  
+ * Specifying a field match group is optional if a <code>field</code> 
+ * is provided.  If no match groups are specified, a <code>field</code>
+ * is expected.
+ * </p>
+ * <p>
+ * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
+ * case-sensitivity for each patterns. 
+ * </p>
+ * <p>
  * To extract metadata from
  * a generated file instead of STDOUT, use an import handler such as 
  * {@link TextPatternTagger} to do so.   
  * </p>
  * <p>
- * The expected application output is expected to be UTF-8.
+ * The application output is expected to be UTF-8.
  * </p>
  * <p>
  * To use an external application to change a file content after parsing has
@@ -102,14 +115,13 @@ import com.norconex.importer.parser.IDocumentParser;
  *      &lt;command&gt;c:\Apps\myapp.exe ${INPUT} ${OUTPUT}&lt;/command&gt;
  *      
  *      &lt;metadata&gt;
- *          &lt;match field="(field name if not obtained form regex)"
- *                  reverseGroups="[false|true]" &gt;
- *              (Regular expression. No match group takes entire match as value.
- *               One match group takes match as value.
- *               Two match groups take first match as field name and second
- *               as value, or the opposite if "reverseGroups" is "true".)
- *          &lt;/match&gt;
- *          &lt;!-- repeat match tag as needed --&gt;
+ *          &lt;pattern field="(target field name)" 
+ *                  fieldGroup="(field name match group index)"
+ *                  valueGroup="(field value match group index)"
+ *                  caseSensitive="[false|true]"&gt;
+ *              (regular expression)
+ *          &lt;/pattern&gt;
+ *          &lt;!-- repeat pattern tag as needed --&gt;
  *      &lt;/metadata&gt;
  *      
  *      &lt;environment&gt;
@@ -135,7 +147,7 @@ import com.norconex.importer.parser.IDocumentParser;
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
  *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
  *      &lt;metadata&gt;
- *          &lt;match field="docnumber"&gt;DocNo:(\d+)&lt;/match&gt;
+ *          &lt;pattern field="docnumber" valueGroup="1"&gt;DocNo:(\d+)&lt;/match&gt;
  *      &lt;/metadata&gt;
  *  &lt;/transformer&gt;
  * </pre>
@@ -168,28 +180,30 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public Map<Pattern, String> getMetadataExtractionPatterns() {
+    public List<RegexFieldExtractor> getMetadataExtractionPatterns() {
         return t.getMetadataExtractionPatterns();
     }
     /**
      * Sets metadata extraction patterns. Clears any previously assigned 
      * patterns.
-     * See class documentation.
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
      * @param patterns map of patterns and field names
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void setMetadataExtractionPatterns(Map<Pattern, String> patterns) {
         t.setMetadataExtractionPatterns(patterns);
     }
     /**
      * Adds metadata extraction patterns, keeping any patterns previously
      * assigned.
-     * See class documentation.
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
      * @param patterns map of patterns and field names
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void addMetadataExtractionPatterns(Map<Pattern, String> patterns) {
         t.addMetadataExtractionPatterns(patterns);
     }
@@ -197,7 +211,9 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with two match groups
      * @param reverse whether to reverse match groups (inverse key and value).
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, boolean reverse) {
         t.addMetadataExtractionPattern(pattern, reverse);
     }
@@ -205,9 +221,52 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with no or one match group
      * @param field field name where to store the matched pattern
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, String field) {
         t.addMetadataExtractionPattern(pattern, field);
+    }
+    
+    /**
+     * Adds a metadata extraction pattern that will extract the whole text 
+     * matched into the given field.
+     * @param field target field to store the matching pattern.
+     * @param pattern the pattern
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPattern(String field, String pattern) {
+        t.addMetadataExtractionPattern(field, pattern);
+    }
+    /**
+     * Adds a metadata extraction pattern, which will extract the value from 
+     * the specified group index upon matching.
+     * @param field target field to store the matching pattern.
+     * @param pattern the pattern
+     * @param valueGroup which pattern group to return.
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPattern(
+            String field, String pattern, int valueGroup) {
+        t.addMetadataExtractionPattern(field, pattern, valueGroup);
+    }
+    /**
+     * Adds a metadata extraction pattern that will extract matching field
+     * names/values.
+     * @param patterns extraction pattern
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
+        t.addMetadataExtractionPatterns(patterns);
+    }
+    /**
+     * Sets metadata extraction patterns. Clears any previously assigned 
+     * patterns.
+     * @param patterns extraction pattern
+     * @since 2.8.0
+     */    
+    public void setMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
+        t.setMetadataExtractionPatterns(patterns);
     }
     
     /**

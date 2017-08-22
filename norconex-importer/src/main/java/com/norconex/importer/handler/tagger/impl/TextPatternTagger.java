@@ -17,6 +17,7 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
@@ -112,15 +113,13 @@ public class TextPatternTagger
 
     private static final Logger LOG = 
             LogManager.getLogger(RegexFieldExtractor.class);
-    private static final RegexFieldExtractor[] EMPTY_RFE = 
-            new RegexFieldExtractor[] {};
-    private List<RegexFieldExtractor> extractors = new ArrayList<>();
+    private List<RegexFieldExtractor> patterns = new ArrayList<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        RegexUtil.extractFields(
-                metadata, content, extractors.toArray(EMPTY_RFE));
+        RegexUtil.extractFields(metadata, content, 
+                patterns.toArray(RegexFieldExtractor.EMPTY_ARRAY));
     }
 
     /**
@@ -168,13 +167,31 @@ public class TextPatternTagger
                 pattern).setField(field).setValueGroup(valueGroup));
     }
     /**
-     * Adds a pattern that will extract matching field names/values.
-     * @param pattern field extractor
+     * Adds one or more pattern that will extract matching field names/values.
+     * @param pattern field extractor pattern
      */
     public void addPattern(RegexFieldExtractor... pattern) {
         if (ArrayUtils.isNotEmpty(pattern)) {
-            extractors.addAll(Arrays.asList(pattern));
+            patterns.addAll(Arrays.asList(pattern));
         }
+    }
+    /**
+     * Sets one or more patterns that will extract matching field names/values.
+     * Clears previously set pattterns.
+     * @param pattern field extractor pattern
+     */
+    public void setPattern(RegexFieldExtractor... pattern) {
+        patterns.clear();
+        if (ArrayUtils.isNotEmpty(pattern)) {
+            patterns.addAll(Arrays.asList(pattern));
+        }
+    }
+    /**
+     * Gets the patterns used to extract matching field names/values.
+     * @return patterns
+     */
+    public List<RegexFieldExtractor> getPatterns() {
+        return Collections.unmodifiableList(patterns);
     }
     
     @Override
@@ -199,7 +216,7 @@ public class TextPatternTagger
     @Override
     protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        for (RegexFieldExtractor rfe : extractors) {
+        for (RegexFieldExtractor rfe : patterns) {
             writer.writeStartElement("pattern");
             writer.writeAttributeString("field", rfe.getField());
             writer.writeAttributeInteger("fieldGroup", rfe.getFieldGroup());
@@ -219,7 +236,7 @@ public class TextPatternTagger
         TextPatternTagger castOther = (TextPatternTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
-                .append(extractors, castOther.extractors)
+                .append(patterns, castOther.patterns)
                 .isEquals();
     }
 
@@ -227,7 +244,7 @@ public class TextPatternTagger
     public int hashCode() {
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
-                .append(extractors)
+                .append(patterns)
                 .toHashCode();
     }
 
@@ -235,7 +252,7 @@ public class TextPatternTagger
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
-                .append("patterns", extractors)
+                .append("patterns", patterns)
                 .toString();
     }
 }

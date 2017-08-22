@@ -38,6 +38,9 @@ public class RegexFieldExtractor {
     private static final Logger LOG = 
             LogManager.getLogger(RegexFieldExtractor.class);
     
+    public static final RegexFieldExtractor[] EMPTY_ARRAY = 
+            new RegexFieldExtractor[] {};
+    
     private String field;
     private String regex;
     private boolean caseSensitive;
@@ -48,9 +51,23 @@ public class RegexFieldExtractor {
         super();
     }
     public RegexFieldExtractor(String regex) {
+        this(regex, null);
+    }
+    public RegexFieldExtractor(String regex, String field) {
+        this(regex, field, -1);
+    }
+    public RegexFieldExtractor(String regex, String field, int valueGroup) {
+        this.regex = regex;
+        this.field = field;
+        this.valueGroup = valueGroup;
+    }
+    public RegexFieldExtractor(String regex, int fieldGroup, int valueGroup) {
         super();
         this.regex = regex;
+        this.fieldGroup = fieldGroup;
+        this.valueGroup = valueGroup;
     }
+
     public String getRegex() {
         return regex;
     }

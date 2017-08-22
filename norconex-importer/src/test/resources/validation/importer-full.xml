@@ -260,8 +260,8 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
       <metadata>
-        <match field="field1">&lt;title&gt;&lt;(title)&gt;</match>
-        <match reverseGroups="true">(.*?):(.*)</match>
+        <pattern field="field1">&lt;title&gt;&lt;(title)&gt;</pattern>
+        <pattern fieldGroup="2" valueGroup="1" caseSensitive="true">(.*?):(.*)</pattern>
       </metadata>
       <environment>
         <variable name="var1">blah</variable>
@@ -323,8 +323,8 @@
             class="com.norconex.importer.parser.impl.ExternalParser" >
         <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
         <metadata>
-          <match field="field1">&lt;title&gt;&lt;(title)&gt;</match>
-          <match reverseGroups="true">(.*?):(.*)</match>
+          <pattern field="field1">&lt;title&gt;&lt;(title)&gt;</pattern>
+          <pattern fieldGroup="2" valueGroup="1" caseSensitive="true">(.*?):(.*)</pattern>
         </metadata>
         <environment>
           <variable name="var1">blah</variable>

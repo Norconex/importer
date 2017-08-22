@@ -35,12 +35,14 @@
   <xs:element name="metadata">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="match" minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="pattern" minOccurs="1" maxOccurs="unbounded">
           <xs:complexType>
             <xs:simpleContent>
               <xs:extension base="nonEmptyValue">
                 <xs:attribute name="field" type="xs:string"/>
-                <xs:attribute name="reverseGroups" type="xs:boolean"/>
+                <xs:attribute name="fieldGroup" type="xs:int"/>
+                <xs:attribute name="valueGroup" type="xs:int"/>
+                <xs:attribute name="caseSensitive" type="xs:boolean"/>
               </xs:extension>
             </xs:simpleContent>
           </xs:complexType>  

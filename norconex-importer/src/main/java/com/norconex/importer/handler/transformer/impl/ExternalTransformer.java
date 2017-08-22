@@ -18,11 +18,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
@@ -30,6 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -51,6 +54,8 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.TextPatternTagger;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
+import com.norconex.importer.util.regex.RegexFieldExtractor;
+import com.norconex.importer.util.regex.RegexUtil;
 
 /**
  * <p>
@@ -81,12 +86,24 @@ import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
  * applied on each line returned from STDOUT and STDERR.  With each pattern,
  * there could be a matadata field name supplied. If the pattern does not 
  * contain any match group, the entire matched expression will be used as the 
- * metadata field value.  If the pattern has one match group, it will use the 
- * group matched value instead. Finally, if the pattern holds two match groups,
- * the first one is the metadata field name while the second one is the field
- * value. In such case, the field name is used to indicate whether match groups
- * should be reversed or not ("reverse:true"). Reverse match groups will take
- * the first group has the value and the second as the field name.
+ * metadata field value.  
+ * </p>
+ * <p>
+ * <b>Since 2.8.0</b>, match group indexes can be specified 
+ * to extract field names and values using the same regular 
+ * expression.  This is done by using
+ * match groups in your regular expressions (parenthesis).  For each pattern
+ * you define, you can specify which match group hold the field name and 
+ * which one holds the value.  
+ * Specifying a field match group is optional if a <code>field</code> 
+ * is provided.  If no match groups are specified, a <code>field</code>
+ * is expected.
+ * </p>
+ * <p>
+ * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
+ * case-sensitivity for each patterns. 
+ * </p>
+ * <p>
  * To extract metadata from
  * a generated file instead of STDOUT, use an additional handler such as 
  * {@link TextPatternTagger} to do so.   
@@ -109,14 +126,13 @@ import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
  *      &lt;command&gt;c:\Apps\myapp.exe ${INPUT} ${OUTPUT}&lt;/command&gt;
  *      
  *      &lt;metadata&gt;
- *          &lt;match field="(field name if not obtained form regex)"
- *                  reverseGroups="[false|true]" &gt;
- *              (Regular expression. No match group takes entire match as value.
- *               One match group takes match as value.
- *               Two match groups take first match as field name and second
- *               as value, or the opposite if "reverseGroups" is "true".)
- *          &lt;/match&gt;
- *          &lt;!-- repeat match tag as needed --&gt;
+ *          &lt;pattern field="(target field name)" 
+ *                  fieldGroup="(field name match group index)"
+ *                  valueGroup="(field value match group index)"
+ *                  caseSensitive="[false|true]"&gt;
+ *              (regular expression)
+ *          &lt;/pattern&gt;
+ *          &lt;!-- repeat pattern tag as needed --&gt;
  *      &lt;/metadata&gt;
  *      
  *      &lt;environment&gt;
@@ -139,7 +155,7 @@ import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
  *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ExternalTransformer"&gt;
  *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
  *      &lt;metadata&gt;
- *          &lt;match field="docnumber"&gt;DocNo:(\d+)&lt;/match&gt;
+ *          &lt;match field="docnumber" valueGroup="1"&gt;DocNo:(\d+)&lt;/match&gt;
  *      &lt;/metadata&gt;
  *  &lt;/transformer&gt;
  * </pre>
@@ -155,10 +171,17 @@ public class ExternalTransformer extends AbstractDocumentTransformer
 
     public static final String TOKEN_INPUT = "${INPUT}";
     public static final String TOKEN_OUTPUT = "${OUTPUT}";
+
+    /**
+     * @deprecated Since 2.8.0, specify field name and value match groups 
+     * instead. 
+     */
+    @Deprecated
     public static final String REVERSE_FLAG = "reverse:true";
     
     private String command;
-    private final Map<Pattern, String> patterns = new HashMap<>();
+    private List<RegexFieldExtractor> patterns = new ArrayList<>();    
+
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
     
@@ -183,51 +206,125 @@ public class ExternalTransformer extends AbstractDocumentTransformer
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public Map<Pattern, String> getMetadataExtractionPatterns() {
-        return patterns;
+    public List<RegexFieldExtractor> getMetadataExtractionPatterns() {
+        return Collections.unmodifiableList(patterns);
     }
     /**
      * Sets metadata extraction patterns. Clears any previously assigned 
      * patterns.
-     * See class documentation.
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
-     * @param patterns map of patterns and field names
+     * @param metaPatterns map of patterns and field names
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
-    public void setMetadataExtractionPatterns(Map<Pattern, String> patterns) {
+    @Deprecated
+    public void setMetadataExtractionPatterns(
+            Map<Pattern, String> metaPatterns) {
         this.patterns.clear();
-        this.patterns.putAll(patterns);
+        addMetadataExtractionPatterns(metaPatterns);
     }
     /**
      * Adds metadata extraction patterns, keeping any patterns previously
      * assigned.
-     * See class documentation.
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
-     * @param patterns map of patterns and field names
+     * @param metaPatterns map of patterns and field names
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
-    public void addMetadataExtractionPatterns(Map<Pattern, String> patterns) {
-        this.patterns.putAll(patterns);
+    @Deprecated
+    public void addMetadataExtractionPatterns(
+            Map<Pattern, String> metaPatterns) {
+        for (Entry<Pattern, String> p : metaPatterns.entrySet()) {
+            if ("reverse:true".equals(p.getValue())) {
+                addMetadataExtractionPattern(p.getKey(), true);
+            } else if ("reverse:false".equals(p.getValue())) {
+                addMetadataExtractionPattern(p.getKey(), false);
+            } else {
+                addMetadataExtractionPattern(p.getKey(), p.getValue());
+            }
+        }
     }
     /**
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with two match groups
      * @param reverse whether to reverse match groups (inverse key and value).
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, boolean reverse) {
-        String field = REVERSE_FLAG;
-        if (!reverse) {
-            field = "reverse:false";
+        RegexFieldExtractor r = new RegexFieldExtractor(pattern.pattern());
+        if (reverse) {
+            r.setFieldGroup(2);
+            r.setFieldGroup(1);
+        } else {
+            r.setFieldGroup(1);
+            r.setFieldGroup(2);
         }
-        this.patterns.put(pattern, field);
+        this.patterns.add(r);
     }
     /**
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with no or one match group
      * @param field field name where to store the matched pattern
+     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
+    @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, String field) {
-        this.patterns.put(pattern, field);
+        RegexFieldExtractor r = new RegexFieldExtractor(pattern.pattern());
+        r.setField(field);
+        this.patterns.add(r);
+    }
+    
+    /**
+     * Adds a metadata extraction pattern that will extract the whole text 
+     * matched into the given field.
+     * @param field target field to store the matching pattern.
+     * @param pattern the pattern
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPattern(String field, String pattern) {
+        if (StringUtils.isAnyBlank(pattern, field)) {
+            return;
+        }
+        addMetadataExtractionPatterns(
+                new RegexFieldExtractor(pattern).setField(field));
+    }
+    /**
+     * Adds a metadata extraction pattern, which will extract the value from 
+     * the specified group index upon matching.
+     * @param field target field to store the matching pattern.
+     * @param pattern the pattern
+     * @param valueGroup which pattern group to return.
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPattern(
+            String field, String pattern, int valueGroup) {
+        if (StringUtils.isAnyBlank(pattern, field)) {
+            return;
+        }
+        addMetadataExtractionPatterns(new RegexFieldExtractor(
+                pattern).setField(field).setValueGroup(valueGroup));
+    }
+    /**
+     * Adds a metadata extraction pattern that will extract matching field
+     * names/values.
+     * @param patterns extraction pattern
+     * @since 2.8.0
+     */
+    public void addMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
+        if (ArrayUtils.isNotEmpty(patterns)) {
+            this.patterns.addAll(Arrays.asList(patterns));
+        }
+    }
+    /**
+     * Sets metadata extraction patterns. Clears any previously assigned 
+     * patterns.
+     * @param patterns extraction pattern
+     * @since 2.8.0
+     */    
+    public void setMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
+        this.patterns.clear();
+        addMetadataExtractionPatterns(patterns);
     }
     
     /**
@@ -373,42 +470,10 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         }
     }
 
-    
     private synchronized void extractMetaFromLine(
             String line, ImporterMetadata metadata) {
-        if (patterns == null) {
-            return;
-        }
-        for (Entry<Pattern, String> entry : patterns.entrySet()) {
-            Pattern p = entry.getKey();
-            String field = entry.getValue();
-            Matcher m = p.matcher(line);
-            String value;
-            while (m.find()) {
-                if (m.groupCount() < 1) {
-                    // whole match
-                    value = m.group();
-                } else if (m.groupCount() < 2) {
-                    // group 1 value
-                    value = m.group(1);
-                } else if (REVERSE_FLAG.equals(field)){
-                    // group 2 key, group 1 value
-                    field = m.group(2);
-                    value = m.group(1);
-                } else {
-                    // group 1 key, group 2 value
-                    field = m.group(1);
-                    value = m.group(2);
-                }
-                if (StringUtils.isBlank(field)) {
-                    LOG.warn("Undefined field name for value: " + value);
-                } else if (value == null) {
-                    LOG.warn("Null value for field: " + field);
-                } else {
-                    metadata.addString(field, value);
-                }
-            }
-        }
+        RegexUtil.extractFields(metadata, line, 
+                patterns.toArray(RegexFieldExtractor.EMPTY_ARRAY));
     }
     
     private File newInputFile(InputStream is) throws ImporterHandlerException {
@@ -469,13 +534,15 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         List<HierarchicalConfiguration> xmlMatches = 
                 xml.configurationsAt("metadata.match");
         if (!xmlMatches.isEmpty()) {
+            LOG.warn("\"match\" is deprecated in favor of \"pattern\". "
+                    + "Please update your XML configuration");
             Map<Pattern, String> xmlPatterns = new HashMap<>();
             for (HierarchicalConfiguration node : xmlMatches) {
                 String field = node.getString("[@field]", null);
                 // empty instead of blank in case spaces can be field name
                 if (StringUtils.isEmpty(field)) {
                     if (node.getBoolean("[@reverseGroups]", false)) {
-                        field = REVERSE_FLAG;
+                        field = "reverse:true";
                     } else {
                         field = "ExternalTransformer-unnamed-field";
                     }
@@ -483,6 +550,19 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                 xmlPatterns.put(Pattern.compile(node.getString("")), field);
             }
             setMetadataExtractionPatterns(xmlPatterns);
+        }
+        
+        List<HierarchicalConfiguration> nodes = 
+                xml.configurationsAt("metadata.pattern");
+        for (HierarchicalConfiguration node : nodes) {
+            int valueGroup = node.getInt("[@group]", -1);
+            valueGroup = node.getInt("[@valueGroup]", valueGroup);
+            addMetadataExtractionPatterns(
+                new RegexFieldExtractor(node.getString("", null))
+                   .setCaseSensitive(node.getBoolean("[@caseSensitive]", false))
+                   .setField(node.getString("[@field]", null))
+                   .setFieldGroup(node.getInt("[@fieldGroup]", -1))
+                   .setValueGroup(node.getInt("[@valueGroup]", -1)));
         }        
 
         List<HierarchicalConfiguration> xmlEnvs = 
@@ -502,15 +582,14 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         writer.writeElementString("command", getCommand());
         if (!getMetadataExtractionPatterns().isEmpty()) {
             writer.writeStartElement("metadata");
-            for (Entry<Pattern, String> entry 
-                    : getMetadataExtractionPatterns().entrySet()) {
-                writer.writeStartElement("match");
-                if (REVERSE_FLAG.equals(entry.getValue())) {
-                    writer.writeAttributeBoolean("reverseGroups",  true);
-                } else {
-                    writer.writeAttribute("field", entry.getValue());
-                }
-                writer.writeCharacters(entry.getKey().toString());
+            for (RegexFieldExtractor rfe : patterns) {
+                writer.writeStartElement("pattern");
+                writer.writeAttributeString("field", rfe.getField());
+                writer.writeAttributeInteger("fieldGroup", rfe.getFieldGroup());
+                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
+                writer.writeAttributeBoolean(
+                        "caseSensitive", rfe.isCaseSensitive());
+                writer.writeCharacters(rfe.getRegex());
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -534,21 +613,11 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             return false;
         }
         ExternalTransformer castOther = (ExternalTransformer) other;
-        Map<String, String> patternStrings1 = new HashMap<>();
-        for (Entry<Pattern, String> entry : 
-                getMetadataExtractionPatterns().entrySet()) {
-            patternStrings1.put(entry.getKey().toString(), entry.getValue());
-        }
-        Map<String, String> patternStrings2 = new HashMap<>();
-        for (Entry<Pattern, String> entry : 
-                castOther.getMetadataExtractionPatterns().entrySet()) {
-            patternStrings2.put(entry.getKey().toString(), entry.getValue());
-        }
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(getCommand(), castOther.getCommand())
+                .append(patterns, castOther.patterns)
                 .isEquals()
-                && EqualsUtil.equalsMap(patternStrings1, patternStrings2)
                 && EqualsUtil.equalsMap(getEnvironmentVariables(), 
                         castOther.getEnvironmentVariables());
 

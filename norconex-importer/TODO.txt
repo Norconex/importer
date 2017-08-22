@@ -1,9 +1,6 @@
 TODO:
 ==============
 
-- Use RegexFieldExtractor in ExternalTransformer/Parser and wherever else
-  appropriate.
-
 - Consider adding a "mergeElements" to DOMTagger for the number of elements to 
   merge, to accomodate for senarios where key/values are repeated, without a 
   parent wrapping tag, as in: https://github.com/Norconex/importer/issues/54
