@@ -15,35 +15,50 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.util.regex.RegexFieldExtractor;
+import com.norconex.importer.util.regex.RegexUtil;
 
 /**
  * <p>Extracts and add all text values matching the regular expression provided
- * in to a specified target field ("field").  The target field 
- * is considered a multi-value field.
+ * in to a field provided explicitely, or also matching a regular
+ * expression.  The target field is considered a multi-value field.
  * </p>
+ * 
  * <p>
- * An optional match group index can provided if you want to extract
- * only a portion of a regular expression match.
+ * <b>Since 2.8.0</b>, it is now possible to extract both the field names
+ * and their values with regular expression.  This is done by using
+ * match groups in your regular expressions (parenthesis).  For each pattern
+ * you define, you can specify which match group hold the field name and 
+ * which one holds the value.  
+ * Specifying a field match group is optional if a <code>field</code> 
+ * is provided.  If no match groups are specified, a <code>field</code>
+ * is expected.
+ * </p>
+ * 
+ * <p>
+ * <b>Since 2.8.0</b>, case-sensitivity for 
+ * regular expressions is now set on each patterns. 
  * </p>
  * <p>
  * This class can be used as a pre-parsing handler on text documents only
@@ -52,7 +67,6 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
- *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *      
@@ -62,7 +76,9 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *      
- *      &lt;pattern field="targetFieldName" group="(optional match group index)"&gt;
+ *      &lt;pattern field="(target field name)" 
+ *              fieldGroup="(field name match group index)"
+ *              valueGroup="(field value match group index)"&gt;
  *          (regular expression)
  *      &lt;/pattern&gt;
  *      &lt;!-- multiple pattern tags allowed --&gt;
@@ -71,13 +87,19 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
- * The following extracts what look like email addresses (simplified regex):
+ * The first pattern in the following example extracts what look like email 
+ * addresses in to an "email" field (simplified regex). The second pattern
+ * extracts field names and values from "label" and "value" cells on
+ * a given HTML table:
  * </p>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger" &gt;
  *      &lt;pattern field="emails"&gt;
  *          [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
  *      &lt;/pattern&gt;
+ *      &lt;pattern fieldGroup="1" valueGroup="2"&gt;&lt;![CDATA[
+ *        &lt;tr&gt;&lt;td class="label"&gt;(.*?)&lt;/td&gt;&lt;td class="value"&gt;(.*?)&lt;/td&gt;&lt;/tr&gt;
+ *      ]]&gt;&lt;/pattern&gt;
  *  &lt;/tagger&gt;
  * </pre>
  *  
@@ -87,83 +109,103 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 public class TextPatternTagger 
         extends AbstractStringTagger implements IXMLConfigurable {
 
-    private Set<TextPattern> patterns = new HashSet<TextPattern>();
-
-    private boolean caseSensitive;
+    private static final Logger LOG = 
+            LogManager.getLogger(RegexFieldExtractor.class);
+    private static final RegexFieldExtractor[] EMPTY_RFE = 
+            new RegexFieldExtractor[] {};
+    private List<RegexFieldExtractor> extractors = new ArrayList<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        int flags = Pattern.DOTALL;
-        if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
-        for (TextPattern tp : patterns) {
-            Pattern p = Pattern.compile(tp.pattern, flags);
-            Matcher match = p.matcher(content);
-            while (match.find()) {
-                String text = match.group(tp.group);
-                metadata.addString(tp.field, text);
-            }
-        }
+        RegexUtil.extractFields(
+                metadata, content, extractors.toArray(EMPTY_RFE));
     }
 
-    public boolean isCaseSensitive() {
-        return caseSensitive;
-    }
     /**
-     * Sets whether to ignore case when matching start and end text.
-     * @param caseSensitive <code>true</code> to consider character case
+     * Gets whether to ignore case when matching text.
+     * @return <code>true</code> if case sensitive.
+     * @deprecated Always false. Case sensitivity is now set from each pattern
      */
-    public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+    @Deprecated
+    public boolean isCaseSensitive() {
+        return false;
     }
     /**
-     * Adds a pattern that will extract the whole text matched.
+     * Sets whether to ignore case when matching text.
+     * @param caseSensitive <code>true</code> to consider character case
+     * @deprecated Always false. Case sensitivity is now set on each pattern
+     */
+    @Deprecated
+    public void setCaseSensitive(boolean caseSensitive) {
+        LOG.warn("setCaseSensitive is deprecated. Set it on patterns instead");
+    }
+    /**
+     * Adds a pattern that will extract the whole text matched into 
+     * given field.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
      */
     public void addPattern(String field, String pattern) {
-        addPattern(field, pattern, 0);
+        if (StringUtils.isAnyBlank(pattern, field)) {
+            return;
+        }
+        addPattern(new RegexFieldExtractor(pattern).setField(field));
     }
     /**
      * Adds a new pattern, which will extract the value from the specified 
      * group index upon matching.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
-     * @param group which pattern group to return.
+     * @param valueGroup which pattern group to return.
      */
-    public void addPattern(String field, String pattern, int group) {
+    public void addPattern(String field, String pattern, int valueGroup) {
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        this.patterns.add(new TextPattern(field, pattern, group));
+        addPattern(new RegexFieldExtractor(
+                pattern).setField(field).setValueGroup(valueGroup));
+    }
+    /**
+     * Adds a pattern that will extract matching field names/values.
+     * @param pattern field extractor
+     */
+    public void addPattern(RegexFieldExtractor... pattern) {
+        if (ArrayUtils.isNotEmpty(pattern)) {
+            extractors.addAll(Arrays.asList(pattern));
+        }
     }
     
     @Override
     protected void loadStringTaggerFromXML(XMLConfiguration xml)
             throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-        List<HierarchicalConfiguration> nodes = 
-                xml.configurationsAt("pattern");
+        List<HierarchicalConfiguration> nodes = xml.configurationsAt("pattern");
         for (HierarchicalConfiguration node : nodes) {
-            addPattern(
-                    node.getString("[@field]", null),
-                    node.getString("", null),
-                    node.getInt("[@group]", 0));
+            int valueGroup = node.getInt("[@group]", -1);
+            if (valueGroup != -1) {
+                LOG.warn("\"group\" attribute is deprecated in favor of "
+                        + "\"valueGroup\". Update your XML configuration.");
+            }
+            valueGroup = node.getInt("[@valueGroup]", valueGroup);
+            addPattern(new RegexFieldExtractor(node.getString("", null))
+                   .setCaseSensitive(node.getBoolean("[@caseSensitive]", false))
+                   .setField(node.getString("[@field]", null))
+                   .setFieldGroup(node.getInt("[@fieldGroup]", -1))
+                   .setValueGroup(valueGroup));
         }
     }
 
     @Override
     protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-         writer.writeAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
-        for (TextPattern tp : patterns) {
+        for (RegexFieldExtractor rfe : extractors) {
             writer.writeStartElement("pattern");
-            writer.writeAttribute("field", tp.field);
-            writer.writeAttributeInteger("group", tp.group);
-            writer.writeCharacters(tp.pattern);
+            writer.writeAttributeString("field", rfe.getField());
+            writer.writeAttributeInteger("fieldGroup", rfe.getFieldGroup());
+            writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
+            writer.writeAttributeBoolean(
+                    "caseSensitive", rfe.isCaseSensitive());
+            writer.writeCharacters(rfe.getRegex());
             writer.writeEndElement();
         }
     }
@@ -176,8 +218,7 @@ public class TextPatternTagger
         TextPatternTagger castOther = (TextPatternTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
-                .append(patterns, castOther.patterns)
-                .append(caseSensitive, castOther.caseSensitive)
+                .append(extractors, castOther.extractors)
                 .isEquals();
     }
 
@@ -185,8 +226,7 @@ public class TextPatternTagger
     public int hashCode() {
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
-                .append(patterns)
-                .append(caseSensitive)
+                .append(extractors)
                 .toHashCode();
     }
 
@@ -194,52 +234,7 @@ public class TextPatternTagger
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
-                .append("patterns", patterns)
-                .append("caseSensitive", caseSensitive)
+                .append("patterns", extractors)
                 .toString();
-    }
-    
-    private static class TextPattern {
-        private final String field;
-        private final String pattern ;
-        private final int group;
-        public TextPattern(String field, String pattern, int group) {
-            super();
-            this.field = field;
-            this.pattern = pattern;
-            this.group = group;
-        }
-        @Override
-        public boolean equals(final Object other) {
-            if (!(other instanceof TextPattern)) {
-                return false;
-            }
-            TextPattern castOther = (TextPattern) other;
-            return new EqualsBuilder()
-                    .append(field, castOther.field)
-                    .append(pattern, castOther.pattern)
-                    .append(group, castOther.group)
-                    .isEquals();
-        }
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(field)
-                    .append(pattern)
-                    .append(group)
-                    .toHashCode();
-        }
-        private transient String toString;
-        @Override
-        public String toString() {
-            if (toString == null) {
-                toString = new ToStringBuilder(this)
-                        .append("field", field)
-                        .append("pattern", pattern)
-                        .append("group", group)
-                        .toString();
-            }
-            return toString;
-        }
     }
 }

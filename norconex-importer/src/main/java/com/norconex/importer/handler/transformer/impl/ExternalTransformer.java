@@ -38,6 +38,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.exec.SystemCommand;
 import com.norconex.commons.lang.exec.SystemCommandException;
@@ -547,8 +548,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                 .appendSuper(super.equals(castOther))
                 .append(getCommand(), castOther.getCommand())
                 .isEquals()
-                && mapEquals(patternStrings1, patternStrings2)
-                && mapEquals(getEnvironmentVariables(), 
+                && EqualsUtil.equalsMap(patternStrings1, patternStrings2)
+                && EqualsUtil.equalsMap(getEnvironmentVariables(), 
                         castOther.getEnvironmentVariables());
 
     }
@@ -570,18 +571,5 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                         getMetadataExtractionPatterns())
                 .append("environmentVariables", getEnvironmentVariables())
                 .toString();
-    }
-    
-    private boolean mapEquals(Map<?, ?> map1, Map<?,?> map2) {
-        if (map1 == null && map2 == null) {
-            return true;
-        }
-        if (map1 == null || map2 == null) {
-            return false;
-        }
-        if (map1.size() != map2.size()) {
-            return false;
-        }
-        return map1.entrySet().containsAll(map2.entrySet());
     }
 }

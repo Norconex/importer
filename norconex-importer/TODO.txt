@@ -1,6 +1,20 @@
 TODO:
 ==============
 
+- Use RegexFieldExtractor in ExternalTransformer/Parser and wherever else
+  appropriate.
+
+- Consider adding a "mergeElements" to DOMTagger for the number of elements to 
+  merge, to accomodate for senarios where key/values are repeated, without a 
+  parent wrapping tag, as in: https://github.com/Norconex/importer/issues/54
+
+- Add ability to pass a class resolver when loading an XML, which would
+  for example allows to try loading the class with a predefined set of
+  package paths.  This would allow users to supply only the class name,
+  making configs easier to read/maintain. 
+
+- Maybe have default "text-only" flag for each handlers?? 
+
 - Have a tagger that looks up metadata in a relational database?
 
 - Add ability to do batch rename of field names (e.g. replacing dots with ...)

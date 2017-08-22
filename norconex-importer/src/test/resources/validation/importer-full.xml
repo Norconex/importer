@@ -233,10 +233,10 @@
       </textBetween>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
-          caseSensitive="false" sourceCharset="UTF-8" maxReadSize="9999" >
+          sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-      <pattern field="field1" group="1">potato</pattern>
-      <pattern field="field2" group="2">apple</pattern>
+      <pattern field="field1" valueGroup="1" fieldGroup="2">potato</pattern>
+      <pattern field="field2" caseSensitive="true">apple</pattern>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
           sourceCharset="UTF-8" fieldName="myfield" >

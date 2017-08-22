@@ -28,6 +28,7 @@ import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 /**
  * @author Pascal Essiembre
@@ -41,7 +42,6 @@ public class TextPatternTaggerTest {
         TextPatternTagger t = new TextPatternTagger();
         t.addPattern("headings", "<h2>(.*?)</h2>" , 1);
         t.addPattern("country", "\\w+\\sZealand");
-        t.setCaseSensitive(false);
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -70,7 +70,6 @@ public class TextPatternTaggerTest {
             throws IOException, ImporterHandlerException {
         TextPatternTagger t = new TextPatternTagger();
         t.addPattern("mytitle", "^.{0,100}");
-        t.setCaseSensitive(false);
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -89,6 +88,11 @@ public class TextPatternTaggerTest {
         TextPatternTagger tagger = new TextPatternTagger();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
+        tagger.addPattern(new RegexFieldExtractor("blah")
+                .setCaseSensitive(true)
+                .setField("field3")
+                .setFieldGroup(3)
+                .setValueGroup(6));
         tagger.setMaxReadSize(512);
         System.out.println("Writing/Reading this: " + tagger);
         XMLConfigurationUtil.assertWriteRead(tagger);

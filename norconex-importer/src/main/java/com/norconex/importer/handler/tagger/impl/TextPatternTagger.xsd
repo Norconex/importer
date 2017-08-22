@@ -25,7 +25,6 @@
           <xs:all>
             <xs:element ref="pattern" minOccurs="1" maxOccurs="unbounded" />
           </xs:all>
-          <xs:attribute name="caseSensitive" type="xs:boolean"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -36,7 +35,9 @@
       <xs:simpleContent>
         <xs:extension base="nonEmptyValue">
           <xs:attribute name="field" type="xs:string" use="required"/>
-          <xs:attribute name="group" type="xs:int"/>
+          <xs:attribute name="fieldGroup" type="xs:int"/>
+          <xs:attribute name="valueGroup" type="xs:int"/>
+          <xs:attribute name="caseSensitive" type="xs:boolean"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>

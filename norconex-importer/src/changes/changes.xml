@@ -7,6 +7,23 @@
   </properties>
   <body>
 
+    <release version="2.8.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add" issue="52">
+        TextPatternTagger can now extract field names in addition to field
+        values. 
+      </action>
+      <action dev="essiembre" type="add">
+        New RegexUtil and RegexFieldExtractor classes. 
+      </action>
+      <action dev="essiembre" type="add">
+        TextPatternTagger case sensitivity is now applied to individual 
+        patterns.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Norconex Commons Lang 1.14.0.
+      </action>
+    </release>
+
     <release version="2.7.2" date="2017-05-26" description="Bugfix release">
       <action dev="essiembre" type="fix">
         Fixed "caseSensitive" flag sometimes having no effect in 
