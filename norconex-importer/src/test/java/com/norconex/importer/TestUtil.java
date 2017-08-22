@@ -15,11 +15,15 @@
 package com.norconex.importer;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.CharEncoding;
+
+import com.norconex.importer.doc.ImporterDocument;
 
 public final class TestUtil {
 
@@ -30,6 +34,11 @@ public final class TestUtil {
         super();
     }
 
+    public static String getContentAsString(ImporterDocument doc)
+            throws IOException {
+        return IOUtils.toString(doc.getContent(), CharEncoding.UTF_8);
+    }
+    
     public static File getAlicePdfFile() {
         return new File(BASE_PATH + ".pdf");
     }
