@@ -59,7 +59,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <pre>
  *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
  *          onMatch="exclude"&gt;
- *      .*&#47;login/.*
+ *      &lt;regex&gt;.*&#47;login/.*&lt;/regex&gt;
  *  &lt;/filter&gt; 
  * </pre>
  * 
