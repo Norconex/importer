@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +29,6 @@ import org.junit.Test;
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.impl.ReplaceTransformer;
 
 public class ReplaceTransformerTest {
 
@@ -85,11 +84,11 @@ public class ReplaceTransformerTest {
         ReplaceTransformer t = new ReplaceTransformer();
 
         Reader reader = new InputStreamReader(
-                IOUtils.toInputStream(config, CharEncoding.UTF_8));
+                IOUtils.toInputStream(config, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         
-        InputStream is = IOUtils.toInputStream(content, CharEncoding.UTF_8);
+        InputStream is = IOUtils.toInputStream(content, StandardCharsets.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         
         ImporterMetadata metadata = new ImporterMetadata();
@@ -109,7 +108,7 @@ public class ReplaceTransformerTest {
         ReplaceTransformer t = new ReplaceTransformer();
         t.setMaxReadSize(128);
         Reader reader = new InputStreamReader(IOUtils.toInputStream(
-                restrictionTestConfig, CharEncoding.UTF_8));
+                restrictionTestConfig, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);

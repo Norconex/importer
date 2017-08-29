@@ -1,6 +1,12 @@
 TODO:
 ==============
 
+- Add onConflict to CopyTagger (add,set,ignore) and wherever appropriate
+  (where there is "overwrite"?)
+
+- Once Norconex Commons Lang upgrades to Velocity 2.0 add Velocity as a 
+  scripting language option where applicable (e.g. ScriptTagger).
+
 - Consider adding a "mergeElements" to DOMTagger for the number of elements to 
   merge, to accomodate for senarios where key/values are repeated, without a 
   parent wrapping tag, as in: https://github.com/Norconex/importer/issues/54
@@ -25,20 +31,12 @@ TODO:
 
 - To remove/adjust when released in Apache Tika:
 
-    - Remove CharsetDetector in favor of Tika original one once fixed:
-      https://issues.apache.org/jira/browse/TIKA-2219
-
-    - Remove WordPerfect, Quattro Pro, and XFDL from 
+    - Remove XFDL from 
       GenericDocumentParserFactory as well as from custom-mimetypes.xml.
       https://issues.apache.org/jira/browse/TIKA-1946
       https://issues.apache.org/jira/browse/TIKA-2228
       https://issues.apache.org/jira/browse/TIKA-2222
       
-    - Remove copy of PDF2XHTML from Importer once upgrading to Tika 1.15.
-
-    - Remove JBIG2-related code/files if accepted:
-      https://issues.apache.org/jira/browse/TIKA-2232
-
 - Consider adding LIRE support (image info extraction for image search).
   http://www.lire-project.net/
 

@@ -15,9 +15,9 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -139,8 +139,8 @@ public class CountMatchesTaggerTest {
         m.setRegex(true);
         tagger.addMatchDetails(m);
         
-        tagger.tagDocument("n/a", 
-                IOUtils.toInputStream(content, CharEncoding.UTF_8), meta, true);
+        tagger.tagDocument("n/a", IOUtils.toInputStream(
+                content, StandardCharsets.UTF_8), meta, true);
 
         Assert.assertEquals(4, meta.getInt("slashesCountNormal"));
         Assert.assertEquals(4, meta.getInt("slashesCountRegex"));
@@ -181,8 +181,8 @@ public class CountMatchesTaggerTest {
         m.setValue("orange");
         tagger.addMatchDetails(m);
 
-        tagger.tagDocument("n/a", 
-                IOUtils.toInputStream(content, CharEncoding.UTF_8), meta, true);
+        tagger.tagDocument("n/a", IOUtils.toInputStream(
+                content, StandardCharsets.UTF_8), meta, true);
         
         Assert.assertEquals(2, meta.getInt("potatoCount"));
         Assert.assertEquals(2, meta.getInt("orangeCount"));

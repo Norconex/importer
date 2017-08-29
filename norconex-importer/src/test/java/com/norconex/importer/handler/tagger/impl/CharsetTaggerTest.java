@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -98,7 +98,7 @@ public class CharsetTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         CharsetTagger t = new CharsetTagger();
-        t.setTargetCharset(CharEncoding.ISO_8859_1);
+        t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
         t.setFieldsRegex(".*");
         System.out.println("Writing/Reading this: " + t);
         XMLConfigurationUtil.assertWriteRead(t);

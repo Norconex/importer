@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class ReduceConsecutivesTransformerTest {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
 
         Reader reader = new InputStreamReader(
-                IOUtils.toInputStream(xml, CharEncoding.UTF_8));
+                IOUtils.toInputStream(xml, StandardCharsets.UTF_8));
         try {
             t.loadFromXML(reader);
         } catch (IOException e) {
@@ -55,7 +55,7 @@ public class ReduceConsecutivesTransformerTest {
             IOUtils.closeQuietly(reader);
         }
         
-        InputStream is = IOUtils.toInputStream(text, CharEncoding.UTF_8);
+        InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
         try { 
@@ -77,7 +77,7 @@ public class ReduceConsecutivesTransformerTest {
     public void testWriteRead() throws IOException {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
         Reader reader = new InputStreamReader(
-                IOUtils.toInputStream(xml, CharEncoding.UTF_8));
+                IOUtils.toInputStream(xml, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
         System.out.println("Writing/Reading this: " + t);

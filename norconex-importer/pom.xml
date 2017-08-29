@@ -26,7 +26,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <tika.version>1.14</tika.version>
+    <tika.version>1.16</tika.version>
+    <pdfbox.version>2.0.7</pdfbox.version>
     <norconex-commons-lang.version>1.14.0-SNAPSHOT</norconex-commons-lang.version>
   </properties>
   <inceptionYear>2009</inceptionYear>
@@ -56,6 +57,13 @@
       <id>apache.snapshots</id>
       <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
       <!-- url>http://repository.apache.org/snapshots/</url -->
+    </repository>
+
+    <!-- The following repo is required for jj2000 support. -->
+    <repository>
+        <id>unidata-releases</id>
+        <name>UNIDATA Releases</name>
+        <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
     </repository>
   </repositories>
 
@@ -127,18 +135,15 @@
       <artifactId>opencsv</artifactId>
       <version>2.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.pdfbox</groupId>
-      <artifactId>xmpbox</artifactId>
-      <version>2.0.1</version>
-    </dependency>
+
     <dependency>
         <groupId>org.luaj</groupId>
         <artifactId>luaj-jse</artifactId>
         <version>3.0.1</version>
     </dependency>
 
-    <!-- jai-imageio deps are required by PDFBox 2.0.0 for JPEG2000 support.
+    <!-- jai-imageio deps are required for JPEG2000 and TIFF support
+         (including for PDFBox 2.x containing those images).
       -->
     <dependency>
         <groupId>com.github.jai-imageio</groupId>
@@ -155,8 +160,12 @@
         <version>1.3.0</version>
         <scope>test</scope>
     </dependency>
+
+    <!-- TODO: Version 3 is migrated to pdf-box project and has been 
+         relicensed to ASL.  Include it here instead once released
+         (no longer "test").
     
-    <!-- Java ImageIO plugin for JBIG2 support (often found in PDF) 
+         Java ImageIO plugin for JBIG2 support (often found in PDF) 
          This jbig2 dep is not distributed due to licensing issue (GPLV3).
          It is included here as "test" only so it does not get distributed.
          https://github.com/levigo/jbig2-imageio
@@ -178,78 +187,72 @@
       <artifactId>ooxml-schemas</artifactId>
       <version>1.3</version>
     </dependency>
-  </dependencies>
-  
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.10</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jsoup</groupId>
-        <artifactId>jsoup</artifactId>
-        <version>1.10.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>1.7.12</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-collections</groupId>
-        <artifactId>commons-collections</artifactId>
-        <version>3.2.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpmime</artifactId>
-        <version>4.5.2</version>
-      </dependency>     
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>4.4.5</version>
-      </dependency>
-      <dependency>
-        <groupId>joda-time</groupId>
-        <artifactId>joda-time</artifactId>
-        <version>2.9.4</version>
-      </dependency>
-      <!-- Upgraded from 5.2 (Tika dep) to avoid exception:
-           Caused by: java.lang.NoSuchMethodError: 
-           jj2000.j2k.fileformat.reader.FileFormatReader.<init>(
-           Ljj2000/j2k/io/RandomAccessIO;Lcom/sun/media/imageioimpl/plugins/
-           jpeg2000/J2KMetadata;)V
-       -->
-      <dependency>
+    
+    <!-- === Fix transitive dependencies versions: === -->
+    
+    <!-- PDFBox dependencies:
+      -->  
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>${pdfbox.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>xmpbox</artifactId>
+      <version>${pdfbox.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox-tools</artifactId>
+      <version>${pdfbox.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>1.10.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.3</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.5.3</version>
+    </dependency>     
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.6</version>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>2.9.4</version>
+    </dependency>
+
+    <!-- Required for JPEG JJ200 support.
+     -->
+    <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>jj2000</artifactId>
         <version>5.3</version>
-      </dependency>
+    </dependency>
 
-      <!-- Ensures correct version, as ooxml-schemas 
-          (required for Visio-XML parsing) brings it down.
-        -->
-      <dependency>
-        <groupId>org.apache.xmlbeans</groupId>
-        <artifactId>xmlbeans</artifactId>
-        <version>2.6.0</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>  
+    <!-- Ensures correct version of xmlbeans, as ooxml-schemas 
+        (required for Visio-XML parsing) brings it down.
+      -->
+    <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+      <version>2.6.0</version>
+    </dependency>
 
+  </dependencies>
+  
   <build>
     <resources>
         <resource>
@@ -523,7 +526,7 @@
     <repository>
       <id>ossrh</id>
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>    
+    </repository>
   </distributionManagement>
   
   <reporting>

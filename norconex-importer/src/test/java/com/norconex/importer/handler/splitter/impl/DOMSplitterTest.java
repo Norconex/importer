@@ -15,11 +15,11 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,7 +72,7 @@ public class DOMSplitterTest {
             throws IOException, ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
         SplittableDocument doc = new SplittableDocument("n/a", 
-                IOUtils.toInputStream(text, CharEncoding.UTF_8), metadata);
+                IOUtils.toInputStream(text, StandardCharsets.UTF_8), metadata);
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
         List<ImporterDocument> docs = splitter.splitApplicableDocument(

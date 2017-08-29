@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -303,7 +303,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             }
             cachedInput.rewind();
             try (TextReader reader = new TextReader(
-                    new InputStreamReader(cachedInput, CharEncoding.UTF_8), 
+                    new InputStreamReader(cachedInput, StandardCharsets.UTF_8), 
                     getTranslatorStrategy().getReadSize())) {
                 translatedDocs.add(
                         translateDocument(doc, streamFactory, lang, reader));
@@ -422,7 +422,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             String text = null;
             while ((text = reader.readText()) != null) {
                 String txt = translator.translate(text, sourceLang, targetLang);
-                childContent.write(txt.getBytes(CharEncoding.UTF_8));
+                childContent.write(txt.getBytes(StandardCharsets.UTF_8));
                 childContent.flush();
             }
             IOUtils.closeQuietly(reader);
@@ -672,7 +672,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }    
     
     private static abstract class TranslatorStrategy {
-        private final int DEFAULT_READ_SIZE = 
+        private static final int DEFAULT_READ_SIZE = 
                 (int) DataUnit.KB.toBytes(2);
         private Translator translator;
         public int getReadSize() {

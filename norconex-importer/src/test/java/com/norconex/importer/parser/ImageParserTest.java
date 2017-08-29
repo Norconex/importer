@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ public class ImageParserTest extends AbstractParserTest {
 
     @Test
     public void testBMP() throws Exception {
-        testParsing("image/x-ms-bmp", "bmp");
+        testParsing("image/bmp", "bmp");
     }
     @Test
     public void testGIF() throws Exception {

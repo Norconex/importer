@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@ package com.norconex.importer.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,16 +34,6 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.impl.ExternalParser;
 
 public class GenericDocumentParserFactoryTest {
-
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
 
     @Test
     public void testWriteRead() throws IOException {
@@ -88,7 +78,7 @@ public class GenericDocumentParserFactoryTest {
         
         try (InputStream is = doc.getContent()) {
             String output = IOUtils.toString(
-                    is, CharEncoding.UTF_8).substring(0, 100);
+                    is, StandardCharsets.UTF_8).substring(0, 100);
             output = StringUtils.remove(output, '\n');
             Assert.assertTrue("Non-parsed output expected to be binary.",
                     !StringUtils.isAsciiPrintable(output));

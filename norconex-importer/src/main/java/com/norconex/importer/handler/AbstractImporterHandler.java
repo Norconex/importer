@@ -1,4 +1,4 @@
-/* Copyright 2010-20176 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +27,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -218,7 +218,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 LOG.debug("Document already parsed, assuming UTF-8 charset: "
                         + reference);
             }
-            return CharEncoding.UTF_8;
+            return StandardCharsets.UTF_8.toString();
         }
 
         String detectedCharset = charset;
@@ -234,12 +234,12 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 detectedCharset = CharsetUtil.detectCharset(
                         document, declaredEncoding);
             } catch (IOException e) {
-                detectedCharset = CharEncoding.UTF_8;
+                detectedCharset = StandardCharsets.UTF_8.toString();
                 LOG.debug("Problem detecting encoding for: " + reference, e);
             }
         }
         if (StringUtils.isBlank(detectedCharset)) {
-            detectedCharset = CharEncoding.UTF_8;
+            detectedCharset = StandardCharsets.UTF_8.toString();
             LOG.debug("Cannot detect source encoding. UTF-8 will be "
                     + "assumed for: " + reference);
         } else {

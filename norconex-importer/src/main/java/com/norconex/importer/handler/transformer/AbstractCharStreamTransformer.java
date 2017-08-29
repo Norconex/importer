@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -118,7 +118,7 @@ public abstract class AbstractCharStreamTransformer
                     + " with binary content. You can avoid this by applying "
                     + "restrictions or making sure it was parsed first. "
                     + "Reference: " + reference);
-            inputCharset = CharEncoding.UTF_8;
+            inputCharset = StandardCharsets.UTF_8.toString();
         }
         try {
             InputStreamReader is = new InputStreamReader(input, inputCharset);

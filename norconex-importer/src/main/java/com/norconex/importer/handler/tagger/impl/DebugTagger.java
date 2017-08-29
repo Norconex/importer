@@ -16,6 +16,7 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -24,7 +25,6 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -112,7 +112,7 @@ public class DebugTagger extends AbstractDocumentTagger {
         if (logContent) {
             try {
                 LOG.log(level, "CONTENT=" + IOUtils.toString(
-                        document, CharEncoding.UTF_8));
+                        document, StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new ImporterHandlerException(
                         "Count not stream content.", e);

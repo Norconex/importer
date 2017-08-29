@@ -17,11 +17,11 @@ package com.norconex.importer.handler.transformer.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -98,7 +98,8 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     private static final Logger LOG = 
             LogManager.getLogger(CharsetTransformer.class);    
 
-    public static final String DEFAULT_TARGET_CHARSET = CharEncoding.UTF_8;
+    public static final String DEFAULT_TARGET_CHARSET = 
+            StandardCharsets.UTF_8.toString();
     
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
@@ -114,7 +115,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
         //--- Get target charset ---
         String outputCharset = targetCharset;
         if (StringUtils.isBlank(outputCharset)) {
-            outputCharset = CharEncoding.UTF_8;
+            outputCharset = StandardCharsets.UTF_8.toString();
         }
         outputCharset = CharsetUtils.clean(outputCharset);
 

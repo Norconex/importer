@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -63,12 +63,13 @@ public class ImporterTest {
                 try {
                     // Clean up what we know is extra noise for a given format
                     Pattern pattern = Pattern.compile("[^a-zA-Z ]");
-                    String txt = IOUtils.toString(input, CharEncoding.UTF_8);
+                    String txt = IOUtils.toString(
+                            input, StandardCharsets.UTF_8);
                     txt = pattern.matcher(txt).replaceAll("");
                     txt = txt.replaceAll("DowntheRabbitHole", "");
                     txt = StringUtils.replace(txt, " ", "");
                     txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
-                    IOUtils.write(txt, output, CharEncoding.UTF_8);
+                    IOUtils.write(txt, output, StandardCharsets.UTF_8);
                 } catch (IOException e) {
                     throw new ImporterHandlerException(e);
                 }

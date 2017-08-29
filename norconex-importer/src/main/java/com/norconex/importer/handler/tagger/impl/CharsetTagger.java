@@ -16,6 +16,7 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -24,7 +25,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -107,7 +107,8 @@ public class CharsetTagger extends AbstractDocumentTagger
     private static final Logger LOG = 
             LogManager.getLogger(CharsetTagger.class);    
 
-    public static final String DEFAULT_TARGET_CHARSET = CharEncoding.UTF_8;
+    public static final String DEFAULT_TARGET_CHARSET = 
+            StandardCharsets.UTF_8.toString();
     
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
@@ -188,7 +189,7 @@ public class CharsetTagger extends AbstractDocumentTagger
         //--- Get target charset ---
         String outputCharset = targetCharset;
         if (StringUtils.isBlank(outputCharset)) {
-            outputCharset = CharEncoding.UTF_8;
+            outputCharset = StandardCharsets.UTF_8.toString();
         }
         outputCharset = CharsetUtils.clean(outputCharset);
 

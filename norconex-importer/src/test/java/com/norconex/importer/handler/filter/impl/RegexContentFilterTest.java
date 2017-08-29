@@ -16,10 +16,10 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -49,7 +49,7 @@ public class RegexContentFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assert.assertFalse("Should have been rejected.", 
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
-                        "a string that matches", CharEncoding.UTF_8),
+                        "a string that matches", StandardCharsets.UTF_8),
                         null, false));
     }    
     @Test
@@ -60,7 +60,7 @@ public class RegexContentFilterTest {
         filter.setOnMatch(OnMatch.INCLUDE);
         Assert.assertTrue("Should have been accepted.", 
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
-                        "a string that matches", CharEncoding.UTF_8),
+                        "a string that matches", StandardCharsets.UTF_8),
                         null, false));
     }    
     @Test
@@ -71,7 +71,7 @@ public class RegexContentFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assert.assertTrue("Should have been accepted.", 
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
-                        "a text that does not match", CharEncoding.UTF_8),
+                        "a text that does not match", StandardCharsets.UTF_8),
                         null, false));
     }    
     @Test
@@ -83,7 +83,7 @@ public class RegexContentFilterTest {
         filter.setOnMatch(OnMatch.INCLUDE);
         Assert.assertFalse("Should have been rejected.", 
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
-                        "a text that does not match", CharEncoding.UTF_8),
+                        "a text that does not match", StandardCharsets.UTF_8),
                         null, false));
     }    
 
@@ -108,7 +108,7 @@ public class RegexContentFilterTest {
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
                         new StringReader("a string that matches"), 
-                        CharEncoding.UTF_8),
+                        StandardCharsets.UTF_8),
                 new ImporterMetadata(), "N/A");
         Assert.assertEquals("Status should have been SUCCESS",
                 Status.SUCCESS, response.getImporterStatus().getStatus());
@@ -134,7 +134,7 @@ public class RegexContentFilterTest {
         
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
-                        new StringReader("no matches"), CharEncoding.UTF_8),
+                        new StringReader("no matches"), StandardCharsets.UTF_8),
                 new ImporterMetadata(), "N/A");
         Assert.assertEquals("Status should have been REJECTED",
                 Status.REJECTED, response.getImporterStatus().getStatus());

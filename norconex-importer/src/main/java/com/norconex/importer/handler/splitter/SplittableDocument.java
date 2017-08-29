@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,8 @@ package com.norconex.importer.handler.splitter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.lang3.CharEncoding;
-
-import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterMetadata;
 
 /**
@@ -48,11 +45,7 @@ public class SplittableDocument {
         return input;
     }
     public Reader getReader() {
-        try {
-            return new InputStreamReader(input, CharEncoding.UTF_8);
-        } catch (UnsupportedEncodingException e) {
-            throw new ImporterRuntimeException("UTF8 must be supported.", e);
-        }
+        return new InputStreamReader(input, StandardCharsets.UTF_8);
     }
     public ImporterMetadata getMetadata() {
         return metadata;

@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@ package com.norconex.importer.parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -43,17 +43,6 @@ public abstract class AbstractParserTest {
     
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     
     protected File getFile(String resourcePath) throws IOException {
         File file = folder.newFile(
@@ -96,6 +85,7 @@ public abstract class AbstractParserTest {
         response = new Importer(config).importDocument(
                 getFile(resourcePath), metadata);
         doc = response.getDocument();
+        
         assertDefaults(doc, "FILE", 
                 resourcePath, contentType, contentRegex, extension, family);
         responses[0] = response;
@@ -123,7 +113,8 @@ public abstract class AbstractParserTest {
 
         Assert.assertNotNull("Document is null", doc);
         
-        String content = IOUtils.toString(doc.getContent(), CharEncoding.UTF_8);
+        String content = 
+                IOUtils.toString(doc.getContent(), StandardCharsets.UTF_8);
         Assert.assertEquals(testType + " content-type detection failed for \"" 
                 + resourcePath + "\".", ContentType.valueOf(contentType), 
                 doc.getContentType());

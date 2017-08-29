@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 
 import com.norconex.importer.doc.ImporterDocument;
 
@@ -36,7 +36,7 @@ public final class TestUtil {
 
     public static String getContentAsString(ImporterDocument doc)
             throws IOException {
-        return IOUtils.toString(doc.getContent(), CharEncoding.UTF_8);
+        return IOUtils.toString(doc.getContent(), StandardCharsets.UTF_8);
     }
     
     public static File getAlicePdfFile() {

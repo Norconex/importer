@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package com.norconex.importer.parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -45,21 +45,12 @@ public class EmbeddedTest {
             + ".openxmlformats-officedocument.spreadsheetml.sheet";
     private static final String PNG = "image/png";
     private static final String TXT = "text/plain";
+    private static final String EMF = "image/emf";
 
     // temp folder is for embedded tests only. move embedded tests in own file?
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
     
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-
     @Test
     public void testEmbeddedDefaultMerged() 
             throws IOException, ImporterException {
@@ -77,7 +68,7 @@ public class EmbeddedTest {
         // 1 zip, which holds:
         //      1 PowerPoint file, which holds 1 excel and 1 picture (png)
         //      1 Plain text file
-        String[] expectedTypes = { ZIP, PPT, XLS, PNG, TXT };
+        String[] expectedTypes = { ZIP, PPT, EMF, XLS, PNG, TXT };
         List<String> responseTypes = getTikaContentTypes(response);
         for (String type : expectedTypes) {
             Assert.assertTrue("Expected to find " + type, 
@@ -86,7 +77,7 @@ public class EmbeddedTest {
         
         // make sure spreadsheet is extracted
         String content = IOUtils.toString(
-                response.getDocument().getContent(), CharEncoding.UTF_8);
+                response.getDocument().getContent(), StandardCharsets.UTF_8);
         Assert.assertTrue("Spreadsheet not extracted.", 
                 content.contains("column 1"));
     }
@@ -113,7 +104,7 @@ public class EmbeddedTest {
         // 1 zip, which holds:
         //      1 PowerPoint file, which holds 1 excel and 1 picture (png)
         //      1 Plain text file
-        String[] expectedTypes = { ZIP, PPT, XLS, PNG, TXT };
+        String[] expectedTypes = { ZIP, PPT, EMF, XLS, PNG, TXT };
         List<String> responseTypes = getTikaContentTypes(zipResponse);
         for (String type : expectedTypes) {
             Assert.assertTrue("Expected to find " + type, 
@@ -122,7 +113,7 @@ public class EmbeddedTest {
 
         ImporterResponse xlsResponse = findResponse(pptResponse, XLS);
         String xlsContent = IOUtils.toString(
-                xlsResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                xlsResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         // make sure spreadsheet is extracted
         Assert.assertTrue("Spreadsheet not extracted.", 
                 xlsContent.contains("column 1"));
@@ -154,7 +145,7 @@ public class EmbeddedTest {
                 findResponse(pptResponse, PNG));
 
         String pptContent = IOUtils.toString(
-                pptResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                pptResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         // make sure spreadsheet is extracted as part of PowerPoint
         Assert.assertTrue("Spreadsheet not extracted.", 
                 pptContent.contains("column 1"));
@@ -183,7 +174,7 @@ public class EmbeddedTest {
                 ZIP, zipResponse.getDocument().getContentType().toString());
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 
@@ -226,7 +217,7 @@ public class EmbeddedTest {
                 ZIP, zipResponse.getDocument().getContentType().toString());
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 
@@ -274,7 +265,7 @@ public class EmbeddedTest {
                 responseTypes.contains(PNG));
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 
@@ -335,7 +326,7 @@ public class EmbeddedTest {
         
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 
@@ -345,7 +336,8 @@ public class EmbeddedTest {
         ImporterResponse pptResponse = findResponse(zipResponse, PPT);
         Assert.assertTrue("PowerPoint must be extracted.", 
                 IOUtils.toString(pptResponse.getDocument().getContent(), 
-                        CharEncoding.UTF_8).contains("Slide 1: Embedded Test"));
+                        StandardCharsets.UTF_8).contains(
+                                "Slide 1: Embedded Test"));
     }
     
     
@@ -357,7 +349,7 @@ public class EmbeddedTest {
         
         GenericDocumentParserFactory f = new GenericDocumentParserFactory();
         f.getParseHints().getEmbeddedConfig().setNoExtractEmbeddedContentTypes(
-                XLS);
+                "(" + EMF + "|" + XLS + ")");
         ImporterResponse zipResponse = importFileZipFile(f);
 
         
@@ -378,7 +370,7 @@ public class EmbeddedTest {
                 responseTypes.contains(XLS));
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 
@@ -428,7 +420,7 @@ public class EmbeddedTest {
         
         
         String content = IOUtils.toString(
-                zipResponse.getDocument().getContent(), CharEncoding.UTF_8);
+                zipResponse.getDocument().getContent(), StandardCharsets.UTF_8);
         
         // make sure spreadsheet content is NOT extracted
         Assert.assertFalse("Spreadsheet must not be extracted.", 

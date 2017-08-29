@@ -36,17 +36,18 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.tika.parser.jdbc.SQLite3Parser;
+import org.apache.tika.parser.ocr.TesseractOCRParser;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.parser.impl.FallbackParser;
-import com.norconex.importer.parser.impl.quattro.QuattroProParser;
-import com.norconex.importer.parser.impl.wordperfect.WordPerfectParser;
 import com.norconex.importer.parser.impl.xfdl.XFDLParser;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -204,8 +205,33 @@ public class GenericDocumentParserFactory
      */
     public GenericDocumentParserFactory() {
         super();
+        fixTikaInitWarning();
+
         //have all parsers lazy loaded instead?
         initDefaultParsers();
+    }
+    
+    private void fixTikaInitWarning() {
+        
+        // A check for Tesseract OCR parser is done the first time a Tika
+        // parser is used.  We remove this check since we manage Tesseract OCR
+        // via Importer config only. 
+        try {
+            FieldUtils.writeStaticField(
+                    TesseractOCRParser.class, "HAS_WARNED", true, true);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            LOG.warn("Could not disable invalid Tessaract OCR warning. "
+                   + "If you see such warning, you can ignore.");
+        }
+
+        // A check for SQL-Lite is also done and we do not want it. 
+        try {
+            FieldUtils.writeStaticField(
+                    SQLite3Parser.class, "HAS_WARNED", true, true);
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            LOG.warn("Could not disable \"sqlite-jdbc\" warning. "
+                   + "If you see such warning, you can ignore.");
+        }
     }
     
     protected void initDefaultParsers() {
@@ -213,27 +239,10 @@ public class GenericDocumentParserFactory
         fallbackParser = new FallbackParser();
 
         //TODO delete when released in Tika:
-        //https://issues.apache.org/jira/browse/TIKA-1946        
-        // Word Perfect
-        IDocumentParser wp = new WordPerfectParser();
-        parsers.put(ContentType.valueOf("application/wordperfect"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect6.0"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect6.1"), wp);
-        parsers.put(ContentType.valueOf("application/x-corel-wordperfect"), wp);
-        parsers.put(ContentType.valueOf("application/wordperfect5.1"), wp);
-        parsers.put(ContentType.valueOf("application/vnd.wordperfect"), wp);
-        
-        //TODO delete when released in Tika:
         //https://issues.apache.org/jira/browse/TIKA-2222       
         // PureEdge XFDL
         parsers.put(
                 ContentType.valueOf("application/vnd.xfdl"), new XFDLParser());
-
-        //TODO delete when released in Tika:
-        //https://issues.apache.org/jira/browse/TIKA-1946        
-        // Quattro Pro:
-        parsers.put(ContentType.valueOf(
-                "application/x-quattro-pro"), new QuattroProParser());
     }
 
     /**
@@ -328,11 +337,8 @@ public class GenericDocumentParserFactory
             return;
         }
         String exePath = ocrConfig.getPath();
-        if(!exePath.endsWith(File.separator)) {
-            exePath += File.separator;
-        }
-        File exeFile = new File(exePath + (System.getProperty(
-                "os.name").startsWith("Windows") 
+        File exeFile = new File(exePath,
+                (System.getProperty("os.name").startsWith("Windows") 
                                 ? "tesseract.exe" : "tesseract"));
         if (!exeFile.exists()) {
             LOG.error("OCR path specified but the Tesseract executable "
@@ -438,6 +444,9 @@ public class GenericDocumentParserFactory
                     ContentType ct = entry.getKey();
                     IDocumentParser parser = entry.getValue();
                     if (parser instanceof IXMLConfigurable) {
+                        // Writing a comment here is a necessary workaround to 
+                        // close <parsers> tag.
+                        xml.writeComment(" ");
                         xml.flush();
                         StringWriter sout = new StringWriter();
                         ((IXMLConfigurable) parser).saveToXML(sout);

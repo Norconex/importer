@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  */
 package com.norconex.importer;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +29,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -130,11 +128,9 @@ public class Importer {
      * @param metadata the document starting metadata
      * @param reference document reference (e.g. URL, file path, etc)
      * @return importer output
-     * @throws ImporterException problem importing document
      */
     public ImporterResponse importDocument(
-            InputStream input, Properties metadata, String reference)
-            throws ImporterException {
+            InputStream input, Properties metadata, String reference) {
         return importDocument(input, null, null, metadata, reference);
     }
 
@@ -178,12 +174,11 @@ public class Importer {
             finalReference = file.getAbsolutePath();
         }
         
-        InputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(file));
+        try (InputStream is =
+                streamFactory.newInputStream(new FileInputStream(file))) {
             return importDocument(is, contentType, 
                     contentEncoding, metadata, finalReference);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new ImporterException("Could not import file.", e);
         }
     }
@@ -384,10 +379,7 @@ public class Importer {
         private boolean hasIncludes = false;
         private boolean atLeastOneIncludeMatch = false;
         public boolean passes() {
-            if (hasIncludes && !atLeastOneIncludeMatch) {
-                return false;
-            }
-            return true;
+            return !(hasIncludes && !atLeastOneIncludeMatch);
         }
     }
     
@@ -411,7 +403,7 @@ public class Importer {
         
         CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
-                out, CharEncoding.UTF_8);
+                out, StandardCharsets.UTF_8);
 
         try {
             if (LOG.isDebugEnabled()) {
@@ -595,7 +587,7 @@ public class Importer {
         }
         
         if (childDocs == null) {
-            return new ArrayList<ImporterDocument>();
+            return new ArrayList<>();
         }
         return childDocs;
     }

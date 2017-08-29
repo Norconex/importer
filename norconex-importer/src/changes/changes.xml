@@ -24,7 +24,17 @@
         match groups for field names and field values.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Norconex Commons Lang 1.14.0.
+        Now uses WordPerfect and Quattro Pro parsers contributed to 
+        Apache Tika.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Apache Tika 1.16, 
+        Norconex Commons Lang 1.14.0.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed copies of Apache Tika classes that are now fixed in 
+        Apache Tika: ListTables, ImageParser, ListManager, PDF2XHTML,
+        CharsetDetector.
       </action>
     </release>
 

@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
@@ -31,7 +33,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.CharEncoding;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -75,8 +76,8 @@ public class XFDLParser implements IDocumentParser {
             detector.enableInputFilter(true);
             detector.setText(is);
             CharsetMatch match = detector.detect();
-            String charset = CharEncoding.UTF_8;
-            if (match != null && CharEncoding.isSupported(match.getName())) {
+            String charset = StandardCharsets.UTF_8.toString();
+            if (match != null && Charset.isSupported(match.getName())) {
                 charset = match.getName();
             }
             BufferedReader reader = new BufferedReader(

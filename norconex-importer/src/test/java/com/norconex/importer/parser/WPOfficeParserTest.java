@@ -28,7 +28,7 @@ public class WPOfficeParserTest extends AbstractParserTest {
     public void test_WPOffice_QuattroPro_qpw() 
             throws IOException, ImporterException {
         testParsing("/parser/wordperfect/quattropro.qpw",
-                "application/x-quattro-pro", 
+                "application/x-quattro-pro; version=9", 
                 "Misc\\. relative references", "qpw", "Spreadsheet");
     }
 
@@ -37,7 +37,7 @@ public class WPOfficeParserTest extends AbstractParserTest {
     public void test_WPOffice_WordPerfect_wpd() 
             throws IOException, ImporterException {
         testParsing("/parser/wordperfect/wordperfect.wpd",
-                "application/vnd.wordperfect", 
+                "application/vnd.wordperfect; version=6.x", 
                 "test test", "wpd", "Word Processor");
     }
 }

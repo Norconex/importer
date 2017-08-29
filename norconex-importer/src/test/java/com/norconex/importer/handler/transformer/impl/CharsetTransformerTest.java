@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.norconex.importer.handler.transformer.impl;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.apache.commons.lang3.CharEncoding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -159,7 +159,7 @@ public class CharsetTransformerTest {
     @Test
     public void testWriteRead() throws IOException {
         CharsetTransformer t = new CharsetTransformer();
-        t.setTargetCharset(CharEncoding.ISO_8859_1);
+        t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
         System.out.println("Writing/Reading this: " + t);
         XMLConfigurationUtil.assertWriteRead(t);
     }

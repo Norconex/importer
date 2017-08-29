@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.mime.MediaType;
@@ -104,28 +103,32 @@ public class AbstractTikaParser implements IHintsAwareParser {
             ImporterDocument doc, Writer output)
             throws DocumentParserException {
         
-        
         Metadata tikaMetadata = new Metadata();
         if (doc.getContentType() == null) {
             throw new DocumentParserException(
                     "ImporterDocument must have a content-type.");
         }
         String contentType = doc.getContentType().toString();
-        tikaMetadata.set(HttpHeaders.CONTENT_TYPE, contentType);
-        tikaMetadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, 
+        //TODO getContent() here does a rewind just to get stream
+        //which may be an unnecessary read.  Have stream factory
+        //directly on document instead to save a read?
+        CachedInputStream content = doc.getContent();
+
+        tikaMetadata.set(Metadata.CONTENT_TYPE, contentType);
+        tikaMetadata.set(Metadata.RESOURCE_NAME_KEY, 
                 doc.getReference());
         tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
+        tikaMetadata.set(Metadata.CONTENT_LENGTH, 
+                Long.toString(content.length()));
         
         try {
             if (knownDetector != null) {
                 knownDetector.initCache(doc.getReference(), contentType);
             }
+
             RecursiveParser recursiveParser = createRecursiveParser(
                     doc.getReference(), contentType, output, doc.getMetadata(), 
-                    //TODO getContent() here does a rewind just to get stream
-                    //which may be an unnecessary read.  Have stream factory
-                    //directly on document instead to save a read?
-                    doc.getContent().getStreamFactory());
+                    content.getStreamFactory());
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
             
@@ -137,15 +140,15 @@ public class AbstractTikaParser implements IHintsAwareParser {
                         || contentType.matches(ocrConfig.getContentTypes()))) {
                 context.set(TesseractOCRConfig.class, ocrTesseractConfig);
                 pdfConfig.setExtractInlineImages(true);
+            } else {
+                pdfConfig.setOcrStrategy(PDFParserConfig.OCR_STRATEGY.NO_OCR);
             }
             pdfConfig.setSuppressDuplicateOverlappingText(true);
             context.set(PDFParserConfig.class, pdfConfig);
             modifyParseContext(context);
             
-            ContentHandler handler = new BodyContentHandler(output);
-
-            InputStream stream = doc.getContent();
-            recursiveParser.parse(stream, handler,  tikaMetadata, context);
+            recursiveParser.parse(content, 
+                    new BodyContentHandler(output),  tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
@@ -164,7 +167,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
     
 
-    protected void addTikaMetadata(
+    protected void addTikaMetadataToImporterMetadata(
             Metadata tikaMeta, ImporterMetadata metadata) {
         String[]  names = tikaMeta.names();
         for (int i = 0; i < names.length; i++) {
@@ -204,7 +207,10 @@ public class AbstractTikaParser implements IHintsAwareParser {
         String path = ocrConfig.getPath();
         if (StringUtils.isNotBlank(path)) {
             tc.setTesseractPath(path);
+        } else {
+            tc.setTesseractPath("DISABLED");
         }
+        
         String langs = ocrConfig.getLanguages();
         if (StringUtils.isNotBlank(langs)) {
             langs = StringUtils.remove(langs, ' ');
@@ -288,7 +294,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
                             knownDetector.detect(stream, tikaMeta).toString();
                 }
                 super.parse(stream, handler, tikaMeta, context);
-                addTikaMetadata(tikaMeta, metadata);
+                addTikaMetadataToImporterMetadata(tikaMeta, metadata);
             } else {
 
                 boolean hasNoExtractFilter = hasNoExtractCondition();
@@ -307,7 +313,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 }
 
                 ImporterMetadata embedMeta = new ImporterMetadata();
-                addTikaMetadata(tikaMeta, embedMeta);
+                addTikaMetadataToImporterMetadata(tikaMeta, embedMeta);
 
                 String embedRef = reference + "!" + resolveEmbeddedResourceName(
                         tikaMeta, embedMeta, embedCount);
@@ -401,14 +407,15 @@ public class AbstractTikaParser implements IHintsAwareParser {
             boolean hasNoExtractFilter = hasNoExtractCondition();
             if (hasNoExtractFilter) {
                 String parentType = hierarchy.peekLast();
-                String currentType = knownDetector.detect(stream, tikaMeta).toString();
+                String currentType = 
+                        knownDetector.detect(stream, tikaMeta).toString();
                 hierarchy.add(currentType);
                 performExtract = performExtract(parentType, currentType);
             }
             if (performExtract) {
-                ContentHandler content = new BodyContentHandler(writer);
-                super.parse(stream, content, tikaMeta, context);
-                addTikaMetadata(tikaMeta, metadata);
+                super.parse(stream, 
+                        new BodyContentHandler(writer), tikaMeta, context);
+                addTikaMetadataToImporterMetadata(tikaMeta, metadata);
             }
             if (hasNoExtractFilter) {
                 hierarchy.pollLast();
@@ -452,8 +459,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
 
     
-    private boolean performExtract(String parentType, String currentType)
-            throws IOException {
+    private boolean performExtract(String parentType, String currentType) {
         if (parseHints == null || parentType == null) {
             return true;
         }
@@ -467,11 +473,8 @@ public class AbstractTikaParser implements IHintsAwareParser {
         
         //--- Embedded ---
         String embeddedRegex = getNoExtractEmbeddedRegex();
-        if (StringUtils.isNotBlank(embeddedRegex)
-                && currentType.matches(embeddedRegex)) {
-            return false;
-        }
-        return true;
+        return StringUtils.isBlank(embeddedRegex)
+                || !currentType.matches(embeddedRegex);
     }
     
     
@@ -546,9 +549,6 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
 
 
-
-
-    
     //--- Deprecated methods ---------------------------------------------------
     /**
      * Sets the OCR configuration.
