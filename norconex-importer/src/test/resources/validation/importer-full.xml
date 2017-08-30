@@ -34,7 +34,7 @@
     </filter>
     <filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
             onMatch="exclude"  caseSensitive="true" sourceCharset="UTF-8" 
-            selector="selector" extract="text" >
+            selector="selector" extract="text" parser="html">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*</regex>
     </filter>
@@ -79,7 +79,7 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </splitter>
     <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
-          selector="div.contact" sourceCharset="UTF-8" >
+          selector="div.contact" sourceCharset="UTF-8" parser="xml">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </splitter>    
     <splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
@@ -150,7 +150,7 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
-            fromField="FROMFIELD" sourceCharset="UTF-8">
+            fromField="FROMFIELD" parser="xml" sourceCharset="UTF-8">
       <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
       <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
       <dom selector="a selector" toField="TODOFIELD1"

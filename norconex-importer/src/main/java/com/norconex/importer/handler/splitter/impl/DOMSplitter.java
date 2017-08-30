@@ -41,6 +41,7 @@ import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.util.DOMUtil;
 
 /**
  * <p>Splits HTML, XHTML, or XML document on a specific element.
@@ -76,10 +77,21 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * used as a post-parse handler.
  * </p>
  * 
+ * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
+ * documents. The default is "html" and will normalize the content
+ * as HTML. This is generally a desired behavior, but this can sometimes 
+ * have your selector fail. If you encounter this
+ * problem, try switching to "xml" parser, which does not attempt normalization
+ * on the content. The drawback with "xml" is you may not get all HTML-specific
+ * selector options to work.  If you know you are dealing with XML to begin
+ * with, specifying "xml" should be a good option.
+ * </p>
+ * 
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
  *          selector="(selector syntax)"
+ *          parser="[html|xml]"
  *          sourceCharset="(character encoding)" &gt;
  *          
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -107,6 +119,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
     private String selector;
     private String sourceCharset = null;
+    private String parser = DOMUtil.PARSER_HTML;
     
     public DOMSplitter() {
         super();
@@ -136,6 +149,23 @@ public class DOMSplitter extends AbstractDocumentSplitter
         this.sourceCharset = sourceCharset;
     }
     
+    /**
+     * Gets the parser to use when creating the DOM-tree.
+     * @return <code>html</code> (default) or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public String getParser() {
+        return parser;
+    }
+    /**
+     * Sets the parser to use when creating the DOM-tree.
+     * @param parser <code>html</code> or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public void setParser(String parser) {
+        this.parser = parser;
+    }
+    
     @Override
     protected List<ImporterDocument> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
@@ -148,8 +178,8 @@ public class DOMSplitter extends AbstractDocumentSplitter
         
         List<ImporterDocument> docs = new ArrayList<>();
         try {
-            Document soupDoc = Jsoup.parse(
-                    doc.getInput(), inputCharset, doc.getReference());
+            Document soupDoc = Jsoup.parse(doc.getInput(), inputCharset, 
+                    doc.getReference(), DOMUtil.toJSoupParser(getParser()));
             Elements elms = soupDoc.select(selector);
             
             // if there only 1 element matched, make sure it is not the same as
@@ -203,6 +233,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
     protected void loadHandlerFromXML(XMLConfiguration xml) {
         setSelector(xml.getString("[@selector]", getSelector()));
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+        setParser(xml.getString("[@parser]", getParser()));
     }
 
     @Override
@@ -210,6 +241,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
             throws XMLStreamException {
         writer.writeAttributeString("selector", getSelector());
         writer.writeAttributeString("sourceCharset", getSourceCharset());
+        writer.writeAttributeString("parser", getParser());
     }
     
     @Override
@@ -222,6 +254,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 .appendSuper(super.equals(castOther))
                 .append(selector, castOther.selector)
                 .append(sourceCharset, castOther.sourceCharset)
+                .append(parser, castOther.parser)                
                 .isEquals();
     }
     @Override
@@ -230,6 +263,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 .appendSuper(super.hashCode())
                 .append(selector)
                 .append(sourceCharset)
+                .append(parser)
                 .toHashCode();
     }
 
@@ -239,6 +273,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 .appendSuper(super.toString())
                 .append("selector", selector)
                 .append("sourceCharset", sourceCharset)
+                .append("parser", parser)
                 .toString();
     }
 }

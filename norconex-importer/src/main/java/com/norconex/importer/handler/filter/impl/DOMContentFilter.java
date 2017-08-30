@@ -113,6 +113,16 @@ import com.norconex.importer.util.DOMUtil;
  *       attribute matching your replacement for "attributeKey"
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
  * </ul> 
+ *  
+ * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
+ * documents. The default is "html" and will normalize the content
+ * as HTML. This is generally a desired behavior, but this can sometimes 
+ * have your selector fail. If you encounter this
+ * problem, try switching to "xml" parser, which does not attempt normalization
+ * on the content. The drawback with "xml" is you may not get all HTML-specific
+ * selector options to work.  If you know you are dealing with XML to begin
+ * with, specifying "xml" should be a good option.
+ * </p>
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
@@ -121,6 +131,7 @@ import com.norconex.importer.util.DOMUtil;
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"          
  *          selector="(selector syntax)"
+ *          parser="[html|xml]"
  *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" &gt;
  *          
  *    &lt;restrictTo caseSensitive="[false|true]"
@@ -158,6 +169,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     private String selector;
     private String extract;
     private String sourceCharset = null;    
+    private String parser = DOMUtil.PARSER_HTML;
     
     public DOMContentFilter() {
         this(null, OnMatch.INCLUDE);
@@ -235,6 +247,23 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         this.sourceCharset = sourceCharset;
     }
     
+    /**
+     * Gets the parser to use when creating the DOM-tree.
+     * @return <code>html</code> (default) or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public String getParser() {
+        return parser;
+    }
+    /**
+     * Sets the parser to use when creating the DOM-tree.
+     * @param parser <code>html</code> or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public void setParser(String parser) {
+        this.parser = parser;
+    }    
+    
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
@@ -244,7 +273,8 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 sourceCharset, reference, input, metadata, parsed);
         
         try {
-            Document doc = Jsoup.parse(input, inputCharset, reference);
+            Document doc = Jsoup.parse(input, inputCharset, 
+                    reference, DOMUtil.toJSoupParser(getParser()));
             Elements elms = doc.select(selector);
             // no elements matching
             if (elms.isEmpty()) {
@@ -290,6 +320,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
             throws XMLStreamException {
         writer.writeAttributeBoolean("caseSensitive", caseSensitive);
         writer.writeAttributeString("selector", selector);
+        writer.writeAttributeString("parser", getParser());
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         writer.writeAttributeString("extract", getExtract());
         writer.writeElementString("regex", regex);
@@ -298,6 +329,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", isCaseSensitive()));
         setSelector(xml.getString("[@selector]", getSelector()));
+        setParser(xml.getString("[@parser]", getParser()));
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         setSourceCharset(xml.getString("[@extract]", getExtract()));
         setRegex(xml.getString("regex"));
@@ -313,6 +345,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .appendSuper(super.equals(castOther))
                 .append(caseSensitive, castOther.caseSensitive)
                 .append(selector, castOther.selector)
+                .append(parser, castOther.parser)
                 .append(regex, castOther.regex)
                 .append(sourceCharset, castOther.sourceCharset)
                 .append(extract, castOther.extract)
@@ -324,6 +357,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .appendSuper(super.hashCode())
                 .append(caseSensitive)
                 .append(selector)
+                .append(parser)
                 .append(regex)
                 .append(sourceCharset)                
                 .append(extract)
@@ -336,6 +370,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 .appendSuper(super.toString())
                 .append("caseSensitive", caseSensitive)
                 .append("selector", selector)
+                .append("parser", parser)
                 .append("regex", regex)
                 .append("sourceCharset", sourceCharset)
                 .append("extract", "extract")

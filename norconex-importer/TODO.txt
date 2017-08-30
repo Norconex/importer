@@ -4,6 +4,8 @@ TODO:
 - Add onConflict to CopyTagger (add,set,ignore) and wherever appropriate
   (where there is "overwrite"?)
 
+- Switch to Commons CLI 2.x
+
 - Once Norconex Commons Lang upgrades to Velocity 2.0 add Velocity as a 
   scripting language option where applicable (e.g. ScriptTagger).
 

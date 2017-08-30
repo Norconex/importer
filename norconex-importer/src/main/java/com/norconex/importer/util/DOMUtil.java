@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,37 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 /**
- * Utility methods related to DOM manipulation.
+ * Utility methods related to JSoup/DOM manipulation.
  * @since 2.6.0
  */
 public final class DOMUtil {
 
     private static final Logger LOG = LogManager.getLogger(DOMUtil.class);
     
+    /** @since 2.8.0 */
+    public static final String PARSER_HTML = "html";
+    /** @since 2.8.0 */
+    public static final String PARSER_XML = "xml";
+    
     private DOMUtil() {
+    }
+    
+    /**
+     * Gets the JSoup parser associated with the string representation.
+     * The string "xml" (case insensitive) will return the XML parser.  
+     * Anything else will return the HTML parser. 
+     * @param parser "html" or "xml"
+     * @return JSoup parser
+     * @since 2.8.0
+     */
+    public static Parser toJSoupParser(String parser) {
+        if ("xml".equalsIgnoreCase(parser)) {
+            return Parser.xmlParser();
+        }
+        return Parser.htmlParser();
     }
 
     /**

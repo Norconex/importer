@@ -176,11 +176,9 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param metadata document metadata.
      * @param parsed if the document was parsed (i.e. imported) already
      * @return <code>true</code> if this handler is applicable to the document
-     * @throws ImporterHandlerException problem evaluating if applicable
      */
     protected final boolean isApplicable(
-            String reference, ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
+            String reference, ImporterMetadata metadata, boolean parsed) {
         if (restrictions.isEmpty()) {
             return true;
         }

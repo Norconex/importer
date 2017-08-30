@@ -136,10 +136,21 @@ import com.norconex.importer.util.DOMUtil;
  * By default elements with blank values are not matched and are ignored.   
  * </p>
  *  
+ * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
+ * documents. The default is "html" and will normalize the content
+ * as HTML. This is generally a desired behavior, but this can sometimes 
+ * have your selector fail. If you encounter this
+ * problem, try switching to "xml" parser, which does not attempt normalization
+ * on the content. The drawback with "xml" is you may not get all HTML-specific
+ * selector options to work.  If you know you are dealing with XML to begin
+ * with, specifying "xml" should be a good option.
+ * </p>
+ * 
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
  *          fromField="(optional source field)" 
+ *          parser="[html|xml]"
  *          sourceCharset="(character encoding)"&gt;
  *          
  *      &lt;restrictTo
@@ -183,10 +194,11 @@ import com.norconex.importer.util.DOMUtil;
 public class DOMTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = LogManager.getLogger(DOMTagger.class);
-    
+
     private final List<DOMExtractDetails> extractions = new ArrayList<>();
     private String sourceCharset = null;
     private String fromField = null;
+    private String parser = DOMUtil.PARSER_HTML;
     
     /**
      * Constructor.
@@ -232,6 +244,23 @@ public class DOMTagger extends AbstractDocumentTagger {
         this.fromField = fromField;
     }
 
+    /**
+     * Gets the parser to use when creating the DOM-tree.
+     * @return <code>html</code> (default) or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public String getParser() {
+        return parser;
+    }
+    /**
+     * Sets the parser to use when creating the DOM-tree.
+     * @param parser <code>html</code> or <code>xml</code>.
+     * @since 2.8.0
+     */
+    public void setParser(String parser) {
+        this.parser = parser;
+    }
+
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
@@ -251,13 +280,15 @@ public class DOMTagger extends AbstractDocumentTagger {
                     return;
                 }
                 for (String html : htmls) {
-                    jsoupDocs.add(Jsoup.parse(html, reference));
+                    jsoupDocs.add(Jsoup.parse(html, 
+                            reference, DOMUtil.toJSoupParser(getParser())));
                 }
             // Use doc content 
             } else {
                 String inputCharset = detectCharsetIfBlank(
                         sourceCharset, reference, document, metadata, parsed);
-                jsoupDocs.add(Jsoup.parse(document, inputCharset, reference));
+                jsoupDocs.add(Jsoup.parse(document, inputCharset, 
+                        reference, DOMUtil.toJSoupParser(getParser())));
             }
             domExtractDocList(jsoupDocs, metadata);
         } catch (IOException e) {
@@ -396,6 +427,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         setFromField(xml.getString("[@fromField]", getFromField()));
+        setParser(xml.getString("[@parser]", getParser()));
         List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
         if (!nodes.isEmpty()) {
             extractions.clear();
@@ -417,6 +449,7 @@ public class DOMTagger extends AbstractDocumentTagger {
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         writer.writeAttributeString("fromField", getFromField());
+        writer.writeAttributeString("parser", getParser());
         for (DOMExtractDetails details : extractions) {
             writer.writeStartElement("dom");
             writer.writeAttributeString("selector", details.getSelector());
@@ -440,8 +473,9 @@ public class DOMTagger extends AbstractDocumentTagger {
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(extractions, castOther.extractions)
-                .append(sourceCharset, sourceCharset)
-                .append(fromField, fromField)
+                .append(sourceCharset, castOther.sourceCharset)
+                .append(fromField, castOther.fromField)
+                .append(parser, castOther.parser)
                 .isEquals();
     }
 
@@ -452,6 +486,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                 .append(extractions)
                 .append(sourceCharset)
                 .append(fromField)
+                .append(parser)
                 .toHashCode();
     }
 
@@ -462,6 +497,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                 .append("list", extractions)
                 .append("sourceCharset", sourceCharset)
                 .append("fromField", fromField)
+                .append("parser", parser)
                 .toString();
     }
     

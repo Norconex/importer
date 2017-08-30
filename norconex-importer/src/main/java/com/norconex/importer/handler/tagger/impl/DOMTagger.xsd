@@ -26,6 +26,14 @@
               <xs:element ref="dom" minOccurs="1" maxOccurs="unbounded" />
           </xs:all>
           <xs:attribute name="fromField" type="xs:string"></xs:attribute>
+          <xs:attribute name="parser">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="html"/>
+                <xs:enumeration value="xml"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
           <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
         </xs:extension> 
       </xs:complexContent>   

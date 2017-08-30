@@ -27,6 +27,14 @@
           </xs:all>
           <xs:attribute name="caseSensitive" type="xs:boolean"></xs:attribute>
           <xs:attribute name="selector" type="xs:string" use="required"></xs:attribute>
+          <xs:attribute name="parser">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="html"/>
+                <xs:enumeration value="xml"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
           <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
           <xs:attribute name="extract">
             <xs:simpleType>

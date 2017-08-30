@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
+import com.norconex.importer.util.DOMUtil;
 
 /**
  * @author Pascal Essiembre
@@ -41,15 +43,42 @@ import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
  */
 public class DOMTaggerTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
+    // This is a test for: https://github.com/Norconex/collector-http/issues/381
+    @Test
+    public void testXMLParser() 
+            throws ImporterHandlerException, IOException {
+
+        DOMTagger t = new DOMTagger();
+       
+        t.setParser(DOMUtil.PARSER_XML);
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "tr ", "WHOLE", true, "outerHtml"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "tr td:nth-of-type(1) a", "TEST_URL", true, "attr(href)"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "tr td:nth-of-type(1) a", "TEST_TITLE", true, "ownText"));
+        t.addDOMExtractDetails(new DOMExtractDetails(
+                "tr td:nth-of-type(2)", "TEST_DESC", true, "ownText"));
+
+        String xml = "<tr>"
+                + "<td><a href=\"http://example.org/doc.html\">"
+                + "Sample Title</a></td>"
+                + "<td>This is a description.</td>"
+                + "</tr>";
+       
+        ImporterMetadata metadata = new ImporterMetadata();
+        performTagging(metadata, t, xml);
+    
+        String whole = metadata.getString("WHOLE");
+        String title = metadata.getString("TEST_TITLE");
+        String url = metadata.getString("TEST_URL");
+        String desc = metadata.getString("TEST_DESC");
+        
+        Assert.assertTrue(StringUtils.contains(whole, "</tr>"));
+        Assert.assertEquals("Sample Title", title);
+        Assert.assertEquals("http://example.org/doc.html", url);
+        Assert.assertEquals("This is a description.", desc);
+    }    
     
     // This is a test for: https://github.com/Norconex/importer/issues/39
     @Test
