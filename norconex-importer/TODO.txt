@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Add support for SentimentParser and other Tika recent features.
+
 - Add onConflict to CopyTagger (add,set,ignore) and wherever appropriate
   (where there is "overwrite"?)
 

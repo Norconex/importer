@@ -16,11 +16,11 @@ package com.norconex.importer.handler.filter;
 
 
 /**
- * Tells the collector that a filter is of "OnMatch" type.  This means,
- * if one or more filters of type "include" exists in a set of filters, 
- * at least one of them must be matched for a document (or other object)
+ * Tells the collector that a filter is of "OnMatch" type.  This means
+ * if one or more filters of type "include" exist in a set of filters, 
+ * at least one of them must be matched for a document (or other)
  * to be "included".  Only one filter of type "exclude" needs to be 
- * matched or the document (or other object) to be excluded.
+ * matched or the document (or other) to be excluded.
  * Filters of type "exclude" have precedence over includes.
  * @author Pascal Essiembre
  */
