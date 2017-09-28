@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.norconex.importer.handler;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.importer.doc.ImporterMetadata;
 
@@ -39,7 +38,7 @@ public final class CommonRestrictions {
      * are HTML, XHTML, or XML-based. The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
      * <pre>
-     * text/html, application/xhtml+xml, vnd.wap.xhtml+xml, x-asp,
+     * text/html, application/xhtml+xml, vnd.wap.xhtml+xml, application/x-asp,
      * application/xml, text/xml, application/atom+xml, application/xslt+xml,
      * image/svg+xml, application/mathml+xml, application/rss+xml
      * </pre>
@@ -47,10 +46,10 @@ public final class CommonRestrictions {
      */
     public static List<PropertyMatcher> domContentTypes() {
         return build(ImporterMetadata.DOC_CONTENT_TYPE,
-                ContentType.HTML.toString(),
+                "text/html",
                 "application/xhtml\\+xml",
-                "vnd\\.wap.xhtml\\+xml",
-                "x-asp",
+                "application/vnd\\.wap.xhtml\\+xml",
+                "application/x-asp",
                 "application/xml",
                 "text/xml",
                 "application/atom\\+xml",
@@ -59,7 +58,24 @@ public final class CommonRestrictions {
                 "application/mathml\\+xml",
                 "application/rss\\+xml");
     }
-  
+
+    /**
+     * Default content-types defining an HTML or XHTML document.
+     * The <code>document.contentType</code>
+     * field has to contain one of these for the restriction to apply:
+     * <pre>
+     * text/html, application/xhtml+xml, application/vnd.wap.xhtml+xml
+     * </pre>
+     * @return list of restrictions
+     * @since 2.8.0
+     */
+    public static List<PropertyMatcher> htmlContentTypes() {
+        return build(ImporterMetadata.DOC_CONTENT_TYPE,
+                "text/html",
+                "application/xhtml\\+xml",
+                "application/vnd\\.wap.xhtml\\+xml");
+    }    
+    
     private static List<PropertyMatcher> build(
             String field, String... regexes) {
         List<PropertyMatcher> list = new ArrayList<>();
