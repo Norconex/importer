@@ -81,7 +81,19 @@ public class ExternalParserTest {
         testWithExternalApp(
                 ExternalApp.newCommandLine(ExternalApp.TYPE_STDIN_STDOUT));
     }
+    @Test
+    public void testMetaInputOutputFiles() 
+            throws IOException, DocumentParserException {
+        testWithExternalApp(ExternalApp.newCommandLine(
+                ExternalApp.TYPE_INFILE_OUTFILE)
+                    + " ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META}", true);
+    }
+    
     private void testWithExternalApp(String command) 
+            throws IOException, DocumentParserException {
+        testWithExternalApp(command, false);
+    }
+    private void testWithExternalApp(String command, boolean metaFiles) 
             throws IOException, DocumentParserException {
         InputStream input = inputAsStream();
         StringWriter output = new StringWriter();
@@ -90,11 +102,19 @@ public class ExternalParserTest {
                         (int) DataUnit.KB.toBytes(10), 
                         (int) DataUnit.KB.toBytes(5)).newInputStream(input));
         ImporterMetadata metadata = doc.getMetadata();
-        
+        if (metaFiles) {
+            metadata.setString(
+                    "metaFileField1", "this is a first test");
+            metadata.setString("metaFileField2", 
+                    "this is a second test value1", 
+                    "this is a second test value2");
+        }        
         
         ExternalParser p = new ExternalParser();
         p.setCommand(command);
         addPatternsAndEnvs(p);
+        p.setMetadataInputFormat("properties");
+        p.setMetadataOutputFormat("properties");
         p.parseDocument(doc, output); 
         
         String content = output.toString();
@@ -105,7 +125,22 @@ public class ExternalParserTest {
         content = content.trim();
         
         Assert.assertEquals(EXPECTED_OUTPUT, content);
-        assertMetadata(metadata);
+        if (metaFiles) {
+            assertMetadataFiles(metadata);
+        } else {
+            assertMetadata(metadata);
+        }
+    }
+    
+    private void assertMetadataFiles(ImporterMetadata meta) {
+        Assert.assertEquals(
+                "test first a is this", meta.getString("metaFileField1"));
+        Assert.assertEquals(
+                "value1 test second a is this", 
+                meta.getStrings("metaFileField2").get(0));
+        Assert.assertEquals(
+                "value2 test second a is this", 
+                meta.getStrings("metaFileField2").get(1));
     }
     
     private void assertMetadata(ImporterMetadata meta) {

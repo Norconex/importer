@@ -30,7 +30,6 @@ import org.apache.commons.io.output.WriterOutputStream;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.TextPatternTagger;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
@@ -42,6 +41,10 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * Parses and extracts text from a file using an external application to do so.
  * </p>
  * <p>
+ * This parser relies heavily on the mechanics of 
+ * {@link ExternalTransformer}. Refer to that class for documentation.
+ * </p>
+ * <p>
  * Since 2.6.0, this parser can be made configurable via XML. See
  * {@link GenericDocumentParserFactory} for general indications how 
  * to configure parsers.  
@@ -49,58 +52,6 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * <p>
  * Since 2.7.0, this parser no longer extends 
  * {@link org.apache.tika.parser.external.ExternalParser}. 
- * </p>
- * <p>
- * When constructing the command to launch the external application, these 
- * placeholders will be replaced if provided (case-sensitive): 
- * </p>
- * <table summary="Placeholder tokens">
- *   <tr>
- *     <td><code>${INPUT}</code></td>
- *     <td>File to transform.</td>
- *   </tr>
- *   <tr>
- *     <td><code>${OUTPUT}</code></td>
- *     <td>Resulting file from the transformation.</td>
- *   </tr>
- * </table>
- * <p>
- * Both are optional and if not provided, the file input or output will be 
- * STDIN or STDOUT respectively.
- * </p>
- * <p>
- * Execution environment variables can be set to replace environment variables
- * defined for the current process.
- * </p>
- * <p>
- * It is also possible to specify metadata extraction patterns that will be
- * applied on each line returned from STDOUT and STDERR.  With each pattern,
- * there could be a matadata field name supplied. If the pattern does not 
- * contain any match group, the entire matched expression will be used as the 
- * metadata field value.  
- * </p>
- * <p>
- * <b>Since 2.8.0</b>, match group indexes can be specified 
- * to extract field names and values using the same regular 
- * expression.  This is done by using
- * match groups in your regular expressions (parenthesis).  For each pattern
- * you define, you can specify which match group hold the field name and 
- * which one holds the value.  
- * Specifying a field match group is optional if a <code>field</code> 
- * is provided.  If no match groups are specified, a <code>field</code>
- * is expected.
- * </p>
- * <p>
- * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
- * case-sensitivity for each patterns. 
- * </p>
- * <p>
- * To extract metadata from
- * a generated file instead of STDOUT, use an import handler such as 
- * {@link TextPatternTagger} to do so.   
- * </p>
- * <p>
- * The application output is expected to be UTF-8.
  * </p>
  * <p>
  * To use an external application to change a file content after parsing has
@@ -112,9 +63,14 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *  &lt;parser contentType="(content type this parser is associated to)" 
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
  *          
- *      &lt;command&gt;c:\Apps\myapp.exe ${INPUT} ${OUTPUT}&lt;/command&gt;
+ *      &lt;command&gt;
+ *          c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *      &lt;/command&gt;
  *      
- *      &lt;metadata&gt;
+ *      &lt;metadata 
+ *              inputFormat="[json|xml|properties]" 
+ *              outputFormat="[json|xml|properties]"&gt;
+ *          &lt;!-- pattern only used when no output format is specified --&gt;
  *          &lt;pattern field="(target field name)" 
  *                  fieldGroup="(field name match group index)"
  *                  valueGroup="(field value match group index)"
@@ -152,6 +108,7 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *  &lt;/transformer&gt;
  * </pre>
  * @author Pascal Essiembre
+ * @see ExternalTransformer
  * @since 2.2.0
  */
 public class ExternalParser implements IDocumentParser, IXMLConfigurable {
@@ -189,7 +146,8 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
      * @param patterns map of patterns and field names
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
+     * @deprecated Since 2.8.0, use 
+     * {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
     @Deprecated
     public void setMetadataExtractionPatterns(Map<Pattern, String> patterns) {
@@ -311,6 +269,55 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      */
     public void addEnvironmentVariable(String name, String value) {
         t.addEnvironmentVariable(name, value);
+    }
+
+    /**
+     * Gets the format of the metadata input file sent to the external 
+     * application. One of "json" (default), "xml", or "properties" is expected. 
+     * Only applicable when the <code>${INPUT}</code> token 
+     * is part of the command.  
+     * @return metadata input format
+     * @since 2.8.0
+     */
+    public String getMetadataInputFormat() {
+        return t.getMetadataInputFormat();
+    }
+    /**
+     * Sets the format of the metadata input file sent to the external 
+     * application. One of "json" (default), "xml", or "properties" is expected. 
+     * Only applicable when the <code>${INPUT}</code> token 
+     * is part of the command.  
+     * @param metadataInputFormat format of the metadata input file
+     * @since 2.8.0
+     */
+    public void setMetadataInputFormat(String metadataInputFormat) {
+        t.setMetadataInputFormat(metadataInputFormat);
+    }
+    /**
+     * Gets the format of the metadata output file from the external 
+     * application. By default no format is set, and metadata extraction
+     * patterns are used to extract metadata information.
+     * One of "json", "xml", or "properties" is expected. 
+     * Only applicable when the <code>${OUTPUT}</code> token 
+     * is part of the command.  
+     * @return metadata output format
+     * @since 2.8.0
+     */
+    public String getMetadataOutputFormat() {
+        return t.getMetadataOutputFormat();
+    }
+    /**
+     * Sets the format of the metadata output file from the external 
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Set to <code>null</code> for relying metadata extraction
+     * patterns instead.
+     * Only applicable when the <code>${OUTPUT}</code> token 
+     * is part of the command.  
+     * @param metadataOutputFormat format of the metadata output file
+     * @since 2.8.0
+     */
+    public void setMetadataOutputFormat(String metadataOutputFormat) {
+        t.setMetadataOutputFormat(metadataOutputFormat);
     }
 
     @Override

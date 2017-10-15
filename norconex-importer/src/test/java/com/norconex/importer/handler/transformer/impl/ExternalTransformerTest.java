@@ -40,6 +40,9 @@ public class ExternalTransformerTest {
         ExternalTransformer t = new ExternalTransformer();
         t.setCommand("my command");
 
+        t.setMetadataInputFormat("json");
+        t.setMetadataOutputFormat("xml");
+        
         t.setMetadataExtractionPatterns(
             new RegexFieldExtractor("asdf.*", "blah"),
             new RegexFieldExtractor("qwer.*", "halb")
@@ -78,15 +81,38 @@ public class ExternalTransformerTest {
         testWithExternalApp(
                 ExternalApp.newCommandLine(ExternalApp.TYPE_STDIN_STDOUT));
     }
+    
+    @Test
+    public void testMetaInputOutputFiles() 
+            throws IOException, ImporterHandlerException {
+        testWithExternalApp(ExternalApp.newCommandLine(
+                ExternalApp.TYPE_INFILE_OUTFILE)
+                    + " ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META}", true);
+    }
+
+    
     private void testWithExternalApp(String command) 
+            throws IOException, ImporterHandlerException {
+        testWithExternalApp(command, false);
+    }
+    private void testWithExternalApp(String command, boolean metaFiles) 
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
         ByteArrayOutputStream output = outputAsStream();
         ImporterMetadata metadata = new ImporterMetadata();
+        if (metaFiles) {
+            metadata.setString(
+                    "metaFileField1", "this is a first test");
+            metadata.setString("metaFileField2", 
+                    "this is a second test value1", 
+                    "this is a second test value2");
+        }
         
         ExternalTransformer t = new ExternalTransformer();
         t.setCommand(command);
         addPatternsAndEnvs(t);
+        t.setMetadataInputFormat("properties");
+        t.setMetadataOutputFormat("properties");
         t.transformDocument("reference", input, output, metadata, false);
 
         String content = output.toString();
@@ -97,9 +123,23 @@ public class ExternalTransformerTest {
         content = content.trim();
         
         Assert.assertEquals(EXPECTED_OUTPUT, content);
-        assertMetadata(metadata);
+        if (metaFiles) {
+            assertMetadataFiles(metadata);
+        } else {
+            assertMetadata(metadata);
+        }
     }
     
+    private void assertMetadataFiles(ImporterMetadata meta) {
+        Assert.assertEquals(
+                "test first a is this", meta.getString("metaFileField1"));
+        Assert.assertEquals(
+                "value1 test second a is this", 
+                meta.getStrings("metaFileField2").get(0));
+        Assert.assertEquals(
+                "value2 test second a is this", 
+                meta.getStrings("metaFileField2").get(1));
+    }    
     private void assertMetadata(ImporterMetadata meta) {
         Assert.assertEquals("StdoutBefore", meta.getString("field1"));
         Assert.assertEquals("StdoutAfter", meta.getString("field2"));

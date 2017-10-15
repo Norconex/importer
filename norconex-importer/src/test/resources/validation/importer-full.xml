@@ -258,8 +258,8 @@
     </transformer>
     <transformer class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-      <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
-      <metadata>
+      <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${REFERENCE}</command>
+      <metadata inputFormat="json" outputFormat="xml">
         <pattern field="field1">&lt;title&gt;&lt;(title)&gt;</pattern>
         <pattern fieldGroup="2" valueGroup="1" caseSensitive="true">(.*?):(.*)</pattern>
       </metadata>
@@ -322,7 +322,7 @@
       <parser contentType="application/pdf" 
             class="com.norconex.importer.parser.impl.ExternalParser" >
         <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT}</command>
-        <metadata>
+        <metadata inputFormat="xml" outputFormat="json">
           <pattern field="field1">&lt;title&gt;&lt;(title)&gt;</pattern>
           <pattern fieldGroup="2" valueGroup="1" caseSensitive="true">(.*?):(.*)</pattern>
         </metadata>

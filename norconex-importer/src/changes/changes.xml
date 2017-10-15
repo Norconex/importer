@@ -8,6 +8,12 @@
   <body>
 
     <release version="2.8.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add" issue="63">
+        ExternalTransformer and ExternalParser can now supply/retrieve 
+        metadata as files to external applications and can also pass
+        the document reference as argument. New command line tokens:
+        ${INPUT_META} ${OUTPUT_META} ${REFERENCE}.
+      </action>
       <action dev="essiembre" type="add">
         New configuration option for DOMTagger, DOMSplitter and DOMContentFilter
         for specifying which parser to use ("html" or "xml").

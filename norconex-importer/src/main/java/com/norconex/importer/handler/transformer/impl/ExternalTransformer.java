@@ -15,13 +15,17 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +36,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -45,50 +50,30 @@ import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.exec.SystemCommand;
 import com.norconex.commons.lang.exec.SystemCommandException;
-import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.TextPatternTagger;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
+import com.norconex.importer.parser.impl.ExternalParser;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 import com.norconex.importer.util.regex.RegexUtil;
 
 /**
  * <p>
  * Transforms a document content using an external application to do so.
- * When constructing the command to launch the external application, these 
- * placeholders will be replaced if provided (case-sensitive): 
- * </p>
- * <table summary="Placeholder tokens">
- *   <tr>
- *     <td><code>${INPUT}</code></td>
- *     <td>File to transform.</td>
- *   </tr>
- *   <tr>
- *     <td><code>${OUTPUT}</code></td>
- *     <td>Resulting file from the transformation.</td>
- *   </tr>
- * </table>
- * <p>
- * Both are optional and if not provided, the file input or output will be 
- * STDIN or STDOUT respectively.
  * </p>
  * <p>
- * Execution environment variables can be set to replace environment variables
- * defined for the current process.
+ * <b>Since 2.8.0</b>, it is now possible to also pass the document metadata 
+ * and reference to the external application and get new metadata back.
+ * 2.8.0 also makes metadata fields regular expression matching more flexible.
  * </p>
- * <p>
- * It is also possible to specify metadata extraction patterns that will be
- * applied on each line returned from STDOUT and STDERR.  With each pattern,
- * there could be a matadata field name supplied. If the pattern does not 
- * contain any match group, the entire matched expression will be used as the 
- * metadata field value.  
+ * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
+ * case-sensitivity for each patterns. 
  * </p>
- * <p>
  * <b>Since 2.8.0</b>, match group indexes can be specified 
  * to extract field names and values using the same regular 
  * expression.  This is done by using
@@ -99,15 +84,149 @@ import com.norconex.importer.util.regex.RegexUtil;
  * is provided.  If no match groups are specified, a <code>field</code>
  * is expected.
  * </p>
+ *  
+ * <h3>Command-line arguments:</h3>
  * <p>
- * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
- * case-sensitivity for each patterns. 
+ * When constructing the command to launch the external application, this
+ * transformer will look for specific tokens to be replaced by file paths
+ * arguments (in addition to other arguments you may have).
+ * The paths are created by this transformer. They are case-sensitive and
+ * the file they represent are temporary (will be deleted after 
+ * the transformation). It is possible to omit one or more tokens to use
+ * standard streams instead where applicable.  These tokens are:
+ * </p>
+ * <dl>
+ * 
+ *   <dt><code>${INPUT}</code></dt>
+ *   <dd>Path to document to transform. When omitted, the document content
+ *       is sent to the external application using the standard input 
+ *       stream (STDIN).</dd>
+ *       
+ *   <dt><code>${INPUT_META}</code></dt>
+ *   <dd>Path to file containing metadata information available
+ *       so far for the document to transform. By default in 
+ *       JSON format. When omitted, no metadata will be made available
+ *       to the external application.</dd>
+ *       
+ *   <dt><code>${OUTPUT}</code></dt>
+ *   <dd>Path to document resulting from the transformation.
+ *       When omitted, the transformed content will be read from the external 
+ *       application standard output (STDOUT).</dd>
+ *       
+ *   <dt><code>${OUTPUT_META}</code></dt>
+ *   <dd>Path to file containing new metadata for the document.
+ *       By default, the expected format is JSON.
+ *       When omitted, any metadata extraction patterns defined will be 
+ *       applied against both the external program standard output (STDOUT)
+ *       and standard error (STDERR). If no patterns are defined, it is
+ *       assumed no new metadata resulted from the transformation.</dd>
+ *       
+ *   <dt><code>${REFERENCE}</code></dt>
+ *   <dd>Unique reference to the document being transformed
+ *       (URL, original file system location, etc.). When omitted, 
+ *       the document reference will not be made available
+ *       to the external application.</dd>
+ *         
+ * </dl>
+ * 
+ * <h3>Metadata file format:</h3>
+ * 
+ * <p> 
+ * If <code>${INPUT_META}</code> is part of the command, metadata can be
+ * provided to the external application in JSON (default) or XML format or
+ * Properties.  Those
+ * formats can also be used if <code>${OUTPUT_META}</code> is part of the 
+ * command. The formats are:
+ * </p>
+ * 
+ * <h4>JSON</h4>
+ * <pre>
+ * { 
+ *   "field1" : [ "value1a", "value1b", "value1c" ], 
+ *   "field2" : [ "value2" ], 
+ *   "field3" : [ "value3a", "value3b" ]
+ * }
+ * </pre>
+ * 
+ * <h4>XML</h4>
+ * <p>Java Properties XML file format, with the exception that 
+ * metadata with multiple values are supported, and will have their values 
+ * saved on different lines (repeating the key). 
+ * Example:
+ * </p>
+ * <pre>
+ * &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ * &lt;!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd"&gt;
+ * &lt;properties&gt;
+ *   &lt;comment&gt;My Comment&lt;/comment&gt;
+ *   &lt;entry key="field1"&gt;value1a&lt;/entry&gt;
+ *   &lt;entry key="field1"&gt;value1b&lt;/entry&gt;
+ *   &lt;entry key="field1"&gt;value1c&lt;/entry&gt;
+ *   &lt;entry key="field2"&gt;value2&lt;/entry&gt;
+ *   &lt;entry key="field3"&gt;value3a&lt;/entry&gt;
+ *   &lt;entry key="field3"&gt;value3b&lt;/entry&gt;
+ * &lt;/properties> 
+ * </pre>
+ * 
+ * <h4>Properties</h4>
+ * <p>Java Properties standard file format, with the exception that 
+ * metadata with multiple values are supported, and will have their values 
+ * saved on different lines (repeating the key). Refer to Java 
+ * {@link Properties#load(java.io.Reader)} for syntax information. 
+ * Example:
+ * </p>
+ * <pre>
+ *   # My Comment
+ *   field1 = value1a
+ *   field1 = value1b
+ *   field1 = value1c
+ *   field2 = value2
+ *   field3 = value3a
+ *   field3 = value3b
+ * </pre>
+ * 
+ * <h3>Metadata extraction patterns:</h3>
+ * <p>
+ * It is possible to specify metadata extraction patterns that will be
+ * applied either on the returned metadata file or from the standard output and
+ * error streams.  If <code>${OUTPUT_META}</code> is found in the command,
+ * the output format will be 
+ * used to parse the outgoing metadata file. Leave the format to 
+ * <code>null</code> to rely on extraction patterns for parsing the output file.
  * </p>
  * <p>
- * To extract metadata from
- * a generated file instead of STDOUT, use an additional handler such as 
- * {@link TextPatternTagger} to do so.   
+ * When <code>${OUTPUT_META}</code> is omitted, extraction patterns will be 
+ * applied to
+ * the external application standard output and standard error streams. If
+ * there are no <code>${OUTPUT_META}</code> and no metadata extraction patterns 
+ * are defined, it is assumed the external application did not produce any new 
+ * metadata.
  * </p>
+ * <p>
+ * When using metadata extraction patterns with standard streams, each pattern
+ * is applied on each line returned from STDOUT and STDERR.  With each pattern,
+ * there could be a matadata field name supplied. If the pattern does not 
+ * contain any match group, the entire matched expression will be used as the 
+ * metadata field value.  
+ * </p>
+ * <p>
+ * Field names and values can be obtained by using the same regular 
+ * expression.  This is done by using
+ * match groups in your regular expressions (parenthesis).  For each pattern
+ * you define, you can specify which match group hold the field name and 
+ * which one holds the value.  
+ * Specifying a field match group is optional if a <code>field</code> 
+ * is provided.  If no match groups are specified, a <code>field</code>
+ * is expected.
+ * </p>
+ * 
+ * <h3>Environment variables:</h3>
+ * 
+ * <p>
+ * Execution environment variables can be set to replace environment variables
+ * defined for the current process.
+ * </p>
+ * 
  * <p>
  * To extract raw text from files, it is recommended to use an 
  * {@link com.norconex.importer.parser.impl.ExternalParser} instead. 
@@ -123,9 +242,14 @@ import com.norconex.importer.util.regex.RegexUtil;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *      
- *      &lt;command&gt;c:\Apps\myapp.exe ${INPUT} ${OUTPUT}&lt;/command&gt;
+ *      &lt;command&gt;
+ *          c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *      &lt;/command&gt;
  *      
- *      &lt;metadata&gt;
+ *      &lt;metadata 
+ *              inputFormat="[json|xml|properties]" 
+ *              outputFormat="[json|xml|properties]"&gt;
+ *          &lt;!-- pattern only used when no output format is specified --&gt;
  *          &lt;pattern field="(target field name)" 
  *                  fieldGroup="(field name match group index)"
  *                  valueGroup="(field value match group index)"
@@ -161,6 +285,7 @@ import com.norconex.importer.util.regex.RegexUtil;
  * </pre>
  * 
  * @author Pascal Essiembre
+ * @see ExternalParser
  * @since 2.7.0
  */
 public class ExternalTransformer extends AbstractDocumentTransformer
@@ -171,7 +296,20 @@ public class ExternalTransformer extends AbstractDocumentTransformer
 
     public static final String TOKEN_INPUT = "${INPUT}";
     public static final String TOKEN_OUTPUT = "${OUTPUT}";
+    /** @since 2.8.0 */
+    public static final String TOKEN_INPUT_META = "${INPUT_META}";
+    /** @since 2.8.0 */
+    public static final String TOKEN_OUTPUT_META = "${OUTPUT_META}";
+    /** @since 2.8.0 */
+    public static final String TOKEN_REFERENCE = "${REFERENCE}";
 
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_JSON = "json";
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_XML = "xml";
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_PROPERTIES = "properties";
+    
     /**
      * @deprecated Since 2.8.0, specify field name and value match groups 
      * instead. 
@@ -184,6 +322,9 @@ public class ExternalTransformer extends AbstractDocumentTransformer
 
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
+
+    private String metadataInputFormat = META_FORMAT_JSON;
+    private String metadataOutputFormat = META_FORMAT_JSON;
     
     /**
      * Gets the command to execute.
@@ -229,7 +370,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
      * To reverse the match group order in a double match group pattern,
      * set the field name to "reverse:true".
      * @param metaPatterns map of patterns and field names
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
+     * @deprecated Since 2.8.0, use 
+     * {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
     @Deprecated
     public void addMetadataExtractionPatterns(
@@ -248,7 +390,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with two match groups
      * @param reverse whether to reverse match groups (inverse key and value).
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
+     * @deprecated Since 2.8.0, use 
+     * {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
     @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, boolean reverse) {
@@ -266,7 +409,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
      * Adds a metadata extraction pattern. See class documentation.
      * @param pattern pattern with no or one match group
      * @param field field name where to store the matched pattern
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
+     * @deprecated Since 2.8.0, use
+     * {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
      */
     @Deprecated
     public void addMetadataExtractionPattern(Pattern pattern, String field) {
@@ -378,6 +522,55 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         environmentVariables.put(name, value);
     }
     
+    /**
+     * Gets the format of the metadata input file sent to the external 
+     * application. One of "json" (default), "xml", or "properties" is expected. 
+     * Only applicable when the <code>${INPUT}</code> token 
+     * is part of the command.  
+     * @return metadata input format
+     * @since 2.8.0
+     */
+    public String getMetadataInputFormat() {
+        return metadataInputFormat;
+    }
+    /**
+     * Sets the format of the metadata input file sent to the external 
+     * application. One of "json" (default), "xml", or "properties" is expected. 
+     * Only applicable when the <code>${INPUT}</code> token 
+     * is part of the command.  
+     * @param metadataInputFormat format of the metadata input file
+     * @since 2.8.0
+     */
+    public void setMetadataInputFormat(String metadataInputFormat) {
+        this.metadataInputFormat = metadataInputFormat;
+    }
+    /**
+     * Gets the format of the metadata output file from the external 
+     * application. By default no format is set, and metadata extraction
+     * patterns are used to extract metadata information.
+     * One of "json", "xml", or "properties" is expected. 
+     * Only applicable when the <code>${OUTPUT}</code> token 
+     * is part of the command.  
+     * @return metadata output format
+     * @since 2.8.0
+     */
+    public String getMetadataOutputFormat() {
+        return metadataOutputFormat;
+    }
+    /**
+     * Sets the format of the metadata output file from the external 
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Set to <code>null</code> for relying metadata extraction
+     * patterns instead.
+     * Only applicable when the <code>${OUTPUT}</code> token 
+     * is part of the command.  
+     * @param metadataOutputFormat format of the metadata output file
+     * @since 2.8.0
+     */
+    public void setMetadataOutputFormat(String metadataOutputFormat) {
+        this.metadataOutputFormat = metadataOutputFormat;
+    }
+    
     @Override
     protected void transformApplicableDocument(String reference,
             final InputStream input, final OutputStream output, 
@@ -385,53 +578,89 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                     throws ImporterHandlerException {
         validate();
         String cmd = command;
+        final Files files = new Files();
+
+        //--- Resolve command tokens ---
         if (LOG.isDebugEnabled()) {
             LOG.debug("Command before token replacement: " + cmd);
         }
-        
-        final File inputFile;
-        if (cmd.contains(TOKEN_INPUT)) {
-            inputFile = newInputFile(input);
-            cmd = StringUtils.replace(
-                    cmd, TOKEN_INPUT, inputFile.getAbsolutePath());
-        } else {
-            inputFile = null;
+        FileReader fr = null;
+        try {
+            cmd = resolveInputToken(cmd, files, input);
+            cmd = resolveInputMetaToken(cmd, files, input, metadata);
+            cmd = resolveOutputToken(cmd, files, output);
+            cmd = resolveOutputMetaToken(cmd, files, output, metadata);
+            cmd = resolveReferenceToken(cmd, reference);
+            
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Command after token replacement:  " + cmd);
+            }
+    
+            //--- Execute Command ---
+            executeCommand(cmd, files, metadata, input, output);
+            try {
+                if (files.hasOutputFile()) {
+                    FileUtils.copyFile(files.outputFile, output);
+                    output.flush();
+                }
+                if (files.hasOutputMetaFile()) {
+                    fr = new FileReader(files.outputMetaFile);
+                    String format = getMetadataOutputFormat();
+                    ImporterMetadata metaOverwrite = new ImporterMetadata();
+                    if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
+                        metaOverwrite.load(fr);
+                    } else if (META_FORMAT_XML.equals(format)) {
+                        metaOverwrite.loadFromXML(fr);
+                    } else if (META_FORMAT_JSON.equals(format)) {
+                        metaOverwrite.loadFromJSON(fr);
+                    } else {
+                        extractMetaFromFile(fr, metaOverwrite);
+                    }
+                    metadata.keySet().removeAll(metaOverwrite.keySet());
+                    metadata.putAll(metaOverwrite);
+                }
+            } catch (IOException e) {
+                throw new ImporterHandlerException(
+                        "Could not read command output file. Command: "
+                                + command, e);
+            }
+        } finally {
+            IOUtils.closeQuietly(fr);
+            files.deleteAll();
         }
-        
-        final File outputFile;
-        if (cmd.contains(TOKEN_OUTPUT)) {
-            outputFile = newOutputFile(output);
-            cmd = StringUtils.replace(
-                    cmd, TOKEN_OUTPUT, outputFile.getAbsolutePath());
-        } else {
-            outputFile = null;
-        }
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Command after token replacement:  " + cmd);
-        }
-        
+    }
+    
+    private int executeCommand(
+            final String cmd, 
+            final Files files, 
+            final ImporterMetadata metadata,
+            final InputStream input, 
+            final OutputStream output) throws ImporterHandlerException {
         SystemCommand systemCommand = new SystemCommand(cmd);
         systemCommand.setEnvironmentVariables(environmentVariables);
         systemCommand.addOutputListener(new InputStreamLineListener() {
             @Override
             protected void lineStreamed(String type, String line) {
-                if (outputFile == null) {
+                if (!files.hasOutputFile()) {
                     writeLine(line, output);
                 }
-                extractMetaFromLine(line, metadata);
+                if (!files.hasOutputMetaFile()) {
+                    extractMetaFromLine(line, metadata);
+                }
             }
         });
         systemCommand.addErrorListener(new InputStreamLineListener() {
             @Override
             protected void lineStreamed(String type, String line) {
-                extractMetaFromLine(line, metadata);
+                if (!files.hasOutputMetaFile()) {
+                    extractMetaFromLine(line, metadata);
+                }
             }
         });
         
         try {
             int exitValue;
-            if (inputFile != null) {
+            if (files.hasInputFile()) {
                 exitValue = systemCommand.execute();
             } else {
                 exitValue = systemCommand.execute(input);
@@ -439,23 +668,10 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             if (exitValue != 0) {
                 LOG.error("Bad command exit value: " + exitValue);
             }
+            return exitValue;
         } catch (SystemCommandException e) {
             throw new ImporterHandlerException(
                     "External transformer failed. Command: " + command, e);
-        } finally {
-            deleteFile(inputFile);
-        }
-        if (outputFile != null) {
-            try {
-                FileUtils.copyFile(outputFile, output);
-                output.flush();
-            } catch (IOException e) {
-                throw new ImporterHandlerException(
-                        "Could not read command output file. Command: "
-                                + command, e);
-            } finally {
-                deleteFile(outputFile);
-            }
         }
     }
 
@@ -470,16 +686,26 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         }
     }
 
+    private synchronized void extractMetaFromFile(
+            Reader reader, ImporterMetadata metadata) {
+        Iterator<String> it = IOUtils.lineIterator(reader);
+        while (it.hasNext()) {
+            extractMetaFromLine(it.next(), metadata);
+        }
+    }
+    
     private synchronized void extractMetaFromLine(
             String line, ImporterMetadata metadata) {
         RegexUtil.extractFields(metadata, line, 
                 patterns.toArray(RegexFieldExtractor.EMPTY_ARRAY));
     }
     
-    private File newInputFile(InputStream is) throws ImporterHandlerException {
+    private File createTempFile(
+            Object stream, String name, String suffix) 
+                    throws ImporterHandlerException {
         File tempDir;
-        if (is instanceof CachedInputStream) {
-            tempDir = ((CachedInputStream) is).getCacheDirectory();
+        if (stream instanceof ICachedStream) {
+            tempDir = ((ICachedStream) stream).getCacheDirectory();
         } else {
             tempDir = FileUtils.getTempDirectory();
         }
@@ -488,43 +714,103 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         }
         File file = null;
         try {
-            file = File.createTempFile("input", ".tmp", tempDir);
-            FileUtils.copyInputStreamToFile(is, file);
+            file = File.createTempFile(name, suffix, tempDir);
             return file;
         } catch (IOException e) {
-            deleteFile(file);
+            Files.delete(file);
+            throw new ImporterHandlerException(
+                    "Could not create temporary input file.", e);
+        }        
+    }
+    
+    private String resolveInputToken(String cmd, Files files, InputStream is) 
+            throws ImporterHandlerException {
+        if (!cmd.contains(TOKEN_INPUT)) {
+            return cmd;
+        }
+        String newCmd = cmd;
+        files.inputFile = createTempFile(is, "input", ".tmp");
+        newCmd = StringUtils.replace(
+                newCmd, TOKEN_INPUT, files.inputFile.getAbsolutePath());
+        try {
+            FileUtils.copyInputStreamToFile(is, files.inputFile);
+            return newCmd;
+        } catch (IOException e) {
+            Files.delete(files.inputFile);
             throw new ImporterHandlerException(
                     "Could not create temporary input file.", e);
         }
     }
-    private File newOutputFile(OutputStream os) throws ImporterHandlerException {
-        File tempDir;
-        if (os instanceof CachedOutputStream) {
-            tempDir = ((CachedOutputStream) os).getCacheDirectory();
-        } else {
-            tempDir = FileUtils.getTempDirectory();
+    private String resolveInputMetaToken(
+            String cmd, Files files, InputStream is, ImporterMetadata meta) 
+                    throws ImporterHandlerException {
+        if (!cmd.contains(TOKEN_INPUT_META)) {
+            return cmd;
         }
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-        try {
-            return File.createTempFile("output", ".tmp", tempDir);
-        } catch (IOException e) {
-            throw new ImporterHandlerException(
-                    "Could not create temporary output file.", e);
-        }
-    }
 
-    private void validate() throws ImporterHandlerException {
-        if (StringUtils.isBlank(command)) {
-            throw new ImporterHandlerException("External command missing.");
+        String newCmd = cmd;
+        files.inputMetaFile = createTempFile(
+                is, "input-meta", "." + StringUtils.defaultIfBlank(
+                        getMetadataInputFormat(), META_FORMAT_JSON));
+        newCmd = StringUtils.replace(newCmd, 
+                TOKEN_INPUT_META, files.inputMetaFile.getAbsolutePath());
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(files.inputMetaFile);
+            String format = getMetadataInputFormat();
+            if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
+                meta.store(fw);
+            } else if (META_FORMAT_XML.equals(format)) {
+                meta.storeToXML(fw);
+            } else {
+                meta.storeToJSON(fw);
+            }
+            return newCmd;
+        } catch (IOException e) {
+            IOUtils.closeQuietly(fw);
+            Files.delete(files.inputMetaFile);
+            throw new ImporterHandlerException(
+                    "Could not create temporary input metadata file.", e);
         }
     }
     
-    private void deleteFile(File file) {
-        if (file != null && !file.delete()) {
-            LOG.warn("Could not delete temporary file: "
-                    + file.getAbsolutePath());
+    private String resolveOutputToken(String cmd, Files files, OutputStream os)
+            throws ImporterHandlerException {
+        if (!cmd.contains(TOKEN_OUTPUT)) {
+            return cmd;
+        }
+        String newCmd = cmd;
+        files.outputFile = createTempFile(os, "output", ".tmp");
+        newCmd = StringUtils.replace(
+                newCmd, TOKEN_OUTPUT, files.outputFile.getAbsolutePath());
+        return newCmd;
+    }
+
+    private String resolveOutputMetaToken(
+            String cmd, Files files, OutputStream is, ImporterMetadata meta) 
+                    throws ImporterHandlerException {
+        if (!cmd.contains(TOKEN_OUTPUT_META)) {
+            return cmd;
+        }
+        String newCmd = cmd;
+        files.outputMetaFile = createTempFile(
+                is, "output-meta", "." + StringUtils.defaultIfBlank(
+                        getMetadataOutputFormat(), ".tmp"));
+        newCmd = StringUtils.replace(newCmd, 
+                TOKEN_OUTPUT_META, files.outputMetaFile.getAbsolutePath());
+        return newCmd;
+    }
+    
+    private String resolveReferenceToken(String cmd, String reference) {
+        if (!cmd.contains(TOKEN_REFERENCE)) {
+            return cmd;
+        }
+        return StringUtils.replace(cmd, TOKEN_REFERENCE, reference);
+    }     
+    
+    private void validate() throws ImporterHandlerException {
+        if (StringUtils.isBlank(command)) {
+            throw new ImporterHandlerException("External command missing.");
         }
     }
     
@@ -552,6 +838,11 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             setMetadataExtractionPatterns(xmlPatterns);
         }
         
+        setMetadataInputFormat(xml.getString(
+                "metadata[@inputFormat]", getMetadataInputFormat()));
+        setMetadataOutputFormat(xml.getString(
+                "metadata[@outputFormat]", getMetadataOutputFormat()));
+        
         List<HierarchicalConfiguration> nodes = 
                 xml.configurationsAt("metadata.pattern");
         for (HierarchicalConfiguration node : nodes) {
@@ -562,7 +853,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                    .setCaseSensitive(node.getBoolean("[@caseSensitive]", false))
                    .setField(node.getString("[@field]", null))
                    .setFieldGroup(node.getInt("[@fieldGroup]", -1))
-                   .setValueGroup(node.getInt("[@valueGroup]", -1)));
+                   .setValueGroup(valueGroup));
         }        
 
         List<HierarchicalConfiguration> xmlEnvs = 
@@ -582,6 +873,10 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         writer.writeElementString("command", getCommand());
         if (!getMetadataExtractionPatterns().isEmpty()) {
             writer.writeStartElement("metadata");
+            writer.writeAttributeString(
+                    "inputFormat", getMetadataInputFormat());
+            writer.writeAttributeString(
+                    "outputFormat", getMetadataOutputFormat());
             for (RegexFieldExtractor rfe : patterns) {
                 writer.writeStartElement("pattern");
                 writer.writeAttributeString("field", rfe.getField());
@@ -617,6 +912,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                 .appendSuper(super.equals(castOther))
                 .append(getCommand(), castOther.getCommand())
                 .append(patterns, castOther.patterns)
+                .append(metadataInputFormat, castOther.metadataInputFormat)
+                .append(metadataOutputFormat, castOther.metadataOutputFormat)
                 .isEquals()
                 && EqualsUtil.equalsMap(getEnvironmentVariables(), 
                         castOther.getEnvironmentVariables());
@@ -629,6 +926,8 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                 .append(getCommand())
                 .append(getMetadataExtractionPatterns())
                 .append(getEnvironmentVariables())
+                .append(getMetadataInputFormat())
+                .append(getMetadataOutputFormat())
                 .toHashCode();
     }
     @Override
@@ -639,6 +938,39 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                 .append("metadataExtractionPatterns", 
                         getMetadataExtractionPatterns())
                 .append("environmentVariables", getEnvironmentVariables())
+                .append("metadataInputFormat", getMetadataInputFormat())
+                .append("metadataOutputFormat", getMetadataOutputFormat())
                 .toString();
+    }
+
+    static class Files {
+        File inputFile;
+        File inputMetaFile;
+        File outputFile;
+        File outputMetaFile;
+        boolean hasInputFile() {
+            return inputFile != null;
+        }
+        boolean hasInputMetaFile() {
+            return inputMetaFile != null;
+        }
+        boolean hasOutputFile() {
+            return outputFile != null;
+        }
+        boolean hasOutputMetaFile() {
+            return outputMetaFile != null;
+        }
+        void deleteAll() {
+            delete(inputFile);
+            delete(inputMetaFile);
+            delete(outputFile);
+            delete(outputMetaFile);
+        }
+        static void delete(File file) {
+            if (file != null && !file.delete()) {
+                LOG.warn("Could not delete temporary file: "
+                        + file.getAbsolutePath());
+            }
+        }        
     }
 }

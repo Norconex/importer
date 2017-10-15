@@ -46,8 +46,10 @@
               </xs:extension>
             </xs:simpleContent>
           </xs:complexType>  
-        </xs:element>   
+        </xs:element>
       </xs:sequence>
+      <xs:attribute name="inputFormat" type="metaFileFormat"/>
+      <xs:attribute name="outputFormat" type="metaFileFormat"/>
     </xs:complexType>
   </xs:element>
   
@@ -70,6 +72,14 @@
   <xs:simpleType name="nonEmptyValue">
     <xs:restriction base="xs:string">
       <xs:minLength value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="metaFileFormat">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="json"/>
+      <xs:enumeration value="xml"/>
+      <xs:enumeration value="properties"/>
     </xs:restriction>
   </xs:simpleType>
 

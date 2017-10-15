@@ -170,8 +170,4 @@ public class ImporterTest {
         Assert.assertEquals("Validation warnings/errors were found.", 
                 0, appender.getCount());
     }
-
-
-    
-    
 }
