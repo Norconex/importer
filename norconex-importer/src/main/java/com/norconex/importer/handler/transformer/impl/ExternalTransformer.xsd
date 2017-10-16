@@ -24,6 +24,7 @@
         <xs:extension base="AbstractDocumentTransformer">
           <xs:all>
             <xs:element name="command" type="nonEmptyValue" minOccurs="1" maxOccurs="1" />
+            <xs:element name="tempDir" type="xs:string" minOccurs="0" maxOccurs="1" />
             <xs:element ref="metadata" minOccurs="0" maxOccurs="1" />
             <xs:element ref="environment" minOccurs="0" maxOccurs="1" />
           </xs:all>

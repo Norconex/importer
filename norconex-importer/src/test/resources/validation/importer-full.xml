@@ -159,6 +159,21 @@
       <dom selector="another selector" toField="TODOFIELD2"
            extract="tagName"     defaultValue="NOVALUE2" />
     </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+      <command inputDisabled="true">
+        c:\Apps\myapp.exe ${INPUT} ${OUTPUT_META} ${REFERENCE}
+      </command>
+      <metadata inputFormat="json" outputFormat="xml">
+        <pattern field="field1">&lt;title&gt;&lt;(title)&gt;</pattern>
+        <pattern fieldGroup="2" valueGroup="1" caseSensitive="true">(.*?):(.*)</pattern>
+      </metadata>
+      <environment>
+        <variable name="var1">blah</variable>
+        <variable name="var2">blah blah</variable>
+      </environment>
+      <tempDir>/some/dir</tempDir>
+    </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <singleValue field="authors" action="mergeWith:, "/>
@@ -267,6 +282,7 @@
         <variable name="var1">blah</variable>
         <variable name="var2">blah blah</variable>
       </environment>
+      <tempDir>/some/dir</tempDir>
     </transformer>
     <transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
           caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
@@ -330,6 +346,7 @@
           <variable name="var1">blah</variable>
           <variable name="var2">blah blah</variable>
         </environment>
+        <tempDir>/some/dir</tempDir>
       </parser>      
     </parsers>
   </documentParserFactory>

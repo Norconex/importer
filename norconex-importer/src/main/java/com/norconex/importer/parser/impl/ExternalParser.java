@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.parser.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -45,13 +46,9 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * {@link ExternalTransformer}. Refer to that class for documentation.
  * </p>
  * <p>
- * Since 2.6.0, this parser can be made configurable via XML. See
+ * This parser can be made configurable via XML. See
  * {@link GenericDocumentParserFactory} for general indications how 
  * to configure parsers.  
- * </p>
- * <p>
- * Since 2.7.0, this parser no longer extends 
- * {@link org.apache.tika.parser.external.ExternalParser}. 
  * </p>
  * <p>
  * To use an external application to change a file content after parsing has
@@ -92,8 +89,9 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * 
  * <h4>Usage example:</h4>
  * <p>
- * The following example invokes an external application for simple text files
- * that accepts two files as arguments: the first one being the file to 
+ * The following example invokes an external application processing for 
+ * simple text files that accepts two files as arguments: 
+ * the first one being the file to 
  * transform, the second one being holding the transformation result. 
  * It also extract a document number from STDOUT, found as "DocNo:1234"
  * and storing it as "docnumber".
@@ -105,7 +103,7 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *      &lt;metadata&gt;
  *          &lt;pattern field="docnumber" valueGroup="1"&gt;DocNo:(\d+)&lt;/match&gt;
  *      &lt;/metadata&gt;
- *  &lt;/transformer&gt;
+ *  &lt;/parser&gt;
  * </pre>
  * @author Pascal Essiembre
  * @see ExternalTransformer
@@ -113,6 +111,28 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  */
 public class ExternalParser implements IDocumentParser, IXMLConfigurable {
 
+    public static final String TOKEN_INPUT = ExternalTransformer.TOKEN_INPUT;
+    public static final String TOKEN_OUTPUT = ExternalTransformer.TOKEN_OUTPUT;
+    /** @since 2.8.0 */
+    public static final String TOKEN_INPUT_META = 
+            ExternalTransformer.TOKEN_INPUT_META;
+    /** @since 2.8.0 */
+    public static final String TOKEN_OUTPUT_META = 
+            ExternalTransformer.TOKEN_OUTPUT_META;
+    /** @since 2.8.0 */
+    public static final String TOKEN_REFERENCE = 
+            ExternalTransformer.TOKEN_REFERENCE;
+
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_JSON = 
+            ExternalTransformer.META_FORMAT_JSON;
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_XML = 
+            ExternalTransformer.META_FORMAT_XML;
+    /** @since 2.8.0 */
+    public static final String META_FORMAT_PROPERTIES = 
+            ExternalTransformer.META_FORMAT_PROPERTIES;
+    
     private final ExternalTransformer t = new ExternalTransformer();
     private String contentType;
     
@@ -131,6 +151,23 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      */
     public void setCommand(String command) {
         t.setCommand(command);
+    }
+    
+    /**
+     * Gets directory where to store temporary files used for transformation.
+     * @return temporary directory
+     * @since 2.8.0
+     */
+    public File getTempDir() {
+        return t.getTempDir();
+    }
+    /**
+     * Sets directory where to store temporary files used for transformation.
+     * @param tempDir temporary directory
+     * @since 2.8.0
+     */
+    public void setTempDir(File tempDir) {
+        t.setTempDir(tempDir);
     }
     
     /**

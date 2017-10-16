@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.transformer.impl;
+package com.norconex.importer.handler.tagger.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -26,20 +26,20 @@ import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.exec.ExternalApp;
-import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 
-public class ExternalTransformerTest {
+public class ExternalTaggerTest {
     
     public static final String INPUT = "1 2 3\n4 5 6\n7 8 9";
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
     
     @Test
     public void testWriteRead() throws IOException {
-        ExternalTransformer t = new ExternalTransformer();
+        ExternalTagger t = new ExternalTagger();
         t.setCommand("my command");
+        t.setInputDisabled(true);
         t.setTempDir(new File("/some/path"));
 
         t.setMetadataInputFormat("json");
@@ -60,76 +60,31 @@ public class ExternalTransformerTest {
     }
     
     @Test
-    public void testInFileOutFile() 
+    public void testMetaInputMetaOutput() 
             throws IOException, ImporterHandlerException {
         testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE) + " ${INPUT} ${OUTPUT}");
+                ExternalApp.TYPE_INFILE_STDOUT)
+                        + " ${INPUT} ${INPUT_META} ${OUTPUT_META}");
     }
-    @Test
-    public void testInFileStdout() 
-            throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_STDOUT) + " ${INPUT}");
-    }
-    @Test
-    public void testStdinOutFile() 
-            throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_STDIN_OUTFILE) + " ${OUTPUT}");
-    }
-    @Test
-    public void testStdinStdout() 
-            throws IOException, ImporterHandlerException {
-        testWithExternalApp(
-                ExternalApp.newCommandLine(ExternalApp.TYPE_STDIN_STDOUT));
-    }
-    
-    @Test
-    public void testMetaInputOutputFiles() 
-            throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE)
-                    + " ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META}", true);
-    }
-
     
     private void testWithExternalApp(String command) 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(command, false);
-    }
-    private void testWithExternalApp(String command, boolean metaFiles) 
-            throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
-        ByteArrayOutputStream output = outputAsStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        if (metaFiles) {
-            metadata.setString(
-                    "metaFileField1", "this is a first test");
-            metadata.setString("metaFileField2", 
-                    "this is a second test value1", 
-                    "this is a second test value2");
-        }
+        metadata.setString(
+                "metaFileField1", "this is a first test");
+        metadata.setString("metaFileField2", 
+                "this is a second test value1", 
+                "this is a second test value2");
         
-        ExternalTransformer t = new ExternalTransformer();
+        ExternalTagger t = new ExternalTagger();
         t.setCommand(command);
         addPatternsAndEnvs(t);
         t.setMetadataInputFormat("properties");
         t.setMetadataOutputFormat("properties");
-        t.transformDocument("reference", input, output, metadata, false);
+        t.tagDocument("reference", input, metadata, false);
 
-        String content = output.toString();
-        // remove any stdout content that could be mixed with output to 
-        // properly validate
-        content = content.replace("field1:StdoutBefore", "");
-        content = content.replace("<field2>StdoutAfter</field2>", "");
-        content = content.trim();
-        
-        Assert.assertEquals(EXPECTED_OUTPUT, content);
-        if (metaFiles) {
-            assertMetadataFiles(metadata);
-        } else {
-            assertMetadata(metadata);
-        }
+        assertMetadataFiles(metadata);
     }
     
     private void assertMetadataFiles(ImporterMetadata meta) {
@@ -142,14 +97,8 @@ public class ExternalTransformerTest {
                 "value2 test second a is this", 
                 meta.getStrings("metaFileField2").get(1));
     }    
-    private void assertMetadata(ImporterMetadata meta) {
-        Assert.assertEquals("StdoutBefore", meta.getString("field1"));
-        Assert.assertEquals("StdoutAfter", meta.getString("field2"));
-        Assert.assertEquals("field3 StdErrBefore", meta.getString("field3"));
-        Assert.assertEquals("StdErrAfter", meta.getString("field4"));
-    }
     
-    private void addPatternsAndEnvs(ExternalTransformer t) {
+    private void addPatternsAndEnvs(ExternalTagger t) {
         Map<String, String> envs = new HashMap<>();
         envs.put(ExternalApp.ENV_STDOUT_BEFORE, "field1:StdoutBefore");
         envs.put(ExternalApp.ENV_STDOUT_AFTER, "<field2>StdoutAfter</field2>");
@@ -167,8 +116,5 @@ public class ExternalTransformerTest {
     
     private InputStream inputAsStream() throws IOException {
         return new ByteArrayInputStream(INPUT.getBytes());
-    }
-    private ByteArrayOutputStream outputAsStream() throws IOException {
-        return new ByteArrayOutputStream();
     }
 }

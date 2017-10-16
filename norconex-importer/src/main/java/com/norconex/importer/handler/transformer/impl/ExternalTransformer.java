@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
@@ -266,6 +267,11 @@ import com.norconex.importer.util.regex.RegexUtil;
  *          &lt;!-- repeat variable tag as needed --&gt;
  *      &lt;/environment&gt;
  *      
+ *      &lt;tempDir&gt;
+ *          (Optional directory where to store temporary files used
+ *           for transformation.)
+ *      &lt;/tempDir&gt;
+ *      
  *  &lt;/transformer&gt;
  * </pre>
  * <h4>Usage example:</h4>
@@ -325,6 +331,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
 
     private String metadataInputFormat = META_FORMAT_JSON;
     private String metadataOutputFormat = META_FORMAT_JSON;
+    private File tempDir;
     
     /**
      * Gets the command to execute.
@@ -342,6 +349,23 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     public void setCommand(String command) {
         this.command = command;
     }
+    
+    /**
+     * Gets directory where to store temporary files used for transformation.
+     * @return temporary directory
+     * @since 2.8.0
+     */
+    public File getTempDir() {
+        return tempDir;
+    }
+    /**
+     * Sets directory where to store temporary files used for transformation.
+     * @param tempDir temporary directory
+     * @since 2.8.0
+     */
+    public void setTempDir(File tempDir) {
+        this.tempDir = tempDir;
+    }    
     
     /**
      * Gets metadata extraction patterns. See class documentation.
@@ -584,12 +608,12 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         if (LOG.isDebugEnabled()) {
             LOG.debug("Command before token replacement: " + cmd);
         }
-        FileReader fr = null;
+        FileReader outputMetaReader = null;
         try {
             cmd = resolveInputToken(cmd, files, input);
             cmd = resolveInputMetaToken(cmd, files, input, metadata);
             cmd = resolveOutputToken(cmd, files, output);
-            cmd = resolveOutputMetaToken(cmd, files, output, metadata);
+            cmd = resolveOutputMetaToken(cmd, files, output);
             cmd = resolveReferenceToken(cmd, reference);
             
             if (LOG.isDebugEnabled()) {
@@ -599,22 +623,22 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             //--- Execute Command ---
             executeCommand(cmd, files, metadata, input, output);
             try {
-                if (files.hasOutputFile()) {
+                if (files.hasOutputFile() && output != null) {
                     FileUtils.copyFile(files.outputFile, output);
                     output.flush();
                 }
                 if (files.hasOutputMetaFile()) {
-                    fr = new FileReader(files.outputMetaFile);
+                    outputMetaReader = new FileReader(files.outputMetaFile);
                     String format = getMetadataOutputFormat();
                     ImporterMetadata metaOverwrite = new ImporterMetadata();
                     if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
-                        metaOverwrite.load(fr);
+                        metaOverwrite.load(outputMetaReader);
                     } else if (META_FORMAT_XML.equals(format)) {
-                        metaOverwrite.loadFromXML(fr);
+                        metaOverwrite.loadFromXML(outputMetaReader);
                     } else if (META_FORMAT_JSON.equals(format)) {
-                        metaOverwrite.loadFromJSON(fr);
+                        metaOverwrite.loadFromJSON(outputMetaReader);
                     } else {
-                        extractMetaFromFile(fr, metaOverwrite);
+                        extractMetaFromFile(outputMetaReader, metaOverwrite);
                     }
                     metadata.keySet().removeAll(metaOverwrite.keySet());
                     metadata.putAll(metaOverwrite);
@@ -625,7 +649,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                                 + command, e);
             }
         } finally {
-            IOUtils.closeQuietly(fr);
+            IOUtils.closeQuietly(outputMetaReader);
             files.deleteAll();
         }
     }
@@ -641,7 +665,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         systemCommand.addOutputListener(new InputStreamLineListener() {
             @Override
             protected void lineStreamed(String type, String line) {
-                if (!files.hasOutputFile()) {
+                if (!files.hasOutputFile() && output != null) {
                     writeLine(line, output);
                 }
                 if (!files.hasOutputMetaFile()) {
@@ -660,7 +684,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         
         try {
             int exitValue;
-            if (files.hasInputFile()) {
+            if (files.hasInputFile() || input == null) {
                 exitValue = systemCommand.execute();
             } else {
                 exitValue = systemCommand.execute(input);
@@ -703,18 +727,20 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     private File createTempFile(
             Object stream, String name, String suffix) 
                     throws ImporterHandlerException {
-        File tempDir;
-        if (stream instanceof ICachedStream) {
-            tempDir = ((ICachedStream) stream).getCacheDirectory();
+        File tempDirectory;
+        if (tempDir != null) {
+            tempDirectory = tempDir;
+        } else if (stream != null && stream instanceof ICachedStream) {
+            tempDirectory = ((ICachedStream) stream).getCacheDirectory();
         } else {
-            tempDir = FileUtils.getTempDirectory();
+            tempDirectory = FileUtils.getTempDirectory();
         }
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
+        if (!tempDirectory.exists()) {
+            tempDirectory.mkdirs();
         }
         File file = null;
         try {
-            file = File.createTempFile(name, suffix, tempDir);
+            file = File.createTempFile(name, suffix, tempDirectory);
             return file;
         } catch (IOException e) {
             Files.delete(file);
@@ -725,7 +751,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     
     private String resolveInputToken(String cmd, Files files, InputStream is) 
             throws ImporterHandlerException {
-        if (!cmd.contains(TOKEN_INPUT)) {
+        if (!cmd.contains(TOKEN_INPUT) || is == null) {
             return cmd;
         }
         String newCmd = cmd;
@@ -747,16 +773,13 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         if (!cmd.contains(TOKEN_INPUT_META)) {
             return cmd;
         }
-
         String newCmd = cmd;
         files.inputMetaFile = createTempFile(
                 is, "input-meta", "." + StringUtils.defaultIfBlank(
                         getMetadataInputFormat(), META_FORMAT_JSON));
         newCmd = StringUtils.replace(newCmd, 
                 TOKEN_INPUT_META, files.inputMetaFile.getAbsolutePath());
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(files.inputMetaFile);
+        try (FileWriter fw = new FileWriter(files.inputMetaFile)) {
             String format = getMetadataInputFormat();
             if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
                 meta.store(fw);
@@ -765,9 +788,9 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             } else {
                 meta.storeToJSON(fw);
             }
+            fw.flush();
             return newCmd;
         } catch (IOException e) {
-            IOUtils.closeQuietly(fw);
             Files.delete(files.inputMetaFile);
             throw new ImporterHandlerException(
                     "Could not create temporary input metadata file.", e);
@@ -776,7 +799,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     
     private String resolveOutputToken(String cmd, Files files, OutputStream os)
             throws ImporterHandlerException {
-        if (!cmd.contains(TOKEN_OUTPUT)) {
+        if (!cmd.contains(TOKEN_OUTPUT) || os == null) {
             return cmd;
         }
         String newCmd = cmd;
@@ -787,14 +810,14 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     }
 
     private String resolveOutputMetaToken(
-            String cmd, Files files, OutputStream is, ImporterMetadata meta) 
+            String cmd, Files files, OutputStream os) 
                     throws ImporterHandlerException {
         if (!cmd.contains(TOKEN_OUTPUT_META)) {
             return cmd;
         }
         String newCmd = cmd;
         files.outputMetaFile = createTempFile(
-                is, "output-meta", "." + StringUtils.defaultIfBlank(
+                os, "output-meta", "." + StringUtils.defaultIfBlank(
                         getMetadataOutputFormat(), ".tmp"));
         newCmd = StringUtils.replace(newCmd, 
                 TOKEN_OUTPUT_META, files.outputMetaFile.getAbsolutePath());
@@ -817,6 +840,10 @@ public class ExternalTransformer extends AbstractDocumentTransformer
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
         setCommand(xml.getString("command", getCommand()));
+        String dir = xml.getString("tempDir", null);
+        if (StringUtils.isNotBlank(dir)) {
+            setTempDir(new File(dir));
+        }
         List<HierarchicalConfiguration> xmlMatches = 
                 xml.configurationsAt("metadata.match");
         if (!xmlMatches.isEmpty()) {
@@ -865,12 +892,13 @@ public class ExternalTransformer extends AbstractDocumentTransformer
             }
             setEnvironmentVariables(vars);
         }        
-
     }
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeElementString("command", getCommand());
+        writer.writeElementString(
+                "tempDir", Objects.toString(getTempDir(), null));
         if (!getMetadataExtractionPatterns().isEmpty()) {
             writer.writeStartElement("metadata");
             writer.writeAttributeString(
@@ -911,6 +939,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         return new EqualsBuilder()
                 .appendSuper(super.equals(castOther))
                 .append(getCommand(), castOther.getCommand())
+                .append(getTempDir(), castOther.getTempDir())
                 .append(patterns, castOther.patterns)
                 .append(metadataInputFormat, castOther.metadataInputFormat)
                 .append(metadataOutputFormat, castOther.metadataOutputFormat)
@@ -924,6 +953,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         return new HashCodeBuilder()
                 .appendSuper(super.hashCode())
                 .append(getCommand())
+                .append(getTempDir())
                 .append(getMetadataExtractionPatterns())
                 .append(getEnvironmentVariables())
                 .append(getMetadataInputFormat())
@@ -935,6 +965,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .appendSuper(super.toString())
                 .append("command", getCommand())
+                .append("tempDir", getTempDir())
                 .append("metadataExtractionPatterns", 
                         getMetadataExtractionPatterns())
                 .append("environmentVariables", getEnvironmentVariables())

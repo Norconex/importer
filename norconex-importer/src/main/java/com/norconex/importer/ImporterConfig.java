@@ -200,7 +200,7 @@ public class ImporterConfig implements IXMLConfigurable {
         xml.setExpressionEngine(originalEngine);
         for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
-            IImporterHandler handler = (IImporterHandler) 
+            IImporterHandler handler = 
                     XMLConfigurationUtil.newInstance(xmlHandler);
             if (handler != null) {
                 handlers.add(handler);
