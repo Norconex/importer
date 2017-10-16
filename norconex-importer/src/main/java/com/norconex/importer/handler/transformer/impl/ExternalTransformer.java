@@ -72,9 +72,11 @@ import com.norconex.importer.util.regex.RegexUtil;
  * and reference to the external application and get new metadata back.
  * 2.8.0 also makes metadata fields regular expression matching more flexible.
  * </p>
+ * <p>
  * <b>Since 2.8.0</b>, it is also possible to set regular expressions 
  * case-sensitivity for each patterns. 
  * </p>
+ * <p>
  * <b>Since 2.8.0</b>, match group indexes can be specified 
  * to extract field names and values using the same regular 
  * expression.  This is done by using
@@ -166,7 +168,7 @@ import com.norconex.importer.util.regex.RegexUtil;
  *   &lt;entry key="field2"&gt;value2&lt;/entry&gt;
  *   &lt;entry key="field3"&gt;value3a&lt;/entry&gt;
  *   &lt;entry key="field3"&gt;value3b&lt;/entry&gt;
- * &lt;/properties> 
+ * &lt;/properties&gt; 
  * </pre>
  * 
  * <h4>Properties</h4>

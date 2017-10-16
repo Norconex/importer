@@ -40,6 +40,7 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * <p>
  * This tagger relies heavily on the mechanics of 
  * {@link ExternalTransformer}, with a few differences:
+ * </p>
  * <ul>
  *   <li>
  *     There is no <code>${OUTPUT}</code> token (since taggers do not 
@@ -50,6 +51,7 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *     with {@link #setInputDisabled(boolean)}.
  *   </li>
  * </ul>
+ * <p>
  * Refer to {@link ExternalTransformer} class for documentation.
  * </p>
  * <p>
