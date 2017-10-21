@@ -25,10 +25,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.exec.ExternalApp;
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.util.ExternalApp;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 public class ExternalTransformerTest {
@@ -62,37 +62,32 @@ public class ExternalTransformerTest {
     @Test
     public void testInFileOutFile() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE) + " ${INPUT} ${OUTPUT}");
+        testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testInFileStdout() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_STDOUT) + " ${INPUT}");
+        testWithExternalApp("-ic ${INPUT}");
     }
     @Test
     public void testStdinOutFile() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_STDIN_OUTFILE) + " ${OUTPUT}");
+        testWithExternalApp("-oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testStdinStdout() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(
-                ExternalApp.newCommandLine(ExternalApp.TYPE_STDIN_STDOUT));
+        testWithExternalApp("");
     }
     
     @Test
     public void testMetaInputOutputFiles() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE)
-                    + " ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META}", true);
+        testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} "
+                + "-im ${INPUT_META} -om ${OUTPUT_META} "
+                + "-ref ${REFERENCE}", true);
     }
 
-    
     private void testWithExternalApp(String command) 
             throws IOException, ImporterHandlerException {
         testWithExternalApp(command, false);
@@ -111,11 +106,12 @@ public class ExternalTransformerTest {
         }
         
         ExternalTransformer t = new ExternalTransformer();
-        t.setCommand(command);
+        t.setCommand(ExternalApp.newCommandLine(command));
         addPatternsAndEnvs(t);
         t.setMetadataInputFormat("properties");
         t.setMetadataOutputFormat("properties");
-        t.transformDocument("reference", input, output, metadata, false);
+        t.transformDocument("c:\\ref with spaces\\doc.txt", 
+                input, output, metadata, false);
 
         String content = output.toString();
         // remove any stdout content that could be mixed with output to 
@@ -128,7 +124,7 @@ public class ExternalTransformerTest {
         if (metaFiles) {
             assertMetadataFiles(metadata);
         } else {
-            assertMetadata(metadata);
+            assertMetadata(metadata, command.contains("${REFERENCE}"));
         }
     }
     
@@ -141,12 +137,16 @@ public class ExternalTransformerTest {
         Assert.assertEquals(
                 "value2 test second a is this", 
                 meta.getStrings("metaFileField2").get(1));
-    }    
-    private void assertMetadata(ImporterMetadata meta) {
+    }
+    private void assertMetadata(ImporterMetadata meta, boolean testReference) {
         Assert.assertEquals("StdoutBefore", meta.getString("field1"));
         Assert.assertEquals("StdoutAfter", meta.getString("field2"));
         Assert.assertEquals("field3 StdErrBefore", meta.getString("field3"));
         Assert.assertEquals("StdErrAfter", meta.getString("field4"));
+        if (testReference) {
+            Assert.assertEquals("c:\\ref with spaces\\doc.txt", 
+                    meta.getString("reference"));
+        }
     }
     
     private void addPatternsAndEnvs(ExternalTransformer t) {
@@ -161,7 +161,8 @@ public class ExternalTransformerTest {
             new RegexFieldExtractor("^(f.*):(.*)", 1, 2),
             new RegexFieldExtractor("^<field2>(.*)</field2>", "field2", 1),
             new RegexFieldExtractor("^f.*StdErr.*", "field3", 1),
-            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1)
+            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1),
+            new RegexFieldExtractor("^(reference)\\=(.*)", 1, 2)            
         );
     }
     

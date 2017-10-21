@@ -337,7 +337,6 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("xmltag", xmltag)
                 .append("restrictions", restrictions)
                 .toString();
     }    

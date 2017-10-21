@@ -5,6 +5,7 @@ TODO:
    1. simply truncate
    2. truncate but create a hash for the remaining part that is too long.
    3. offer to store the original value in another field.
+   4. offer ellipses or custom chars
 
 - Add support for SentimentParser and other Tika recent features.
 

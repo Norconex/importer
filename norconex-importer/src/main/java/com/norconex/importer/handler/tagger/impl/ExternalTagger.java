@@ -61,7 +61,7 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TaggerTransformer"&gt;
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ExternalTagger"&gt;
  *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -346,14 +346,15 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
         StringWriter w = new StringWriter();
         t.saveToXML(w);
         String xml = w.toString();
+        xml = xml.replaceFirst("<transformer class=\".*?\"", 
+                "<tagger class=\"" + getClass().getName() + "\"");
+        xml = xml.replace("</transformer>", "</tagger>");
+        
         String attrib = "";
         if (!xml.contains("inputDisabled")) {
             attrib = "inputDisabled=\"" + inputDisabled + "\" ";
         }
-        xml = xml.replaceFirst("<transformer class=\".*?\"", 
-                "<tagger " + attrib
-                + "class=\"" + getClass().getName() + "\"");
-        xml = xml.replace("</transformer>", "</tagger>");
+        xml = xml.replaceFirst("<command>", "<command " + attrib + ">");
         
         out.write(xml);
         out.flush();
@@ -376,7 +377,7 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
     public String toString() {
         String toString = t.toString();
         toString = toString.replaceFirst(
-            "ExternalTagger\\[xmltag=tagger,restrictions=\\[.*?\\],",
+            "ExternalTransformer\\[restrictions=\\[.*?\\],",
             ExternalTagger.class.getSimpleName() + "[");
         return toString;
     }

@@ -25,12 +25,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.exec.ExternalApp;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.parser.impl.ExternalParser;
+import com.norconex.importer.util.ExternalApp;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 public class ExternalParserTest {
@@ -60,33 +60,30 @@ public class ExternalParserTest {
     @Test
     public void testInFileOutFile() 
             throws IOException, DocumentParserException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE) + " ${INPUT} ${OUTPUT}");
+        testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testInFileStdout() 
             throws IOException, DocumentParserException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_STDOUT) + " ${INPUT}");
+        testWithExternalApp("-ic ${INPUT}");
     }
     @Test
     public void testStdinOutFile() 
             throws IOException, DocumentParserException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_STDIN_OUTFILE) + " ${OUTPUT}");
+        testWithExternalApp("-oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testStdinStdout() 
             throws IOException, DocumentParserException {
-        testWithExternalApp(
-                ExternalApp.newCommandLine(ExternalApp.TYPE_STDIN_STDOUT));
+        testWithExternalApp("");
     }
+    
     @Test
     public void testMetaInputOutputFiles() 
             throws IOException, DocumentParserException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_OUTFILE)
-                    + " ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META}", true);
+        testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} "
+                + "-im ${INPUT_META} -om ${OUTPUT_META} "
+                + "-ref ${REFERENCE}", true);
     }
     
     private void testWithExternalApp(String command) 
@@ -97,7 +94,8 @@ public class ExternalParserTest {
             throws IOException, DocumentParserException {
         InputStream input = inputAsStream();
         StringWriter output = new StringWriter();
-        ImporterDocument doc = new ImporterDocument("reference", 
+        ImporterDocument doc = new ImporterDocument(
+                "c:\\ref with spaces\\doc.txt", 
                 new CachedStreamFactory(
                         (int) DataUnit.KB.toBytes(10), 
                         (int) DataUnit.KB.toBytes(5)).newInputStream(input));
@@ -111,7 +109,7 @@ public class ExternalParserTest {
         }        
         
         ExternalParser p = new ExternalParser();
-        p.setCommand(command);
+        p.setCommand(ExternalApp.newCommandLine(command));
         addPatternsAndEnvs(p);
         p.setMetadataInputFormat("properties");
         p.setMetadataOutputFormat("properties");
@@ -128,7 +126,7 @@ public class ExternalParserTest {
         if (metaFiles) {
             assertMetadataFiles(metadata);
         } else {
-            assertMetadata(metadata);
+            assertMetadata(metadata, command.contains("${REFERENCE}"));
         }
     }
     
@@ -143,11 +141,15 @@ public class ExternalParserTest {
                 meta.getStrings("metaFileField2").get(1));
     }
     
-    private void assertMetadata(ImporterMetadata meta) {
+    private void assertMetadata(ImporterMetadata meta, boolean testReference) {
         Assert.assertEquals("StdoutBefore", meta.getString("field1"));
         Assert.assertEquals("StdoutAfter", meta.getString("field2"));
         Assert.assertEquals("field3 StdErrBefore", meta.getString("field3"));
         Assert.assertEquals("StdErrAfter", meta.getString("field4"));
+        if (testReference) {
+            Assert.assertEquals("c:\\ref with spaces\\doc.txt", 
+                    meta.getString("reference"));
+        }
     }
     
     private void addPatternsAndEnvs(ExternalParser p) {
@@ -162,7 +164,8 @@ public class ExternalParserTest {
             new RegexFieldExtractor("^(f.*):(.*)", 1, 2),
             new RegexFieldExtractor("^<field2>(.*)</field2>", "field2", 1),
             new RegexFieldExtractor("^f.*StdErr.*", "field3", 1),
-            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1)
+            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1),
+            new RegexFieldExtractor("^(reference)\\=(.*)", 1, 2)
         );        
     }
     

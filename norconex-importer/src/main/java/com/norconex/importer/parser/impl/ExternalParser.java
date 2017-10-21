@@ -417,7 +417,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
     public String toString() {
         String toString = t.toString();
         toString = toString.replaceFirst(
-            "ExternalTransformer\\[xmltag=transformer,restrictions=\\[.*?\\],",
+            "ExternalTransformer\\[restrictions=\\[.*?\\],",
             ExternalParser.class.getSimpleName() + "[");
         return toString;
     }

@@ -44,6 +44,10 @@
         Maven dependency updates: Apache Tika 1.16, 
         Norconex Commons Lang 1.14.0.
       </action>
+      <action dev="essiembre" type="fix" issue="64">
+        Fixed ExternalTransformer and ExternalParser having issues with
+        arguments with spaces in them.      
+      </action>      
       <action dev="essiembre" type="remove">
         Removed copies of Apache Tika classes that are now fixed in 
         Apache Tika: ListTables, ImageParser, ListManager, PDF2XHTML,

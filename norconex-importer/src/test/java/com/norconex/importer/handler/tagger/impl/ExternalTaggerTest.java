@@ -25,9 +25,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.commons.lang.exec.ExternalApp;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.util.ExternalApp;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 public class ExternalTaggerTest {
@@ -62,11 +62,11 @@ public class ExternalTaggerTest {
     @Test
     public void testMetaInputMetaOutput() 
             throws IOException, ImporterHandlerException {
-        testWithExternalApp(ExternalApp.newCommandLine(
-                ExternalApp.TYPE_INFILE_STDOUT)
-                        + " ${INPUT} ${INPUT_META} ${OUTPUT_META}");
+        testWithExternalApp("-ic ${INPUT} "
+                + "-im ${INPUT_META} -om ${OUTPUT_META} "
+                + "-ref ${REFERENCE}");
     }
-    
+
     private void testWithExternalApp(String command) 
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
@@ -78,11 +78,11 @@ public class ExternalTaggerTest {
                 "this is a second test value2");
         
         ExternalTagger t = new ExternalTagger();
-        t.setCommand(command);
+        t.setCommand(ExternalApp.newCommandLine(command));
         addPatternsAndEnvs(t);
         t.setMetadataInputFormat("properties");
         t.setMetadataOutputFormat("properties");
-        t.tagDocument("reference", input, metadata, false);
+        t.tagDocument("N/A", input, metadata, false);
 
         assertMetadataFiles(metadata);
     }
