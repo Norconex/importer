@@ -221,6 +221,10 @@
                regex="false" wholeMatch="false" replaceAll="true">
           <fromValue>_</fromValue><toValue xml:space="preserve"> </toValue>
       </replace>
+      <replace fromField="FF3" toField="TF3" caseSensitive="true"
+               regex="false" wholeMatch="false" replaceAll="true">
+          <fromValue>apple</fromValue>
+      </replace>
     </tagger>
     <tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
           engineName="myEngine" sourceCharset="UTF8" maxReadSize="999" >
@@ -263,6 +267,15 @@
           detectHeadingMaxLength="200" sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
     </tagger>
+    <tagger class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
+          fromField="field1"
+          maxLength="50"
+          toField="field2"
+          overwrite="true"
+          appendHash="true"
+          suffix="!!!" >
+      <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
+    </tagger>    
     <tagger class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
           field="uuidField" overwrite="true" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
@@ -295,6 +308,7 @@
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <replace><fromValue>apple</fromValue><toValue>orange</toValue></replace>
       <replace><fromValue>one</fromValue><toValue>two</toValue></replace>
+      <replace><fromValue>blah</fromValue></replace>
     </transformer>
     <transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
           engineName="myEngine" sourceCharset="blah" maxReadSize="999" >

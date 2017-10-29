@@ -36,16 +36,6 @@ public class TitleGeneratorTest {
     private static final Logger LOG = 
             LogManager.getLogger(TitleGeneratorTest.class);
     
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @Test
     public void testSummarizeTitle() 
             throws IOException, ImporterHandlerException {
@@ -123,7 +113,7 @@ public class TitleGeneratorTest {
         t.setDetectHeading(true);
         t.setDetectHeadingMaxLength(200);
         t.setDetectHeadingMinLength(20);
-        System.out.println("Writing/Reading this: " + t);
+        LOG.debug("Writing/Reading this: " + t);
         XMLConfigurationUtil.assertWriteRead(t);
     }
 

@@ -151,10 +151,11 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         
         if (r.isWholeMatch() && m.matches()
                 || !r.isWholeMatch() && m.find()) {
+            String toValue = StringUtils.defaultString(r.getToValue());
             if (r.isReplaceAll()) {
-                return m.replaceAll(r.getToValue());
+                return m.replaceAll(toValue);
             }
-            return m.replaceFirst(r.getToValue());
+            return m.replaceFirst(toValue);
         }
         return null;
     }
@@ -443,12 +444,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     "wholeMatch", replacement.isWholeMatch());
             writer.writeAttributeBoolean(
                     "replaceAll", replacement.isReplaceAll());
-            writer.writeStartElement("fromValue");
-            writer.writeCharacters(replacement.getFromValue());
-            writer.writeEndElement();
-            writer.writeStartElement("toValue");
-            writer.writeCharacters(replacement.getToValue());
-            writer.writeEndElement();
+            writer.writeElementString("fromValue", replacement.getFromValue());
+            writer.writeElementString("toValue", replacement.getToValue());
             writer.writeEndElement();
         }
     }

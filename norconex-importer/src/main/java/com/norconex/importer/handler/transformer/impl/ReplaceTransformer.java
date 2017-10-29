@@ -24,6 +24,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -102,7 +103,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
         Pattern pattern;
         
         for (String from : replacements.keySet()) {
-            String to = replacements.get(from);
+            String to = StringUtils.defaultString(replacements.get(from));
             int flags = Pattern.DOTALL;
             if (!caseSensitive) {
                 flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
@@ -153,12 +154,8 @@ public class ReplaceTransformer extends AbstractStringTransformer
         for (String from : replacements.keySet()) {
             String to = replacements.get(from);
             writer.writeStartElement("replace");
-            writer.writeStartElement("fromValue");
-            writer.writeCharacters(from);
-            writer.writeEndElement();
-            writer.writeStartElement("toValue");
-            writer.writeCharacters(to);
-            writer.writeEndElement();
+            writer.writeElementString("fromValue", from);
+            writer.writeElementString("toValue", to);
             writer.writeEndElement();
         }
     }

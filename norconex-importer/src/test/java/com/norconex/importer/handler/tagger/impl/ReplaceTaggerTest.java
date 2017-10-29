@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2017 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
+import java.io.StringReader;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,6 +27,59 @@ import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
 
 public class ReplaceTaggerTest {
 
+    // Test for: https://github.com/Norconex/collector-http/issues/416
+    @Test
+    public void testNoValue() 
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.addString("test", "a b c"); 
+        
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        // regex
+        r = new Replacement();
+        r.setFromField("test");
+        r.setToField("regex");
+        r.setRegex(true);
+        r.setFromValue("\\s+b\\s+");
+        r.setToValue("");
+        tagger.addReplacement(r);
+        tagger.tagDocument("n/a", null, meta, true);
+        
+        // normal
+        r = new Replacement();
+        r.setFromField("test");
+        r.setToField("normal");
+        r.setRegex(false);
+        r.setFromValue("b");
+        r.setToValue("");
+        tagger.addReplacement(r);
+
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assert.assertEquals("ac", meta.getString("regex"));
+        Assert.assertEquals("a  c", meta.getString("normal"));
+
+        // XML
+        String xml = "<tagger>"
+                + "<replace fromField=\"test\" toField=\"regexXML\" "
+                + "regex=\"true\">"
+                + "  <fromValue>(.{0,0})\\s+b\\s+</fromValue>"
+                + "</replace>"
+                + "<replace fromField=\"test\" toField=\"normalXML\">"
+                + "  <fromValue>b</fromValue>"
+                + "</replace>"
+                + "</tagger>";
+        tagger = new ReplaceTagger();
+        tagger.loadFromXML(new StringReader(xml));
+        r = new Replacement();
+        tagger.addReplacement(r);
+        tagger.tagDocument("n/a", null, meta, true);
+        Assert.assertEquals("ac", meta.getString("regexXML"));
+        Assert.assertEquals("a  c", meta.getString("normalXML"));
+    }
+    
     //This is a test for https://github.com/Norconex/importer/issues/29
     //where the replaced value is equal to the original (EXP_NAME1), it should 
     //still store it (was a bug).

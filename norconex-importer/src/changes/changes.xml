@@ -8,6 +8,9 @@
   <body>
 
     <release version="2.8.0-SNAPSHOT" date="2017-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New TruncateTagger class.
+      </action>
       <action dev="essiembre" type="add" issue="64">
         New ExternalTagger class.
       </action>
@@ -31,6 +34,10 @@
       <action dev="essiembre" type="add">
         TextPatternTagger case sensitivity is now applied to individual 
         patterns.
+      </action>
+      <action dev="essiembre" type="update">
+        ReplaceTagger and ReplaceTransformer now support empty/null replacement
+        values, resulting in replacing matches with nothing.
       </action>
       <action dev="essiembre" type="update">
         ExternalTransformer and ExternalParser can now specify regex 

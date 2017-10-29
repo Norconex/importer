@@ -41,13 +41,7 @@
             </xs:restriction>
           </xs:simpleType>        
         </xs:element>
-        <xs:element name="toValue" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>        
-        </xs:element>
+        <xs:element name="toValue" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:all>
     </xs:complexType>
   </xs:element>
