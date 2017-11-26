@@ -1,11 +1,8 @@
 TODO:
 ==============
 
-- Add new TruncateTagger that can do:
-   1. simply truncate
-   2. truncate but create a hash for the remaining part that is too long.
-   3. offer to store the original value in another field.
-   4. offer ellipses or custom chars
+- When content type is provided to importer, but is wrong, catch any exception
+  and try again after auto-detecting if the detected type is different.
 
 - Add support for SentimentParser and other Tika recent features.
 

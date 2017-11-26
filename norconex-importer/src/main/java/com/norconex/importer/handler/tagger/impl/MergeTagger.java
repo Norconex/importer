@@ -68,8 +68,8 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <p>
  * The target field can be one of the "from" fields. In such case its 
- * content will be replaced with the result of the merge (and it will not be
- * deleted even if <code>deleteFromFields</code> is <code>true</code>.
+ * content will be replaced with the result of the merge (it will not be
+ * deleted even if <code>deleteFromFields</code> is <code>true</code>).
  * </p>
  * <p>
  * If only a single source field is specified or found, it will be copied
