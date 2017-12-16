@@ -1,6 +1,12 @@
 TODO:
 ==============
 
+- Have a copy of importer launch scripts with collectors.
+
+- Have the option for the importer to ignore suplied content-type/charset and
+  always perform detection (with option to fall back to supplied ones if could 
+  not detect).
+
 - When content type is provided to importer, but is wrong, catch any exception
   and try again after auto-detecting if the detected type is different.
 
