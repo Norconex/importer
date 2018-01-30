@@ -7,7 +7,11 @@
   </properties>
   <body>
 
-    <release version="2.8.1-SNAPSHOT" date="201?-??-??" description="Bugfix release">
+    <release version="2.9.0-SNAPSHOT" date="2018-??-??" description="Feature release">
+      <action dev="essiembre" type="add">
+        New PDFPageSplitter to split PDF pages, treating them as individual 
+        documents.
+      </action>
       <action dev="essiembre" type="fix" issue="72">
         Fixed "buffer underrun" exception sometimes appearing when parsing some
         .msg files with embedded files.
