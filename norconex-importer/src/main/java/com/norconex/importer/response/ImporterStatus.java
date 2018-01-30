@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
  */
 package com.norconex.importer.response;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.norconex.importer.ImporterException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 
@@ -24,16 +29,16 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
 public class ImporterStatus {
 
     public enum Status { SUCCESS, REJECTED, ERROR };
-    
+
     private final Status status;
     private final IDocumentFilter filter;
     private final ImporterException exception;
     private final String description;
 
-    
+
     public ImporterStatus() {
         this(Status.SUCCESS, null, null, null);
-    }    
+    }
     public ImporterStatus(Status status, String description) {
         this(status, null, null, description);
     }
@@ -57,7 +62,7 @@ public class ImporterStatus {
         this.exception = e;
         this.description = d;
     }
-    
+
     public String getDescription() {
         return description;
     }
@@ -78,5 +83,42 @@ public class ImporterStatus {
     }
     public boolean isSuccess() {
         return status == Status.SUCCESS;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof ImporterStatus)) {
+            return false;
+        }
+        ImporterStatus castOther = (ImporterStatus) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(status, castOther.status)
+                .append(filter, castOther.filter)
+                .append(exception, castOther.exception)
+                .append(description, castOther.description)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(status)
+                .append(filter)
+                .append(exception)
+                .append(description)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("status", status)
+                .append("filter", filter)
+                .append("exception", exception)
+                .append("description", description)
+                .toString();
     }
 }

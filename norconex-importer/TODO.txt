@@ -1,6 +1,9 @@
 TODO:
 ==============
 
+- Have option to parse content as XML instead of plain text.  Should
+  it be a parser hint?
+
 - Have a copy of importer launch scripts with collectors.
 
 - Have the option for the importer to ignore suplied content-type/charset and

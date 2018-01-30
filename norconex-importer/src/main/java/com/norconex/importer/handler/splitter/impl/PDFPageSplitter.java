@@ -43,25 +43,25 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * <p>
  * Split PDFs pages so each pages are treated as individual documents.
  * </p>
- * 
+ *
  * <p>
  * The original PDF is kept intact. If you want to eliminate it to keep only
  * the split pages, make sure to filter it.  You can do so by filtering
  * out PDFs without one of these two fields added to each pages:
- * <code>document.pdf.pageNumber</code> or 
+ * <code>document.pdf.pageNumber</code> or
  * <code>document.pdf.numberOfPages</code>.  A filtering example:
  * </p>
- * 
+ *
  * <pre>
  * &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *         onMatch="exclude" fields="document.pdf.pageNumber" /&gt;
- * </pre> 
- * 
+ * </pre>
+ *
  * <p>
- * By default this splitter restricts its use to 
+ * By default this splitter restricts its use to
  * <code>document.contentType</code> matching <code>application/pdf</code>.
  * </p>
- * 
+ *
  * <p>Should be used as a pre-parse handler.</p>
  *
  * <h3>XML configuration usage:</h3>
@@ -126,7 +126,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
 //TODO see if we can return an empty output stream to eliminate parent PDF
 //        output.flush();
-        
+
         List<ImporterDocument> pageDocs = new ArrayList<>();
 
         // Make sure we are not splitting a page that was already split
@@ -149,7 +149,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
             for (PDDocument page : splittedDocuments) {
                 pageNo++;
 
-                String pageRef = doc.getReference() + "!" + pageNo;
+                String pageRef =
+                        doc.getReference() + referencePagePrefix + pageNo;
 
                 // metadata
                 ImporterMetadata pageMeta = new ImporterMetadata();

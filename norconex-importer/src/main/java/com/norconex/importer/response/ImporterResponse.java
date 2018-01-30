@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@ package com.norconex.importer.response;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
@@ -25,15 +30,15 @@ import com.norconex.importer.doc.ImporterDocument;
  */
 public class ImporterResponse {
 
-    public static final ImporterResponse[] EMPTY_RESPONSES = 
+    public static final ImporterResponse[] EMPTY_RESPONSES =
             new ImporterResponse[] {};
-    
+
     private final String reference;
     private ImporterStatus status;
     private final ImporterDocument doc;
     private final List<ImporterResponse> nestedResponses = new ArrayList<>();
     private ImporterResponse parentResponse;
-    
+
     public ImporterResponse(String reference, ImporterStatus status) {
         this.reference = reference;
         this.status = status;
@@ -55,7 +60,7 @@ public class ImporterResponse {
     public void setImporterStatus(ImporterStatus status) {
         this.status = status;
     }
-    
+
     public boolean isSuccess() {
         return status != null && status.isSuccess();
     }
@@ -63,12 +68,12 @@ public class ImporterResponse {
     public String getReference() {
         return reference;
     }
-  
+
     public ImporterResponse getParentResponse() {
         return parentResponse;
     }
-    
-    
+
+
     public void addNestedResponse(ImporterResponse response) {
         response.setParentResponse(this);
         nestedResponses.add(response);
@@ -86,12 +91,49 @@ public class ImporterResponse {
         nestedResponses.remove(response);
         response.setParentResponse(null);
     }
-    
+
     public ImporterResponse[] getNestedResponses() {
         return nestedResponses.toArray(EMPTY_RESPONSES);
     }
-    
+
     private void setParentResponse(ImporterResponse parentResponse) {
         this.parentResponse = parentResponse;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof ImporterResponse)) {
+            return false;
+        }
+        ImporterResponse castOther = (ImporterResponse) other;
+        return new EqualsBuilder()
+                .appendSuper(super.equals(castOther))
+                .append(reference, castOther.reference)
+                .append(status, castOther.status)
+                .append(doc, castOther.doc)
+                .append(nestedResponses, castOther.nestedResponses)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(reference)
+                .append(status)
+                .append(doc)
+                .append(nestedResponses)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .append("reference", reference)
+                .append("status", status)
+                .append("doc", doc)
+                .append("nestedResponses", nestedResponses)
+                .toString();
     }
 }
