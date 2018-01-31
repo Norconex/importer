@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,6 +181,11 @@ public class TitleGeneratorTagger
             text = metadata.getString(fromField);
         } else {
             text = content.toString();
+        }
+
+        // Make sure text is not null
+        if (text == null) {
+            text = StringUtils.EMPTY;
         }
         
         String title = null;

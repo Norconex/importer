@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,23 @@ public class TitleGeneratorTest {
 
     private static final Logger LOG = 
             LogManager.getLogger(TitleGeneratorTest.class);
+
+    // Test for: https://github.com/Norconex/importer/issues/74
+    @Test
+    public void testNullFromField() 
+            throws IOException, ImporterHandlerException {
+        
+        TitleGeneratorTagger t = new TitleGeneratorTagger();
+        t.setFromField("nullField");
+        t.setDetectHeading(true);
+
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        t.tagDocument("test.txt", null, metadata, true);
+
+        Assert.assertNull("Title should be null", 
+                metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE));
+    }
     
     @Test
     public void testSummarizeTitle() 

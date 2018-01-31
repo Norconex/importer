@@ -16,6 +16,10 @@
         ImporterResponse and ImporterStatus now display nicely in the logs
         (toString implemented).
       </action>
+      <action dev="essiembre" type="fix" issue="74">
+        Fixed TitleGeneratorTagger throwing NullPointerException when 
+        "fromField" is specified but does not exists (is null). 
+      </action>
       <action dev="essiembre" type="fix" issue="72">
         Fixed "buffer underrun" exception sometimes appearing when parsing some
         .msg files with embedded files.
