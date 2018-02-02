@@ -41,7 +41,8 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
  * <p>
- * Split PDFs pages so each pages are treated as individual documents.
+ * Split PDFs pages so each pages are treated as individual documents. May not
+ * work on all PDFs (e.g., encrypted PDFs).
  * </p>
  *
  * <p>
@@ -123,9 +124,6 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
                     throws ImporterHandlerException {
-
-//TODO see if we can return an empty output stream to eliminate parent PDF
-//        output.flush();
 
         List<ImporterDocument> pageDocs = new ArrayList<>();
 

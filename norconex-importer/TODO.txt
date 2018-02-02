@@ -1,6 +1,9 @@
 TODO:
 ==============
 
+- See if we can return an empty output stream in IDocumentSplitter to 
+  eliminate parent document.
+
 - Have option to parse content as XML instead of plain text.  Should
   it be a parser hint?
 
