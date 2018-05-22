@@ -28,7 +28,7 @@
     <site.baseurl/>
     <tika.version>1.16</tika.version>
     <pdfbox.version>2.0.7</pdfbox.version>
-    <norconex-commons-lang.version>1.14.0</norconex-commons-lang.version>
+    <norconex-commons-lang.version>1.15.0-SNAPSHOT</norconex-commons-lang.version>
   </properties>
   <inceptionYear>2009</inceptionYear>
 

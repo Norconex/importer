@@ -16,6 +16,9 @@
         ImporterResponse and ImporterStatus now display nicely in the logs
         (toString implemented).
       </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Norconex Commons Lang 1.15.0.
+      </action>
       <action dev="essiembre" type="fix" issue="74">
         Fixed TitleGeneratorTagger throwing NullPointerException when 
         "fromField" is specified but does not exists (is null). 

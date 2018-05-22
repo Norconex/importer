@@ -1,6 +1,18 @@
 TODO:
 ==============
 
+- Have a transformer that eliminates the content (and/or store into a field).
+  https://github.com/Norconex/collector-filesystem/issues/30#issuecomment-384499927
+
+- Boost memory for handlers loading docs in memory for processing to 1GB or
+  x% of free memory and throw warning when having to split. 
+
+- Consider having a flag for text handlers that detect if text or binary
+  and by default will handle only text unless forced otherwise.
+
+- Have a DOMTRansformer and a tagger that splits multivalue in individual fields
+  giving a each index position a specific name.
+
 - See if we can return an empty output stream in IDocumentSplitter to 
   eliminate parent document.
 
