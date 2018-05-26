@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;

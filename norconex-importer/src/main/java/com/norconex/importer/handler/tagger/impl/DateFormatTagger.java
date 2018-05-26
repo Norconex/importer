@@ -23,8 +23,9 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -323,11 +324,11 @@ public class DateFormatTagger extends AbstractDocumentTagger {
             setToLocale(LocaleUtils.toLocale(toLocaleStr));
         }
 
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("fromFormat");
         if (!nodes.isEmpty()) {
             List<String> fromFormats = new ArrayList<>(nodes.size());
-            for (HierarchicalConfiguration node : nodes) {
+            for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
                 fromFormats.add(node.getString("", null));
             }
             setFromFormats(fromFormats.toArray(ArrayUtils.EMPTY_STRING_ARRAY));

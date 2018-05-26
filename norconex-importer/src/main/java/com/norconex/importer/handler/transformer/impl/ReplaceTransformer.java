@@ -22,8 +22,9 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -138,9 +139,9 @@ public class ReplaceTransformer extends AbstractStringTransformer
             throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("replace");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             replacements.put(
                     node.getString("fromValue"), node.getString("toValue"));
         }

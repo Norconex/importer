@@ -21,9 +21,12 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -31,9 +34,6 @@ import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * <p>Copies metadata fields. If a target field already
@@ -156,11 +156,11 @@ public class CopyTagger extends AbstractDocumentTagger {
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration> nodes = xml.configurationsAt("copy");
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = xml.configurationsAt("copy");
         if (!nodes.isEmpty()) {
             list.clear();
         }
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             addCopyDetails(node.getString("[@fromField]", null),
                       node.getString("[@toField]", null),
                       node.getBoolean("[@overwrite]", false));

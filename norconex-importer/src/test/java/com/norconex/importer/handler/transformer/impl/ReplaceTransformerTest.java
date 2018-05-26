@@ -43,14 +43,15 @@ public class ReplaceTransformerTest {
     private final String restrictionTestContent = 
             "I like to eat cakes and candies.";
 
-
     @Test
     public void testReplaceEolWithWhiteSpace() 
             throws ImporterHandlerException, IOException {
         String input = "line1\r\nline2\rline3\nline4";
         String expectedOutput = "line1 line2 line3 line4";
 
-        String preserveTestConfig = "<transformer>"
+        String preserveTestConfig = 
+                "<transformer>"
+//                  "<transformer xml:space=\"preserve\">"
                 + "<replace><fromValue>[\\r\\n]+</fromValue>"
                 + "<toValue xml:space=\"preserve\"> </toValue></replace>"
                 + "</transformer>";

@@ -274,13 +274,14 @@ public class ExternalApp {
             "norconex-commons-lang",
             "junit",
             "commons-io",
-            "commons-lang3",
             "log4j",
+            "slf4j",
             "ant",
             "commons-cli",
             "commons-lang",
+            "commons-beanutils",
             "commons-logging",
-            "commons-configuration",
+            "commons-configuration"
     };
     private static boolean keepPath(String path) {
         if (StringUtils.isBlank(path)) {

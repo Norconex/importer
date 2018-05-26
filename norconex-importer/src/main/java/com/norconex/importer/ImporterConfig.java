@@ -25,10 +25,11 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.tree.ExpressionEngine;
-import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ExpressionEngine;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -195,10 +196,10 @@ public class ImporterConfig implements IXMLConfigurable {
     
         ExpressionEngine originalEngine = xml.getExpressionEngine();
         xml.setExpressionEngine(new XPathExpressionEngine());
-        List<HierarchicalConfiguration> xmlHandlers = 
+        List<HierarchicalConfiguration<ImmutableNode>> xmlHandlers = 
                 xml.configurationsAt(xmlPath + "/*");
         xml.setExpressionEngine(originalEngine);
-        for (HierarchicalConfiguration xmlHandler : xmlHandlers) {
+        for (HierarchicalConfiguration<ImmutableNode> xmlHandler: xmlHandlers) {
             xmlHandler.setExpressionEngine(originalEngine);
             IImporterHandler handler = 
                     XMLConfigurationUtil.newInstance(xmlHandler);
@@ -218,9 +219,9 @@ public class ImporterConfig implements IXMLConfigurable {
             XMLConfiguration xml, String xmlPath) {
         List<IImporterResponseProcessor> processors = new ArrayList<>();
     
-        List<HierarchicalConfiguration> procNodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> procNodes = 
                 xml.configurationsAt(xmlPath);
-        for (HierarchicalConfiguration procNode : procNodes) {
+        for (HierarchicalConfiguration<ImmutableNode> procNode : procNodes) {
             IImporterResponseProcessor proc = 
                     XMLConfigurationUtil.newInstance(procNode);
             if (proc != null) {

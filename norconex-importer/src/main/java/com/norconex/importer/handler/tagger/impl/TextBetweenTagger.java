@@ -24,14 +24,15 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -177,9 +178,9 @@ public class TextBetweenTagger
             throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
         setInclusive(xml.getBoolean("[@inclusive]", false));
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("textBetween");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             addTextEndpoints(
                     node.getString("[@name]"),
                     node.getString("start", null),

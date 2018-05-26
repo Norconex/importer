@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,10 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.config.ConfigurationValidationException;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.log.CountingConsoleAppender;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.response.ImporterResponse;
@@ -53,6 +51,7 @@ public final class ImporterLauncher {
     private static final String ARG_CONFIG = "config";
     public static final String ARG_VARIABLES = "variables";
     public static final String ARG_CHECKCFG = "checkcfg";
+    public static final String ARG_IGNOREERRORS = "ignoreErrors";
     
     /**
      * Constructor.
@@ -85,6 +84,12 @@ public final class ImporterLauncher {
             }
         }        
 
+        if (cmd.hasOption(ARG_CHECKCFG)) {
+            checkConfig(cmd, configFile, varFile);
+            return;
+        }
+        
+        
         // Proceed
         ContentType contentType = 
                 ContentType.valueOf(cmd.getOptionValue(ARG_CONTENTTYPE));
@@ -116,35 +121,29 @@ public final class ImporterLauncher {
         if (configFile == null) {
             return null;
         }
+        
         ImporterConfig config = null;
-        CountingConsoleAppender appender = null;
         try {
-            if (cmd.hasOption(ARG_CHECKCFG)) {
-                appender = new CountingConsoleAppender();
-                appender.startCountingFor(
-                        XMLConfigurationUtil.class, Level.WARN);
-            }
             config = ImporterConfigLoader.loadImporterConfig(
-                    configFile, varFile);
-            if (cmd.hasOption(ARG_CHECKCFG)) {
-                if (!appender.isEmpty()) {
-                    System.err.println("There were " + appender.getCount()
-                            + " XML configuration error(s).");
-                    System.exit(-1);
-                } else {
-                    System.out.println("No XML configuration errors.");
-                }
-            }
+                    configFile, varFile, cmd.hasOption(ARG_IGNOREERRORS));
         } catch (Exception e) {
             System.err.println("A problem occured loading configuration.");
             e.printStackTrace(System.err);
             System.exit(-1);
-        } finally {
-            if (appender != null) {
-                appender.stopCountingFor(XMLConfigurationUtil.class);
-            }
         }
         return config;
+    }
+    
+    private static void checkConfig(
+            CommandLine cmd, File configFile, File varFile) {
+        try {
+            ImporterConfigLoader.loadImporterConfig(configFile, varFile, false);
+            System.out.println("No XML configuration errors.");
+        } catch (ConfigurationValidationException e) {
+            System.err.println("There were " + e.getErrors().size()
+                    + " XML configuration error(s).");
+            System.exit(-1);
+        }
     }
     
     private static void writeResponse(
@@ -222,10 +221,11 @@ public final class ImporterLauncher {
         options.addOption("v", ARG_VARIABLES, true, 
                 "Optional: variable file.");
         options.addOption("k", ARG_CHECKCFG, false,   
-                "Validates XML configuration. When combined "
-              + "with -i, prevents execution on configuration "
-              + "error.");
-   
+                "Validates XML configuration without executing the Importer.");
+        options.addOption("s", ARG_IGNOREERRORS, false, 
+                "Optional: Skip/ignore configuration validation errors "
+              + "(if possible).");
+        
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {

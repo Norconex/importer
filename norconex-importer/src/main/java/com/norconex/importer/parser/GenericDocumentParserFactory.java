@@ -27,9 +27,10 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -365,9 +366,9 @@ public class GenericDocumentParserFactory
                 xml, "fallbackParser", fallbackParser);
         
         // Parsers
-        List<HierarchicalConfiguration> parserNodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> parserNodes = 
                 xml.configurationsAt("parsers.parser");
-        for (HierarchicalConfiguration node : parserNodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : parserNodes) {
             IDocumentParser parser = XMLConfigurationUtil.newInstance(node);
             String contentType = node.getString("[@contentType]");
             if (StringUtils.isBlank(contentType)) {

@@ -25,8 +25,9 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -229,10 +230,10 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) {
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("characterCase");
         fieldCases.clear();
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             addFieldCase(
                     node.getString("[@fieldName]"),
                     node.getString("[@type]"),

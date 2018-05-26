@@ -25,8 +25,9 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -250,11 +251,11 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public final void loadFromXML(Reader in) throws IOException {
         XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
         loadHandlerFromXML(xml);
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("restrictTo");
         if (!nodes.isEmpty()) {
             restrictions.clear();
-            for (HierarchicalConfiguration node : nodes) {
+            for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
                 addRestriction(
                         node.getString("[@field]"), 
                         node.getString("", null),

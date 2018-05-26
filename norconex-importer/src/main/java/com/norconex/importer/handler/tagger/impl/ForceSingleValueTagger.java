@@ -23,8 +23,9 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -127,9 +128,9 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("singleValue");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             String name = node.getString("[@field]");
             String action = node.getString("[@action]");
             addSingleValueField(name, action);

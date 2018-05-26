@@ -57,7 +57,8 @@ public final class TestUtil {
     public static Importer getTestConfigImporter() {
         InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");
         Reader r = new InputStreamReader(is);
-        ImporterConfig config = ImporterConfigLoader.loadImporterConfig(r);
+        ImporterConfig config = 
+                ImporterConfigLoader.loadImporterConfig(r, false);
         IOUtils.closeQuietly(r);
         return new Importer(config);
     }

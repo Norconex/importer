@@ -25,8 +25,9 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -169,9 +170,9 @@ public class ConstantTagger extends AbstractDocumentTagger{
                     + xmlOC + "\".  Must be one of \"add\", \"replace\" "
                     + " or \"noop\"", e);
         }
-        List<HierarchicalConfiguration> nodes =
+        List<HierarchicalConfiguration<ImmutableNode>> nodes =
                 xml.configurationsAt("constant");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             String name = node.getString("[@name]");
             String value = node.getString("");
             addConstant(name, value);

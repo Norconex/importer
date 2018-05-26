@@ -28,8 +28,9 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -293,9 +294,9 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
         setField(xml.getString("[@field]", getField()));
         setFormat(xml.getString("[@format]", getFormat()));
-        List<HierarchicalConfiguration> nodes =
+        List<HierarchicalConfiguration<ImmutableNode>> nodes =
                 xml.configurationsAt("condition");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             String op = node.getString("[@operator]", null);
             String date = node.getString("[@date]", null);
             if (StringUtils.isBlank(op) || StringUtils.isBlank(date)) {

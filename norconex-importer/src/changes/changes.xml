@@ -7,6 +7,16 @@
   </properties>
   <body>
 
+    <release version="3.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="update">
+        Now requires Java 8 or higher.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Norconex Commons Lang 2.0.0,
+        Apache Configuration 2.2.
+      </action>
+    </release>
+
     <release version="2.9.0-SNAPSHOT" date="2018-??-??" description="Feature release">
       <action dev="essiembre" type="add">
         New PDFPageSplitter to split PDF pages, treating them as individual 

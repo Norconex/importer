@@ -34,8 +34,9 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -846,13 +847,13 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         if (StringUtils.isNotBlank(dir)) {
             setTempDir(new File(dir));
         }
-        List<HierarchicalConfiguration> xmlMatches = 
+        List<HierarchicalConfiguration<ImmutableNode>> xmlMatches = 
                 xml.configurationsAt("metadata.match");
         if (!xmlMatches.isEmpty()) {
             LOG.warn("\"match\" is deprecated in favor of \"pattern\". "
                     + "Please update your XML configuration");
             Map<Pattern, String> xmlPatterns = new HashMap<>();
-            for (HierarchicalConfiguration node : xmlMatches) {
+            for (HierarchicalConfiguration<ImmutableNode> node : xmlMatches) {
                 String field = node.getString("[@field]", null);
                 // empty instead of blank in case spaces can be field name
                 if (StringUtils.isEmpty(field)) {
@@ -872,9 +873,9 @@ public class ExternalTransformer extends AbstractDocumentTransformer
         setMetadataOutputFormat(xml.getString(
                 "metadata[@outputFormat]", getMetadataOutputFormat()));
         
-        List<HierarchicalConfiguration> nodes = 
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
                 xml.configurationsAt("metadata.pattern");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             int valueGroup = node.getInt("[@group]", -1);
             valueGroup = node.getInt("[@valueGroup]", valueGroup);
             addMetadataExtractionPatterns(
@@ -885,11 +886,11 @@ public class ExternalTransformer extends AbstractDocumentTransformer
                    .setValueGroup(valueGroup));
         }        
 
-        List<HierarchicalConfiguration> xmlEnvs = 
+        List<HierarchicalConfiguration<ImmutableNode>> xmlEnvs = 
                 xml.configurationsAt("environment.variable");
         if (!xmlEnvs.isEmpty()) {
             Map<String, String> vars = new HashMap<>();
-            for (HierarchicalConfiguration node : xmlEnvs) {
+            for (HierarchicalConfiguration<ImmutableNode> node : xmlEnvs) {
                 vars.put(node.getString("[@name]"), node.getString(""));
             }
             setEnvironmentVariables(vars);

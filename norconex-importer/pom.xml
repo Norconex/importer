@@ -19,7 +19,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-importer</artifactId>
-  <version>2.9.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>Norconex Importer</name>
   
   <properties>
@@ -28,7 +28,7 @@
     <site.baseurl/>
     <tika.version>1.16</tika.version>
     <pdfbox.version>2.0.7</pdfbox.version>
-    <norconex-commons-lang.version>1.15.0-SNAPSHOT</norconex-commons-lang.version>
+    <norconex-commons-lang.version>2.0.0-SNAPSHOT</norconex-commons-lang.version>
   </properties>
   <inceptionYear>2009</inceptionYear>
 
@@ -333,8 +333,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.2</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.8</source>
+          <target>1.8</target>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
@@ -388,7 +388,7 @@
             <link>https://tika.apache.org/${tika.version}/api/</link>
             <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
           </links>
-          <source>1.7</source>
+          <source>1.8</source>
           <excludePackageNames>org.apache.tika.*</excludePackageNames>
         </configuration>
         <executions>
@@ -580,7 +580,7 @@
             <link>https://tika.apache.org/${tika.version}/api/</link>
             <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
           </links>
-          <source>1.7</source>
+          <source>1.8</source>
           <excludePackageNames>org.apache.tika.*</excludePackageNames>
         </configuration>
         <reportSets>

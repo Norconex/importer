@@ -25,14 +25,15 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -413,8 +414,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
     
     @Override
     protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration> nodes = xml.configurationsAt("replace");
-        for (HierarchicalConfiguration node : nodes) {
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = xml.configurationsAt("replace");
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             Replacement r = new Replacement();
             r.setFromValue(node.getString("fromValue"));
             r.setToValue(node.getString("toValue"));

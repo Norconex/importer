@@ -22,8 +22,9 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -146,9 +147,9 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
             throws IOException {
         setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
-        List<HierarchicalConfiguration> nodes =
+        List<HierarchicalConfiguration<ImmutableNode>> nodes =
                 xml.configurationsAt("reduce");
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             String text = node.getString("");
             text = text.replaceAll("\\\\s", " ");
             text = text.replaceAll("\\\\t", "\t");

@@ -27,17 +27,13 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.config.ConfigurationValidationException;
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.commons.lang.log.CountingConsoleAppender;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -153,21 +149,14 @@ public class ImporterTest {
     
     @Test
     public void testValidation() throws IOException {
-        CountingConsoleAppender appender = new CountingConsoleAppender();
-        Logger logger = LogManager.getLogger(XMLConfigurationUtil.class);
-        logger.setLevel(Level.WARN);
-        logger.setAdditivity(false);
-        logger.addAppender(appender);
-        
         InputStream is = getClass().getResourceAsStream(
                 "/validation/importer-full.xml");
         
         try (Reader r = new InputStreamReader(is)) {
-            ImporterConfigLoader.loadImporterConfig(r);
-        } finally {
-            logger.removeAppender(appender);
+            ImporterConfigLoader.loadImporterConfig(r, false);
+        } catch (ConfigurationValidationException e) {
+            Assert.fail(e.getErrors().size()
+                    + "Validation warnings/errors were found.");
         }
-        Assert.assertEquals("Validation warnings/errors were found.", 
-                0, appender.getCount());
     }
 }

@@ -23,8 +23,9 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration2.HierarchicalConfiguration;
+import org.apache.commons.configuration2.XMLConfiguration;
+import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -428,11 +429,11 @@ public class DOMTagger extends AbstractDocumentTagger {
         setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
         setFromField(xml.getString("[@fromField]", getFromField()));
         setParser(xml.getString("[@parser]", getParser()));
-        List<HierarchicalConfiguration> nodes = xml.configurationsAt("dom");
+        List<HierarchicalConfiguration<ImmutableNode>> nodes = xml.configurationsAt("dom");
         if (!nodes.isEmpty()) {
             extractions.clear();
         }
-        for (HierarchicalConfiguration node : nodes) {
+        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
             DOMExtractDetails details = new DOMExtractDetails(
                     node.getString("[@selector]", null),
                     node.getString("[@toField]", null),
