@@ -13,7 +13,13 @@
       </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Commons Lang 2.0.0,
-        Apache Configuration 2.2.
+        Apache Configuration 2.2, Apache Tika 1.18, Apache Commons CLI 1.4.
+      </action>
+      <action dev="essiembre" type="update">
+        JBIG2 image support now included under apache license.
+      </action>
+      <action dev="essiembre" type="update">
+        Logging now using SLF4J.
       </action>
     </release>
 
