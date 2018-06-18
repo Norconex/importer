@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Fix external  links in Javadoc (all projects).
+
 - Have a transformer that eliminates the content (and/or store into a field).
   And mark as resolved this (closed) ticket:
   https://github.com/Norconex/collector-filesystem/issues/30#issuecomment-384499927
