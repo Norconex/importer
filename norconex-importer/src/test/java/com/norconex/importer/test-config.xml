@@ -18,26 +18,26 @@
 <importer>
 
     <preParseHandlers>
-      <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
+      <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
         <constant name="Author">Lewis Carroll</constant>
-      </tagger>
+      </handler>
       
       <!-- Should not trigger any transformation: -->
-      <transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+      <handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
               inclusive="false" 
               caseSensitive="false" >
           <stripBetween>
               <start>potato</start>
               <end>carrot</end>
           </stripBetween>
-      </transformer>
+      </handler>
 
       <!-- Should trigger transformation: -->
-      <transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
+      <handler class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
               inclusive="true" 
               caseSensitive="false" >
           <stripAfterRegex>&lt;p&gt;</stripAfterRegex>
-      </transformer>
+      </handler>
 
 <!-- <filter class="..." />  --> 
     </preParseHandlers>

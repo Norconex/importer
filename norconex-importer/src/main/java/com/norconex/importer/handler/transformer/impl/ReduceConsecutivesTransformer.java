@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,50 +22,48 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
  * <p>Reduces specified consecutive characters or strings to only one
  * instance (document content only).
- * If reducing duplicate words, you usually have to add a space at the 
+ * If reducing duplicate words, you usually have to add a space at the
  * Beginning or end of the word.
  * </p>
  * <p>
- * This class can be used as a pre-parsing (text content-types only) 
+ * This class can be used as a pre-parsing (text content-types only)
  * or post-parsing handlers.
  * </p>
  * <p>
- * For more advanced replacement needs, consider using 
+ * For more advanced replacement needs, consider using
  * {@link ReplaceTransformer} instead.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
  *          caseSensitive="[false|true]"
- *          sourceCharset="(character encoding)"         
+ *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *          
+ *
  *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
  *      &lt;!-- multiple reduce tags allowed --&gt;
- *      
- *  &lt;/transformer&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <p>
  * You can specify these special characters in your XML:
@@ -79,13 +77,13 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <h4>Usage example:</h4>
  * <p>
  * The following reduces multiple spaces into a single one.
- * </p> 
+ * </p>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"&gt;
  *      &lt;reduce&gt;\s&lt;/reduce&gt;
- *  &lt;/transformer&gt;
- * </pre> 
- *             
+ *  &lt;/handler&gt;
+ * </pre>
+ *
  * @author Pascal Essiembre
  * @since 1.2.0
  */
@@ -95,9 +93,9 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     private final List<String> reductions = new ArrayList<>();
 
     @Override
-    protected void transformStringContent(String reference,
-            StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            int sectionIndex) {
+    protected void transformStringContent(final String reference,
+            final StringBuilder content, final ImporterMetadata metadata, final boolean parsed,
+            final int sectionIndex) {
 
         String text = content.toString();
         content.setLength(0);
@@ -113,15 +111,15 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
         }
         content.append(text);
     }
-     
+
     public List<String> getReductions() {
         return new ArrayList<>(reductions);
     }
-    public void setReductions(String... reductions) {
+    public void setReductions(final String... reductions) {
         this.reductions.clear();
         addReductions(reductions);
     }
-    public void addReductions(String... reductions) {
+    public void addReductions(final String... reductions) {
         this.reductions.addAll(Arrays.asList(reductions));
     }
 
@@ -133,24 +131,23 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
      * to reduce.
      * @param caseSensitive <code>true</code> to consider character case
      */
-    public void setCaseSensitive(boolean caseSensitive) {
+    public void setCaseSensitive(final boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
 
-    private String escapeRegex(String text) {
+    private String escapeRegex(final String text) {
         return text.replaceAll(
                 "([\\\\\\.\\[\\{\\(\\*\\+\\?\\^\\$\\|])", "\\\\$1");
     }
-    
-    @Override
-    protected void loadStringTransformerFromXML(XMLConfiguration xml)
-            throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
 
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("reduce");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            String text = node.getString("");
+    @Override
+    protected void loadStringTransformerFromXML(final XML xml)
+            throws IOException {
+        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+
+        List<XML> nodes = xml.getXMLList("reduce");
+        for (XML node : nodes) {
+            String text = node.getString(".");
             text = text.replaceAll("\\\\s", " ");
             text = text.replaceAll("\\\\t", "\t");
             text = text.replaceAll("\\\\n", "\n");
@@ -160,7 +157,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
 
     @Override
-    protected void saveStringTransformerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTransformerToXML(final EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));
@@ -177,36 +174,18 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
             }
         }
     }
-    
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(reductions)
-            .toHashCode();
-    }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ReduceConsecutivesTransformer)) {
-            return false;
-        }
-        ReduceConsecutivesTransformer castOther = 
-                (ReduceConsecutivesTransformer) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(caseSensitive, castOther.caseSensitive)
-                .append(reductions, castOther.reductions)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("caseSensitive", caseSensitive)
-                .append("reductions", reductions)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

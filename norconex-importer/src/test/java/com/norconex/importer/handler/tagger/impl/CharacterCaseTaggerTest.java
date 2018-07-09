@@ -1,4 +1,4 @@
-/* Copyright 2014-2015 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.EqualsUtil;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CharacterCaseTaggerTest {
 
     @Test
-    public void testUpperLowerValues() 
+    public void testUpperLowerValues()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("field1", "Doit être upper");
@@ -41,15 +41,15 @@ public class CharacterCaseTaggerTest {
         tagger.addFieldCase("field2", "lower", "both");
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
-        Assert.assertEquals("DOIT ÊTRE UPPER", 
+
+        Assert.assertEquals("DOIT ÊTRE UPPER",
                 meta.getStrings("field1").get(0));
         Assert.assertEquals("MUST BE UPPER", meta.getStrings("field1").get(1));
         Assert.assertEquals("doit être lower", meta.getString("field2"));
-    }    
+    }
 
     @Test
-    public void testUpperLowerField() 
+    public void testUpperLowerField()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("fieldMustBeUpper", "value 1");
@@ -62,17 +62,17 @@ public class CharacterCaseTaggerTest {
         tagger.addFieldCase("fieldMustBeCapitalized", "words", "field");
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         String[] fields = meta.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
         for (String field : fields) {
             Assert.assertTrue(EqualsUtil.equalsAny(
-                    field, "FIELDMUSTBEUPPER", "fieldmustbelower", 
+                    field, "FIELDMUSTBEUPPER", "fieldmustbelower",
                     "Fieldmustbecapitalized"));
         }
-    }    
+    }
 
     @Test
-    public void testSwapCase() 
+    public void testSwapCase()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("fieldMustBeSwapped", "ValUe Swap. \n  OK.");
@@ -82,12 +82,12 @@ public class CharacterCaseTaggerTest {
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
-        Assert.assertEquals("vALuE sWAP. \n  ok.", 
+        Assert.assertEquals("vALuE sWAP. \n  ok.",
                 meta.getString("fieldMustBeSwapped"));
-    }    
+    }
 
     @Test
-    public void testCapitalizeString() 
+    public void testCapitalizeString()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("string1", "normal string.");
@@ -102,19 +102,18 @@ public class CharacterCaseTaggerTest {
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
         Assert.assertEquals("Normal string.", meta.getString("string1"));
-        Assert.assertEquals(" String starting with a space.", 
+        Assert.assertEquals(" String starting with a space.",
                 meta.getString("string2"));
-        Assert.assertEquals("1 string starting with a number.", 
+        Assert.assertEquals("1 string starting with a number.",
                 meta.getString("string3"));
-    }    
+    }
 
-    
+
     @Test
     public void testWriteRead() throws IOException {
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.addFieldCase("fld1", "upper");
         tagger.addFieldCase("fld2", "lower");
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 }

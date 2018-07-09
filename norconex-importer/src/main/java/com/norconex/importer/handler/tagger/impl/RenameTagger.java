@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,16 +22,14 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -44,7 +42,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -55,7 +53,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
  *      &lt;-- multiple rename tags allowed --&gt;
  *      
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -63,9 +61,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * any existing values in "title".
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
  *      &lt;rename fromField="dc.title" toField="title" overwrite="true" /&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  */
@@ -104,13 +102,12 @@ public class RenameTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("rename");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            addRename(node.getString("[@fromField]", null),
-                      node.getString("[@toField]", null),
-                      node.getBoolean("[@overwrite]", false));
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        List<XML> nodes = xml.getXMLList("rename");
+        for (XML node : nodes) {
+            addRename(node.getString("@fromField", null),
+                      node.getString("@toField", null),
+                      node.getBoolean("@overwrite", false));
         }
     }
 
@@ -140,60 +137,31 @@ public class RenameTagger extends AbstractDocumentTagger {
             this.overwrite = overwrite;
         }
         @Override
-        public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("fromField", fromField)
-                    .append("toField", toField)
-                    .append("overwrite", overwrite)
-                    .toString();
-        }
-        @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof RenameDetails)) {
-                return false;
-            }
-            RenameDetails castOther = (RenameDetails) other;
-            return new EqualsBuilder()
-                    .append(fromField, castOther.fromField)
-                    .append(toField, castOther.toField)
-                    .append(overwrite, castOther.overwrite)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(fromField)
-                    .append(toField)
-                    .append(overwrite)
-                    .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof RenameTagger)) {
-            return false;
-        }
-        RenameTagger castOther = (RenameTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(renames, castOther.renames)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(renames)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("renames", renames)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

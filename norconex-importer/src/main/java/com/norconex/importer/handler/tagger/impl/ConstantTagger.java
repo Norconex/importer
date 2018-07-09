@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,28 +25,26 @@ import java.util.Map.Entry;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Define and add constant values to documents.  To add multiple constant 
- * values under the same constant name, repeat the constant entry with a 
- * different value.  
+ * <p>Define and add constant values to documents.  To add multiple constant
+ * values under the same constant name, repeat the constant entry with a
+ * different value.
  * </p>
  * <h3>Conflict resolution</h3>
  * <p>
- * If a field with the same name already exists 
+ * If a field with the same name already exists
  * for a document, the constant value(s) will be added
  * to the list of already existing values.
  * </p>
@@ -61,9 +59,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
  *          onConflict="[add|replace|noop]" &gt;
- *  
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -72,36 +70,36 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  *      &lt;constant name="CONSTANT_NAME"&gt;Constant Value&lt;/constant&gt;
  *      &lt;!-- multiple constant tags allowed --&gt;
- *      
- *  &lt;/tagger&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
- * Adds a constant to incoming documents to identify they were web documents. 
+ * Adds a constant to incoming documents to identify they were web documents.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
  *      &lt;constant name="source"&gt;web&lt;/constant&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  */
 public class ConstantTagger extends AbstractDocumentTagger{
 
     public enum OnConflict { ADD, REPLACE, NOOP };
     public static final OnConflict DEFAULT_ON_CONFLICT = OnConflict.ADD;
-    
-    
+
+
     private final Map<String, List<String>> constants = new HashMap<>();
     private OnConflict onConflict = DEFAULT_ON_CONFLICT;
-    
+
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document, 
+            String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         for (Entry<String, List<String>> entry : constants.entrySet()) {
             String name = entry.getKey();
             List<String> newValues = entry.getValue();
@@ -159,31 +157,30 @@ public class ConstantTagger extends AbstractDocumentTagger{
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) {
+    protected void loadHandlerFromXML(XML xml) {
         String xmlOC = xml.getString(
-                "[@onConflict]", DEFAULT_ON_CONFLICT.toString()).toUpperCase();
+                "@onConflict", DEFAULT_ON_CONFLICT.toString()).toUpperCase();
         try {
             setOnConflict(OnConflict.valueOf(xmlOC));
         } catch (IllegalArgumentException e)  {
             throw new ConfigurationException("Configuration error: "
-                    + "Invalid \"onConflict\" attribute value: \"" 
+                    + "Invalid \"onConflict\" attribute value: \""
                     + xmlOC + "\".  Must be one of \"add\", \"replace\" "
                     + " or \"noop\"", e);
         }
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("constant");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            String name = node.getString("[@name]");
-            String value = node.getString("");
+        List<XML> nodes = xml.getXMLList("constant");
+        for (XML node : nodes) {
+            String name = node.getString("@name");
+            String value = node.getString(".");
             addConstant(name, value);
         }
     }
-    
+
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute("onConflict", 
-                onConflict.toString().toLowerCase()); 
+        writer.writeAttribute("onConflict",
+                onConflict.toString().toLowerCase());
         for (String name : constants.keySet()) {
             List<String> values = constants.get(name);
             for (String value : values) {
@@ -196,32 +193,18 @@ public class ConstantTagger extends AbstractDocumentTagger{
             }
         }
     }
-    
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ConstantTagger)) {
-            return false;
-        }
-        ConstantTagger castOther = (ConstantTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(constants, castOther.constants)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(constants)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("constants", constants)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -34,24 +34,24 @@ public class ScriptTaggerTest {
 
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
-        testScriptTagger("lua", 
+        testScriptTagger("lua",
                 "metadata:addString('test', {'success'});"
               + "local story = content:gsub('Alice', 'Roger');"
               + "metadata:addString('story', {story});"
         );
     }
-    
+
     @Test
     public void testJavaScript() throws IOException, ImporterHandlerException {
-        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE, 
+        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
                 "metadata.addString('test', 'success');"
               + "var story = content.replace(/Alice/g, 'Roger');"
               + "metadata.addString('story', story);"
         );
     }
-    
-    private void testScriptTagger(String engineName, String script) 
-            throws IOException, ImporterHandlerException {    
+
+    private void testScriptTagger(String engineName, String script)
+            throws IOException, ImporterHandlerException {
         ScriptTagger t = new ScriptTagger();
         t.setEngineName(engineName);
         t.setScript(script);
@@ -72,15 +72,13 @@ public class ScriptTaggerTest {
         Assert.assertEquals(0, StringUtils.countMatches(storyField, "Alice"));
         Assert.assertEquals(34, StringUtils.countMatches(storyField, "Roger"));
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         ScriptTagger tagger = new ScriptTagger();
         tagger.setScript("a script");
         tagger.setEngineName("an engine name");
         tagger.setMaxReadSize(256);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

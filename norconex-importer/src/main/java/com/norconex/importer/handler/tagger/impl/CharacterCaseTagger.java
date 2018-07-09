@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,41 +25,39 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.text.WordUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Changes the character case of field values according to one of the 
+ * <p>Changes the character case of field values according to one of the
  * following methods:</p>
  * <ul>
  *   <li>uppper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
  *   <li>words: Converts the first letter of each words to upper case, and the
  *           rest to lower case.</li>
- *   <li>string: Converts the first letter of a string if not numeric, and 
- *           leaves the character case of other characters unchanged 
+ *   <li>string: Converts the first letter of a string if not numeric, and
+ *           leaves the character case of other characters unchanged
  *           (since 2.7.0).</li>
- *   <li>swap: Converts all upper case characters to lower case, and all 
+ *   <li>swap: Converts all upper case characters to lower case, and all
  *           lower case to upper case (since 2.7.0).</li>
- *              
+ *
  * </ul>
- * <p>Since 2.3.0, the change of character case can be applied to one of the 
+ * <p>Since 2.3.0, the change of character case can be applied to one of the
  * following (defaults to "value" when unspecified):</p>
  * <ul>
  *   <li>value: Applies to the field values.</li>
@@ -69,20 +67,20 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Field names are referenced in a case insensitive manner.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
- *      
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;characterCase fieldName="(field to change)"
- *                     type="[upper|lower|words|string|swap]" 
+ *                     type="[upper|lower|words|string|swap]"
  *                     applyTo="[value|field|both]" /&gt;
  *      &lt;!-- multiple characterCase tags allowed --&gt;
- *      
- *  &lt;/tagger&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -91,10 +89,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * starts with an upper case.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
  *      &lt;characterCase fieldName="title" type="lower" applyTo="field" /&gt;
  *      &lt;characterCase fieldName="title" type="string" applyTo="value" /&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
@@ -102,9 +100,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 @SuppressWarnings("nls")
 public class CharacterCaseTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CharacterCaseTagger.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(CharacterCaseTagger.class);
+
     public static final String CASE_WORDS = "words";
     public static final String CASE_UPPER = "upper";
     public static final String CASE_LOWER = "lower";
@@ -116,8 +114,8 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     public static final String APPLY_BOTH = "both";
 
     private final Map<String, CaseChangeDetails> fieldCases = new HashMap<>();
-    
-    
+
+
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
@@ -127,28 +125,28 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         for (String fieldName : fieldCases.keySet()) {
             CaseChangeDetails d = fieldCases.get(fieldName);
             boolean validApplyTo = false;
-            
+
             String newField = fieldName;
-            
+
             // Do field
             if (EqualsUtil.equalsAny(d.applyTo, APPLY_FIELD, APPLY_BOTH)) {
                 newField = changeFieldCase(fieldName, d, metadata);
                 validApplyTo = true;
             }
-                
+
             // Do values
             if (StringUtils.isBlank(d.applyTo) || EqualsUtil.equalsAny(
                     d.applyTo, APPLY_VALUE, APPLY_BOTH)) {
                 changeValuesCase(newField, d, metadata);
                 validApplyTo = true;
             }
-            
+
             if (!validApplyTo) {
                 LOG.warn("Unsupported \"applyTo\": " + d.applyTo);
             }
         }
     }
-    
+
     private String changeFieldCase(
             String field, CaseChangeDetails d, ImporterMetadata metadata) {
         List<String> values = metadata.getStrings(field);
@@ -168,7 +166,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
                 String value = values.get(i);
                 values.set(i, changeCase(value, d.caseType));
             }
-            metadata.setString(field, 
+            metadata.setString(field,
                     values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
     }
@@ -190,7 +188,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
     }
 
-    
+
     public void addFieldCase(String field, String caseType) {
         addFieldCase(field, caseType, null);
     }
@@ -227,20 +225,19 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
         return null;
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("characterCase");
+    protected void loadHandlerFromXML(XML xml) {
+        List<XML> nodes = xml.getXMLList("characterCase");
         fieldCases.clear();
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+        for (XML node : nodes) {
             addFieldCase(
-                    node.getString("[@fieldName]"),
-                    node.getString("[@type]"),
-                    node.getString("[@applyTo]"));
+                    node.getString("@fieldName"),
+                    node.getString("@type"),
+                    node.getString("@applyTo"));
         }
     }
-    
+
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
@@ -249,57 +246,43 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             writer.writeAttributeString("fieldName", fieldName);
             CaseChangeDetails d = fieldCases.get(fieldName);
             if (d != null) {
-                writer.writeAttributeString("type", d.caseType); 
-                writer.writeAttributeString("applyTo", d.applyTo); 
+                writer.writeAttributeString("type", d.caseType);
+                writer.writeAttributeString("applyTo", d.applyTo);
             }
             writer.writeEndElement();
         }
     }
-    
+
     private String capitalizeString(String value) {
         if (StringUtils.isNotBlank(value)) {
             Matcher m = Pattern.compile(
                     "^(.*?)([\\p{IsAlphabetic}\\p{IsDigit}])").matcher(value);
             if (m.find()) {
-                String firstChar = 
+                String firstChar =
                         StringUtils.upperCase(m.group(2), Locale.ENGLISH);
                 return m.replaceFirst("$1" + firstChar);
             }
         }
         return value;
     }
-    
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CharacterCaseTagger)) {
-            return false;
-        }
-        CharacterCaseTagger castOther = (CharacterCaseTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(fieldCases, castOther.fieldCases)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(fieldCases)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("fieldCases", fieldCases)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-    
+
     private class CaseChangeDetails {
-        private String caseType;
-        private String applyTo;
+        private final String caseType;
+        private final String applyTo;
         public CaseChangeDetails(String caseType, String applyTo) {
             super();
             this.caseType = caseType;
@@ -307,30 +290,16 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof CaseChangeDetails)) {
-                return false;
-            }
-            CaseChangeDetails castOther = (CaseChangeDetails) other;
-            return new EqualsBuilder()
-                    .append(caseType, castOther.caseType)
-                    .append(applyTo, castOther.applyTo)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
-
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(caseType)
-                    .append(applyTo)
-                    .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
         }
-
         @Override
         public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("caseType", caseType)
-                    .append("applyTo", applyTo)
-                    .toString();
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
 }

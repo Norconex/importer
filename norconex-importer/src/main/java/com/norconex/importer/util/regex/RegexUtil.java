@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,23 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.regex.KeyValueExtractor;
 
 /**
  * Utility methods for various regular expression usage.
  * @author Pascal Essiembre
  * @since 2.8.0
+ * @deprecated Since 3.0.0, use {@link KeyValueExtractor} from
+ *         Norconex Commons Lang
  */
+@Deprecated
 public final class RegexUtil {
-//TODO consider moving to Norconex Commons Lang?
-//TODO have a PatternBuilder?
-    
+
     private RegexUtil() {
     }
 
     /**
-     * Compiles a case insensitive "dotall" pattern 
+     * Compiles a case insensitive "dotall" pattern
      * (dots match all, including new lines).
      * @param regex regular expression
      * @return compiled pattern
@@ -42,7 +44,7 @@ public final class RegexUtil {
         return compileDotAll(regex, false);
     }
     /**
-     * Compiles a case insensitive "dotall" pattern 
+     * Compiles a case insensitive "dotall" pattern
      * (dots match all, including new lines).
      * @param regex regular expression
      * @param caseSensitive <code>true</code> to match character case.
@@ -59,8 +61,8 @@ public final class RegexUtil {
         }
         return Pattern.compile(regex, flags);
     }
-    
-    public static void extractFields(Properties dest, 
+
+    public static void extractFields(Properties dest,
             CharSequence text, RegexFieldExtractor... extractors) {
         if (ArrayUtils.isEmpty(extractors)) {
             return;
@@ -69,7 +71,7 @@ public final class RegexUtil {
             extractor.extractFields(dest, text);
         }
     }
-    
+
     public static Properties extractFields(
             CharSequence text, RegexFieldExtractor... patterns) {
         Properties dest = new Properties();

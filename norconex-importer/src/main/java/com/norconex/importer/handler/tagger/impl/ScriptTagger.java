@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import java.io.IOException;
 import javax.script.Bindings;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
@@ -62,7 +62,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
  *          engineName="(script engine name)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
@@ -75,7 +75,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *
  *      &lt;script&gt;(your script)&lt;/script&gt;
  * 
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
@@ -83,20 +83,20 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * fruit is a document about.</p>
  * <h5>JavaScript:</h5>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"&gt;
  *    &lt;script&gt;&lt;![CDATA[
  *        metadata.addString('fruit', 'apple');
  *    ]]&gt;&lt;/script&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h5>Lua:</h5>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
  *      engineName="lua"&gt;
  *    &lt;script&gt;&lt;![CDATA[
  *        metadata:addString('fruit', {'apple'});
  *    ]]&gt;&lt;/script&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * @author Pascal Essiembre
@@ -142,40 +142,23 @@ public class ScriptTagger extends AbstractStringTagger {
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XMLConfiguration xml)
+    protected void loadStringTaggerFromXML(XML xml)
             throws IOException {
-        setEngineName(xml.getString("[@engineName]", getEngineName()));
+        setEngineName(xml.getString("@engineName", getEngineName()));
         setScript(xml.getString("script"));
     }
-    
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ScriptTagger)) {
-            return false;
-        }
-        ScriptTagger castOther = (ScriptTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(scriptRunner, castOther.scriptRunner)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(scriptRunner)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-    private transient String toString;
     @Override
     public String toString() {
-        if (toString == null) {
-            toString = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .appendSuper(super.toString())
-                    .append("scriptRunner", scriptRunner)
-                    .toString();
-        }
-        return toString;
-    } 
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
 }

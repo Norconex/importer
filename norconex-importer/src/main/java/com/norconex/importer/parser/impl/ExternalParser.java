@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,58 +17,60 @@ package com.norconex.importer.parser.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParser;
-import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 /**
  * <p>
  * Parses and extracts text from a file using an external application to do so.
  * </p>
  * <p>
- * This parser relies heavily on the mechanics of 
- * {@link ExternalTransformer}. Refer to that class for documentation.
+ * This class relies on {@link ExternalHandler} for most of the work.
+ * Refer to {@link ExternalHandler} for full documentation.
  * </p>
  * <p>
  * This parser can be made configurable via XML. See
- * {@link GenericDocumentParserFactory} for general indications how 
- * to configure parsers.  
+ * {@link GenericDocumentParserFactory} for general indications how
+ * to configure parsers.
  * </p>
  * <p>
  * To use an external application to change a file content after parsing has
- * already occurred, consider using {@link ExternalTransformer} instead. 
+ * already occurred, consider using {@link ExternalTransformer} instead.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;parser contentType="(content type this parser is associated to)" 
+ *  &lt;parser contentType="(content type this parser is associated to)"
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
- *          
+ *
  *      &lt;command&gt;
  *          c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
  *      &lt;/command&gt;
- *      
- *      &lt;metadata 
- *              inputFormat="[json|xml|properties]" 
+ *
+ *      &lt;metadata
+ *              inputFormat="[json|xml|properties]"
  *              outputFormat="[json|xml|properties]"&gt;
  *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)" 
+ *          &lt;pattern field="(target field name)"
  *                  fieldGroup="(field name match group index)"
  *                  valueGroup="(field value match group index)"
  *                  caseSensitive="[false|true]"&gt;
@@ -76,28 +78,28 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *          &lt;/pattern&gt;
  *          &lt;!-- repeat pattern tag as needed --&gt;
  *      &lt;/metadata&gt;
- *      
+ *
  *      &lt;environment&gt;
  *          &lt;variable name="(environment variable name)"&gt;
  *              (environment variable value)
  *          &lt;/variable&gt;
  *          &lt;!-- repeat variable tag as needed --&gt;
  *      &lt;/environment&gt;
- *      
+ *
  *  &lt;/parser&gt;
- * </pre> 
- * 
+ * </pre>
+ *
  * <h4>Usage example:</h4>
  * <p>
- * The following example invokes an external application processing for 
- * simple text files that accepts two files as arguments: 
- * the first one being the file to 
- * transform, the second one being holding the transformation result. 
+ * The following example invokes an external application processing for
+ * simple text files that accepts two files as arguments:
+ * the first one being the file to
+ * transform, the second one being holding the transformation result.
  * It also extract a document number from STDOUT, found as "DocNo:1234"
  * and storing it as "docnumber".
- * </p> 
+ * </p>
  * <pre>
- *  &lt;parser contentType="text/plain" 
+ *  &lt;parser contentType="text/plain"
  *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
  *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
  *      &lt;metadata&gt;
@@ -106,60 +108,38 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *  &lt;/parser&gt;
  * </pre>
  * @author Pascal Essiembre
- * @see ExternalTransformer
+ * @see ExternalHandler
  * @since 2.2.0
  */
 public class ExternalParser implements IDocumentParser, IXMLConfigurable {
 
-    public static final String TOKEN_INPUT = ExternalTransformer.TOKEN_INPUT;
-    public static final String TOKEN_OUTPUT = ExternalTransformer.TOKEN_OUTPUT;
-    /** @since 2.8.0 */
-    public static final String TOKEN_INPUT_META = 
-            ExternalTransformer.TOKEN_INPUT_META;
-    /** @since 2.8.0 */
-    public static final String TOKEN_OUTPUT_META = 
-            ExternalTransformer.TOKEN_OUTPUT_META;
-    /** @since 2.8.0 */
-    public static final String TOKEN_REFERENCE = 
-            ExternalTransformer.TOKEN_REFERENCE;
-
-    /** @since 2.8.0 */
-    public static final String META_FORMAT_JSON = 
-            ExternalTransformer.META_FORMAT_JSON;
-    /** @since 2.8.0 */
-    public static final String META_FORMAT_XML = 
-            ExternalTransformer.META_FORMAT_XML;
-    /** @since 2.8.0 */
-    public static final String META_FORMAT_PROPERTIES = 
-            ExternalTransformer.META_FORMAT_PROPERTIES;
-    
-    private final ExternalTransformer t = new ExternalTransformer();
+    private final ExternalHandler h = new ExternalHandler();
     private String contentType;
-    
+
     /**
      * Gets the command to execute.
      * @return the command
      */
     public String getCommand() {
-        return t.getCommand();
+        return h.getCommand();
     }
     /**
-     * Sets the command to execute. Make sure to escape spaces in 
+     * Sets the command to execute. Make sure to escape spaces in
      * executable path and its arguments as well as other special command
      * line characters.
      * @param command the command
      */
     public void setCommand(String command) {
-        t.setCommand(command);
+        h.setCommand(command);
     }
-    
+
     /**
      * Gets directory where to store temporary files used for transformation.
      * @return temporary directory
      * @since 2.8.0
      */
     public File getTempDir() {
-        return t.getTempDir();
+        return h.getTempDir();
     }
     /**
      * Sets directory where to store temporary files used for transformation.
@@ -167,74 +147,29 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @since 2.8.0
      */
     public void setTempDir(File tempDir) {
-        t.setTempDir(tempDir);
+        h.setTempDir(tempDir);
     }
-    
+
     /**
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexFieldExtractor> getMetadataExtractionPatterns() {
-        return t.getMetadataExtractionPatterns();
+    public List<KeyValueExtractor> getMetadataExtractionPatterns() {
+        return h.getMetadataExtractionPatterns();
     }
+
     /**
-     * Sets metadata extraction patterns. Clears any previously assigned 
-     * patterns.
-     * To reverse the match group order in a double match group pattern,
-     * set the field name to "reverse:true".
-     * @param patterns map of patterns and field names
-     * @deprecated Since 2.8.0, use 
-     * {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
-     */
-    @Deprecated
-    public void setMetadataExtractionPatterns(Map<Pattern, String> patterns) {
-        t.setMetadataExtractionPatterns(patterns);
-    }
-    /**
-     * Adds metadata extraction patterns, keeping any patterns previously
-     * assigned.
-     * To reverse the match group order in a double match group pattern,
-     * set the field name to "reverse:true".
-     * @param patterns map of patterns and field names
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
-     */
-    @Deprecated
-    public void addMetadataExtractionPatterns(Map<Pattern, String> patterns) {
-        t.addMetadataExtractionPatterns(patterns);
-    }
-    /**
-     * Adds a metadata extraction pattern. See class documentation.
-     * @param pattern pattern with two match groups
-     * @param reverse whether to reverse match groups (inverse key and value).
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
-     */
-    @Deprecated
-    public void addMetadataExtractionPattern(Pattern pattern, boolean reverse) {
-        t.addMetadataExtractionPattern(pattern, reverse);
-    }
-    /**
-     * Adds a metadata extraction pattern. See class documentation.
-     * @param pattern pattern with no or one match group
-     * @param field field name where to store the matched pattern
-     * @deprecated Since 2.8.0, use {@link #addMetadataExtractionPatterns(RegexFieldExtractor...)}
-     */
-    @Deprecated
-    public void addMetadataExtractionPattern(Pattern pattern, String field) {
-        t.addMetadataExtractionPattern(pattern, field);
-    }
-    
-    /**
-     * Adds a metadata extraction pattern that will extract the whole text 
+     * Adds a metadata extraction pattern that will extract the whole text
      * matched into the given field.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
      * @since 2.8.0
      */
     public void addMetadataExtractionPattern(String field, String pattern) {
-        t.addMetadataExtractionPattern(field, pattern);
+        h.addMetadataExtractionPattern(field, pattern);
     }
     /**
-     * Adds a metadata extraction pattern, which will extract the value from 
+     * Adds a metadata extraction pattern, which will extract the value from
      * the specified group index upon matching.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
@@ -243,7 +178,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      */
     public void addMetadataExtractionPattern(
             String field, String pattern, int valueGroup) {
-        t.addMetadataExtractionPattern(field, pattern, valueGroup);
+        h.addMetadataExtractionPattern(field, pattern, valueGroup);
     }
     /**
      * Adds a metadata extraction pattern that will extract matching field
@@ -251,26 +186,26 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param patterns extraction pattern
      * @since 2.8.0
      */
-    public void addMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
-        t.addMetadataExtractionPatterns(patterns);
+    public void addMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+        h.addMetadataExtractionPatterns(patterns);
     }
     /**
-     * Sets metadata extraction patterns. Clears any previously assigned 
+     * Sets metadata extraction patterns. Clears any previously assigned
      * patterns.
      * @param patterns extraction pattern
      * @since 2.8.0
-     */    
-    public void setMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
-        t.setMetadataExtractionPatterns(patterns);
+     */
+    public void setMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+        h.setMetadataExtractionPatterns(patterns);
     }
-    
+
     /**
      * Gets environment variables.
      * @return environment variables or <code>null</code> if using the current
      *         process environment variables
      */
     public Map<String, String> getEnvironmentVariables() {
-        return t.getEnvironmentVariables();
+        return h.getEnvironmentVariables();
     }
     /**
      * Sets the environment variables. Clearing any prevously assigned
@@ -280,125 +215,158 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      */
     public void setEnvironmentVariables(
             Map<String, String> environmentVariables) {
-        t.setEnvironmentVariables(environmentVariables);
+        h.setEnvironmentVariables(environmentVariables);
     }
     /**
      * Adds the environment variables, keeping environment variables previously
      * assigned. Existing variables of the same name
      * will be overwritten. To clear all previously assigned variables and use
-     * the current process environment variables, pass 
-     * <code>null</code> to 
+     * the current process environment variables, pass
+     * <code>null</code> to
      * {@link ExternalParser#setEnvironmentVariables(Map)}.
      * @param environmentVariables environment variables
      */
     public void addEnvironmentVariables(
             Map<String, String> environmentVariables) {
-        t.addEnvironmentVariables(environmentVariables);
+        h.addEnvironmentVariables(environmentVariables);
     }
     /**
      * Adds an environment variables to the list of previously
      * assigned variables (if any). Existing variables of the same name
-     * will be overwritten. Setting a variable with a 
+     * will be overwritten. Setting a variable with a
      * <code>null</code> name has no effect while <code>null</code>
      * values are converted to empty strings.
      * @param name environment variable name
      * @param value environment variable value
      */
     public void addEnvironmentVariable(String name, String value) {
-        t.addEnvironmentVariable(name, value);
+        h.addEnvironmentVariable(name, value);
     }
 
     /**
-     * Gets the format of the metadata input file sent to the external 
-     * application. One of "json" (default), "xml", or "properties" is expected. 
-     * Only applicable when the <code>${INPUT}</code> token 
-     * is part of the command.  
+     * Gets the format of the metadata input file sent to the external
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Only applicable when the <code>${INPUT}</code> token
+     * is part of the command.
      * @return metadata input format
      * @since 2.8.0
      */
     public String getMetadataInputFormat() {
-        return t.getMetadataInputFormat();
+        return h.getMetadataInputFormat();
     }
     /**
-     * Sets the format of the metadata input file sent to the external 
-     * application. One of "json" (default), "xml", or "properties" is expected. 
-     * Only applicable when the <code>${INPUT}</code> token 
-     * is part of the command.  
+     * Sets the format of the metadata input file sent to the external
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Only applicable when the <code>${INPUT}</code> token
+     * is part of the command.
      * @param metadataInputFormat format of the metadata input file
      * @since 2.8.0
      */
     public void setMetadataInputFormat(String metadataInputFormat) {
-        t.setMetadataInputFormat(metadataInputFormat);
+        h.setMetadataInputFormat(metadataInputFormat);
     }
     /**
-     * Gets the format of the metadata output file from the external 
+     * Gets the format of the metadata output file from the external
      * application. By default no format is set, and metadata extraction
      * patterns are used to extract metadata information.
-     * One of "json", "xml", or "properties" is expected. 
-     * Only applicable when the <code>${OUTPUT}</code> token 
-     * is part of the command.  
+     * One of "json", "xml", or "properties" is expected.
+     * Only applicable when the <code>${OUTPUT}</code> token
+     * is part of the command.
      * @return metadata output format
      * @since 2.8.0
      */
     public String getMetadataOutputFormat() {
-        return t.getMetadataOutputFormat();
+        return h.getMetadataOutputFormat();
     }
     /**
-     * Sets the format of the metadata output file from the external 
+     * Sets the format of the metadata output file from the external
      * application. One of "json" (default), "xml", or "properties" is expected.
      * Set to <code>null</code> for relying metadata extraction
      * patterns instead.
-     * Only applicable when the <code>${OUTPUT}</code> token 
-     * is part of the command.  
+     * Only applicable when the <code>${OUTPUT}</code> token
+     * is part of the command.
      * @param metadataOutputFormat format of the metadata output file
      * @since 2.8.0
      */
     public void setMetadataOutputFormat(String metadataOutputFormat) {
-        t.setMetadataOutputFormat(metadataOutputFormat);
+        h.setMetadataOutputFormat(metadataOutputFormat);
     }
 
     @Override
     public List<ImporterDocument> parseDocument(ImporterDocument doc,
             Writer output) throws DocumentParserException {
         try {
-            t.transformDocument(doc.getReference(), doc.getContent(), 
-                    new WriterOutputStream(output, StandardCharsets.UTF_8), 
-                    doc.getMetadata(), false);
+            h.handleDocument(doc.getReference(), doc.getContent(),
+                    new WriterOutputStream(output, StandardCharsets.UTF_8),
+                    doc.getMetadata());
         } catch (ImporterHandlerException e) {
-            throw new DocumentParserException("Could not parse document: "
-                    + doc.getReference(), e);
+            throw new DocumentParserException(
+                    "Could not parse document: " + doc.getReference(), e);
         }
         return null;
     }
-    
+
     @Override
     public void loadFromXML(Reader in) throws IOException {
         String xml = IOUtils.toString(in);
-        xml = xml.replaceAll("<(/{0,1})parser", "<$1transformer");
-        contentType = xml.replaceFirst(
-                ".*?contentType\\s*=\\s*\"(.*?)\".*", "$1");
         xml = xml.replaceFirst("(.*?)contentType\\s*=\\s*\".*?\"(.*)", "$1$2");
-        StringReader r = new StringReader(xml);
-        t.loadFromXML(r);
+        h.loadHandlerFromXML(new XML(xml));
+
+//        String xml = IOUtils.toString(in);
+//        xml = xml.replaceAll("<(/{0,1})parser", "<$1transformer");
+//        contentType = xml.replaceFirst(
+//                ".*?contentType\\s*=\\s*\"(.*?)\".*", "$1");
+//        xml = xml.replaceFirst("(.*?)contentType\\s*=\\s*\".*?\"(.*)", "$1$2");
+//        StringReader r = new StringReader(xml);
+//        h.loadFromXML(r);
     }
-    
+
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        StringWriter w = new StringWriter();
-        t.saveToXML(w);
-        String xml = w.toString();
-        String ctAttrib = "";
-        if (!xml.contains("contentType") && contentType != null) {
-            ctAttrib = "contentType=\"" + contentType + "\" ";
+    public void saveToXML(Writer out, String tagName) throws IOException {
+
+        // Copied and modified until we make it that XML can be written
+        // to as well:
+
+        EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
+        writer.writeStartElement(tagName, getClass());
+        writer.writeAttributeString("contentType", contentType);
+
+        writer.writeElementString("command", getCommand());
+        writer.writeElementString(
+                "tempDir", Objects.toString(getTempDir(), null));
+        if (!getMetadataExtractionPatterns().isEmpty()) {
+            writer.writeStartElement("metadata");
+            writer.writeAttributeString(
+                    "inputFormat", getMetadataInputFormat());
+            writer.writeAttributeString(
+                    "outputFormat", getMetadataOutputFormat());
+            for (KeyValueExtractor rfe : getMetadataExtractionPatterns()) {
+                writer.writeStartElement("pattern");
+                writer.writeAttributeString("field", rfe.getKey());
+                writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
+                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
+                writer.writeAttributeBoolean(
+                        "caseSensitive", rfe.isCaseSensitive());
+                writer.writeCharacters(rfe.getRegex());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         }
-        xml = xml.replaceFirst("<transformer class=\".*?\"", 
-                "<parser " + ctAttrib
-                + "class=\"" + getClass().getName() + "\"");
-        xml = xml.replace("</transformer>", "</parser>");
-        
-        out.write(xml);
-        out.flush();
-        out.close();
+        if (getEnvironmentVariables() != null) {
+            writer.writeStartElement("environment");
+            for (Entry<String, String> entry
+                    : getEnvironmentVariables().entrySet()) {
+                writer.writeStartElement("variable");
+                writer.writeAttribute("name", entry.getKey());
+                writer.writeCharacters(entry.getValue());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+
+        writer.writeEndElement();
+        writer.flush();
+        writer.close();
     }
 
     @Override
@@ -407,15 +375,15 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
             return false;
         }
         ExternalParser castOther = (ExternalParser) other;
-        return t.equals(castOther.t);
+        return h.equals(castOther.h);
     }
     @Override
     public int hashCode() {
-        return t.hashCode();
+        return h.hashCode();
     }
     @Override
     public String toString() {
-        String toString = t.toString();
+        String toString = h.toString();
         toString = toString.replaceFirst(
             "ExternalTransformer\\[restrictions=\\[.*?\\],",
             ExternalParser.class.getSimpleName() + "[");

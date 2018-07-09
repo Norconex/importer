@@ -1,6 +1,13 @@
 TODO:
 ==============
 
+- Consider merging tagger and transformer and detecting if content has changed,
+  and offer in most case to do operation on either field or content (or both).
+
+- Use init() / destroy() interface where appropriate.
+
+- Remove references to deprecated elements.
+
 - Fix external  links in Javadoc (all projects).
 
 - Have a transformer that eliminates the content (and/or store into a field).

@@ -8,18 +8,40 @@
   <body>
 
     <release version="3.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+      <action dev="essiembre" type="add">
+        New -f or "outputMetaFormat" command-line argument for saving
+        exported metadata fields in alternate formats.
+      </action>
+      <action dev="essiembre" type="add">
+        New ExternalHandler class.
+      </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: Norconex Commons Lang 2.0.0,
-        Apache Configuration 2.2, Apache Tika 1.18, Apache Commons CLI 1.4.
+        Default allocated memory for caching of document content was increased
+        by a factor of 10 (100MB max per document, 1GB max total).
+      </action>
+      <action dev="essiembre" type="update">
+        XML configuration of handlers had their XML tag names changed from 
+        "filter", "tagger", "transformer, "splitter" to simply "handler". 
       </action>
       <action dev="essiembre" type="update">
         JBIG2 image support now included under apache license.
       </action>
       <action dev="essiembre" type="update">
         Logging now using SLF4J.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Norconex Commons Lang 2.0.0,
+        Apache Tika 1.18, Apache Commons CLI 1.4.
+      </action>
+      <action dev="essiembre" type="update">
+        RegexFieldExtractor and RegexUtil have been deprecated in favor
+        of Norconex Commons Lang KeyValueExtractor and Regex.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed some of the methods deprecated in previous releases.
       </action>
     </release>
 

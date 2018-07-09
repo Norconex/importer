@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -32,15 +32,15 @@ public class DateFormatTaggerTest {
         String dateEPOCHFormat = "EPOCH";
         String dateHTTPFormat = "EEE, dd MMM yyyy HH:mm:ss";
 
-        
+
         String dateISO = "2001-10-10T11:32:21";
         String dateEPOCH = "1002727941000";
         String dateHTTP = "Wed, 10 Oct 2001 11:32:21";
-        
+
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("dateISO", dateISO);
         meta.addString("dateEPOCH", dateEPOCH);
-        meta.addString("dateHTTP",  dateHTTP); 
+        meta.addString("dateHTTP",  dateHTTP);
 
         DateFormatTagger t = new DateFormatTagger();
         t.setToField("date");
@@ -79,13 +79,13 @@ public class DateFormatTaggerTest {
         Assert.assertEquals(null, meta.getString("date"));
 
     }
-    
+
     @Test
     public void testDateFormat() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("datefield1", "2001-10-10T11:32:21"); 
-        meta.addString("datefield2", "1002727941000"); 
-        
+        meta.addString("datefield1", "2001-10-10T11:32:21");
+        meta.addString("datefield2", "1002727941000");
+
         DateFormatTagger tagger;
 
         tagger = new DateFormatTagger();
@@ -119,9 +119,9 @@ public class DateFormatTaggerTest {
     public void testLocalizedDateFormatting() throws ImporterHandlerException {
         ImporterMetadata meta;
         DateFormatTagger tagger;
-        
+
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "2001-04-10T11:32:21"); 
+        meta.addString("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -130,9 +130,9 @@ public class DateFormatTaggerTest {
         tagger.setToFormat("EEE, dd MMM yyyy");
         tagger.tagDocument("n/a", null, meta, true);
         Assert.assertEquals("Tue, 10 Apr 2001", meta.getString("targetField"));
-        
+
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "2001-04-10T11:32:21"); 
+        meta.addString("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -143,14 +143,14 @@ public class DateFormatTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
         Assert.assertEquals("mar., 10 avr. 2001", meta.getString("targetField"));
     }
-    
+
     @Test
     public void testLocalizedDateParsing() throws ImporterHandlerException {
         ImporterMetadata meta;
         DateFormatTagger tagger;
-        
+
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "Tue, 10 Apr 2001"); 
+        meta.addString("sourceField", "Tue, 10 Apr 2001");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -159,9 +159,9 @@ public class DateFormatTaggerTest {
         tagger.setToFormat("yyyy-MM-dd");
         tagger.tagDocument("n/a", null, meta, true);
         Assert.assertEquals("2001-04-10", meta.getString("targetField"));
-        
+
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "mar., 10 avr. 2001"); 
+        meta.addString("sourceField", "mar., 10 avr. 2001");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -171,7 +171,7 @@ public class DateFormatTaggerTest {
         tagger.setToFormat("yyyy-MM-dd");
         tagger.tagDocument("n/a", null, meta, true);
         Assert.assertEquals("2001-04-10", meta.getString("targetField"));
-    }    
+    }
     @Test
     public void testWriteRead() throws IOException {
         DateFormatTagger tagger = new DateFormatTagger();
@@ -181,8 +181,6 @@ public class DateFormatTaggerTest {
         tagger.setToFormat("yyyy-MM");
         tagger.setKeepBadDates(true);
         tagger.setOverwrite(true);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

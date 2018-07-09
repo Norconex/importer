@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@ package com.norconex.importer.handler.filter.impl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
@@ -42,53 +43,53 @@ import com.norconex.importer.response.ImporterStatus.Status;
 public class RegexContentFilterTest {
 
     @Test
-    public void testMatchesExclude() 
+    public void testMatchesExclude()
             throws IOException, ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        Assert.assertFalse("Should have been rejected.", 
+        Assert.assertFalse("Should have been rejected.",
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a string that matches", StandardCharsets.UTF_8),
                         null, false));
-    }    
+    }
     @Test
-    public void testMatchesInclude() 
+    public void testMatchesInclude()
             throws IOException, ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
-        Assert.assertTrue("Should have been accepted.", 
+        Assert.assertTrue("Should have been accepted.",
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a string that matches", StandardCharsets.UTF_8),
                         null, false));
-    }    
+    }
     @Test
-    public void testNoMatchesExclude() 
+    public void testNoMatchesExclude()
             throws IOException, ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        Assert.assertTrue("Should have been accepted.", 
+        Assert.assertTrue("Should have been accepted.",
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
                         null, false));
-    }    
+    }
     @Test
-    public void testNoMatchesUniqueInclude() 
+    public void testNoMatchesUniqueInclude()
             throws IOException, ImporterHandlerException {
-        
+
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
-        Assert.assertFalse("Should have been rejected.", 
+        Assert.assertFalse("Should have been rejected.",
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
                         null, false));
-    }    
+    }
 
     @Test
-    public void testMatchesOneOfManyIncludes() 
+    public void testMatchesOneOfManyIncludes()
             throws IOException, ImporterException {
         RegexContentFilter filter1 = new RegexContentFilter();
         filter1.setRegex(".*string.*");
@@ -97,25 +98,25 @@ public class RegexContentFilterTest {
         RegexContentFilter filter2 = new RegexContentFilter();
         filter2.setRegex(".*asdf.*");
         filter2.setOnMatch(OnMatch.INCLUDE);
-        
+
         RegexContentFilter filter3 = new RegexContentFilter();
         filter3.setRegex(".*qwer.*");
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
-        config.setPreParseHandlers(filter1, filter2, filter3);
-        
+        config.setPreParseHandlers(Arrays.asList(filter1, filter2, filter3));
+
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
-                        new StringReader("a string that matches"), 
+                        new StringReader("a string that matches"),
                         StandardCharsets.UTF_8),
                 new ImporterMetadata(), "N/A");
         Assert.assertEquals("Status should have been SUCCESS",
                 Status.SUCCESS, response.getImporterStatus().getStatus());
-    }    
-    
+    }
+
     @Test
-    public void testNoMatchesOfManyIncludes() 
+    public void testNoMatchesOfManyIncludes()
             throws IOException, ImporterException {
         RegexContentFilter filter1 = new RegexContentFilter();
         filter1.setRegex(".*zxcv.*");
@@ -124,14 +125,14 @@ public class RegexContentFilterTest {
         RegexContentFilter filter2 = new RegexContentFilter();
         filter2.setRegex(".*asdf.*");
         filter2.setOnMatch(OnMatch.INCLUDE);
-        
+
         RegexContentFilter filter3 = new RegexContentFilter();
         filter3.setRegex(".*qwer.*");
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(filter1, filter2, filter3);
-        
+        config.setPostParseHandlers(Arrays.asList(filter1, filter2, filter3));
+
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
                         new StringReader("no matches"), StandardCharsets.UTF_8),
@@ -139,7 +140,7 @@ public class RegexContentFilterTest {
         Assert.assertEquals("Status should have been REJECTED",
                 Status.REJECTED, response.getImporterStatus().getStatus());
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         RegexContentFilter filter = new RegexContentFilter();
@@ -147,7 +148,6 @@ public class RegexContentFilterTest {
         filter.setRegex("blah");
         filter.setMaxReadSize(256);
         filter.setOnMatch(OnMatch.INCLUDE);
-        System.out.println("Writing/Reading this: " + filter);
-        XMLConfigurationUtil.assertWriteRead(filter);
+        XML.assertWriteRead(filter, "handler");
     }
 }

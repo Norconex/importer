@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.Sleeper;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CurrentDateTaggerTest {
 
-    
+
     @Test
     public void testCurrentDateTagger() throws ImporterHandlerException {
         long now = System.currentTimeMillis();
         Sleeper.sleepMillis(10);// to make sure time has passed
-        
+
         ImporterMetadata meta = null;
         CurrentDateTagger tagger = null;
 
@@ -42,7 +42,7 @@ public class CurrentDateTaggerTest {
         tagger = new CurrentDateTagger();
         tagger.setFormat("yyyy-MM-dd'T'HH:mm:ss");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertTrue("Returned date format does not match", 
+        Assert.assertTrue("Returned date format does not match",
                 meta.getString(ImporterMetadata.DOC_IMPORTED_DATE).matches(
                         "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"));
 
@@ -54,27 +54,27 @@ public class CurrentDateTaggerTest {
         Assert.assertTrue("Returned date format does not match",
                 ArrayUtils.contains(new String[]{
                         "lundi", "mardi", "mercredi", "jeudi", "vendredi",
-                        "samedi", "dimanche"}, 
+                        "samedi", "dimanche"},
                         meta.getString(ImporterMetadata.DOC_IMPORTED_DATE)));
-        
+
         meta = new ImporterMetadata();
-        meta.addString("existingField", "1002727941000"); 
+        meta.addString("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOverwrite(true);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("Invalid overwritten number of date values", 
+        Assert.assertEquals("Invalid overwritten number of date values",
                 1, meta.getLongs("existingField").size());
-        Assert.assertTrue("Invalid overwritten date created", 
+        Assert.assertTrue("Invalid overwritten date created",
                 meta.getLong("existingField") > now);
 
         meta = new ImporterMetadata();
-        meta.addString("existingField", "1002727941000"); 
+        meta.addString("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOverwrite(false);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("Invalid added number of date values", 
+        Assert.assertEquals("Invalid added number of date values",
                 2, meta.getLongs("existingField").size());
         List<Long> longs = meta.getLongs("existingField");
         for (Long dateLong : longs) {
@@ -85,14 +85,13 @@ public class CurrentDateTaggerTest {
             }
         }
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         CurrentDateTagger tagger = new CurrentDateTagger();
         tagger.setField("field1");
         tagger.setFormat("yyyy-MM-dd");
         tagger.setOverwrite(true);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 }

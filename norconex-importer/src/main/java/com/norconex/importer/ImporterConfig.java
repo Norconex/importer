@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,21 @@ package com.norconex.importer;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ExpressionEngine;
-import org.apache.commons.configuration2.tree.ImmutableNode;
-import org.apache.commons.configuration2.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
-import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
@@ -55,22 +43,20 @@ import com.norconex.importer.response.IImporterResponseProcessor;
  */
 public class ImporterConfig implements IXMLConfigurable {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(ImporterConfig.class);
-    
     public static final String DEFAULT_TEMP_DIR_PATH = 
             FileUtils.getTempDirectoryPath();
     public static final int DEFAULT_MAX_FILE_CACHE_SIZE = 
-            (int) DataUnit.MB.toBytes(10);
-    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
             (int) DataUnit.MB.toBytes(100);
+    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
+            (int) DataUnit.GB.toBytes(1);
     
     private IDocumentParserFactory documentParserFactory = 
             new GenericDocumentParserFactory();
 
-    private IImporterHandler[] preParseHandlers;
-    private IImporterHandler[] postParseHandlers;
-    private IImporterResponseProcessor[] responseProcessors;
+    private final List<IImporterHandler> preParseHandlers = new ArrayList<>();
+    private final List<IImporterHandler> postParseHandlers = new ArrayList<>();
+    private final List<IImporterResponseProcessor> responseProcessors = 
+            new ArrayList<>();
 
     private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
     private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
@@ -107,26 +93,35 @@ public class ImporterConfig implements IXMLConfigurable {
         this.parseErrorsSaveDir = parseErrorsSaveDir;
     }
 
-    public void setPreParseHandlers(IImporterHandler... handlers) {
-        preParseHandlers = handlers;
+    public List<IImporterHandler> getPreParseHandlers() {
+        return Collections.unmodifiableList(preParseHandlers);
     }
-    public IImporterHandler[] getPreParseHandlers() {
-        return ArrayUtils.clone(preParseHandlers);
+    public void setPreParseHandlers(List<IImporterHandler> preParseHandlers) {
+        this.preParseHandlers.clear();
+        if (preParseHandlers != null) {
+            this.preParseHandlers.addAll(preParseHandlers);
+        }
     }
 
-    public void setPostParseHandlers(IImporterHandler... handlers) {
-        postParseHandlers = handlers;
+    public List<IImporterHandler> getPostParseHandlers() {
+        return Collections.unmodifiableList(postParseHandlers);
     }
-    public IImporterHandler[] getPostParseHandlers() {
-        return ArrayUtils.clone(postParseHandlers);
+    public void setPostParseHandlers(List<IImporterHandler> postParseHandlers) {
+        this.postParseHandlers.clear();
+        if (postParseHandlers != null) {
+            this.postParseHandlers.addAll(postParseHandlers);
+        }
     }
     
-    public IImporterResponseProcessor[] getResponseProcessors() {
-        return ArrayUtils.clone(responseProcessors);
+    public List<IImporterResponseProcessor> getResponseProcessors() {
+        return Collections.unmodifiableList(responseProcessors);
     }
     public void setResponseProcessors(
-            IImporterResponseProcessor... responseProcessors) {
-        this.responseProcessors = responseProcessors;
+            List<IImporterResponseProcessor> responseProcessors) {
+        this.responseProcessors.clear();
+        if (responseProcessors != null) {
+            this.responseProcessors.addAll(responseProcessors);
+        }
     }
 
     public int getMaxFileCacheSize() {
@@ -147,179 +142,65 @@ public class ImporterConfig implements IXMLConfigurable {
         if (in == null) {
             return;
         }
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
-        try {
-            //--- Temp directory -----------------------------------------------
-            setTempDir(new File(xml.getString(
-                    "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
+        XML xml = new XML(in);
 
-            //--- Parse errors save dir ----------------------------------------
-            String saveDir = xml.getString("parseErrorsSaveDir", null);
-            if (saveDir != null) {
-                setParseErrorsSaveDir(new File(saveDir));
-            } else {
-                setParseErrorsSaveDir(null);
-            }
-            
-            //--- File Mem Cache Size ------------------------------------------
-            setMaxFileCacheSize(xml.getInt("maxFileCacheSize", 
-                    ImporterConfig.DEFAULT_MAX_FILE_CACHE_SIZE));
-            //--- File Pool Mem Cache Size -------------------------------------
-            setMaxFilePoolCacheSize(xml.getInt("maxFilePoolCacheSize", 
-                    ImporterConfig.DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
-            
-            //--- Pre-Import Handlers ------------------------------------------
-            setPreParseHandlers(loadImportHandlers(xml, "preParseHandlers"));
-    
-            //--- Document Parser Factory --------------------------------------
-            setParserFactory(XMLConfigurationUtil.newInstance(
-                    xml, "documentParserFactory", getParserFactory()));
-    
-            //--- Post-Import Handlers -----------------------------------------
-            setPostParseHandlers(loadImportHandlers(xml, "postParseHandlers"));
-                        
-            //--- Response Processors ------------------------------------------
-            setResponseProcessors(loadResponseProcessors(
-                    xml, "responseProcessors.responseProcessor"));
-        } catch (Exception e) {
-            if (e instanceof ConfigurationException) {
-                throw (ConfigurationException) e;
-            }
-            throw new ConfigurationException("Could not load configuration "
-                    + "from XMLConfiguration instance.", e);
-        }
-    }
-    
-    private IImporterHandler[] loadImportHandlers(
-            XMLConfiguration xml, String xmlPath) {
-        List<IImporterHandler> handlers = new ArrayList<>();
-    
-        ExpressionEngine originalEngine = xml.getExpressionEngine();
-        xml.setExpressionEngine(new XPathExpressionEngine());
-        List<HierarchicalConfiguration<ImmutableNode>> xmlHandlers = 
-                xml.configurationsAt(xmlPath + "/*");
-        xml.setExpressionEngine(originalEngine);
-        for (HierarchicalConfiguration<ImmutableNode> xmlHandler: xmlHandlers) {
-            xmlHandler.setExpressionEngine(originalEngine);
-            IImporterHandler handler = 
-                    XMLConfigurationUtil.newInstance(xmlHandler);
-            if (handler != null) {
-                handlers.add(handler);
-                //TODO throw exception here?
-            }
-        }
-        if (handlers.isEmpty()) {
-            return null;
-        }
-        return handlers.toArray(new IImporterHandler[]{});
-    }
-    
+        //--- Temp directory -----------------------------------------------
+        setTempDir(new File(xml.getString(
+                "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
 
-    private IImporterResponseProcessor[] loadResponseProcessors(
-            XMLConfiguration xml, String xmlPath) {
-        List<IImporterResponseProcessor> processors = new ArrayList<>();
-    
-        List<HierarchicalConfiguration<ImmutableNode>> procNodes = 
-                xml.configurationsAt(xmlPath);
-        for (HierarchicalConfiguration<ImmutableNode> procNode : procNodes) {
-            IImporterResponseProcessor proc = 
-                    XMLConfigurationUtil.newInstance(procNode);
-            if (proc != null) {
-                processors.add(proc);
-                LOG.debug("Reponse processor loaded: " + proc);
-            } else {
-                LOG.error("Problem loading reponse processors, "
-                        + "please check for other log messages.");
-            }
-        }
-        if (processors.isEmpty()) {
-            return null;
-        }
-        return processors.toArray(new IImporterResponseProcessor[] {});
+        //--- Parse errors save dir ----------------------------------------
+        String saveDir = xml.getString("parseErrorsSaveDir", null);
+        setParseErrorsSaveDir(saveDir != null ? new File(saveDir) : null);
+        
+        //--- File Mem Cache Size ------------------------------------------
+        setMaxFileCacheSize(xml.getInteger("maxFileCacheSize", 
+                DEFAULT_MAX_FILE_CACHE_SIZE));
+        //--- File Pool Mem Cache Size -------------------------------------
+        setMaxFilePoolCacheSize(xml.getInteger("maxFilePoolCacheSize", 
+                DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
+        
+        //--- Pre-Import Handlers ------------------------------------------
+        setPreParseHandlers(xml.getObjectList("preParseHandlers/*",
+                getPreParseHandlers()));
+
+        //--- Document Parser Factory --------------------------------------
+        setParserFactory(
+                xml.getObject("documentParserFactory", getParserFactory()));
+
+        //--- Post-Import Handlers -----------------------------------------
+        setPostParseHandlers(xml.getObjectList("postParseHandlers/*", 
+                getPostParseHandlers()));
+                    
+        //--- Response Processors ------------------------------------------
+        setResponseProcessors(xml.getObjectList(
+                "responseProcessors/responseProcessor", 
+                        getResponseProcessors()));
     }
     
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement("importer");
-            writer.writeAttributeString("xml:space", "preserve");
-            writer.writeElementString(
-                    "tempDir", Objects.toString(getTempDir(), null));
-            writer.writeElementString("parseErrorsSaveDir", 
-                    Objects.toString(getParseErrorsSaveDir(), null));
-            writer.writeElementInteger(
-                    "maxFileCacheSize", getMaxFileCacheSize());
-            writer.writeElementInteger(
-                    "maxFilePoolCacheSize", getMaxFilePoolCacheSize());
-            writer.flush();
-            
-            writeHandlers(out, "preParseHandlers", getPreParseHandlers());
-            writeObject(out, "documentParserFactory", getParserFactory());
-            writeHandlers(out, "postParseHandlers", getPostParseHandlers());
-            writeResponseProcessors(
-                    out, "responseProcessors", getResponseProcessors());
-            
-            writer.writeEndElement();
-            writer.flush();
-        } catch (XMLStreamException e) {
-            throw new IOException("Could not save importer config.", e);
-        }
+    public void saveToXML(Writer out,String elementName) throws IOException {
+        EnhancedXMLStreamWriter w = new EnhancedXMLStreamWriter(out);
+        w.writeStartElement(elementName);
+        //writer.writeStartElement("importer");
+        w.writeElementFile("tempDir", getTempDir());
+        w.writeElementFile("parseErrorsSaveDir", getParseErrorsSaveDir());
+        w.writeElementInteger("maxFileCacheSize", getMaxFileCacheSize());
+        w.writeElementInteger(
+                "maxFilePoolCacheSize", getMaxFilePoolCacheSize());
+        w.writeObjectList(
+                "preParseHandlers", "handler", getPreParseHandlers());
+        w.writeObject("documentParserFactory", getParserFactory());
+        w.writeObjectList(
+                "postParseHandlers", "handler", getPostParseHandlers());
+        
+        
+        w.writeObjectList("responseProcessors", "responseProcessor", 
+                getResponseProcessors());
+        
+        w.writeEndElement();
+        w.flush();
     }
 
-    private void writeResponseProcessors(Writer out, String listTagName, 
-            IImporterResponseProcessor[] processors) throws IOException {
-        if (ArrayUtils.isEmpty(processors)) {
-            return;
-        }
-        out.write("<" + listTagName + ">"); 
-        for (IImporterResponseProcessor processor: processors) {
-            writeObject(out, null, processor);
-        }
-        out.write("</" + listTagName + ">"); 
-        out.flush();
-    }
-    private void writeHandlers(Writer out, String listTagName, 
-            IImporterHandler[] handlers) throws IOException {
-        if (ArrayUtils.isEmpty(handlers)) {
-            return;
-        }
-        out.write("<" + listTagName + ">"); 
-        for (IImporterHandler handler: handlers) {
-            writeObject(out, null, handler);
-        }
-        out.write("</" + listTagName + ">"); 
-        out.flush();
-    }
-    private void writeObject(
-            Writer out, String tagName, Object object) throws IOException {
-        writeObject(out, tagName, object, false);
-    }
-    private void writeObject(
-            Writer out, String tagName, Object object, boolean ignore) 
-                    throws IOException {
-        if (object == null) {
-            if (ignore) {
-                out.write("<" + tagName + " ignore=\"" + ignore + "\" />");
-            }
-            return;
-        }
-        StringWriter w = new StringWriter();
-        if (object instanceof IXMLConfigurable) {
-            ((IXMLConfigurable) object).saveToXML(w);
-        } else {
-            w.write("<" + tagName + " class=\"" 
-                    + object.getClass().getCanonicalName() + "\" />");
-        }
-        String xml = w.toString();
-        if (ignore) {
-            xml = xml.replace("<" + tagName + " class=\"" , 
-                    "<" + tagName + " ignore=\"true\" class=\"" );
-        }
-        out.write(xml);
-        out.flush();
-    }
-    
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof ImporterConfig)) {

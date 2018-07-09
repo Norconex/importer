@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,70 +22,58 @@ import java.util.TreeSet;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.MergeTagger.Merge;
 
 public class MergeTaggerTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-
-    
     @Test
     public void testWriteRead() throws IOException {
         MergeTagger tagger = new MergeTagger();
-        
+
         Merge m = null;
-        
+
         m = new Merge();
         m.setDeleteFromFields(true);
-        m.setFromFields("1", "2");
+        m.setFromFields(Arrays.asList("1", "2"));
         m.setFromFieldsRegex("regex");
         m.setSingleValue(true);
         m.setSingleValueSeparator(",");
         m.setToField("toField");
         tagger.addMerge(m);
-        
+
         m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields("3", "4");
+        m.setFromFields(Arrays.asList("3", "4"));
         m.setFromFieldsRegex(null);
         m.setSingleValue(false);
         m.setSingleValueSeparator(null);
         m.setToField("toAnotherField");
         tagger.addMerge(m);
-        
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+
+        XML.assertWriteRead(tagger, "handler");
     }
 
-    
+
     @Test
     public void testMultiFieldsMerge() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "1.1", "1.2"); 
-        meta.addString("field2", "2"); 
-        meta.addString("field3", "3"); 
-        meta.addString("fld4", "4"); 
-        meta.addString("fld5", "5"); 
-        meta.addString("fld6", "6"); 
-        
+        meta.addString("field1", "1.1", "1.2");
+        meta.addString("field2", "2");
+        meta.addString("field3", "3");
+        meta.addString("fld4", "4");
+        meta.addString("fld5", "5");
+        meta.addString("fld6", "6");
+
         MergeTagger tagger = new MergeTagger();
-        
+
         Merge m = null;
-        
+
         m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields("fld4", "fld6");
+        m.setFromFields(Arrays.asList("fld4", "fld6"));
         m.setFromFieldsRegex("field.*");
         m.setSingleValue(false);
         m.setToField("toField");
@@ -93,7 +81,7 @@ public class MergeTaggerTest {
 
         m = new Merge();
         m.setDeleteFromFields(true);
-        m.setFromFields("fld4", "fld6");
+        m.setFromFields(Arrays.asList("fld4", "fld6"));
         m.setFromFieldsRegex("field.*");
         m.setSingleValue(true);
         m.setSingleValueSeparator("-");
@@ -103,28 +91,28 @@ public class MergeTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
 
         Set<String> expected = new TreeSet<>(Arrays.asList(
-                "1.1", "1.2", "2", "3", "4", "6")); 
-        
-        Assert.assertEquals(expected, 
-                new TreeSet<String>(meta.getStrings("toField")));
-        Assert.assertEquals(expected, new TreeSet<String>(Arrays.asList(
+                "1.1", "1.2", "2", "3", "4", "6"));
+
+        Assert.assertEquals(expected,
+                new TreeSet<>(meta.getStrings("toField")));
+        Assert.assertEquals(expected, new TreeSet<>(Arrays.asList(
                 meta.getString("fld4").split("-"))));
     }
-    
+
     @Test
     public void testSingleFieldMerge() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field", "1", "2"); 
-        
+        meta.addString("field", "1", "2");
+
         MergeTagger tagger = new MergeTagger();
-        
+
         Merge m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields("field");
+        m.setFromFields(Arrays.asList("field"));
         m.setSingleValue(true);
         m.setToField("field");
         tagger.addMerge(m);
-        
+
         tagger.tagDocument("n/a", null, meta, true);
 
         Assert.assertEquals("12", meta.getString("field"));

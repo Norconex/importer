@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,6 +31,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -126,7 +126,7 @@ import com.norconex.importer.util.DOMUtil;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"          
@@ -141,7 +141,7 @@ import com.norconex.importer.util.DOMUtil;
  *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
  *    &lt;regex&gt;(optional regular expression matching selector extracted value)&lt;/regex&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h3>Examples:</h3>
  * <p>To exclude an HTML page that has one or more GIF images in it:</p>
@@ -152,10 +152,10 @@ import com.norconex.importer.util.DOMUtil;
  * <p>To exclude an HTML page that has a paragraph tag with a class called
  * "disclaimer" and a value containing "skip me":</p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          selector="p.disclaimer" onMatch="exclude" &gt;
  *    &lt;regex&gt;\bskip me\b&lt;/regex&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * @author Pascal Essiembre
@@ -326,54 +326,28 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         writer.writeElementString("regex", regex);
     }
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", isCaseSensitive()));
-        setSelector(xml.getString("[@selector]", getSelector()));
-        setParser(xml.getString("[@parser]", getParser()));
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
-        setSourceCharset(xml.getString("[@extract]", getExtract()));
+    protected void loadFilterFromXML(XML xml) throws IOException {
+        setCaseSensitive(xml.getBoolean("@caseSensitive", isCaseSensitive()));
+        setSelector(xml.getString("@selector", getSelector()));
+        setParser(xml.getString("@parser", getParser()));
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setSourceCharset(xml.getString("@extract", getExtract()));
         setRegex(xml.getString("regex"));
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DOMContentFilter)) {
-            return false;
-        }
-        DOMContentFilter castOther = (DOMContentFilter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(caseSensitive, castOther.caseSensitive)
-                .append(selector, castOther.selector)
-                .append(parser, castOther.parser)
-                .append(regex, castOther.regex)
-                .append(sourceCharset, castOther.sourceCharset)
-                .append(extract, castOther.extract)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(caseSensitive)
-                .append(selector)
-                .append(parser)
-                .append(regex)
-                .append(sourceCharset)                
-                .append(extract)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("caseSensitive", caseSensitive)
-                .append("selector", selector)
-                .append("parser", parser)
-                .append("regex", regex)
-                .append("sourceCharset", sourceCharset)
-                .append("extract", "extract")
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames("cachedPattern")
                 .toString();
-    }    
+    }
 }

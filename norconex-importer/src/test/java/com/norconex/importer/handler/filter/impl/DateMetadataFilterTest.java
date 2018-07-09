@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -33,9 +33,9 @@ import com.norconex.importer.handler.filter.impl.DateMetadataFilter.TimeUnit;
 public class DateMetadataFilterTest {
 
     @Test
-    public void testAcceptDocument() 
+    public void testAcceptDocument()
             throws IOException, ImporterHandlerException, ParseException {
-        
+
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("field1", "1980-12-21T12:22:01.123");
 
@@ -45,32 +45,32 @@ public class DateMetadataFilterTest {
         filter.setField("field1");
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-        filter.addCondition(Operator.LOWER_EQUAL, 
+        filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
         Assert.assertFalse(filter.acceptDocument("n/a", null, meta, false));
 
-        
+
         filter = new DateMetadataFilter();
         filter.setField("field1");
         filter.setFormat("yyyy-MM-dd");
-        filter.addCondition(Operator.LOWER_EQUAL, 
+        filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
-        
+
         filter = new DateMetadataFilter();
         filter.setField("field1");
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        filter.addCondition(Operator.LOWER_EQUAL, 
+        filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-22"));
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
-        
+
         Calendar now = Calendar.getInstance();
-        meta.addString("field2",  
+        meta.addString("field2",
                 DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(now));
 
         filter = new DateMetadataFilter();
@@ -82,8 +82,8 @@ public class DateMetadataFilterTest {
                 Operator.LOWER_THAN, TimeUnit.MINUTE, +1, true);
         Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
-    }    
-    
+    }
+
     @Test
     public void testWriteRead() throws IOException {
         DateMetadataFilter filter = new DateMetadataFilter();
@@ -91,12 +91,11 @@ public class DateMetadataFilterTest {
         filter.setFormat("yyyy-MM-dd");
         filter.setOnMatch(OnMatch.EXCLUDE);
         filter.addCondition(Operator.GREATER_EQUAL, new Date());
-        filter.addCondition(Operator.LOWER_THAN, 
+        filter.addCondition(Operator.LOWER_THAN,
                 new Date(System.currentTimeMillis() + 1000 * 10));
         // Cannot test equality when condition is fixed since the initialization
         // time will vary. So test with last argument false.
         filter.addConditionFromNow(Operator.EQUALS, TimeUnit.YEAR, -2, false);
-        System.out.println("Writing/Reading this: " + filter);
-        XMLConfigurationUtil.assertWriteRead(filter);
+        XML.assertWriteRead(filter, "handler");
     }
 }

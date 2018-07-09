@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,34 +17,41 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
-import org.apache.commons.io.IOUtils;
+import javax.xml.stream.XMLStreamException;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
-import com.norconex.importer.util.regex.RegexFieldExtractor;
+import com.norconex.importer.parser.impl.ExternalParser;
 
 /**
  * <p>
  * Extracts metadata from a document using an external application to do so.
  * </p>
  * <p>
- * This tagger relies heavily on the mechanics of 
- * {@link ExternalTransformer}, with a few differences:
+ * This class relies on {@link ExternalHandler} for most of the work.
+ * Refer to {@link ExternalHandler} for full documentation, except for
+ * the following differences this class has:
  * </p>
  * <ul>
  *   <li>
- *     There is no <code>${OUTPUT}</code> token (since taggers do not 
- *     modify cnotent).
+ *     There is no <code>${OUTPUT}</code> token (since taggers do not
+ *     modify content).
  *   </li>
  *   <li>
  *     You can chose not to send any input at all to save some processing
@@ -52,32 +59,32 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *   </li>
  * </ul>
  * <p>
- * Refer to {@link ExternalTransformer} class for documentation.
+ * To use an external application to change a file content consider using
+ * {@link ExternalTransformer} instead.
  * </p>
  * <p>
- * To use an external application to change a file content consider using 
- * {@link ExternalTransformer} instead. 
+ * To parse/extract raw text from files, it is recommended to use a
+ * {@link ExternalParser} instead.
  * </p>
- * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ExternalTagger"&gt;
- *  
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger"&gt;
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;command inputDisabled="[false|true]"&gt;
  *          c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
  *      &lt;/command&gt;
- *      
- *      &lt;metadata 
- *              inputFormat="[json|xml|properties]" 
+ *
+ *      &lt;metadata
+ *              inputFormat="[json|xml|properties]"
  *              outputFormat="[json|xml|properties]"&gt;
  *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)" 
+ *          &lt;pattern field="(target field name)"
  *                  fieldGroup="(field name match group index)"
  *                  valueGroup="(field value match group index)"
  *                  caseSensitive="[false|true]"&gt;
@@ -85,57 +92,42 @@ import com.norconex.importer.util.regex.RegexFieldExtractor;
  *          &lt;/pattern&gt;
  *          &lt;!-- repeat pattern tag as needed --&gt;
  *      &lt;/metadata&gt;
- *      
+ *
  *      &lt;environment&gt;
  *          &lt;variable name="(environment variable name)"&gt;
  *              (environment variable value)
  *          &lt;/variable&gt;
  *          &lt;!-- repeat variable tag as needed --&gt;
  *      &lt;/environment&gt;
- *      
+ *
  *      &lt;tempDir&gt;
  *          (Optional directory where to store temporary files used
  *           for transformation.)
  *      &lt;/tempDir&gt;
  *
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following example invokes an external application that accepts
  * a document to transform and outputs a file containing the new metadata
  * information.
- * </p> 
+ * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TaggerTransformer" &gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TaggerTransformer" &gt;
  *      &lt;command&gt;/path/tag/app ${INPUT} ${OUTPUT_META}&lt;/command&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
- * @see ExternalTransformer
+ * @see ExternalHandler
  * @since 2.8.0
  */
-public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
+public class ExternalTagger extends AbstractDocumentTagger {
 
-
-    public static final String TOKEN_INPUT = ExternalTransformer.TOKEN_INPUT;
-    public static final String TOKEN_INPUT_META = 
-            ExternalTransformer.TOKEN_INPUT_META;
-    public static final String TOKEN_OUTPUT_META = 
-            ExternalTransformer.TOKEN_OUTPUT_META;
-    public static final String TOKEN_REFERENCE = 
-            ExternalTransformer.TOKEN_REFERENCE;
-    public static final String META_FORMAT_JSON = 
-            ExternalTransformer.META_FORMAT_JSON;
-    public static final String META_FORMAT_XML = 
-            ExternalTransformer.META_FORMAT_XML;
-    public static final String META_FORMAT_PROPERTIES = 
-            ExternalTransformer.META_FORMAT_PROPERTIES;
-
-    private final ExternalTransformer t = new ExternalTransformer();
+    private final ExternalHandler h = new ExternalHandler();
     private boolean inputDisabled;
-    
+
     /**
      * Gets whether to send the document content or not, regardless
      * whether ${INPUT} token is part of the command or not.
@@ -147,7 +139,7 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
     /**
      * Sets whether to send the document content or not, regardless
      * whether ${INPUT} token is part of the command or not.
-     * @param inputDisabled <code>true</code> to prevent sending the 
+     * @param inputDisabled <code>true</code> to prevent sending the
      *        input content
      */
     public void setInputDisabled(boolean inputDisabled) {
@@ -158,36 +150,36 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
      * @return the command
      */
     public String getCommand() {
-        return t.getCommand();
+        return h.getCommand();
     }
     /**
-     * Sets the command to execute. Make sure to escape spaces in 
+     * Sets the command to execute. Make sure to escape spaces in
      * executable path and its arguments as well as other special command
      * line characters.
      * @param command the command
      */
     public void setCommand(String command) {
-        t.setCommand(command);
+        h.setCommand(command);
     }
-    
+
     /**
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexFieldExtractor> getMetadataExtractionPatterns() {
-        return t.getMetadataExtractionPatterns();
+    public List<KeyValueExtractor> getMetadataExtractionPatterns() {
+        return h.getMetadataExtractionPatterns();
     }
     /**
-     * Adds a metadata extraction pattern that will extract the whole text 
+     * Adds a metadata extraction pattern that will extract the whole text
      * matched into the given field.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
      */
     public void addMetadataExtractionPattern(String field, String pattern) {
-        t.addMetadataExtractionPattern(field, pattern);
+        h.addMetadataExtractionPattern(field, pattern);
     }
     /**
-     * Adds a metadata extraction pattern, which will extract the value from 
+     * Adds a metadata extraction pattern, which will extract the value from
      * the specified group index upon matching.
      * @param field target field to store the matching pattern.
      * @param pattern the pattern
@@ -195,32 +187,32 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
      */
     public void addMetadataExtractionPattern(
             String field, String pattern, int valueGroup) {
-        t.addMetadataExtractionPattern(field, pattern, valueGroup);
+        h.addMetadataExtractionPattern(field, pattern, valueGroup);
     }
     /**
      * Adds a metadata extraction pattern that will extract matching field
      * names/values.
      * @param patterns extraction pattern
      */
-    public void addMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
-        t.addMetadataExtractionPatterns(patterns);
+    public void addMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+        h.addMetadataExtractionPatterns(patterns);
     }
     /**
-     * Sets metadata extraction patterns. Clears any previously assigned 
+     * Sets metadata extraction patterns. Clears any previously assigned
      * patterns.
      * @param patterns extraction pattern
-     */    
-    public void setMetadataExtractionPatterns(RegexFieldExtractor... patterns) {
-        t.setMetadataExtractionPatterns(patterns);
+     */
+    public void setMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+        h.setMetadataExtractionPatterns(patterns);
     }
-    
+
     /**
      * Gets environment variables.
      * @return environment variables or <code>null</code> if using the current
      *         process environment variables
      */
     public Map<String, String> getEnvironmentVariables() {
-        return t.getEnvironmentVariables();
+        return h.getEnvironmentVariables();
     }
     /**
      * Sets the environment variables. Clearing any prevously assigned
@@ -230,77 +222,77 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
      */
     public void setEnvironmentVariables(
             Map<String, String> environmentVariables) {
-        t.setEnvironmentVariables(environmentVariables);
+        h.setEnvironmentVariables(environmentVariables);
     }
     /**
      * Adds the environment variables, keeping environment variables previously
      * assigned. Existing variables of the same name
      * will be overwritten. To clear all previously assigned variables and use
-     * the current process environment variables, pass 
-     * <code>null</code> to 
+     * the current process environment variables, pass
+     * <code>null</code> to
      * {@link #setEnvironmentVariables(Map)}.
      * @param environmentVariables environment variables
      */
     public void addEnvironmentVariables(
             Map<String, String> environmentVariables) {
-        t.addEnvironmentVariables(environmentVariables);
+        h.addEnvironmentVariables(environmentVariables);
     }
     /**
      * Adds an environment variables to the list of previously
      * assigned variables (if any). Existing variables of the same name
-     * will be overwritten. Setting a variable with a 
+     * will be overwritten. Setting a variable with a
      * <code>null</code> name has no effect while <code>null</code>
      * values are converted to empty strings.
      * @param name environment variable name
      * @param value environment variable value
      */
     public void addEnvironmentVariable(String name, String value) {
-        t.addEnvironmentVariable(name, value);
+        h.addEnvironmentVariable(name, value);
     }
 
     /**
-     * Gets the format of the metadata input file sent to the external 
-     * application. One of "json" (default), "xml", or "properties" is expected. 
-     * Only applicable when the <code>${INPUT}</code> token 
-     * is part of the command.  
+     * Gets the format of the metadata input file sent to the external
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Only applicable when the <code>${INPUT}</code> token
+     * is part of the command.
      * @return metadata input format
      */
     public String getMetadataInputFormat() {
-        return t.getMetadataInputFormat();
+        return h.getMetadataInputFormat();
     }
     /**
-     * Sets the format of the metadata input file sent to the external 
-     * application. One of "json" (default), "xml", or "properties" is expected. 
-     * Only applicable when the <code>${INPUT}</code> token 
-     * is part of the command.  
+     * Sets the format of the metadata input file sent to the external
+     * application. One of "json" (default), "xml", or "properties" is expected.
+     * Only applicable when the <code>${INPUT}</code> token
+     * is part of the command.
      * @param metadataInputFormat format of the metadata input file
      */
     public void setMetadataInputFormat(String metadataInputFormat) {
-        t.setMetadataInputFormat(metadataInputFormat);
+        h.setMetadataInputFormat(metadataInputFormat);
     }
     /**
-     * Gets the format of the metadata output file from the external 
+     * Gets the format of the metadata output file from the external
      * application. By default no format is set, and metadata extraction
      * patterns are used to extract metadata information.
-     * One of "json", "xml", or "properties" is expected. 
-     * Only applicable when the <code>${OUTPUT}</code> token 
-     * is part of the command.  
+     * One of "json", "xml", or "properties" is expected.
+     * Only applicable when the <code>${OUTPUT}</code> token
+     * is part of the command.
      * @return metadata output format
      */
     public String getMetadataOutputFormat() {
-        return t.getMetadataOutputFormat();
+        return h.getMetadataOutputFormat();
     }
     /**
-     * Sets the format of the metadata output file from the external 
+     * Sets the format of the metadata output file from the external
      * application. One of "json" (default), "xml", or "properties" is expected.
      * Set to <code>null</code> for relying metadata extraction
      * patterns instead.
-     * Only applicable when the <code>${OUTPUT}</code> token 
-     * is part of the command.  
+     * Only applicable when the <code>${OUTPUT}</code> token
+     * is part of the command.
      * @param metadataOutputFormat format of the metadata output file
      */
     public void setMetadataOutputFormat(String metadataOutputFormat) {
-        t.setMetadataOutputFormat(metadataOutputFormat);
+        h.setMetadataOutputFormat(metadataOutputFormat);
     }
 
     /**
@@ -308,77 +300,86 @@ public class ExternalTagger implements IDocumentTagger, IXMLConfigurable {
      * @return temporary directory
      */
     public File getTempDir() {
-        return t.getTempDir();
+        return h.getTempDir();
     }
     /**
      * Sets directory where to store temporary files used for transformation.
      * @param tempDir temporary directory
      */
     public void setTempDir(File tempDir) {
-        t.setTempDir(tempDir);
+        h.setTempDir(tempDir);
     }
-    
+
     @Override
-    public void tagDocument(String reference, InputStream input,
+    protected void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        InputStream is = input;
+        InputStream input = document;
         if (isInputDisabled()) {
-            is = null;
+            input = null;
         }
-        t.transformDocument(reference, is, null, metadata, parsed);
+        h.handleDocument(reference, input, null, metadata);
     }
-    
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        String xml = IOUtils.toString(in);
-        xml = xml.replaceAll("<(/{0,1})tagger", "<$1transformer");
-        this.inputDisabled = Boolean.parseBoolean(xml.replaceFirst(
-                "<\\s*command\\b.*?\\s+inputDisabled\\s*=\\s*\"(.*?)\"", "$1")); 
-        xml = xml.replaceFirst(
-                "(<\\s*command\\b.*?\\s+)inputDisabled\\s*=\\s*\".*?\"", "$1");
-        StringReader r = new StringReader(xml);
-        t.loadFromXML(r);
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        h.loadHandlerFromXML(xml);
+        setInputDisabled(
+                xml.getBoolean("command/@inputDisabled", isInputDisabled()));
     }
-    
     @Override
-    public void saveToXML(Writer out) throws IOException {
-        StringWriter w = new StringWriter();
-        t.saveToXML(w);
-        String xml = w.toString();
-        xml = xml.replaceFirst("<transformer class=\".*?\"", 
-                "<tagger class=\"" + getClass().getName() + "\"");
-        xml = xml.replace("</transformer>", "</tagger>");
-        
-        String attrib = "";
-        if (!xml.contains("inputDisabled")) {
-            attrib = "inputDisabled=\"" + inputDisabled + "\" ";
+    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+            throws XMLStreamException {
+
+        // Copied and modified until we make it that XML can be written
+        // to as well:
+        writer.writeStartElement("command");
+        writer.writeAttributeBoolean("inputDisabled", isInputDisabled());
+        writer.writeCharacters(getCommand());
+        writer.writeEndElement();
+        writer.writeElementString(
+                "tempDir", Objects.toString(getTempDir(), null));
+        if (!getMetadataExtractionPatterns().isEmpty()) {
+            writer.writeStartElement("metadata");
+            writer.writeAttributeString(
+                    "inputFormat", getMetadataInputFormat());
+            writer.writeAttributeString(
+                    "outputFormat", getMetadataOutputFormat());
+            for (KeyValueExtractor rfe : getMetadataExtractionPatterns()) {
+                writer.writeStartElement("pattern");
+                writer.writeAttributeString("field", rfe.getKey());
+                writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
+                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
+                writer.writeAttributeBoolean(
+                        "caseSensitive", rfe.isCaseSensitive());
+                writer.writeCharacters(rfe.getRegex());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
         }
-        xml = xml.replaceFirst("<command>", "<command " + attrib + ">");
-        
-        out.write(xml);
-        out.flush();
-        out.close();
+        if (getEnvironmentVariables() != null) {
+            writer.writeStartElement("environment");
+            for (Entry<String, String> entry
+                    : getEnvironmentVariables().entrySet()) {
+                writer.writeStartElement("variable");
+                writer.writeAttribute("name", entry.getKey());
+                writer.writeCharacters(entry.getValue());
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ExternalTagger)) {
-            return false;
-        }
-        ExternalTagger castOther = (ExternalTagger) other;
-        return t.equals(castOther.t);
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return t.hashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {
-        String toString = t.toString();
-        toString = toString.replaceFirst(
-            "ExternalTransformer\\[restrictions=\\[.*?\\],",
-            ExternalTagger.class.getSimpleName() + "[");
-        return toString;
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

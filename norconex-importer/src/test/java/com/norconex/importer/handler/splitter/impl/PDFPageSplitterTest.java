@@ -25,8 +25,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -39,7 +39,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
 public class PDFPageSplitterTest {
 
     private InputStream input;
-    
+
     @Before
     public void setup() throws IOException {
         input = PDFPageSplitterTest.class.getResourceAsStream(
@@ -48,39 +48,38 @@ public class PDFPageSplitterTest {
     @After
     public void tearDown() throws IOException {
         IOUtils.closeQuietly(input);
-    }    
-    
+    }
+
     @Test
     public void testSplit() throws IOException, ImporterHandlerException {
         PDFPageSplitter s = new PDFPageSplitter();
         List<ImporterDocument> pages = split(s);
-        
+
         Assert.assertEquals("Invalid number of pages.", 3, pages.size());
         Assert.assertEquals(1, getPageNo(pages.get(0)));
         Assert.assertEquals(2, getPageNo(pages.get(1)));
         Assert.assertEquals(3, getPageNo(pages.get(2)));
     }
-    
+
     private int getPageNo(ImporterDocument doc) throws IOException {
         return doc.getMetadata().getInt(PDFPageSplitter.DOC_PDF_PAGE_NO);
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         PDFPageSplitter splitter = new PDFPageSplitter();
         splitter.setReferencePagePrefix("#page");
-        System.out.println("Writing/Reading this: " + splitter);
-        XMLConfigurationUtil.assertWriteRead(splitter);
+        XML.assertWriteRead(splitter, "handler");
     }
 
-    private List<ImporterDocument> split(PDFPageSplitter splitter) 
+    private List<ImporterDocument> split(PDFPageSplitter splitter)
             throws IOException, ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
         SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
-        
+
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
-        
+
         List<ImporterDocument> docs = splitter.splitApplicableDocument(
                 doc, new NullOutputStream(), factory, false);
         return docs;

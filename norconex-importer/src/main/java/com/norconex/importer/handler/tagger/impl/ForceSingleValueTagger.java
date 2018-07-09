@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,16 +23,14 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -54,7 +52,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p> 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
  *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -65,7 +63,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
  *      &lt;!-- multiple single value fields allowed --&gt;
  *      
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
@@ -74,16 +72,16 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * keeps the first title value captured. 
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
  *      &lt;singleValue field="title" action="keepFirst"/&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  */
 public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
     private final Map<String, String> singleFields = 
-            new HashMap<String, String>();
+            new HashMap<>();
     
     @Override
     public void tagApplicableDocument(
@@ -127,12 +125,11 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("singleValue");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            String name = node.getString("[@field]");
-            String action = node.getString("[@action]");
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        List<XML> nodes = xml.getXMLList("singleValue");
+        for (XML node : nodes) {
+            String name = node.getString("@field");
+            String action = node.getString("@action");
             addSingleValueField(name, action);
         }
     }
@@ -153,29 +150,15 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ForceSingleValueTagger)) {
-            return false;
-        }
-        ForceSingleValueTagger castOther = (ForceSingleValueTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(singleFields, castOther.singleFields)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(singleFields)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("singleFields", singleFields)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

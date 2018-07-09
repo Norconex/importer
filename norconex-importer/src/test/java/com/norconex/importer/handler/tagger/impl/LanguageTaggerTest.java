@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,25 +24,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class LanguageTaggerTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     private static Map<String, String> sampleTexts;
-    
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         sampleTexts = new HashMap<>();
@@ -59,43 +50,42 @@ public class LanguageTaggerTest {
 
     @Test
     public void testNonMatchingDocLanguage() throws ImporterHandlerException {
-        CachedStreamFactory factory = 
+        CachedStreamFactory factory =
                 new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
-        tagger.setLanguages("fr", "it");
+        tagger.setLanguages(Arrays.asList("fr", "it"));
         ImporterDocument doc = new ImporterDocument(
                 "n/a", factory.newInputStream(sampleTexts.get("en")));
-        tagger.tagDocument(doc.getReference(), 
+        tagger.tagDocument(doc.getReference(),
                 doc.getContent(), doc.getMetadata(), true);
         Assert.assertNotEquals("en", doc.getMetadata().getLanguage());
     }
-    
+
     @Test
     public void testDefaultLanguageDetection() throws ImporterHandlerException {
-        CachedStreamFactory factory = 
+        CachedStreamFactory factory =
                 new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
-        tagger.setLanguages("en", "fr", "it", "es");
-        
+        tagger.setLanguages(Arrays.asList("en", "fr", "it", "es"));
+
         for (String lang : sampleTexts.keySet()) {
             ImporterDocument doc = new ImporterDocument(
                     "n/a", factory.newInputStream(sampleTexts.get(lang)));
-            tagger.tagDocument(doc.getReference(), 
+            tagger.tagDocument(doc.getReference(),
                     doc.getContent(), doc.getMetadata(), true);
             Assert.assertEquals(lang, doc.getMetadata().getLanguage());
         }
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         LanguageTagger tagger = new LanguageTagger();
         tagger.setKeepProbabilities(true);
         tagger.setFallbackLanguage("fr");
 
-        XMLConfigurationUtil.assertWriteRead(tagger);
-        
-        tagger.setLanguages("it", "br", "en");
-        XMLConfigurationUtil.assertWriteRead(tagger);
-    }
+        XML.assertWriteRead(tagger, "handler");
 
+        tagger.setLanguages(Arrays.asList("it", "br", "en"));
+        XML.assertWriteRead(tagger, "handler");
+    }
 }

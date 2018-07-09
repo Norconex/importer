@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ import java.util.Collection;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
@@ -40,7 +40,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="[include|exclude]" 
  *          fields="(coma separated list of fields to match)" &gt;
  *          
@@ -49,14 +49,14 @@ import com.norconex.importer.handler.filter.OnMatch;
  *        (regular expression of value to match)
  *    &lt;/restrictTo&gt;
  *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4> 
  * <p>
  * To exclude documents without titles:
  * </p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="exclude" fields="title,dc:title" /&gt;
  * </pre>
  * 
@@ -111,8 +111,8 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
     }
     
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        String fieldsStr = xml.getString("[@fields]");
+    protected void loadFilterFromXML(XML xml) throws IOException {
+        String fieldsStr = xml.getString("@fields");
         String[] props = StringUtils.split(fieldsStr, ",");
         if (ArrayUtils.isEmpty(props)) {
             props = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -128,37 +128,17 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
     }
     
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("fields", fields)
-            .toString();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(fields)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof EmptyMetadataFilter)) {
-            return false;
-        }
-        EmptyMetadataFilter other = (EmptyMetadataFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(fields, other.fields)
-            .isEquals();
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
 }
 

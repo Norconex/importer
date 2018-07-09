@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -35,6 +34,7 @@ import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -89,7 +89,7 @@ import com.norconex.importer.util.DOMUtil;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
  *          selector="(selector syntax)"
  *          parser="[html|xml]"
  *          sourceCharset="(character encoding)" &gt;
@@ -100,7 +100,7 @@ import com.norconex.importer.util.DOMUtil;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *      
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -108,7 +108,7 @@ import com.norconex.importer.util.DOMUtil;
  * stored within a div with a class named "contact".
  * </p> 
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
  *          selector="div.contact" /&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -196,7 +196,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
             // process "legit" child elements
             for (Element elm : elms) {
                 ImporterMetadata childMeta = new ImporterMetadata();
-                childMeta.load(doc.getMetadata());
+                childMeta.loadFromMap(doc.getMetadata());
                 String childContent = elm.outerHtml();
                 String childEmbedRef = elm.cssSelector();
                 String childRef = doc.getReference() + "!" + childEmbedRef;
@@ -230,10 +230,10 @@ public class DOMSplitter extends AbstractDocumentSplitter
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) {
-        setSelector(xml.getString("[@selector]", getSelector()));
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
-        setParser(xml.getString("[@parser]", getParser()));
+    protected void loadHandlerFromXML(XML xml) {
+        setSelector(xml.getString("@selector", getSelector()));
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setParser(xml.getString("@parser", getParser()));
     }
 
     @Override
@@ -246,34 +246,15 @@ public class DOMSplitter extends AbstractDocumentSplitter
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DOMSplitter)) {
-            return false;
-        }
-        DOMSplitter castOther = (DOMSplitter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(selector, castOther.selector)
-                .append(sourceCharset, castOther.sourceCharset)
-                .append(parser, castOther.parser)                
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(selector)
-                .append(sourceCharset)
-                .append(parser)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("selector", selector)
-                .append("sourceCharset", sourceCharset)
-                .append("parser", parser)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

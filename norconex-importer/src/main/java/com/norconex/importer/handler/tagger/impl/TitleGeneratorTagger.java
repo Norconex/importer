@@ -29,58 +29,56 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
- * <p>Attempts to generate a title from the document content (default) or 
+ * <p>Attempts to generate a title from the document content (default) or
  * a specified metadata field. It does not consider a document format
  * to give value to more terms than other. For instance, it would not
  * consider text found in &lt;H1&gt; tags more importantly than other
  * text in HTML documents.</p>
- * 
- * <p>If {@link #isDetectHeading()} returns <code>true</code>, this handler 
+ *
+ * <p>If {@link #isDetectHeading()} returns <code>true</code>, this handler
  * will check if the content starts with a stand-alone, single-sentence line
- * (which could be the actual title).  
- * That is, a line of text with only one sentence in it, followed by one or 
+ * (which could be the actual title).
+ * That is, a line of text with only one sentence in it, followed by one or
  * more new line characters. To help
  * eliminate cases where such sentence are inappropriate, you can specify a
  * minimum and maximum number of characters that first line should have
- * with {@link #setDetectHeadingMinLength(int)} and 
- * {@link #setDetectHeadingMaxLength(int)} (e.g. to ignore "Page 1" text and 
+ * with {@link #setDetectHeadingMinLength(int)} and
+ * {@link #setDetectHeadingMaxLength(int)} (e.g. to ignore "Page 1" text and
  * the like).</p>
- * 
+ *
  * <p>Unless a target field name is provided, the default field name
  * where the title will be stored is <code>document.generatedTitle</code>.
- * Unless, {@link #setOverwrite(boolean)} is set to <code>true</code>, 
+ * Unless, {@link #setOverwrite(boolean)} is set to <code>true</code>,
  * no title will be generated if one already exists in the target field.</p>
- * 
- * <p>If it cannot generate a title, it will fall-back to retrieving the 
+ *
+ * <p>If it cannot generate a title, it will fall-back to retrieving the
  * first sentence from the text.</p>
- * 
- * <p>The generated title length is limited to 150 characters by default. 
+ *
+ * <p>The generated title length is limited to 150 characters by default.
  * You can change that limit by using
  * {@link #setTitleMaxLength(int)}. Text larger than the max limit will be
- * truncated and three dots will be added in square brackets [...]. 
+ * truncated and three dots will be added in square brackets [...].
  * To remove the limit,
  * use -1 (or constant {@link #UNLIMITED_TITLE_LENGTH}).</p>
- * 
+ *
  * <p>This class should be used as a post-parsing handler only
  * (or otherwise on unformatted text).</p>
- * 
- * <p><b>Since 2.2.0</b>, the algorithm to detect titles has been much 
+ *
+ * <p><b>Since 2.2.0</b>, the algorithm to detect titles has been much
  * simplified to eliminate extra dependencies that were otherwise not required.
  * It uses a generic statistics-based approach to weight each sentences
  * up to a certain amount, and simply returns the sentence that the most
@@ -88,26 +86,26 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * to use a more sophisticated summarization engine if you want more
  * accurate titles generated.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
- *          fromField="(field of text to use/default uses document content)" 
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+ *          fromField="(field of text to use/default uses document content)"
  *          toField="(target field where to store generated title)"
- *          overwrite="[false|true]" 
+ *          overwrite="[false|true]"
  *          titleMaxLength="(max num of chars for generated title)"
  *          detectHeading="[false|true]"
  *          detectHeadingMinLength="(min length a heading title can have)"
  *          detectHeadingMaxLength="(max length a heading title can have)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -116,37 +114,33 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * title.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
  *          toField="title" titleMaxLength="200" detectHeading="true" /&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.1.0
  */
-public class TitleGeneratorTagger 
+public class TitleGeneratorTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
-
-    private static final Logger LOG = 
-            LogManager.getLogger(TitleGeneratorTagger.class);
-    
     // Minimum length a term should have to be considered valuable
     private static final int MIN_TERM_LENGTH = 4;
 
     // Minimum number of occurrences a term should have to be considered valuable
     private static final int MIN_OCCURENCES = 3;
     //TODO have a max num terms?
-    
-    private final EntryValueComparator entryValueComparator = 
-            new EntryValueComparator(); 
-    
-    public static final String DEFAULT_TO_FIELD = 
+
+    private final EntryValueComparator entryValueComparator =
+            new EntryValueComparator();
+
+    public static final String DEFAULT_TO_FIELD =
             ImporterMetadata.DOC_GENERATED_TITLE;
     public static final int DEFAULT_TITLE_MAX_LENGTH = 150;
     public static final int UNLIMITED_TITLE_LENGTH = -1;
     public static final int DEFAULT_HEADING_MIN_LENGTH = 10;
     public static final int DEFAULT_HEADING_MAX_LENGTH = 150;
-    
+
     private static final Pattern PATTERN_HEADING = Pattern.compile(
             "^.*?([^\\n\\r]+)[\\n\\r]", Pattern.DOTALL);
 
@@ -158,7 +152,7 @@ public class TitleGeneratorTagger
     private int detectHeadingMinLength = DEFAULT_HEADING_MIN_LENGTH;
     private int detectHeadingMaxLength = DEFAULT_HEADING_MAX_LENGTH;
 
-    
+
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex)
@@ -168,13 +162,13 @@ public class TitleGeneratorTagger
         if (sectionIndex > 0) {
             return;
         }
-        
+
         // If title already exists and not overwriting, leave now
         if (overwrite && StringUtils.isNotBlank(
                 metadata.getString(getTargetField()))) {
             return;
         }
-        
+
         // Get the text to evaluate
         String text = null;
         if (StringUtils.isNotBlank(fromField)) {
@@ -187,7 +181,7 @@ public class TitleGeneratorTagger
         if (text == null) {
             text = StringUtils.EMPTY;
         }
-        
+
         String title = null;
 
         // Try detecting if there is a text heading
@@ -195,7 +189,7 @@ public class TitleGeneratorTagger
             title = getHeadingTitle(text);
         }
 
-        // No heading, then try stats-based summarizing 
+        // No heading, then try stats-based summarizing
         if (StringUtils.isBlank(title)) {
             title = summarize(text);
         }
@@ -224,7 +218,7 @@ public class TitleGeneratorTagger
     public void setOverwrite(boolean overwrite) {
         this.overwrite = overwrite;
     }
-    
+
     public String getFromField() {
         return fromField;
     }
@@ -257,7 +251,7 @@ public class TitleGeneratorTagger
     public void setFallbackMaxLength(int fallbackMaxLength) {
         this.titleMaxLength = fallbackMaxLength;
     }
-    
+
     public boolean isDetectHeading() {
         return detectHeading;
     }
@@ -295,7 +289,7 @@ public class TitleGeneratorTagger
         if (StringUtils.isBlank(firstLine)) {
             return null;
         }
-        
+
         // if more than one sentence, ignore
         if (StringUtils.split(firstLine, "?!.").length != 1) {
             return null;
@@ -307,12 +301,12 @@ public class TitleGeneratorTagger
         }
         return firstLine;
     }
-    
-    
+
+
     //***********************************************************
-    
+
     private String summarize(String text) {
-        
+
         Index index = indexText(text);
         if (index.sentences.isEmpty()) {
             return StringUtils.EMPTY;
@@ -340,11 +334,11 @@ public class TitleGeneratorTagger
         }
         return topSentence;
     }
-    
+
     private Index indexText(String text) {
         Index index = new Index();
         ConcurrentMap<String, AtomicInteger> terms = new ConcurrentHashMap<>();
-        
+
         // Allow to pass locale, based on language field?
         BreakIterator breakIterator = BreakIterator.getSentenceInstance();
         breakIterator.setText(text);
@@ -356,7 +350,7 @@ public class TitleGeneratorTagger
             String[] sentences = matchText.split("[\\n\\r]");
             for (String sentence : sentences) {
                 String s = StringUtils.trimToNull(sentence);
-                if (s != null 
+                if (s != null
                         && Character.isLetterOrDigit(sentence.codePointAt(0))) {
                     index.sentences.add(sentence);
                     breakWords(sentence, terms);
@@ -365,8 +359,8 @@ public class TitleGeneratorTagger
             start = end;
             end = breakIterator.next();
         }
-        
-        List<Entry<String, AtomicInteger>> sorted = 
+
+        List<Entry<String, AtomicInteger>> sorted =
                 new ArrayList<>(terms.entrySet());
         Collections.sort(sorted, entryValueComparator);
         for (Entry<String, AtomicInteger> entry : sorted) {
@@ -374,7 +368,7 @@ public class TitleGeneratorTagger
             int occurences = entry.getValue().get();
             if (term.length() >= MIN_TERM_LENGTH
                     && occurences >= MIN_OCCURENCES) {
-                index.terms.add(new TermOccurence(term, occurences));            
+                index.terms.add(new TermOccurence(term, occurences));
             }
         }
         return index;
@@ -395,29 +389,24 @@ public class TitleGeneratorTagger
             }
             start = end;
             end = wordIterator.next();
-        }        
-    }
-    
-    @Override
-    protected void loadStringTaggerFromXML(XMLConfiguration xml)
-            throws IOException {
-        setFromField(xml.getString("[@fromField]", getFromField()));
-        setToField(xml.getString("[@toField]", getToField()));
-        setOverwrite(xml.getBoolean("[@overwrite]", isOverwrite()));
-        Integer fbMaxLength = xml.getInteger("[@fallbackMaxLength]", null);
-        if (fbMaxLength != null) {
-            LOG.warn("Attribute \"fallbackMaxLength\" is no longer supported "
-                    + "and will be ignored. Use \"titleMaxLength\" instead.");
         }
-        setTitleMaxLength(xml.getInt(
-                "[@titleMaxLength]", getTitleMaxLength()));
-        setDetectHeading(xml.getBoolean("[@detectHeading]", isDetectHeading()));
-        setDetectHeadingMinLength(xml.getInt(
-                "[@detectHeadingMinLength]", getDetectHeadingMinLength()));
-        setDetectHeadingMaxLength(xml.getInt(
-                "[@detectHeadingMaxLength]", getDetectHeadingMaxLength()));
     }
-    
+
+    @Override
+    protected void loadStringTaggerFromXML(XML xml)
+            throws IOException {
+        setFromField(xml.getString("@fromField", getFromField()));
+        setToField(xml.getString("@toField", getToField()));
+        setOverwrite(xml.getBoolean("@overwrite", isOverwrite()));
+        setTitleMaxLength(xml.getInteger(
+                "@titleMaxLength", getTitleMaxLength()));
+        setDetectHeading(xml.getBoolean("@detectHeading", isDetectHeading()));
+        setDetectHeadingMinLength(xml.getInteger(
+                "@detectHeadingMinLength", getDetectHeadingMinLength()));
+        setDetectHeadingMaxLength(xml.getInteger(
+                "@detectHeadingMaxLength", getDetectHeadingMaxLength()));
+    }
+
     @Override
     protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
@@ -434,65 +423,56 @@ public class TitleGeneratorTagger
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof TitleGeneratorTagger)) {
-            return false;
-        }
-        TitleGeneratorTagger castOther = (TitleGeneratorTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(fromField, castOther.fromField)
-                .append(toField, castOther.toField)
-                .append(overwrite, castOther.overwrite)
-                .append(titleMaxLength, castOther.titleMaxLength)
-                .append(detectHeading, castOther.detectHeading)
-                .append(detectHeadingMinLength, 
-                        castOther.detectHeadingMinLength)
-                .append(detectHeadingMaxLength, 
-                        castOther.detectHeadingMaxLength)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(fromField)
-                .append(toField)
-                .append(overwrite)
-                .append(titleMaxLength)
-                .append(detectHeading)
-                .append(detectHeadingMinLength)
-                .append(detectHeadingMaxLength)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("fromField", fromField)
-                .append("toField", toField)
-                .append("overwrite", overwrite)
-                .append("titleMaxLength", titleMaxLength)
-                .append("detectHeading", detectHeading)
-                .append("detectHeadingMinLength", detectHeadingMinLength)
-                .append("detectHeadingMaxLength", detectHeadingMaxLength)
-                .toString();
-    }    
-    
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+
     //--- Inner classes --------------------------------------------------------
-    class EntryValueComparator 
+    class EntryValueComparator
             implements Comparator<Entry<String, AtomicInteger>> {
         @Override
         public int compare(Entry<String, AtomicInteger> o1,
                 Entry<String, AtomicInteger> o2) {
             return Integer.compare(o2.getValue().get(), o1.getValue().get());
         }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
     }
     class Index {
         private final List<String> sentences = new ArrayList<>();
         private final List<TermOccurence> terms = new ArrayList<>();
-        
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
     }
     class TermOccurence implements Comparable<TermOccurence> {
         private final String term;
@@ -507,36 +487,17 @@ public class TitleGeneratorTagger
             return Integer.compare(occurence, o.occurence);
         }
         @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + occurence;
-            result = prime * result + ((term == null) ? 0 : term.hashCode());
-            return result;
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (!(obj instanceof TermOccurence)) {
-                return false;
-            }
-            TermOccurence other = (TermOccurence) obj;
-            if (occurence != other.occurence) {
-                return false;
-            }
-            if (term == null) {
-                if (other.term != null) {
-                    return false;
-                }
-            } else if (!term.equals(other.term)) {
-                return false;
-            }
-            return true;
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
         }
-    }    
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -35,25 +35,25 @@ public class ScriptTransformerTest {
 
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
-        testScriptTagger("lua", 
+        testScriptTagger("lua",
                 "metadata:addString('test', {'success'});"
               + "local text = content:gsub('Alice', 'Roger');"
               + "return text;"
         );
-    }    
-    
+    }
+
     @Test
-    public void testJavaScript() 
+    public void testJavaScript()
             throws IOException, ImporterHandlerException {
-        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE, 
+        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
                 "metadata.addString('test', 'success');"
               + "text = content.replace(/Alice/g, 'Roger');"
               + "/*return*/ text;"
         );
     }
 
-    private void testScriptTagger(String engineName, String script) 
-            throws IOException, ImporterHandlerException {           
+    private void testScriptTagger(String engineName, String script)
+            throws IOException, ImporterHandlerException {
         ScriptTransformer t = new ScriptTransformer();
         t.setEngineName(engineName);
         t.setScript(script);
@@ -62,7 +62,7 @@ public class ScriptTransformerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        
+
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
@@ -74,19 +74,17 @@ public class ScriptTransformerTest {
 
         Assert.assertEquals("success", successField);
         String content = new String(out.toString());
-        
+
         Assert.assertEquals(0, StringUtils.countMatches(content, "Alice"));
         Assert.assertEquals(34, StringUtils.countMatches(content, "Roger"));
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         ScriptTransformer t = new ScriptTransformer();
         t.setScript("a script");
         t.setEngineName("an engine name");
         t.setMaxReadSize(256);
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

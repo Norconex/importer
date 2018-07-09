@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,19 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.utils.CharsetUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -47,11 +47,11 @@ import com.norconex.importer.util.CharsetUtil;
  * encoding (charset) to a target one. Both the source and target character
  * encodings are optional. If no source character encoding is explicitly
  * provided, it first tries to detect the encoding of the field values
- * before converting them to the target encoding. If the source 
+ * before converting them to the target encoding. If the source
  * character encoding cannot be established, the content encoding will remain
  * unchanged. When no target character encoding is specified, UTF-8 is assumed.
  * </p>
- * 
+ *
  * <h3>Should I use this tagger?</h3>
  * <p>
  * Before using this tagger, you need to know the parsing of documents
@@ -59,12 +59,12 @@ import com.norconex.importer.util.CharsetUtil;
  * and return fields as UTF-8 (for most, if not all content-types).
  * If UTF-8 is your desired target, it only make sense to use this tagger
  * as a pre-parsing handler (for text content-types only) when it is important
- * to work with a specific character encoding before parsing. 
- * If on the other hand you wish to convert to a character encoding to a 
+ * to work with a specific character encoding before parsing.
+ * If on the other hand you wish to convert to a character encoding to a
  * target different than UTF-8, you can use this tagger as a post-parsing
  * handler to do so.
  * </p>
- * 
+ *
  * <h3>Conversion is not flawless</h3>
  * <p>
  * Because character encoding detection is not always accurate and because
@@ -73,30 +73,30 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
  *          sourceCharset="(character encoding)"
  *          targetCharset="(character encoding)"&gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;fieldsRegex&gt;(regex matching fields to detect encoding)&lt;/fieldsRegex&gt;
- *      
- *  &lt;/tagger&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
  * Converts the characters of a "description" field from "ISO-8859-1"
  * to "UTF-8".
- * </p> 
+ * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
  *          sourceCharset="ISO-8859-1" targetCharset="UTF-8"&gt;
  *      &lt;fieldsRegex&gt;description&lt;/fieldsRegex&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.5.0
@@ -104,29 +104,29 @@ import com.norconex.importer.util.CharsetUtil;
 public class CharsetTagger extends AbstractDocumentTagger
         implements IXMLConfigurable {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CharsetTagger.class);    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(CharsetTagger.class);
 
-    public static final String DEFAULT_TARGET_CHARSET = 
+    public static final String DEFAULT_TARGET_CHARSET =
             StandardCharsets.UTF_8.toString();
-    
+
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
     private String fieldsRegex;
-    
+
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         if (StringUtils.isBlank(fieldsRegex)) {
             throw new ImporterHandlerException(
                     "\"fieldsRegex\" cannot be blank on CharsetTagger.");
         }
-        
+
         String[] metaFields = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
-        Pattern pattern = Pattern.compile(fieldsRegex, Pattern.DOTALL 
+        Pattern pattern = Pattern.compile(fieldsRegex, Pattern.DOTALL
                 | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
         for (String metaField : metaFields) {
             if (pattern.matcher(metaField).matches()) {
@@ -137,7 +137,7 @@ public class CharsetTagger extends AbstractDocumentTagger
             }
         }
     }
-    
+
 
     public String getFieldsRegex() {
         return fieldsRegex;
@@ -145,18 +145,18 @@ public class CharsetTagger extends AbstractDocumentTagger
     public void setFieldsRegex(String fieldsRegex) {
         this.fieldsRegex = fieldsRegex;
     }
-    
+
     private void convertCharset(
             String reference, ImporterMetadata metadata, String metaField) {
         List<String> values = metadata.get(metaField);
         if (values == null) {
             return;
         }
-        String declaredEncoding = 
+        String declaredEncoding =
                 metadata.getString(ImporterMetadata.DOC_CONTENT_ENCODING);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
-            String newValue = value;            
+            String newValue = value;
             try {
                 newValue = convertCharset(reference, value, declaredEncoding);
             } catch (IOException e) {
@@ -167,14 +167,14 @@ public class CharsetTagger extends AbstractDocumentTagger
             }
             newValues.add(newValue);
         }
-        metadata.setString(metaField, 
+        metadata.setString(metaField,
                 newValues.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
     }
-    
+
     private String convertCharset(
             String reference, String value, String declaredEncoding)
             throws IOException {
-        
+
         //--- Get source charset ---
         String inputCharset = sourceCharset;
         if (StringUtils.isBlank(inputCharset)) {
@@ -201,20 +201,20 @@ public class CharsetTagger extends AbstractDocumentTagger
             }
             return value;
         }
-        
+
         //--- Convert ---
         try {
             value = CharsetUtil.convertCharset(
                     value, inputCharset, outputCharset);
         } catch (IOException e) {
             LOG.warn("Cannot convert character encoding from " + inputCharset
-                    + " to " + outputCharset 
+                    + " to " + outputCharset
                     + ". Encoding will remain unchanged. "
                     + "Reference: " + reference, e);
         }
         return value;
     }
-    
+
     public String getTargetCharset() {
         return targetCharset;
     }
@@ -230,51 +230,31 @@ public class CharsetTagger extends AbstractDocumentTagger
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
-        setTargetCharset(xml.getString("[@targetCharset]", getTargetCharset()));
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
-    
+
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         writer.writeAttributeString("targetCharset", getTargetCharset());
-        writer.writeElementString("fieldsRegex", fieldsRegex);        
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(sourceCharset)
-            .append(targetCharset)
-            .append(fieldsRegex)
-            .toHashCode();
+        writer.writeElementString("fieldsRegex", fieldsRegex);
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CharsetTagger)) {
-            return false;
-        }
-        CharsetTagger castOther = (CharsetTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(sourceCharset, castOther.sourceCharset)
-                .append(targetCharset, castOther.targetCharset)
-                .append(fieldsRegex, castOther.fieldsRegex)                
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("sourceCharset", sourceCharset)
-                .append("targetCharset", targetCharset)
-                .append("fieldsRegex", fieldsRegex)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

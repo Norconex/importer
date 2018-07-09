@@ -26,63 +26,63 @@
   <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
 
   <preParseHandlers>
-    <filter class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+    <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
         onMatch="include" field="FIELD" format="FORMAT" >
       <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
       <condition operator="ge" date="TODAY-7" />
       <condition operator="lt" date="TODAY" />
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
             onMatch="exclude"  caseSensitive="true" sourceCharset="UTF-8" 
             selector="selector" extract="text" parser="html">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*</regex>
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
             onMatch="include" fields="FIELD1, FIELD2" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
             onMatch="include" field="age" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <condition operator="ge" number="20" />
       <condition operator="lt" number="30" />
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
             onMatch="include"  caseSensitive="true"
             sourceCharset="UTF-8" maxReadSize="9999">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*regex.*</regex>
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
           onMatch="include" field="title">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*potato.*</regex>
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
           onMatch="include">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <regex>.*/login/.*</regex>
-    </filter>
-    <filter class="com.norconex.importer.handler.filter.impl.ScriptFilter"
+    </handler>
+    <handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
             engineName="MyEngine" onMatch="include" 
             sourceCharset="UTF-8" maxReadSize="999">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <script>[CDATA[
         var myvar = "test";
       ]]</script>
-    </filter>    
-    <splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+    </handler>    
+    <handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
           separatorCharacter="A" quoteCharacter="B" escapeCharacter="C"
           useFirstRowAsFields="false" linesToSkip="0" referenceColumn="columnA"
           contentColumns="columnB, columnC, columnD">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </splitter>
-    <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+    </handler>
+    <handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
           selector="div.contact" sourceCharset="UTF-8" parser="xml">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </splitter>    
-    <splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+    </handler>    
+    <handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
           api="microsoft" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <ignoreContent>true</ignoreContent>
@@ -93,63 +93,63 @@
       <targetLanguages>fr,it</targetLanguages>
       <clientId>blahid</clientId>
       <clientSecret>blahsecret</clientSecret>
-    </splitter>
-    <tagger class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <characterCase fieldName="title" type="lower" applyTo="field" />
       <characterCase fieldName="title" type="string" applyTo="value" />
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
           sourceCharset="ISO-8859-1" targetCharset="UTF-8">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <fieldsRegex>description</fieldsRegex>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
           onConflict="replace">
       <constant name="source">web</constant>
       <constant name="department">HR</constant>
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.CopyTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <copy fromField="creator"   toField="author" overwrite="true" />
       <copy fromField="publisher" toField="author" overwrite="true" />
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
           sourceCharset="UTF-8" maxReadSize="999" >  
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <countMatches fromField="ff1" toField="tf1" 
           caseSensitive="false" regex="true">.*</countMatches>
       <countMatches fromField="ff2" toField="tf2"
           caseSensitive="false" regex="true">.*</countMatches>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
           field="datefield" format="yyy-MM-dd" locale="fr" overwrite="true" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
           fromField="FF"  toField="TF" fromLocale="fr" toLocale="en"
           toFormat="EPOCH" keepBadDates="false" overwrite="true" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <fromFormat>yyyy-MM-dd</fromFormat>
       <fromFormat>yy-MM-dd</fromFormat>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
           logFields="field1,field2"
           logContent="true"
           logLevel="INFO" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DeleteTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.DeleteTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <fields>field1, field2</fields>
       <fieldsRegex>^[Xx]-.*</fieldsRegex>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
           field="docSize" overwrite="true" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"
             fromField="FROMFIELD" parser="xml" sourceCharset="UTF-8">
       <restrictTo caseSensitive="true" field="bfield">.*blah</restrictTo>
       <restrictTo caseSensitive="false" field="afield">.*</restrictTo>
@@ -158,8 +158,8 @@
            matchBlanks="false"   defaultValue="NOVALUE1" />
       <dom selector="another selector" toField="TODOFIELD2"
            extract="tagName"     defaultValue="NOVALUE2" />
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <command inputDisabled="true">
         c:\Apps\myapp.exe ${INPUT} ${OUTPUT_META} ${REFERENCE}
@@ -173,31 +173,31 @@
         <variable name="var2">blah blah</variable>
       </environment>
       <tempDir>/some/dir</tempDir>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <singleValue field="authors" action="mergeWith:, "/>
       <singleValue field="title" action="keepLast"/>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <hierarchy fromField="FF1" toField="TF1" 
               fromSeparator="/"  toSeparator="-" overwrite="true" />
       <hierarchy fromField="FF2" toField="TF2" 
               fromSeparator="--"  toSeparator="|" overwrite="false" />
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <fields>title, description</fields>
       <fieldsRegex>collector\..*</fieldsRegex>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
           keepProbabilities="true" sourceCharset="UTF-8"
           maxReadSize="999" fallbackLanguage="en" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <languages>en,fr, it, es</languages>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.MergeTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.MergeTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <merge toField="title" deleteFromFields="true"             
              singleValue="true" singleValueSeparator="," >
@@ -205,13 +205,13 @@
         <fromFieldsRegex>.*title</fromFieldsRegex>
       </merge>
       <merge toField="TF"><fromFields>desc, dc.description</fromFields></merge>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.RenameTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.RenameTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <rename fromField="FF1" toField="TF1" overwrite="true" />
       <rename fromField="FF2" toField="TF2" overwrite="false" />
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.ReplaceTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <replace fromField="FF" toField="TF" caseSensitive="true"
                regex="false" wholeMatch="false" replaceAll="true">
@@ -225,13 +225,13 @@
                regex="false" wholeMatch="false" replaceAll="true">
           <fromValue>apple</fromValue>
       </replace>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
           engineName="myEngine" sourceCharset="UTF8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <script>var myscript = "blah";</script>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.SplitTagger">
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.SplitTagger">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <split fromField="ff1" toField="tf1" regex="true">
           <separator>/</separator>
@@ -239,8 +239,8 @@
       <split fromField="ff2" toField="tf2" regex="false">
           <separator>--</separator>
       </split>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
           inclusive="true" caseSensitive="false"
           sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
@@ -250,24 +250,24 @@
       <textBetween name="targetFieldName">
           <start>[</start><end>]</end>
       </textBetween>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
           sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <pattern field="field1" valueGroup="1" fieldGroup="2">potato</pattern>
       <pattern field="field2" caseSensitive="true">apple</pattern>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
           sourceCharset="UTF-8" fieldName="myfield" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
           fromField="ff" toField="tf" overwrite="false" titleMaxLength="200"
           detectHeading="true" detectHeadingMinLength="20"
           detectHeadingMaxLength="200" sourceCharset="UTF-8" maxReadSize="9999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <tagger class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
+    </handler>
+    <handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
           fromField="field1"
           maxLength="50"
           toField="field2"
@@ -275,16 +275,16 @@
           appendHash="true"
           suffix="!!!" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>    
-    <tagger class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+    </handler>    
+    <handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
           field="uuidField" overwrite="true" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </tagger>
-    <transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
           sourceCharset="ISO-8859-1" targetCharset="UTF-8">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <command>c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${REFERENCE}</command>
       <metadata inputFormat="json" outputFormat="xml">
@@ -296,42 +296,42 @@
         <variable name="var2">blah blah</variable>
       </environment>
       <tempDir>/some/dir</tempDir>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
           caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <reduce>hello\s</reduce>
       <reduce>\n\n</reduce>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer"
           caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <replace><fromValue>apple</fromValue><toValue>orange</toValue></replace>
       <replace><fromValue>one</fromValue><toValue>two</toValue></replace>
       <replace><fromValue>blah</fromValue></replace>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
           engineName="myEngine" sourceCharset="blah" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <script>var blah = 'blah';</script>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.StripAfterTransformer"
           inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <stripAfterRegex>blah</stripAfterRegex>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
           inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <stripBeforeRegex>blah</stripBeforeRegex>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
           inclusive="true" caseSensitive="false" sourceCharset="UTF-8" maxReadSize="999" >
       <restrictTo caseSensitive="false" field="FIELD">.*</restrictTo>
       <stripBetween><start>OPEN</start><end>CLOSE</end></stripBetween>
       <stripBetween><start>A</start><end>Z</end></stripBetween>
-    </transformer>
-    <transformer class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
+    </handler>
+    <handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
           begin="100" end="10000"/>
      
   </preParseHandlers>
@@ -368,11 +368,11 @@
 
   <!-- No point re-testing them all here, just have a few short ones in mixed order. -->
   <postParseHandlers>
-    <tagger class="com.norconex.importer.handler.tagger.impl.DebugTagger"/>
-    <transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"/>
-    <tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"/>
-    <splitter class="com.norconex.importer.handler.splitter.impl.DOMSplitter" selector="blah"/>
-    <filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter" fields="FIELD1" />
+    <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"/>
+    <handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"/>
+    <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"/>
+    <handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter" selector="blah"/>
+    <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter" fields="FIELD1" />
   </postParseHandlers>
 
   <responseProcessors>

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -33,7 +33,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public class StripBetweenTransformerTest {
 
     @Test
-    public void testTransformTextDocument() 
+    public void testTransformTextDocument()
             throws IOException, ImporterHandlerException {
         StripBetweenTransformer t = new StripBetweenTransformer();
         t.addStripEndpoints("<h2>", "</h2>");
@@ -49,10 +49,10 @@ public class StripBetweenTransformerTest {
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(), 
+                htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
 //        System.out.println(os.toString());
-        
+
         Assert.assertEquals(
                 "Length of doc content after transformation is incorrect.",
                 458, os.toString().length());
@@ -63,7 +63,7 @@ public class StripBetweenTransformerTest {
 
 
     @Test
-    public void testCollectorHttpIssue237() 
+    public void testCollectorHttpIssue237()
             throws IOException, ImporterHandlerException {
         StripBetweenTransformer t = new StripBetweenTransformer();
         t.addStripEndpoints("<body>", "<\\!-- START -->");
@@ -72,7 +72,7 @@ public class StripBetweenTransformerTest {
 
         t.setCaseSensitive(false);
         t.setInclusive(true);
-        
+
         String html = "<html><body>"
                 + "ignore this text"
                 + "<!-- START -->extract me 1<!-- END -->"
@@ -93,16 +93,14 @@ public class StripBetweenTransformerTest {
         Assert.assertEquals(
                 "<html>extract me 1extract me 2</html>", output);
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         StripBetweenTransformer t = new StripBetweenTransformer();
         t.setInclusive(true);
         t.addStripEndpoints("<!-- NO INDEX", "/NOINDEX -->");
         t.addStripEndpoints("<!-- HEADER START", "HEADER END -->");
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

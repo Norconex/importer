@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -28,9 +28,9 @@ import com.norconex.importer.handler.filter.impl.NumericMetadataFilter.Operator;
 public class NumericMetadataFilterTest {
 
     @Test
-    public void testAcceptDocument() 
+    public void testAcceptDocument()
             throws IOException, ImporterHandlerException {
-        
+
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("lowerthan", "-4.25");
         meta.addString("inrange", "25");
@@ -59,11 +59,11 @@ public class NumericMetadataFilterTest {
         filter.setField("greaterthan");
         Assert.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
-        
+
         filter.setField("multivalInrange");
         Assert.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
-        
+
         filter.setField("multivalOutrange");
         Assert.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
@@ -73,8 +73,8 @@ public class NumericMetadataFilterTest {
         filter.setField("equal");
         Assert.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
-    }    
-    
+    }
+
     @Test
     public void testWriteRead() throws IOException {
         NumericMetadataFilter filter = new NumericMetadataFilter();
@@ -82,7 +82,6 @@ public class NumericMetadataFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
         filter.addCondition(Operator.GREATER_EQUAL, 20);
         filter.addCondition(Operator.LOWER_THAN, 30);
-        System.out.println("Writing/Reading this: " + filter);
-        XMLConfigurationUtil.assertWriteRead(filter);
+        XML.assertWriteRead(filter, "handler");
     }
 }

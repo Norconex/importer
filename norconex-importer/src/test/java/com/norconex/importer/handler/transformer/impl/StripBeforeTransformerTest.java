@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,15 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.impl.StripBeforeTransformer;
 
 public class StripBeforeTransformerTest {
 
     @Test
-    public void testTransformTextDocument() 
+    public void testTransformTextDocument()
             throws IOException, ImporterHandlerException {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setStripBeforeRegex("So she set to work");
@@ -46,10 +45,10 @@ public class StripBeforeTransformerTest {
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(), 
+                htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
 //        System.out.println(os.toString());
-        
+
         Assert.assertEquals(
                 "Length of doc content after transformation is incorrect.",
                 371, os.toString().length());
@@ -57,15 +56,13 @@ public class StripBeforeTransformerTest {
         is.close();
         os.close();
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setInclusive(false);
         t.setStripBeforeRegex("So she set to work");
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

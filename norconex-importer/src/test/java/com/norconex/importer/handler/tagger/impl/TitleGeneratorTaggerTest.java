@@ -21,26 +21,26 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
-public class TitleGeneratorTest {
+public class TitleGeneratorTaggerTest {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(TitleGeneratorTest.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(TitleGeneratorTaggerTest.class);
 
     // Test for: https://github.com/Norconex/importer/issues/74
     @Test
-    public void testNullFromField() 
+    public void testNullFromField()
             throws IOException, ImporterHandlerException {
-        
+
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setFromField("nullField");
         t.setDetectHeading(true);
@@ -49,17 +49,17 @@ public class TitleGeneratorTest {
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", null, metadata, true);
 
-        Assert.assertNull("Title should be null", 
+        Assert.assertNull("Title should be null",
                 metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE));
     }
-    
+
     @Test
-    public void testSummarizeTitle() 
+    public void testSummarizeTitle()
             throws IOException, ImporterHandlerException {
-        
+
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setToField("mytitle");
-        
+
         File file = TestUtil.getAliceTextFile();
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
@@ -70,20 +70,20 @@ public class TitleGeneratorTest {
         is.close();
 
         String title = metadata.getString("mytitle");
-        
-        LOG.debug("TITLE IS: " + title);        
-        Assert.assertEquals("Wrong title.", 
+
+        LOG.debug("TITLE IS: " + title);
+        Assert.assertEquals("Wrong title.",
                 "that Alice had begun to think that very few things "
               + "indeed were really impossible.",  title);
     }
-    
+
     @Test
-    public void testHeadingTitle() 
+    public void testHeadingTitle()
             throws IOException, ImporterHandlerException {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setDetectHeading(true);
         t.setDetectHeadingMinLength(5);
-        
+
         File file = TestUtil.getAliceTextFile();
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
@@ -94,16 +94,16 @@ public class TitleGeneratorTest {
         is.close();
 
         String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
-        
-        LOG.debug("TITLE IS: " + title);        
+
+        LOG.debug("TITLE IS: " + title);
         Assert.assertEquals("Wrong title.", "Chapter I",  title);
     }
 
     @Test
-    public void testFallbackTitle() 
+    public void testFallbackTitle()
             throws IOException, ImporterHandlerException {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
-        
+
         InputStream is = new ByteArrayInputStream(
                 "This is the first line. This is another line.".getBytes());
 
@@ -114,12 +114,12 @@ public class TitleGeneratorTest {
         is.close();
 
         String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
-        
-        LOG.info("TITLE IS: " + title);        
+
+        LOG.debug("TITLE IS: {}", title);
         Assert.assertEquals("Wrong title.", "This is the first line.",  title);
     }
 
-    
+
     @Test
     public void testWriteRead() throws IOException {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
@@ -130,8 +130,6 @@ public class TitleGeneratorTest {
         t.setDetectHeading(true);
         t.setDetectHeadingMaxLength(200);
         t.setDetectHeadingMinLength(20);
-        LOG.debug("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

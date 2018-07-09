@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,10 +38,6 @@ import com.norconex.importer.handler.ImporterHandlerException;
  */
 public abstract class AbstractDocumentTagger extends AbstractImporterHandler
             implements IDocumentTagger {
-
-    public AbstractDocumentTagger() {
-        super("tagger");
-    }
 
     @Override
     public final void tagDocument(String reference, InputStream document,

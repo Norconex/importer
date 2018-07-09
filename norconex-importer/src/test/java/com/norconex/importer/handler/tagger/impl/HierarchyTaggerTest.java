@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.HierarchyTagger;
 
 public class HierarchyTaggerTest {
 
@@ -38,8 +37,7 @@ public class HierarchyTaggerTest {
                 null, "toField3", null, "toSep3", false);
         tagger.addHierarcyDetails(
                 "fromField4", "toField4", "fromSep4", "toSep4", true);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 
     public void testTagDocument() throws IOException, ImporterHandlerException {
@@ -49,14 +47,13 @@ public class HierarchyTaggerTest {
         tagger.addHierarcyDetails(
                 "path", "tree", "/", "~~~", false);
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         String[] expected = new String[] {
                 "~~~vegetable",
                 "~~~vegetable~~~potato",
                 "~~~vegetable~~~potato~~~sweet"
-        }; 
-        Assert.assertArrayEquals(expected, 
+        };
+        Assert.assertArrayEquals(expected,
                 meta.getStrings("tree").toArray());
     }
-
 }

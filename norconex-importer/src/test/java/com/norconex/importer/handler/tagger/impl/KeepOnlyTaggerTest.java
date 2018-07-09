@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.KeepOnlyTagger;
 
 public class KeepOnlyTaggerTest {
 
@@ -38,8 +37,7 @@ public class KeepOnlyTaggerTest {
         tagger.addField("field1");
         tagger.addField("field2");
         tagger.addField("field3");
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 
     @Test
@@ -59,7 +57,7 @@ public class KeepOnlyTaggerTest {
 
         assertEquals(3, metadata.size());
     }
-    
+
     @Test
     public void testKeepSingleField() throws Exception {
 
@@ -94,7 +92,7 @@ public class KeepOnlyTaggerTest {
     }
 
     @Test
-    public void testKeepFieldsRegexViaXMLConfig() 
+    public void testKeepFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("content-type", "blah");
@@ -105,15 +103,15 @@ public class KeepOnlyTaggerTest {
         meta.addString("date", "blah");
         meta.addString("X-RATE-LIMIT-LIMIT", "blah");
         meta.addString("source", "blah");
-        
+
         KeepOnlyTagger tagger = new KeepOnlyTagger();
-        
+
         Reader r = new StringReader(
                 "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
         tagger.loadFromXML(r);
-        
+
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         Assert.assertEquals("Invalid field count", 5, meta.size());
     }
 }

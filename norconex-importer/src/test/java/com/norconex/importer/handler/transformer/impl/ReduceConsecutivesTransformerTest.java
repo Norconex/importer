@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,23 +25,22 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer;
 
 public class ReduceConsecutivesTransformerTest {
 
-    private final String xml = "<transformer><reduce>\\stext</reduce>"
+    private final String xml = "<handler><reduce>\\stext</reduce>"
             + "<reduce>\\t</reduce><reduce>\\n\\r</reduce>"
-            + "<reduce>\\s</reduce><reduce>.</reduce></transformer>";
-    
+            + "<reduce>\\s</reduce><reduce>.</reduce></handler>";
+
     @Test
-    public void testTransformTextDocument() 
+    public void testTransformTextDocument()
             throws ImporterHandlerException, IOException {
         String text = "\t\tThis is the text TeXt I want to modify...\n\r\n\r"
                 + "     Too much space.";
-        
+
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
 
         Reader reader = new InputStreamReader(
@@ -54,25 +53,25 @@ public class ReduceConsecutivesTransformerTest {
         } finally {
             IOUtils.closeQuietly(reader);
         }
-        
+
         InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-        try { 
+        try {
             t.transformDocument(
                     "dummyRef", is, os, new ImporterMetadata(), true);
             String response = os.toString();
 //            System.out.println(response);
             Assert.assertEquals(
-                    "\tthis is the text i want to modify.\n\r too much space.", 
+                    "\tthis is the text i want to modify.\n\r too much space.",
                     response.toLowerCase());
         } finally {
             IOUtils.closeQuietly(is);
             IOUtils.closeQuietly(os);
         }
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
@@ -80,8 +79,6 @@ public class ReduceConsecutivesTransformerTest {
                 IOUtils.toInputStream(xml, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

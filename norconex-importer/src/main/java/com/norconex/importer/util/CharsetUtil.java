@@ -29,10 +29,10 @@ import java.nio.charset.CodingErrorAction;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -44,9 +44,9 @@ import com.norconex.commons.lang.io.CachedInputStream;
  */
 public final class CharsetUtil {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CharsetUtil.class);  
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(CharsetUtil.class);
+
     /**
      * Constructor.
      */
@@ -62,9 +62,9 @@ public final class CharsetUtil {
      * @throws IOException problem converting character set
      */
     public static String convertCharset(
-            String input, String inputCharset, 
+            String input, String inputCharset,
             String outputCharset) throws IOException {
-        ByteArrayInputStream is = 
+        ByteArrayInputStream is =
                 new ByteArrayInputStream(input.getBytes(inputCharset));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         convertCharset(is, inputCharset, os, outputCharset);
@@ -74,7 +74,7 @@ public final class CharsetUtil {
         IOUtils.closeQuietly(os);
         return output;
     }
-    
+
     /**
      * Converts the character encoding of the supplied input.
      * @param input input stream to apply conversion
@@ -84,7 +84,7 @@ public final class CharsetUtil {
      * @throws IOException problem converting character set
      */
     public static void convertCharset(
-            InputStream input, String inputCharset, 
+            InputStream input, String inputCharset,
             OutputStream output, String outputCharset) throws IOException {
         CharsetDecoder decoder = Charset.forName(inputCharset).newDecoder();
         decoder.onMalformedInput(CodingErrorAction.REPLACE);
@@ -98,7 +98,7 @@ public final class CharsetUtil {
         writer.flush();
         rewind(input);
     }
-    
+
     /**
      * Detects the character encoding of a string.
      * @param input the input to detect encoding on
@@ -109,7 +109,7 @@ public final class CharsetUtil {
     public static String detectCharset(String input) throws IOException {
         return detectCharset(input, null);
     }
-    
+
     /**
      * Detects the character encoding of a string. When the character
      * encoding of what the input is supposed to be is known, specifying
@@ -141,7 +141,7 @@ public final class CharsetUtil {
     }
 
     /**
-     * Detects the character encoding of an input stream. 
+     * Detects the character encoding of an input stream.
      * {@link InputStream#markSupported()} must return <code>true</code>
      * otherwise no decoding will be attempted.
      * @param input the input to detect encoding on
@@ -152,7 +152,7 @@ public final class CharsetUtil {
     public static String detectCharset(InputStream input) throws IOException {
         return detectCharset(input, null);
     }
-    
+
     /**
      * Detects the character encoding of an input stream. When the character
      * encoding of what the input is supposed to be is known, specifying
@@ -175,7 +175,7 @@ public final class CharsetUtil {
                     + "Will not attempt to detect encoding.");
             return declaredEncoding;
         }
-        
+
         CharsetDetector cd = new CharsetDetector();
         if (StringUtils.isNotBlank(declaredEncoding)) {
             cd.setDeclaredEncoding(declaredEncoding);
@@ -191,10 +191,10 @@ public final class CharsetUtil {
         }
         return charset;
     }
-    
+
     private static void rewind(InputStream is) throws IOException {
         //TODO investigate why regular reset on CachedInputStream has
-        //no effect and returns an empty stream when read again. Fix that 
+        //no effect and returns an empty stream when read again. Fix that
         //instead of having this method.
         if (is instanceof CachedInputStream) {
             ((CachedInputStream) is).rewind();;

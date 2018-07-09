@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,18 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -53,7 +51,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
  *          inclusive="[false|true]" 
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
@@ -71,7 +69,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/textBetween&gt;
  *      &lt;!-- multiple textBetween tags allowed --&gt;
  * 
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -80,12 +78,12 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * field.
  * </p> 
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger" &gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger" &gt;
  *      &lt;textBetween name="content"&gt;
  *          &lt;start&gt;OPEN&lt;/start&gt;
  *          &lt;end&gt;CLOSE&lt;/end&gt;
  *      &lt;/textBetween&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Khalid AlHomoud
  * @author Pascal Essiembre
@@ -106,8 +104,7 @@ public class TextBetweenTagger
             flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
         }
         for (TextBetween between : betweens) {
-            List<Pair<Integer, Integer>> matches = 
-                    new ArrayList<Pair<Integer, Integer>>();
+            List<Pair<Integer, Integer>> matches = new ArrayList<>();
             Pattern leftPattern = Pattern.compile(between.start, flags);
             Matcher leftMatch = leftPattern.matcher(content);
             while (leftMatch.find()) {
@@ -174,15 +171,14 @@ public class TextBetweenTagger
     }
     
     @Override
-    protected void loadStringTaggerFromXML(XMLConfiguration xml)
+    protected void loadStringTaggerFromXML(XML xml)
             throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-        setInclusive(xml.getBoolean("[@inclusive]", false));
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("textBetween");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+        setInclusive(xml.getBoolean("@inclusive", false));
+        List<XML> nodes = xml.getXMLList("textBetween");
+        for (XML node : nodes) {
             addTextEndpoints(
-                    node.getString("[@name]"),
+                    node.getString("@name"),
                     node.getString("start", null),
                     node.getString("end", null));
         }
@@ -209,37 +205,17 @@ public class TextBetweenTagger
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof TextBetweenTagger)) {
-            return false;
-        }
-        TextBetweenTagger castOther = (TextBetweenTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(betweens, castOther.betweens)
-                .append(inclusive, castOther.inclusive)
-                .append(caseSensitive, castOther.caseSensitive)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(betweens)
-                .append(inclusive)
-                .append(caseSensitive)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("betweens", betweens)
-                .append("inclusive", inclusive)
-                .append("caseSensitive", caseSensitive)
-                .toString();
-    }    
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
     
     private static class TextBetween implements Comparable<TextBetween> {
         private final String name;
@@ -251,45 +227,21 @@ public class TextBetweenTagger
             this.start = start;
             this.end = end;
         }
+        public int compareTo(final TextBetween other) {
+            return CompareToBuilder.reflectionCompare(this, other);
+        }
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof TextBetween)) {
-                return false;
-            }
-            TextBetween castOther = (TextBetween) other;
-            return new EqualsBuilder()
-                    .append(name, castOther.name)
-                    .append(start, castOther.start)
-                    .append(end, castOther.end)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(name)
-                    .append(start)
-                    .append(end)
-                    .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
         }
-        private transient String toString;
         @Override
         public String toString() {
-            if (toString == null) {
-                toString = new ToStringBuilder(
-                        this, ToStringStyle.SHORT_PREFIX_STYLE)
-                        .append("name", name)
-                        .append("start", start)
-                        .append("end", end)
-                        .toString();
-            }
-            return toString;
-        }
-        public int compareTo(final TextBetween other) {
-            return new CompareToBuilder()
-                    .append(start, other.start)
-                    .append(end, other.end)
-                    .append(name, other.name)
-                    .toComparison();
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
 }

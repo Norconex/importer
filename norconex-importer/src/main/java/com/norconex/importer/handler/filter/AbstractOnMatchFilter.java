@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package com.norconex.importer.handler.filter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationException;
+import com.norconex.commons.lang.xml.XML;
 
 
 /**
@@ -47,17 +47,17 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
 		}
 		this.onMatch = onMatch;
 	}
-	
+
 
     /**
      * Convenience method for subclasses to load the "onMatch"
-     * attribute from an XML file when {@link XMLConfiguration} is used.
+     * attribute from an XML file when {@link XML} is used.
      * @param xml XML configuration
      */
-    protected final void loadFromXML(XMLConfiguration xml) {
+    protected final void loadFromXML(XML xml) {
         OnMatch configOnMatch = OnMatch.INCLUDE;
         String onMatchStr = xml.getString(
-                "[@onMatch]", OnMatch.INCLUDE.toString()).toUpperCase();
+                "@onMatch", OnMatch.INCLUDE.toString()).toUpperCase();
         try {
             configOnMatch = OnMatch.valueOf(onMatchStr);
         } catch (IllegalArgumentException e)  {
@@ -67,39 +67,28 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
         }
         this.onMatch = configOnMatch;
     }
-    
+
     /**
      * Convenience method for subclasses to save the "onMatch" attribute
-     * to an XML file when {@link XMLConfiguration} is used.
+     * to an XML file when {@link XML} is used.
      * @param writer XML stream writer
      * @throws XMLStreamException problem saving extra content types
      */
     protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttribute("onMatch", onMatch.toString().toLowerCase()); 
-    }
-	
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("onMatch", onMatch)
-                .toString();
+        writer.writeAttribute("onMatch", onMatch.toString().toLowerCase());
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractOnMatchFilter)) {
-            return false;
-        }
-        AbstractOnMatchFilter castOther = (AbstractOnMatchFilter) other;
-        return new EqualsBuilder()
-                .append(onMatch, castOther.onMatch)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(onMatch)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(this,
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

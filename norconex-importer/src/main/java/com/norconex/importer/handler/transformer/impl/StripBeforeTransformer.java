@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,69 +20,69 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
  * <p>Strips any content found before first match found for given pattern.</p>
- * 
- * <p>This class can be used as a pre-parsing (text content-types only) 
+ *
+ * <p>This class can be used as a pre-parsing (text content-types only)
  * or post-parsing handlers.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
- *          inclusive="[false|true]" 
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+ *          inclusive="[false|true]"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;stripBeforeRegex&gt;(regex)&lt;/stripBeforeRegex&gt;
- *      
- *  &lt;/transformer&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
- * The following will strip all text up to and including this HTML comment: 
+ * The following will strip all text up to and including this HTML comment:
  * <code>&lt;!-- HEADER_END --&gt;</code>.
  * </p>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
  *          inclusive="true"&gt;
  *      &lt;stripBeforeRegex&gt;&lt;![CDATA[&lt;!-- HEADER_END --&gt;]]&gt;&lt;/stripBeforeRegex&gt;
- *  &lt;/transformer&gt;
- * </pre> 
+ *  &lt;/handler&gt;
+ * </pre>
  * @author Pascal Essiembre
  */
 public class StripBeforeTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(StripBeforeTransformer.class);    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(StripBeforeTransformer.class);
 
     private boolean inclusive;
     private boolean caseSensitive;
     private String stripBeforeRegex;
 
     @Override
-    protected void transformStringContent(String reference,
-            StringBuilder content, ImporterMetadata metadata, boolean parsed,
-            int sectionIndex) {
+    protected void transformStringContent(final String reference,
+            final StringBuilder content, final ImporterMetadata metadata, final boolean parsed,
+            final int sectionIndex) {
         if (stripBeforeRegex == null) {
             LOG.error("No regular expression provided.");
             return;
@@ -101,7 +101,7 @@ public class StripBeforeTransformer extends AbstractStringTransformer
             }
         }
     }
-        
+
     public boolean isInclusive() {
         return inclusive;
     }
@@ -109,7 +109,7 @@ public class StripBeforeTransformer extends AbstractStringTransformer
      * Sets whether the match itself should be stripped or not.
      * @param inclusive <code>true</code> to strip start and end text
      */
-    public void setInclusive(boolean inclusive) {
+    public void setInclusive(final boolean inclusive) {
         this.inclusive = inclusive;
     }
     public boolean isCaseSensitive() {
@@ -119,27 +119,27 @@ public class StripBeforeTransformer extends AbstractStringTransformer
      * Sets whether to ignore case when matching text.
      * @param caseSensitive <code>true</code> to consider character case
      */
-    public void setCaseSensitive(boolean caseSensitive) {
+    public void setCaseSensitive(final boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
 
     public String getStripBeforeRegex() {
         return stripBeforeRegex;
     }
-    public void setStripBeforeRegex(String regex) {
+    public void setStripBeforeRegex(final String regex) {
         this.stripBeforeRegex = regex;
     }
 
     @Override
-    protected void loadStringTransformerFromXML(XMLConfiguration xml)
+    protected void loadStringTransformerFromXML(final XML xml)
             throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-        setInclusive(xml.getBoolean("[@inclusive]", false));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+        setInclusive(xml.getBoolean("@inclusive", false));
         setStripBeforeRegex(xml.getString("stripBeforeRegex", null));
     }
-    
+
     @Override
-    protected void saveStringTransformerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveStringTransformerToXML(final EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));
@@ -148,45 +148,18 @@ public class StripBeforeTransformer extends AbstractStringTransformer
         writer.writeCharacters(stripBeforeRegex);
         writer.writeEndElement();
     }
-    
+
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("inclusive", inclusive)
-            .append("caseSensitive", caseSensitive)
-            .append("stripBeforeRegex", stripBeforeRegex)
-            .toString();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-    
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(inclusive)
-            .append(stripBeforeRegex)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof StripBeforeTransformer)) {
-            return false;
-        }
-        StripBeforeTransformer other = (StripBeforeTransformer) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(caseSensitive, other.caseSensitive)
-            .append(inclusive, other.inclusive)
-            .append(stripBeforeRegex, other.stripBeforeRegex)
-            .isEquals();
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
 }

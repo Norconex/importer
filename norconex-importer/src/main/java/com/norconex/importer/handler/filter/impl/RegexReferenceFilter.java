@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
@@ -37,7 +37,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
  *          onMatch="[include|exclude]" 
  *          caseSensitive="[false|true]"&gt;
  *          
@@ -48,7 +48,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *          
  *      &lt;regex&gt;(regular expression of reference to match)&lt;/regex&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * 
@@ -57,10 +57,10 @@ import com.norconex.importer.handler.filter.OnMatch;
  * The following will reject documents having "/login/" in their reference. 
  * </p> 
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
  *          onMatch="exclude"&gt;
  *      &lt;regex&gt;.*&#47;login/.*&lt;/regex&gt;
- *  &lt;/filter&gt; 
+ *  &lt;/handler&gt; 
  * </pre>
  * 
  * @author Pascal Essiembre
@@ -134,8 +134,8 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", caseSensitive));
+    protected void loadFilterFromXML(XML xml) throws IOException {
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         setRegex(xml.getString("regex", regex));
     }
     
@@ -147,39 +147,19 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
     }
     
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("regex", regex)
-            .append("caseSensitive", caseSensitive)
-            .toString();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
     }
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(caseSensitive)
-            .append(regex)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
     }
-
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof RegexReferenceFilter)) {
-            return false;
-        }
-        RegexReferenceFilter other = (RegexReferenceFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(caseSensitive, other.caseSensitive)
-            .append(regex, other.regex)
-            .isEquals();
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames("cachedPattern")
+                .toString();
     }
 }
 

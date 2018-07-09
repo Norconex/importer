@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.tika.language.translate.GoogleTranslator;
 import org.apache.tika.language.translate.Lingo24Translator;
 
 import com.norconex.importer.ImporterRuntimeException;
@@ -25,7 +24,7 @@ import com.norconex.importer.ImporterRuntimeException;
  * @author Pascal Essiembre
  * @since 2.1.0
  */
-/*default*/ class FixedLingo24Translator extends GoogleTranslator {
+/*default*/ class FixedLingo24Translator extends Lingo24Translator {
 
     public FixedLingo24Translator() {
         super();

@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,22 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class DOMContentFilterTest {
 
-    private String html = "<html><head><title>Test page</title></head>"
+    private final String html = "<html><head><title>Test page</title></head>"
             + "<body>This is sample content.<p>"
             + "<div class=\"disclaimer\">please skip me!</div></body></html>";
 
-    private String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
+    private final String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
             + "<food><fruit color=\"red\">an apple</fruit></food>";
 
     @Test
-    public void testFilterHTML() 
+    public void testFilterHTML()
             throws IOException, ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         ImporterMetadata metadata = new ImporterMetadata();
@@ -45,24 +45,24 @@ public class DOMContentFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         filter.setSelector("div.disclaimer");
-        Assert.assertFalse("disclaimer should have been rejected.", 
+        Assert.assertFalse("disclaimer should have been rejected.",
                 filter(filter, html, metadata));
 
         filter.setSelector("div.disclaimer");
         filter.setRegex("\\bskip me\\b");
-        Assert.assertFalse("disclaimer skip me should have been rejected.", 
+        Assert.assertFalse("disclaimer skip me should have been rejected.",
                 filter(filter, html, metadata));
 
         filter.setSelector("div.disclaimer");
         filter.setRegex("\\bdo not skip me\\b");
         Assert.assertTrue(
-                "disclaimer do not skip me should have been accepted.", 
+                "disclaimer do not skip me should have been accepted.",
                 filter(filter, html, metadata));
-    }    
+    }
 
-    
+
     @Test
-    public void testFilterXML() 
+    public void testFilterXML()
             throws IOException, ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         ImporterMetadata metadata = new ImporterMetadata();
@@ -71,31 +71,31 @@ public class DOMContentFilterTest {
         filter.setOnMatch(OnMatch.INCLUDE);
 
         filter.setSelector("food > fruit[color=red]");
-        Assert.assertTrue("Red fruit should have been accepted.", 
+        Assert.assertTrue("Red fruit should have been accepted.",
                 filter(filter, xml, metadata));
 
         filter.setSelector("food > fruit[color=green]");
-        Assert.assertFalse("Green fruit should have been rejected.", 
+        Assert.assertFalse("Green fruit should have been rejected.",
                 filter(filter, xml, metadata));
 
         filter.setSelector("food > fruit");
         filter.setRegex("apple");
-        Assert.assertTrue("Apple should have been accepted.", 
+        Assert.assertTrue("Apple should have been accepted.",
                 filter(filter, xml, metadata));
 
         filter.setSelector("food > fruit");
         filter.setRegex("carrot");
-        Assert.assertFalse("Carrot should have been rejected.", 
+        Assert.assertFalse("Carrot should have been rejected.",
                 filter(filter, xml, metadata));
-    }    
-    
-    private boolean filter(DOMContentFilter filter, 
-            String content, ImporterMetadata metadata) 
+    }
+
+    private boolean filter(DOMContentFilter filter,
+            String content, ImporterMetadata metadata)
                     throws ImporterHandlerException, IOException {
         return filter.acceptDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), metadata, false);
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         DOMContentFilter filter = new DOMContentFilter();
@@ -103,7 +103,6 @@ public class DOMContentFilterTest {
         filter.setRegex("blah");
         filter.setOnMatch(OnMatch.INCLUDE);
         filter.setSelector("selector");
-        System.out.println("Writing/Reading this: " + filter);
-        XMLConfigurationUtil.assertWriteRead(filter);
+        XML.assertWriteRead(filter, "handler");
     }
 }

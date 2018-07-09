@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -27,7 +27,7 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class RegexMetadataFilterTest {
 
     @Test
-    public void testAcceptDocument() 
+    public void testAcceptDocument()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("field1", "a string to match");
@@ -38,16 +38,16 @@ public class RegexMetadataFilterTest {
         filter.setField("field1");
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        
-        Assert.assertFalse("field1 not filtered properly.", 
+
+        Assert.assertFalse("field1 not filtered properly.",
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setField("field2");
-        Assert.assertTrue("field2 not filtered properly.", 
+        Assert.assertTrue("field2 not filtered properly.",
                 filter.acceptDocument("n/a", null, meta, false));
 
-    }    
-    
+    }
+
     @Test
     public void testWriteRead() throws IOException {
         RegexMetadataFilter filter = new RegexMetadataFilter();
@@ -55,7 +55,6 @@ public class RegexMetadataFilterTest {
         filter.setField("field1");
         filter.setRegex("blah");
         filter.setOnMatch(OnMatch.INCLUDE);
-        System.out.println("Writing/Reading this: " + filter);
-        XMLConfigurationUtil.assertWriteRead(filter);
+        XML.assertWriteRead(filter, "handler");
     }
 }

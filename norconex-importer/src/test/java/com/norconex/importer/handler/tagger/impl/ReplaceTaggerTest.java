@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.io.StringReader;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
@@ -29,11 +29,11 @@ public class ReplaceTaggerTest {
 
     // Test for: https://github.com/Norconex/collector-http/issues/416
     @Test
-    public void testNoValue() 
+    public void testNoValue()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("test", "a b c"); 
-        
+        meta.addString("test", "a b c");
+
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
 
@@ -46,7 +46,7 @@ public class ReplaceTaggerTest {
         r.setToValue("");
         tagger.addReplacement(r);
         tagger.tagDocument("n/a", null, meta, true);
-        
+
         // normal
         r = new Replacement();
         r.setFromField("test");
@@ -79,17 +79,17 @@ public class ReplaceTaggerTest {
         Assert.assertEquals("ac", meta.getString("regexXML"));
         Assert.assertEquals("a  c", meta.getString("normalXML"));
     }
-    
+
     //This is a test for https://github.com/Norconex/importer/issues/29
-    //where the replaced value is equal to the original (EXP_NAME1), it should 
+    //where the replaced value is equal to the original (EXP_NAME1), it should
     //still store it (was a bug).
     @Test
-    public void testMatchReturnSameValue() 
+    public void testMatchReturnSameValue()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("EXP_NAME+COUNTRY1", "LAZARUS ANDREW"); 
-        meta.addString("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]"); 
-        
+        meta.addString("EXP_NAME+COUNTRY1", "LAZARUS ANDREW");
+        meta.addString("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]");
+
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
 
@@ -118,7 +118,7 @@ public class ReplaceTaggerTest {
         r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
         r.setToValue("$1");
         tagger.addReplacement(r);
-        
+
         r = new Replacement();
         r.setFromField("EXP_NAME+COUNTRY2");
         r.setToField("EXP_COUNTRY2");
@@ -128,18 +128,18 @@ public class ReplaceTaggerTest {
         tagger.addReplacement(r);
 
         tagger.tagDocument("n/a", null, meta, true);
-        
+
         Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME1"));
         Assert.assertEquals("", meta.getString("EXP_COUNTRY1"));
         Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME2"));
         Assert.assertEquals("US", meta.getString("EXP_COUNTRY2"));
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        
+
         r = new Replacement();
         r.setFromValue("fromValue1");
         r.setToValue("toValue1");
@@ -169,24 +169,23 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setCaseSensitive(true);
         tagger.addReplacement(r);
-        
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+
+        XML.assertWriteRead(tagger, "handler");
     }
 
-    
+
     @Test
     public void testRegularReplace() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("fullMatchField", "full value match"); 
-        meta.addString("partialNoMatchField", "partial value nomatch"); 
-        meta.addString("matchOldField", "match to new field"); 
-        meta.addString("nomatchOldField", "no match to new field"); 
-        meta.addString("caseField", "Value Of Mixed Case"); 
-        
+        meta.addString("fullMatchField", "full value match");
+        meta.addString("partialNoMatchField", "partial value nomatch");
+        meta.addString("matchOldField", "match to new field");
+        meta.addString("nomatchOldField", "no match to new field");
+        meta.addString("caseField", "Value Of Mixed Case");
+
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        
+
         r = new Replacement();
         r.setFromValue("full value match");
         r.setToValue("replaced");
@@ -219,37 +218,37 @@ public class ReplaceTaggerTest {
         r.setFromField("caseField");
         r.setCaseSensitive(false);
         tagger.addReplacement(r);
-        
+
         tagger.tagDocument("n/a", null, meta, true);
 
         Assert.assertEquals("replaced", meta.getString("fullMatchField"));
         Assert.assertEquals(
                 "partial value nomatch", meta.getString("partialNoMatchField"));
-        Assert.assertEquals("replaced to new field", 
+        Assert.assertEquals("replaced to new field",
                 meta.getString("matchNewField"));
-        Assert.assertEquals("no match to new field", 
+        Assert.assertEquals("no match to new field",
                 meta.getString("nomatchOldField"));
         Assert.assertNull(meta.getString("nomatchNewField"));
         Assert.assertEquals("REPLACED", meta.getString("caseField"));
     }
-    
+
     @Test
     public void testRegexReplace() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("path1", "/this/is/a/path/file.doc"); 
-        meta.addString("path2", "/that/is/a/path/file.doc"); 
-        meta.addString("path3", "/That/Is/A/Path/File.doc"); 
-        
+        meta.addString("path1", "/this/is/a/path/file.doc");
+        meta.addString("path2", "/that/is/a/path/file.doc");
+        meta.addString("path3", "/That/Is/A/Path/File.doc");
+
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
-        
+
         r = new Replacement();
         r.setFromValue("(.*)/.*");
         r.setToValue("$1");
         r.setFromField("path1");
         r.setRegex(true);
         tagger.addReplacement(r);
-        
+
         r = new Replacement();
         r.setFromValue("(.*)/.*");
         r.setToValue("$1");
@@ -265,7 +264,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setCaseSensitive(false);
         tagger.addReplacement(r);
-        
+
         tagger.tagDocument("n/a", null, meta, true);
 
         Assert.assertEquals("/this/is/a/path", meta.getString("path1"));
@@ -277,11 +276,11 @@ public class ReplaceTaggerTest {
     }
 
     @Test
-    public void testWholeAndPartialMatches() 
+    public void testWholeAndPartialMatches()
              throws IOException, ImporterHandlerException {
         String originalValue = "One dog, two dogs, three dogs";
 
-        
+
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("field", originalValue);
 
@@ -319,7 +318,7 @@ public class ReplaceTaggerTest {
         r.setRegex(false);
         r.setCaseSensitive(true);
         tagger.addReplacement(r);
-        
+
         r = new Replacement();
         r.setFromValue("One DOG, two DOGS, three DOGS");
         r.setToValue("One cat, two cats, three cats");
@@ -445,7 +444,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setCaseSensitive(true);
         tagger.addReplacement(r);
-        
+
         //=== Asserts ==========================================================
         tagger.tagDocument("n/a", null, meta, true);
 
@@ -490,10 +489,10 @@ public class ReplaceTaggerTest {
     }
 
     @Test
-    public void testReplaceAll() 
+    public void testReplaceAll()
              throws IOException, ImporterHandlerException {
 
-        
+
         String originalValue = "One dog, two dogs, three dogs";
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("field", originalValue);
@@ -522,7 +521,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setReplaceAll(true);
         tagger.addReplacement(r);
-        
+
         //--- Partial-match regular replace all --------------------------------
         r = new Replacement();
         r.setFromValue("DOG");
@@ -533,7 +532,7 @@ public class ReplaceTaggerTest {
         r.setRegex(false);
         r.setReplaceAll(true);
         tagger.addReplacement(r);
-        
+
         //--- Partial-match regex replace all ----------------------------------
         r = new Replacement();
         r.setFromValue("D.G");
@@ -544,7 +543,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setReplaceAll(true);
         tagger.addReplacement(r);
-        
+
         //=== Asserts ==========================================================
         tagger.tagDocument("n/a", null, meta, true);
 

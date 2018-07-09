@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,14 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
@@ -49,44 +47,41 @@ import com.norconex.importer.handler.filter.OnMatch;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
- *          onMatch="[include|exclude]" 
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
+ *          onMatch="[include|exclude]"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *          
+ *
  *      &lt;regex&gt;(regular expression of value to match)&lt;/regex&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * <h4>Usage example:</h4> 
+ * <h4>Usage example:</h4>
  * <p>
  * This example will accept only documents containing word "apple".
  * </p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
  *          onMatch="include" &gt;
  *      &lt;regex&gt;.*apple.*&lt;/regex&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class RegexContentFilter extends AbstractStringFilter {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(RegexContentFilter.class);
-    
     private boolean caseSensitive;
     private String regex;
     private Pattern cachedPattern;
-    
+
     public RegexContentFilter() {
         this(null, OnMatch.INCLUDE);
     }
@@ -96,7 +91,7 @@ public class RegexContentFilter extends AbstractStringFilter {
     public RegexContentFilter(String regex, OnMatch onMatch) {
         this(regex, onMatch, false);
     }
-    public RegexContentFilter(String regex, 
+    public RegexContentFilter(String regex,
             OnMatch onMatch, boolean caseSensitive) {
         super();
         this.caseSensitive = caseSensitive;
@@ -118,7 +113,7 @@ public class RegexContentFilter extends AbstractStringFilter {
         this.caseSensitive = caseSensitive;
         cachedPattern = null;
     }
-    
+
     @Override
     protected boolean isStringContentMatching(String reference,
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
@@ -129,7 +124,7 @@ public class RegexContentFilter extends AbstractStringFilter {
         }
         return getCachedPattern().matcher(content).matches();
     }
-    
+
     private synchronized Pattern getCachedPattern() {
         if (cachedPattern != null) {
             return cachedPattern;
@@ -147,56 +142,34 @@ public class RegexContentFilter extends AbstractStringFilter {
         cachedPattern = p;
         return p;
     }
-    
+
     @Override
-    protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer) 
+    protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
-        writer.writeAttribute("caseSensitive", 
+        writer.writeAttribute("caseSensitive",
                 Boolean.toString(caseSensitive));
         writer.writeElementString("regex", regex);
     }
     @Override
-    protected void loadStringFilterFromXML(XMLConfiguration xml)
+    protected void loadStringFilterFromXML(XML xml)
             throws IOException {
-        String regexOld = xml.getString("");
-        if (StringUtils.isNotBlank(regexOld)) {
-            LOG.warn("Regular expression must now be in <regex> tag.");
-        }
-        String theRegex = xml.getString("regex");
-        if (StringUtils.isBlank(theRegex)) {
-            theRegex = regexOld;
-        }
-        setRegex(theRegex);
-        setCaseSensitive(xml.getBoolean("[@caseSensitive]", false));
-    }
-    
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof RegexContentFilter)) {
-            return false;
-        }
-        RegexContentFilter castOther = (RegexContentFilter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(caseSensitive, castOther.caseSensitive)
-                .append(regex, castOther.regex)
-                .isEquals();
-    }
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(caseSensitive)
-                .append(regex)
-                .toHashCode();
+        setRegex(xml.getString("regex"));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
     }
 
     @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
+    }
+    @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("caseSensitive", caseSensitive)
-                .append("regex", regex)
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames("cachedPattern")
                 .toString();
-    }    
+    }
 }

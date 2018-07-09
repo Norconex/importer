@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,26 +23,26 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CharsetTransformerTest {
 
     @Test
-    public void testCharsetTransformer() 
+    public void testCharsetTransformer()
             throws IOException, ImporterHandlerException {
-        
+
         testCharsetTransformer("ISO-8859-1",   "ISO-8859-1", true);
         testCharsetTransformer("ISO-8859-2",   "ISO-8859-1", false);
         testCharsetTransformer("windows-1250", "ISO-8859-1", true);
         testCharsetTransformer("UTF-8",        "ISO-8859-1", true);
-    
+
         testCharsetTransformer("ISO-8859-1",   "ISO-8859-2", true);
         testCharsetTransformer("ISO-8859-2",   "ISO-8859-2", false);
         testCharsetTransformer("windows-1250", "ISO-8859-2", true);
         testCharsetTransformer("UTF-8",        "ISO-8859-2", true);
-    
+
         testCharsetTransformer("ISO-8859-1",   "windows-1250", true);
         testCharsetTransformer("ISO-8859-2",   "windows-1250", true);
         testCharsetTransformer("windows-1250", "windows-1250", false);
@@ -58,13 +58,13 @@ public class CharsetTransformerTest {
         testCharsetTransformer("windows-1250", "KOI8-R", true);
         testCharsetTransformer("UTF-8",        "KOI8-R", true);
     }
-    
-    
+
+
     @Test
-    public void testCharsetWithGoodSourceTransformer() 
+    public void testCharsetWithGoodSourceTransformer()
             throws IOException, ImporterHandlerException {
         byte[] startWith = "En télécommunications".getBytes("UTF-8");
-        
+
         CharsetTransformer t = new CharsetTransformer();
         t.setSourceCharset("ISO-8859-1");
         t.setTargetCharset("UTF-8");
@@ -72,11 +72,11 @@ public class CharsetTransformerTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
         InputStream is = getFileStream("/charset/ISO-8859-1.txt");
-        
+
         t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
 
         byte[] output = os.toByteArray();
-        
+
         is.close();
         os.close();
 
@@ -86,10 +86,10 @@ public class CharsetTransformerTest {
     }
 
     @Test
-    public void testCharsetWithBadSourceTransformer() 
+    public void testCharsetWithBadSourceTransformer()
             throws IOException, ImporterHandlerException {
         byte[] startWith = "En télécommunications".getBytes("UTF-8");
-        
+
         CharsetTransformer t = new CharsetTransformer();
         t.setSourceCharset("KOI8-R");
         t.setTargetCharset("UTF-8");
@@ -97,11 +97,11 @@ public class CharsetTransformerTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
         InputStream is = getFileStream("/charset/ISO-8859-1.txt");
-        
+
         t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
 
         byte[] output = os.toByteArray();
-        
+
         is.close();
         os.close();
 
@@ -111,14 +111,14 @@ public class CharsetTransformerTest {
                     + "KOI8-R > UTF-8");
         }
     }
-    
+
     private void testCharsetTransformer(
-            String fromCharset, String toCharset, boolean detect) 
+            String fromCharset, String toCharset, boolean detect)
             throws IOException, ImporterHandlerException {
 
         byte[] startWith = "En télécommunications".getBytes(toCharset);
         byte[] blankBytes = new byte[startWith.length];
-        
+
         CharsetTransformer t = new CharsetTransformer();
         if (!detect) {
             t.setSourceCharset(fromCharset);
@@ -128,11 +128,11 @@ public class CharsetTransformerTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
         InputStream is = getFileStream("/charset/" + fromCharset + ".txt");
-        
+
         t.transformDocument(fromCharset + ".txt", is, os, metadata, false);
 
         byte[] output = os.toByteArray();
-        
+
         is.close();
         os.close();
 
@@ -143,10 +143,10 @@ public class CharsetTransformerTest {
 //        System.out.println(Arrays.toString(targetStartWith));
 
         if (fromCharset.equals(toCharset)) {
-            Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
+            Assert.assertArrayEquals(fromCharset + " > " + toCharset,
                     blankBytes, targetStartWith);
         } else {
-            Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
+            Assert.assertArrayEquals(fromCharset + " > " + toCharset,
                     startWith, targetStartWith);
         }
     }
@@ -155,13 +155,11 @@ public class CharsetTransformerTest {
         return getClass().getResourceAsStream(resourcePath);
     }
 
-    
+
     @Test
     public void testWriteRead() throws IOException {
         CharsetTransformer t = new CharsetTransformer();
         t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

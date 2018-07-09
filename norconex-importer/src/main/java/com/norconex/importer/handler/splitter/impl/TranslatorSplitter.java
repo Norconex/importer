@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,12 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.tika.language.translate.CachedTranslator;
 import org.apache.tika.language.translate.MicrosoftTranslator;
@@ -49,6 +48,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.io.TextReader;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -105,7 +105,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * will always be the translations.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
  *          api="(microsoft|google|lingo24|moses|yandex)" &gt;
  *      &lt;ignoreContent&gt;(false|true)&lt;/ignoreContent&gt;
  *      &lt;ignoreNonTranslatedFields&gt;(false|true)&lt;/ignoreNonTranslatedFields&gt;
@@ -136,7 +136,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4> 
  * <p>
@@ -144,12 +144,12 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * French, taking the source document language from a field called "langField".
  * </p> 
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
  *          api="google" &gt;
  *      &lt;sourceLanguageField&gt;langField&lt;/sourceLanguageField&gt;
  *      &lt;targetLanguages&gt;fr&lt;/targetLanguages&gt;
  *      &lt;apiKey&gt;...MYKEYHERE...&lt;/apiKey&gt;
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.1.0
@@ -462,7 +462,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
                 }
             }
         } else {
-            childMeta.load(doc.getMetadata());
+            childMeta.loadFromMap(doc.getMetadata());
             if (fieldsToTranslate == null) {
                 return childMeta;
             }
@@ -552,8 +552,8 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        setApi(xml.getString("[@api]", api));
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        setApi(xml.getString("@api", api));
         setIgnoreContent(xml.getBoolean("ignoreContent", ignoreContent));
         setIgnoreNonTranslatedFields(xml.getBoolean(
                 "ignoreNonTranslatedFields", ignoreNonTranslatedFields));
@@ -608,70 +608,21 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof TranslatorSplitter)) {
-            return false;
-        }
-        TranslatorSplitter castOther = (TranslatorSplitter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(api, castOther.api)
-                .append(ignoreContent, castOther.ignoreContent)
-                .append(fieldsToTranslate, castOther.fieldsToTranslate)
-                .append(ignoreNonTranslatedFields, 
-                        castOther.ignoreNonTranslatedFields)
-                .append(sourceLanguageField, castOther.sourceLanguageField)
-                .append(sourceLanguage, castOther.sourceLanguage)
-                .append(targetLanguages, castOther.targetLanguages)
-                .append(clientId, castOther.clientId)
-                .append(clientSecret, castOther.clientSecret)
-                .append(apiKey, castOther.apiKey)
-                .append(userKey, castOther.userKey)
-                .append(smtPath, castOther.smtPath)
-                .append(scriptPath, castOther.scriptPath)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other, "translators");
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(api)
-                .append(ignoreContent)
-                .append(fieldsToTranslate)
-                .append(ignoreNonTranslatedFields)
-                .append(sourceLanguageField)
-                .append(sourceLanguage)
-                .append(targetLanguages)
-                .append(clientId)
-                .append(clientSecret)
-                .append(apiKey)
-                .append(userKey)
-                .append(smtPath)
-                .append(scriptPath)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this, "translators");
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("api", api)
-                .append("ignoreContent", ignoreContent)
-                .append("fieldsToTranslate", fieldsToTranslate)
-                .append("ignoreNonTranslatedFields", ignoreNonTranslatedFields)
-                .append("sourceLanguageField", sourceLanguageField)
-                .append("sourceLanguage", sourceLanguage)
-                .append("targetLanguages", targetLanguages)
-                .append("clientId", clientId)
-                .append("clientSecret", clientSecret)
-                .append("apiKey", apiKey)
-                .append("userKey", userKey)
-                .append("smtPath", smtPath)
-                .append("scriptPath", scriptPath)
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .setExcludeFieldNames("translators")
                 .toString();
-    }    
-    
-    private static abstract class TranslatorStrategy {
+    }
+
+    private abstract static class TranslatorStrategy {
         private static final int DEFAULT_READ_SIZE = 
                 (int) DataUnit.KB.toBytes(2);
         private Translator translator;

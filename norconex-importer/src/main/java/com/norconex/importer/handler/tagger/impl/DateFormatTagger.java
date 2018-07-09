@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,92 +30,93 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.util.FormatUtil;
 
 /**
- * <p>Formats a date from any given format to a format of choice, as per the 
- * formatting options found on {@link SimpleDateFormat} with the exception 
- * of the string "EPOCH" which represents the difference, measured in 
- * milliseconds, between the date and midnight, January 1, 1970.  
+ * <p>Formats a date from any given format to a format of choice, as per the
+ * formatting options found on {@link SimpleDateFormat} with the exception
+ * of the string "EPOCH" which represents the difference, measured in
+ * milliseconds, between the date and midnight, January 1, 1970.
  * The default format
  * for <code>fromFormat</code> or <code>toFormat</code> when not specified
  * is EPOCH.</p>
- * 
+ *
  * <p>When omitting the <code>toField</code>, the value will replace the one
  * in the same field.</p>
- * 
+ *
  * <p>If the <code>toField</code> already
- * exists, the newly formatted date will be <i>added</i> to the list of 
+ * exists, the newly formatted date will be <i>added</i> to the list of
  * existing values, unless "overwrite" is set to <code>true</code>.</p>
- * 
+ *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * 
+ *
  * <p><b>Since 2.5.2</b>, it is possible to specify a locale used for parsing
- * and formatting dates. 
+ * and formatting dates.
  * The locale is the ISO two-letter language code, with an optional
- * ISO country code, separated with an underscore (e.g., "fr" for French, 
- * "fr_CA" for Canadian French). When no locale is specified, the default is 
- * "en_US" (US English).</p> 
- * 
+ * ISO country code, separated with an underscore (e.g., "fr" for French,
+ * "fr_CA" for Canadian French). When no locale is specified, the default is
+ * "en_US" (US English).</p>
+ *
  * <p>
- * <b>Since 2.6.0</b>, it is possible to specify multiple 
+ * <b>Since 2.6.0</b>, it is possible to specify multiple
  * <code>fromFormat</code> values. Each formats will be tried in the order
  * provided and the first format that succeed in parsing a date will be used.
- * A date will be considered "bad" only if none of the formats could parse the 
+ * A date will be considered "bad" only if none of the formats could parse the
  * date.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
- *          fromField="(from field)" toField="(to field)" 
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+ *          fromField="(from field)" toField="(to field)"
  *          fromLocale="(locale)"    toLocale="(locale)"
  *          toFormat="(date format)"
  *          keepBadDates="(false|true)"
  *          overwrite="[false|true]" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;fromFormat&gt;(date format)&lt;/fromFormat&gt;
  *      &lt;!-- multiple "fromFormat" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
- * The following converts a date that is sometimes obtained from the 
- * HTTP header "Last-Modified" and sometimes is an EPOCH date, 
+ * The following converts a date that is sometimes obtained from the
+ * HTTP header "Last-Modified" and sometimes is an EPOCH date,
  * into an Apache Solr date format:
- * </p> 
+ * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
  *          fromField="Last-Modified"
- *          toField="solr_date" 
+ *          toField="solr_date"
  *          toFormat="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" &gt;
  *      &lt;fromFormat&gt;EEE, dd MMM yyyy HH:mm:ss zzz&lt;/fromFormat&gt;
  *      &lt;fromFormat&gt;EPOCH&lt;/fromFormat&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class DateFormatTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(DateFormatTagger.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(DateFormatTagger.class);
+
     private String fromField;
     private String toField;
     private String[] fromFormats;
@@ -127,7 +125,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     private Locale toLocale;
     private boolean overwrite;
     private boolean keepBadDates;
-    
+
     /**
      * Constructor.
      */
@@ -151,7 +149,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
                 toDates.add(fromDate);
             }
         }
-        
+
         String finalToField = toField;
         if (StringUtils.isBlank(finalToField)) {
             finalToField = fromField;
@@ -159,19 +157,19 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         if (overwrite) {
             metadata.put(finalToField, toDates);
         } else {
-            metadata.addString(finalToField, 
+            metadata.addString(finalToField,
                     toDates.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
     }
-    
+
     private String formatDate(String fromDate) {
-        String[] formats = fromFormats; 
+        String[] formats = fromFormats;
         if (ArrayUtils.isEmpty(fromFormats)) {
             formats = new String[] { "EPOCH" };
         }
         for (String fromFormat : formats) {
             String toDate = FormatUtil.formatDateString(
-                    fromDate, fromFormat, fromLocale, 
+                    fromDate, fromFormat, fromLocale,
                     toFormat, toLocale, fromField);
             if (StringUtils.isNotBlank(toDate)) {
                 return toDate;
@@ -179,8 +177,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         }
         return null;
     }
-    
-    
+
+
     public String getFromField() {
         return fromField;
     }
@@ -240,7 +238,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     public void setToFormat(String toFormat) {
         this.toFormat = toFormat;
     }
-    
+
     public boolean isOverwrite() {
         return overwrite;
     }
@@ -256,7 +254,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     /**
-     * Gets the locale used for parsing the source date. 
+     * Gets the locale used for parsing the source date.
      * @return locale
      * @since 2.5.2
      */
@@ -267,13 +265,13 @@ public class DateFormatTagger extends AbstractDocumentTagger {
      * Sets the locale used for parsing the source date.
      * @param fromLocale locale
      * @since 2.5.2
-     */    
+     */
     public void setFromLocale(Locale fromLocale) {
         this.fromLocale = fromLocale;
     }
 
     /**
-     * Gets the locale used for formatting the target date. 
+     * Gets the locale used for formatting the target date.
      * @return locale
      * @since 2.5.2
      */
@@ -284,7 +282,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
      * Sets the locale used for formatting the source date.
      * @param toLocale locale
      * @since 2.5.2
-     */    
+     */
     public void setToLocale(Locale toLocale) {
         this.toLocale = toLocale;
     }
@@ -299,37 +297,36 @@ public class DateFormatTagger extends AbstractDocumentTagger {
                     "One of \"fromField\" or \"toField\" is required.");
         }
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        fromField = xml.getString("[@fromField]", fromField);
-        toField = xml.getString("[@toField]", toField);
-        
-        String fromFormat = xml.getString("[@fromFormat]", null);
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        fromField = xml.getString("@fromField", fromField);
+        toField = xml.getString("@toField", toField);
+
+        String fromFormat = xml.getString("@fromFormat", null);
         if (StringUtils.isNotBlank(fromFormat)) {
             LOG.warn("\"fromFormat\" attribute is now deprecated and is "
                     + "now specified as a repeatable <fromFormat> tag.");
             setFromFormats(fromFormat);
         }
 
-        toFormat = xml.getString("[@toFormat]", toFormat);
-        overwrite = xml.getBoolean("[@overwrite]", overwrite);
-        keepBadDates = xml.getBoolean("[@keepBadDates]", keepBadDates);
-        String fromLocaleStr = xml.getString("[@fromLocale]", null);
+        toFormat = xml.getString("@toFormat", toFormat);
+        overwrite = xml.getBoolean("@overwrite", overwrite);
+        keepBadDates = xml.getBoolean("@keepBadDates", keepBadDates);
+        String fromLocaleStr = xml.getString("@fromLocale", null);
         if (StringUtils.isNotBlank(fromLocaleStr)) {
             setFromLocale(LocaleUtils.toLocale(fromLocaleStr));
         }
-        String toLocaleStr = xml.getString("[@toLocale]", null);
+        String toLocaleStr = xml.getString("@toLocale", null);
         if (StringUtils.isNotBlank(toLocaleStr)) {
             setToLocale(LocaleUtils.toLocale(toLocaleStr));
         }
 
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("fromFormat");
+        List<XML> nodes = xml.getXMLList("fromFormat");
         if (!nodes.isEmpty()) {
             List<String> fromFormats = new ArrayList<>(nodes.size());
-            for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-                fromFormats.add(node.getString("", null));
+            for (XML node : nodes) {
+                fromFormats.add(node.getString(".", null));
             }
             setFromFormats(fromFormats.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
@@ -345,11 +342,11 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         writer.writeAttributeBoolean("keepBadDates", keepBadDates);
         if (fromLocale != null) {
             writer.writeAttributeString("fromLocale", fromLocale.toString());
-        }        
+        }
         if (toLocale != null) {
             writer.writeAttributeString("toLocale", toLocale.toString());
         }
-        
+
         if (getFromFormats() != null) {
             for (String fromFormat : fromFormats) {
                 writer.writeElementString("fromFormat", fromFormat);
@@ -374,8 +371,9 @@ public class DateFormatTagger extends AbstractDocumentTagger {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DateFormatTagger))
+        if (!(other instanceof DateFormatTagger)) {
             return false;
+        }
         DateFormatTagger castOther = (DateFormatTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(other))
@@ -404,6 +402,6 @@ public class DateFormatTagger extends AbstractDocumentTagger {
                 .append(toLocale)
                 .toHashCode();
     }
-    
-    
+
+
 }

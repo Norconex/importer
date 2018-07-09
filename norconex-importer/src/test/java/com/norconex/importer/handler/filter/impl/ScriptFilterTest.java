@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -33,23 +33,23 @@ public class ScriptFilterTest {
 
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
-        testScriptFilter(ScriptRunner.LUA_ENGINE, 
+        testScriptFilter(ScriptRunner.LUA_ENGINE,
                 "local test = metadata:getString('fruit') == 'apple' "
               + " and content:find('Alice') ~= nil; "
               + "return test;"
         );
     }
-    
+
     @Test
     public void testJavaScript() throws IOException, ImporterHandlerException {
-        testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE, 
+        testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE,
                 "var test = metadata.getString('fruit') == 'apple'"
               + "  && content.indexOf('Alice') > -1;"
               + "/*return*/ test;"
         );
     }
-    
-    private void testScriptFilter(String engineName, String script) 
+
+    private void testScriptFilter(String engineName, String script)
             throws IOException, ImporterHandlerException {
 
         ScriptFilter f = new ScriptFilter();
@@ -62,21 +62,19 @@ public class ScriptFilterTest {
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString("fruit", "apple");
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
-        
+
         Assert.assertTrue("Filter returned false.",  f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false));
 
         is.close();
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         ScriptFilter f = new ScriptFilter();
         f.setScript("a script");
         f.setEngineName("an engine name");
         f.setMaxReadSize(256);
-        System.out.println("Writing/Reading this: " + f);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "handler");
     }
-
 }

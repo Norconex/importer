@@ -15,10 +15,10 @@
 package com.norconex.importer.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods related to JSoup/DOM manipulation.
@@ -26,20 +26,20 @@ import org.jsoup.parser.Parser;
  */
 public final class DOMUtil {
 
-    private static final Logger LOG = LogManager.getLogger(DOMUtil.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(DOMUtil.class);
+
     /** @since 2.8.0 */
     public static final String PARSER_HTML = "html";
     /** @since 2.8.0 */
     public static final String PARSER_XML = "xml";
-    
+
     private DOMUtil() {
     }
-    
+
     /**
      * Gets the JSoup parser associated with the string representation.
-     * The string "xml" (case insensitive) will return the XML parser.  
-     * Anything else will return the HTML parser. 
+     * The string "xml" (case insensitive) will return the XML parser.
+     * Anything else will return the HTML parser.
      * @param parser "html" or "xml"
      * @return JSoup parser
      * @since 2.8.0
@@ -52,33 +52,33 @@ public final class DOMUtil {
     }
 
     /**
-     * <p>Gets an element value based on JSoup DOM.  You control what gets 
-     * extracted exactly thanks to the "extract" argument. 
+     * <p>Gets an element value based on JSoup DOM.  You control what gets
+     * extracted exactly thanks to the "extract" argument.
      * Possible values are:</p>
      * <ul>
-     *   <li><b>text</b>: Default option when extract is blank. The text of 
+     *   <li><b>text</b>: Default option when extract is blank. The text of
      *       the element, including combined children.</li>
-     *   <li><b>html</b>: Extracts an element inner 
+     *   <li><b>html</b>: Extracts an element inner
      *       HTML (including children).</li>
-     *   <li><b>outerHtml</b>: Extracts an element outer 
+     *   <li><b>outerHtml</b>: Extracts an element outer
      *       HTML (like "html", but includes the "current" tag).</li>
-     *   <li><b>ownText</b>: Extracts the text owned by this element only; 
+     *   <li><b>ownText</b>: Extracts the text owned by this element only;
      *       does not get the combined text of all children.</li>
-     *   <li><b>data</b>: Extracts the combined data of a data-element (e.g. 
+     *   <li><b>data</b>: Extracts the combined data of a data-element (e.g.
      *       &lt;script&gt;).</li>
      *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
      *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
-     *   <li><b>val</b>: Extracts the value of a form element 
+     *   <li><b>val</b>: Extracts the value of a form element
      *       (input, textarea, etc).</li>
-     *   <li><b>className</b>: Extracts the literal value of the element's 
-     *       "class" attribute, which may include multiple class names, 
+     *   <li><b>className</b>: Extracts the literal value of the element's
+     *       "class" attribute, which may include multiple class names,
      *       space separated.</li>
-     *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely 
+     *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely
      *       select (identify) this element.</li>
      *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
      *       attribute matching your replacement for "attributeKey"
      *       (e.g. "attr(title)" will extract the "title" attribute).</li>
-     * </ul> 
+     * </ul>
      * @param element the element to extract value on
      * @param extract the type of extraction to perform
      * @return the element value
@@ -88,10 +88,10 @@ public final class DOMUtil {
         String ext = StringUtils.lowerCase(extract);
         if (StringUtils.isBlank(ext) || "text".equals(ext)) {
             return element.text();
-        } 
+        }
         if ("html".equals(ext)) {
             return element.html();
-        } 
+        }
         if ("outerhtml".equals(ext)) {
             return element.outerHtml();
         }

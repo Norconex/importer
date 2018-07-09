@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -45,11 +45,11 @@ public class DOMTaggerTest {
 
     // This is a test for: https://github.com/Norconex/collector-http/issues/381
     @Test
-    public void testXMLParser() 
+    public void testXMLParser()
             throws ImporterHandlerException, IOException {
 
         DOMTagger t = new DOMTagger();
-       
+
         t.setParser(DOMUtil.PARSER_XML);
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "tr ", "WHOLE", true, "outerHtml"));
@@ -65,29 +65,29 @@ public class DOMTaggerTest {
                 + "Sample Title</a></td>"
                 + "<td>This is a description.</td>"
                 + "</tr>";
-       
+
         ImporterMetadata metadata = new ImporterMetadata();
         performTagging(metadata, t, xml);
-    
+
         String whole = metadata.getString("WHOLE");
         String title = metadata.getString("TEST_TITLE");
         String url = metadata.getString("TEST_URL");
         String desc = metadata.getString("TEST_DESC");
-        
+
         Assert.assertTrue(StringUtils.contains(whole, "</tr>"));
         Assert.assertEquals("Sample Title", title);
         Assert.assertEquals("http://example.org/doc.html", url);
         Assert.assertEquals("This is a description.", desc);
-    }    
-    
+    }
+
     // This is a test for: https://github.com/Norconex/importer/issues/39
     @Test
     public void testMatchBlanks()
-            throws IOException, ImporterHandlerException { 
+            throws IOException, ImporterHandlerException {
 
         DOMTagger t = new DOMTagger();
         DOMExtractDetails d = null;
-        
+
         d = new DOMExtractDetails("author name", "blanksON", false);
         d.setMatchBlanks(true);
         t.addDOMExtractDetails(d);
@@ -116,17 +116,17 @@ public class DOMTaggerTest {
                 // missing/null
                 + "<author></author>"
                 + "</test>";
-        
-        
+
+
         ImporterMetadata metadata = new ImporterMetadata();
         performTagging(metadata, t, xml);
 
         String[] blanksON = getSortedArray(metadata, "blanksON");
         String[] blanksOFF = getSortedArray(metadata, "blanksOFF");
         String[] blanksONDefault = getSortedArray(metadata, "blanksONDefault");
-        String[] blanksOFFDefault = 
+        String[] blanksOFFDefault =
                 getSortedArray(metadata, "blanksOFFDefault");
-        
+
         Assert.assertArrayEquals(new String[]{"", "", "John"}, blanksON);
         Assert.assertArrayEquals(new String[]{"John"}, blanksOFF);
 
@@ -146,8 +146,8 @@ public class DOMTaggerTest {
     // where default value should not be trimmed.
     @Test
     public void testDefaultValue()
-            throws IOException, ImporterHandlerException { 
-        
+            throws IOException, ImporterHandlerException {
+
         String cfg = "<tagger class=\""
                 + "com.norconex.importer.handler.tagger.impl.DOMTagger\">"
                 + "<dom selector=\"author name\" toField=\"noDefault\"/>"
@@ -158,29 +158,29 @@ public class DOMTaggerTest {
                 + "</tagger>";
         DOMTagger t = new DOMTagger();
         t.loadFromXML(new StringReader(cfg));
-        
+
         String xml = "<test><author><name></name></author></test>";
-        
-        
+
+
         ImporterMetadata metadata = new ImporterMetadata();
         performTagging(metadata, t, xml);
 
         String noDefault = metadata.getString("noDefault");
         String emptyDefault = metadata.getString("emptyDefault");
         String spaceDefault = metadata.getString("spaceDefault");
-        
+
         Assert.assertEquals(null, noDefault);
         Assert.assertEquals("", emptyDefault);
         Assert.assertEquals("   ", spaceDefault);
     }
 
-    
-    // This is a test for "fromField" and "defaultValue" feature request: 
-    // https://github.com/Norconex/importer/issues/28 
+
+    // This is a test for "fromField" and "defaultValue" feature request:
+    // https://github.com/Norconex/importer/issues/28
     @Test
     public void testFromField()
                 throws IOException, ImporterHandlerException {
-        
+
         String html = "<html><body>"
                 + "<whatever/>"
                 + "<div class=\"contact\">"
@@ -199,7 +199,7 @@ public class DOMTaggerTest {
                 + "</body></html>";
 
         ImporterMetadata metadata = new ImporterMetadata();
-        
+
         DOMTagger parentTagger = new DOMTagger();
         parentTagger.addDOMExtractDetails(new DOMExtractDetails(
                 "div.contact", "htmlContacts", false, "html"));
@@ -207,7 +207,7 @@ public class DOMTaggerTest {
 
         DOMTagger childTagger = new DOMTagger();
         childTagger.setFromField("htmlContacts");
-        
+
         DOMExtractDetails firstNameDetails = new DOMExtractDetails(
                 "div.firstName", "firstName", false);
         firstNameDetails.setDefaultValue("NoFirstName");
@@ -219,21 +219,21 @@ public class DOMTaggerTest {
         childTagger.addDOMExtractDetails(lastNameDetails);
 
         performTagging(metadata, childTagger, html);
-        
+
 
         List<String> firstNames = metadata.getStrings("firstName");
         List<String> lastNames = metadata.getStrings("lastName");
-        
+
         Assert.assertEquals(Arrays.asList(
                 "JoeFirstOnly", "John", "NoFirstName"), firstNames);
         Assert.assertEquals(Arrays.asList(
                 "NoLastName", "Smith", "JackLastOnly"), lastNames);
-    }    
-    
-    // This is a test for: https://github.com/Norconex/importer/issues/21 
+    }
+
+    // This is a test for: https://github.com/Norconex/importer/issues/21
     @Test
     public void testNotAllSelectorsMatching()
-            throws IOException, ImporterHandlerException { 
+            throws IOException, ImporterHandlerException {
 
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
@@ -248,28 +248,28 @@ public class DOMTaggerTest {
                 + "<div class=\"class2\">text2</div>"
                 + "<div class=\"class3\">text3</div>"
                 + "</body></html>";
-        
+
         ImporterMetadata metadata = new ImporterMetadata();
         performTagging(metadata, t, html);
 
         String match1 = metadata.getString("match1");
         String match2 = metadata.getString("match2");
         String match3 = metadata.getString("match3");
-        
+
         Assert.assertEquals("text1", match1);
         Assert.assertEquals(null, match2);
         Assert.assertEquals("text3", match3);
     }
-    
+
     @Test
-    public void testExtractFromDOM() 
+    public void testExtractFromDOM()
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "h2", "headings", false));
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "a[href]", "links", true, "html"));
-        
+
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -280,17 +280,17 @@ public class DOMTaggerTest {
 
         List<String> headings = metadata.getStrings("headings");
         List<String> links = metadata.getStrings("links");
-        
+
         Assert.assertEquals("Wrong <h2> count.", 2, headings.size());
         Assert.assertEquals("Wrong <img src=\"...\"> count.", 4, links.size());
-        Assert.assertEquals("Did not extract first heading", 
+        Assert.assertEquals("Did not extract first heading",
                 "CHAPTER I", headings.get(0));
-        Assert.assertEquals("Did not extract second heading", 
+        Assert.assertEquals("Did not extract second heading",
                 "Down the Rabbit-Hole", headings.get(1));
     }
 
     @Test
-    public void testExtractionTypes() 
+    public void testExtractionTypes()
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
@@ -315,9 +315,9 @@ public class DOMTaggerTest {
         String expectedOuter = "<head>" + expectedHtml + "</head>";
 
         Assert.assertEquals(expectedText, metadata.getString("ftext"));
-        Assert.assertEquals(expectedHtml, 
+        Assert.assertEquals(expectedHtml,
                 cleanHTML(metadata.getString("fhtml")));
-        Assert.assertEquals(expectedOuter, 
+        Assert.assertEquals(expectedOuter,
                 cleanHTML(metadata.getString("fouter")));
     }
 
@@ -329,22 +329,22 @@ public class DOMTaggerTest {
         tagger.tagDocument("n/a", is, metadata, false);
         is.close();
     }
-    
 
-    
+
+
     private String cleanHTML(String html) {
         String clean = html;
         clean = clean.replaceAll("[\\r\\n]", "");
         clean = clean.replaceAll(">\\s+<", "><");
         return clean;
     }
-    
-    
+
+
     @Test
-    public void testAllExtractionTypes() 
+    public void testAllExtractionTypes()
             throws IOException, ImporterHandlerException {
-        
-        
+
+
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "div.parent", "text", false, "text"));
@@ -378,7 +378,7 @@ public class DOMTaggerTest {
                 + "<textarea class=\"formElement\" title=\"Some Title\">"
                 + "textarea value.</textarea>"
                 + "</body></html>";
-        
+
         ImporterMetadata metadata = new ImporterMetadata();
         InputStream is = new ByteArrayInputStream(content.getBytes());
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -396,11 +396,11 @@ public class DOMTaggerTest {
         String className = metadata.getString("className");
         String cssSelector = metadata.getString("cssSelector");
         String attr = metadata.getString("attr");
-        
+
         Assert.assertEquals("Parent text.Child text 1.Child text 2.", text);
         Assert.assertEquals("Child text <b>1</b>.", html);
         Assert.assertEquals(
-                "<span class=\"child1\">Child text <b>1</b>.</span>", 
+                "<span class=\"child1\">Child text <b>1</b>.</span>",
                 outerHtml);
         Assert.assertEquals("This is data, not HTML.", data);
         Assert.assertEquals("content", id);
@@ -411,22 +411,20 @@ public class DOMTaggerTest {
         Assert.assertEquals("#content > span.child2", cssSelector);
         Assert.assertEquals("Some Title", attr);
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
         tagger.addDOMExtractDetails(new DOMExtractDetails(
                 "p.blah > a", "myField", true));
-        
+
         DOMExtractDetails details = new DOMExtractDetails(
                 "div.blah > a", "myOtherField", true, "html");
         details.setDefaultValue("myDefaultValue");
         tagger.addDOMExtractDetails(details);
         tagger.addRestriction("afield", "aregex", true);
         tagger.setFromField("myfromfield");
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

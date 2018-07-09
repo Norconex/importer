@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,25 +24,15 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TextBetweenTaggerTest {
 
-//    @Before
-//    public void before() {
-//        Logger logger = Logger.getRootLogger();
-//        logger.setLevel(Level.INFO);
-//        logger.setAdditivity(false);
-//        logger.addAppender(new ConsoleAppender(
-//                new PatternLayout("%-5p [%C{1}] %m%n"), 
-//                ConsoleAppender.SYSTEM_OUT));
-//    }
-    
     @Test
-    public void testExtractMatchingRegex() 
+    public void testExtractMatchingRegex()
             throws IOException, ImporterHandlerException {
         // use it in a way that one of the end point is all we want to match
         TextBetweenTagger t = new TextBetweenTagger();
@@ -50,7 +40,7 @@ public class TextBetweenTaggerTest {
         t.setInclusive(true);
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
-        
+
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
@@ -61,9 +51,9 @@ public class TextBetweenTaggerTest {
 
         Assert.assertEquals("http://www.cs.cmu.edu/%7Ergs/alice02a.gif", field);
     }
-    
+
     @Test
-    public void testTagTextDocument() 
+    public void testTagTextDocument()
             throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();
         t.addTextEndpoints("headings", "<h1>", "</H1>");
@@ -83,8 +73,8 @@ public class TextBetweenTaggerTest {
 
         List<String> headings = metadata.getStrings("headings");
         List<String> strong = metadata.getStrings("strong");
-        
-        Assert.assertTrue("Failed to return: <h2>Down the Rabbit-Hole</h2>", 
+
+        Assert.assertTrue("Failed to return: <h2>Down the Rabbit-Hole</h2>",
                 headings.contains("<h2>Down the Rabbit-Hole</h2>"));
         Assert.assertTrue("Failed to return: <h2>CHAPTER I</h2>",
                 headings.contains("<h2>CHAPTER I</h2>"));
@@ -93,7 +83,7 @@ public class TextBetweenTaggerTest {
     }
 
     @Test
-    public void testExtractFirst100ContentChars() 
+    public void testExtractFirst100ContentChars()
             throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();
         t.addTextEndpoints("mytitle", "^", ".{0,100}");
@@ -111,15 +101,13 @@ public class TextBetweenTaggerTest {
         String myTitle = metadata.getString("mytitle");
         Assert.assertEquals(100, myTitle.length());
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         TextBetweenTagger tagger = new TextBetweenTagger();
         tagger.addTextEndpoints("headings", "<h1>", "</h1>");
         tagger.addTextEndpoints("headings", "<h2>", "</h2>");
         tagger.setMaxReadSize(512);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

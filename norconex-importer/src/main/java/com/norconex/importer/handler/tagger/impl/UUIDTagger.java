@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,14 +20,14 @@ import java.util.UUID;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -47,7 +47,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
  *      field="(target field)"
  *      overwrite="[false|true]" &gt;
  *      
@@ -56,7 +56,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
@@ -65,7 +65,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * any existing values under that field. 
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
  *      field="uuid" overwrite="true" /&gt;
  * </pre>
  * 
@@ -119,9 +119,9 @@ public class UUIDTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        field = xml.getString("[@field]", field);
-        overwrite = xml.getBoolean("[@overwrite]", overwrite);
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        field = xml.getString("@field", field);
+        overwrite = xml.getBoolean("@overwrite", overwrite);
     }
 
     @Override
@@ -132,32 +132,16 @@ public class UUIDTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append(super.toString())
-                .append("field", field)
-                .append("overwrite", overwrite)
-                .toString();
-    }
-
-    @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof UUIDTagger))
-            return false;
-        UUIDTagger castOther = (UUIDTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(other))
-                .append(field, castOther.field)
-                .append(overwrite, castOther.overwrite)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(field)
-                .append(overwrite)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

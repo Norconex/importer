@@ -21,8 +21,8 @@ import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods related to formatting.  Date formatting from string
@@ -33,8 +33,8 @@ import org.apache.log4j.Logger;
 public final class FormatUtil {
 //TODO consider moving to Norconex Commons Lang
 
-    private static final Logger LOG = LogManager.getLogger(FormatUtil.class);
-    
+    private static final Logger LOG = LoggerFactory.getLogger(FormatUtil.class);
+
     private FormatUtil() {
     }
 
@@ -62,13 +62,13 @@ public final class FormatUtil {
      * @return formatted date string
      */
     public static String formatDateString(
-            String dateString, String fromFormat, 
+            String dateString, String fromFormat,
             String toFormat, String fieldName) {
         return formatDateString(
                 dateString, fromFormat, null, toFormat, null, fieldName);
     }
-    
-    
+
+
     /**
      * Formats a string representation of a date, into another string date
      * format.
@@ -81,13 +81,13 @@ public final class FormatUtil {
      * @return formatted date string
      * @since 2.5.2
      */
-    public static String formatDateString(String dateString, 
-            String fromFormat, Locale fromLocale, 
+    public static String formatDateString(String dateString,
+            String fromFormat, Locale fromLocale,
             String toFormat, Locale toLocale, String fieldName) {
         if (StringUtils.isBlank(dateString)) {
             return null;
         }
-        
+
         //--- Parse from date ---
         Locale sourceLocale = fromLocale;
         if (sourceLocale == null) {
@@ -113,7 +113,7 @@ public final class FormatUtil {
                         fromFormat, sourceLocale).parse(dateString);
             } catch (ParseException e) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Invalid date format" 
+                    LOG.debug("Invalid date format"
                             + formatFieldMsg(fieldName) + e.getMessage());
                 }
                 return null;
@@ -135,12 +135,12 @@ public final class FormatUtil {
         }
         return toDate;
     }
-    
+
     // returns true if blank or "EPOCH" (case insensitive).
     private static boolean isEpochFormat(String format) {
         return StringUtils.isBlank(format) || "EPOCH".equalsIgnoreCase(format);
     }
-    
+
     private static String formatFieldMsg(String fieldName) {
         String fieldMsg = ". ";
         if (StringUtils.isNotBlank(fieldName)) {

@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -35,10 +35,9 @@ public class DeleteTaggerTest {
         tagger.addField("potato");
         tagger.addField("carrot");
         tagger.setFieldsRegex("document\\.*");
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-    
+
     @Test
     public void testDeleteField() throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
@@ -54,14 +53,14 @@ public class DeleteTaggerTest {
         tagger.addField("field4");
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         Assert.assertEquals("Invalid field count", 1, meta.size());
-        Assert.assertEquals("Value wrongfully deleted or modified", 
+        Assert.assertEquals("Value wrongfully deleted or modified",
                 "keep this one", meta.getString("field3"));
     }
-    
+
     @Test
-    public void testDeleteFieldsViaXMLConfig() 
+    public void testDeleteFieldsViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("content-type", "blah");
@@ -72,22 +71,22 @@ public class DeleteTaggerTest {
         meta.addString("date", "blah");
         meta.addString("X-RATE-LIMIT-LIMIT", "blah");
         meta.addString("source", "blah");
-        
+
         DeleteTagger tagger = new DeleteTagger();
-        
+
         Reader r = new StringReader(
                 "<tagger><fields>X-ACCESS-LEVEL,X-content-type-options,"
               + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT</fields>"
               + "</tagger>");
         tagger.loadFromXML(r);
-        
+
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         Assert.assertEquals("Invalid field count", 3, meta.size());
     }
-    
+
     @Test
-    public void testDeleteFieldsRegexViaXMLConfig() 
+    public void testDeleteFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("content-type", "blah");
@@ -98,15 +97,15 @@ public class DeleteTaggerTest {
         meta.addString("date", "blah");
         meta.addString("X-RATE-LIMIT-LIMIT", "blah");
         meta.addString("source", "blah");
-        
+
         DeleteTagger tagger = new DeleteTagger();
-        
+
         Reader r = new StringReader(
                 "<tagger><fieldsRegex>^[Xx]-.*</fieldsRegex></tagger>");
         tagger.loadFromXML(r);
-        
+
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
-        
+
         Assert.assertEquals("Invalid field count", 3, meta.size());
     }
 

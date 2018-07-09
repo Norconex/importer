@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import com.norconex.commons.lang.exec.SystemCommand;
 import com.norconex.commons.lang.map.Properties;
 
 /**
- * Sample external app  that reverse word order in lines and if metadata files
+ * Sample external app that reverses word order in lines and if metadata files
  * are provided, also does the same for metadata values.
  * Also prints specific environment variables to STDOUT or STDERR.
  * @author Pascal Essiembre
@@ -63,15 +63,16 @@ public class ExternalApp {
     public static final String ARG_INFILE_META = "im";
     public static final String ARG_OUTFILE_META = "om";
     public static final String ARG_REFERENCE = "ref";
-    
+
     public static final String ENV_STDOUT_BEFORE = "stdout_before";
     public static final String ENV_STDOUT_AFTER = "stdout_after";
     public static final String ENV_STDERR_BEFORE = "stderr_before";
     public static final String ENV_STDERR_AFTER = "stderr_after";
-    
+
     // reverse the word order in each lines
     // if meta files are provided, reverse each values too
     public static void main(String[] args) throws IOException {
+
         CommandLine cmd = parseCommandLineArguments(args);
 
         File inFileContent = null;
@@ -95,12 +96,12 @@ public class ExternalApp {
             reference = cmd.getOptionValue(ARG_REFERENCE);
             System.out.println("reference=" + reference);
         }
-        
+
         printEnvToStdout(ENV_STDOUT_BEFORE);
         printEnvToStderr(ENV_STDERR_BEFORE);
         OutputStream output = getOutputStream(outFileContent);
         try (InputStream input = getInputStream(inFileContent)) {
-            List<String> lines = 
+            List<String> lines =
                    IOUtils.readLines(input, StandardCharsets.UTF_8);
             for (String line : lines) {
                 output.write(reverseWords(line).getBytes());
@@ -114,13 +115,13 @@ public class ExternalApp {
         if (output != System.out) {
             output.close();
         }
-        
+
         // handle meta files
         if (inFileMeta != null && outFileMeta != null) {
             Properties p = new Properties();
             try (Reader r = new FileReader(inFileMeta);
                  Writer w = new FileWriter(outFileMeta)) {
-                p.load(r);
+                p.loadFromProperties(r);
                 for (Entry<String, List<String>> entry : p.entrySet()) {
                     String[] values = entry.getValue().toArray(
                             ArrayUtils.EMPTY_STRING_ARRAY);
@@ -129,7 +130,7 @@ public class ExternalApp {
                     }
                     p.setString(entry.getKey(), values);
                 }
-                p.store(w);
+                p.storeToProperties(w);
             }
         }
     }
@@ -139,7 +140,7 @@ public class ExternalApp {
         ArrayUtils.reverse(words);
         return StringUtils.join(words, " ");
     }
-    
+
     private static void printEnvToStdout(String varName) {
         String var = System.getenv(varName);
         if (StringUtils.isNotBlank(var)) {
@@ -152,15 +153,15 @@ public class ExternalApp {
             System.err.println(var);
         }
     }
-    
-    private static InputStream getInputStream(File inFile) 
+
+    private static InputStream getInputStream(File inFile)
             throws FileNotFoundException {
         if (inFile != null) {
             return new FileInputStream(inFile);
         }
         return System.in;
     }
-    private static OutputStream getOutputStream(File outFile) 
+    private static OutputStream getOutputStream(File outFile)
             throws FileNotFoundException {
         if (outFile != null) {
             return new FileOutputStream(outFile);
@@ -191,15 +192,15 @@ public class ExternalApp {
 
             String[] cmdArray = javaTask.getCommandLine().getCommandline();
             cmdArray = SystemCommand.escape(cmdArray);
-            
+
             String cmd = StringUtils.join(cmdArray, " ");
             cmd = fixCommand(cmd);
             return cmd;
         } catch (BuildException e) {
             throw e;
         }
-    }    
-    
+    }
+
 //    public static SystemCommand newSystemCommand(String type, File... files) {
 //        return new SystemCommand(newCommandLine(type, files));
 //    }
@@ -225,7 +226,7 @@ public class ExternalApp {
 //
 //            String[] cmdArray = javaTask.getCommandLine().getCommandline();
 //            cmdArray = SystemCommand.escape(cmdArray);
-//            
+//
 //            String cmd = StringUtils.join(cmdArray, " ");
 //            cmd = fixCommand(cmd);
 //            return cmd;
@@ -233,7 +234,7 @@ public class ExternalApp {
 //            throw e;
 //        }
 //    }
-    
+
     // Fix the command as necessary.
     // Shorten the command by eliminating items we do not need
     // from classpath and using shorter command aliases.  This is necessary
@@ -242,7 +243,7 @@ public class ExternalApp {
     private static String fixCommand(String command) {
         String cmd = command;
         cmd = cmd.replaceFirst(" -classpath ", " -cp ");
-        
+
         String cp = cmd.replaceFirst(".*\\s+-cp\\s+(.*)\\s+"
                 + ExternalApp.class.getName() + ".*", "$1");
         boolean isQuoted = false;
@@ -268,7 +269,7 @@ public class ExternalApp {
                 + ExternalApp.class.getName() + ".*)", "$1" + cp + "$3");
         return cmd;
     }
-    
+
     private static final String[] KEEPERS = new String[] {
             "norconex-importer",
             "norconex-commons-lang",
@@ -294,20 +295,20 @@ public class ExternalApp {
         }
         return false;
     }
-    
+
     private static CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
-        options.addOption(ARG_INFILE_CONTENT, true, 
+        options.addOption(ARG_INFILE_CONTENT, true,
                 "Input file (default uses STDIN).");
-        options.addOption(ARG_OUTFILE_CONTENT, true, 
+        options.addOption(ARG_OUTFILE_CONTENT, true,
                 "Output file (default uses STDOUT).");
-        options.addOption(ARG_INFILE_META, true, 
+        options.addOption(ARG_INFILE_META, true,
                 "Input metadata file (default does not expect metadata).");
-        options.addOption(ARG_OUTFILE_META, true, 
+        options.addOption(ARG_OUTFILE_META, true,
                 "Output metadata file (default to STDOUT/STDERR).");
-        options.addOption(ARG_REFERENCE, true, 
+        options.addOption(ARG_REFERENCE, true,
                 "Document reference.");
-   
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
@@ -320,5 +321,5 @@ public class ExternalApp {
             System.exit(-1);
         }
         return cmd;
-    }    
+    }
 }

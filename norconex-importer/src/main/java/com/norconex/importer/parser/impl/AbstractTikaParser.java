@@ -27,8 +27,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -41,6 +39,8 @@ import org.apache.tika.parser.ParserDecorator;
 import org.apache.tika.parser.ocr.TesseractOCRConfig;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BodyContentHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -63,14 +63,14 @@ import com.norconex.importer.parser.ParseHints;
  */
 public class AbstractTikaParser implements IHintsAwareParser {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractTikaParser.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractTikaParser.class);
+
     private final Parser parser;
     private TesseractOCRConfig ocrTesseractConfig;
     private ParseHints parseHints;
     private final ThreadSafeCacheableAutoDetectWrapper knownDetector;
-    
+
     /**
      * Creates a new Tika-based parser.
      * @param parser Tika parser
@@ -80,7 +80,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         this.parser = parser;
         if (parser instanceof AutoDetectParser) {
             AutoDetectParser p = (AutoDetectParser) parser;
-            knownDetector = 
+            knownDetector =
                     new ThreadSafeCacheableAutoDetectWrapper(p.getDetector());
             p.setDetector(knownDetector);
         } else {
@@ -96,13 +96,13 @@ public class AbstractTikaParser implements IHintsAwareParser {
             return;
         }
         this.ocrTesseractConfig = toTesseractConfig(parseHints.getOcrConfig());
-    }    
-    
+    }
+
     @Override
     public final List<ImporterDocument> parseDocument(
             ImporterDocument doc, Writer output)
             throws DocumentParserException {
-        
+
         Metadata tikaMetadata = new Metadata();
         if (doc.getContentType() == null) {
             throw new DocumentParserException(
@@ -115,26 +115,26 @@ public class AbstractTikaParser implements IHintsAwareParser {
         CachedInputStream content = doc.getContent();
 
         tikaMetadata.set(Metadata.CONTENT_TYPE, contentType);
-        tikaMetadata.set(Metadata.RESOURCE_NAME_KEY, 
+        tikaMetadata.set(Metadata.RESOURCE_NAME_KEY,
                 doc.getReference());
         tikaMetadata.set(Metadata.CONTENT_ENCODING, doc.getContentEncoding());
-        tikaMetadata.set(Metadata.CONTENT_LENGTH, 
+        tikaMetadata.set(Metadata.CONTENT_LENGTH,
                 Long.toString(content.length()));
-        
+
         try {
             if (knownDetector != null) {
                 knownDetector.initCache(doc.getReference(), contentType);
             }
 
             RecursiveParser recursiveParser = createRecursiveParser(
-                    doc.getReference(), contentType, output, doc.getMetadata(), 
+                    doc.getReference(), contentType, output, doc.getMetadata(),
                     content.getStreamFactory());
             ParseContext context = new ParseContext();
             context.set(Parser.class, recursiveParser);
-            
+
             PDFParserConfig pdfConfig = new PDFParserConfig();
             OCRConfig ocrConfig = parseHints.getOcrConfig();
-            if (!ocrConfig.isEmpty() 
+            if (!ocrConfig.isEmpty()
                     && StringUtils.isNotBlank(ocrConfig.getPath())
                     && (StringUtils.isBlank(ocrConfig.getContentTypes())
                         || contentType.matches(ocrConfig.getContentTypes()))) {
@@ -146,26 +146,26 @@ public class AbstractTikaParser implements IHintsAwareParser {
             pdfConfig.setSuppressDuplicateOverlappingText(true);
             context.set(PDFParserConfig.class, pdfConfig);
             modifyParseContext(context);
-            
-            recursiveParser.parse(content, 
+
+            recursiveParser.parse(content,
                     new BodyContentHandler(output),  tikaMetadata, context);
             return recursiveParser.getEmbeddedDocuments();
         } catch (Exception e) {
             throw new DocumentParserException(e);
-        }        
+        }
     }
-    
+
     /**
      * Override to apply your own settings on the Tika ParseContext.
      * The ParseContext is already configured before calling this method.
-     * Changing existing settings may cause failure.  
+     * Changing existing settings may cause failure.
      * Only override if you know what you are doing.
      * The default implementation does nothing.
      * @param parseContext Tika parse context
      */
     protected void modifyParseContext(ParseContext parseContext) {
     }
-    
+
 
     protected void addTikaMetadataToImporterMetadata(
             Metadata tikaMeta, ImporterMetadata metadata) {
@@ -186,9 +186,9 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
 
     protected RecursiveParser createRecursiveParser(
-            String reference, String contentType, Writer writer, 
+            String reference, String contentType, Writer writer,
             ImporterMetadata metadata, CachedStreamFactory streamFactory) {
-        String splitRegex = 
+        String splitRegex =
                 parseHints.getEmbeddedConfig().getSplitContentTypes();
         if (StringUtils.isNotBlank(splitRegex)
                 && contentType.matches(splitRegex)) {
@@ -210,7 +210,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         } else {
             tc.setTesseractPath("DISABLED");
         }
-        
+
         String langs = ocrConfig.getLanguages();
         if (StringUtils.isNotBlank(langs)) {
             langs = StringUtils.remove(langs, ' ');
@@ -219,8 +219,8 @@ public class AbstractTikaParser implements IHintsAwareParser {
         }
         return tc;
     }
-    
-    
+
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof AbstractTikaParser)) {
@@ -264,8 +264,8 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 .append("parseHints", parseHints)
                 .toString();
     }
-    
-    protected class SplitEmbbededParser 
+
+    protected class SplitEmbbededParser
             extends ParserDecorator implements RecursiveParser {
         private static final long serialVersionUID = -5011890258694908887L;
         private final String reference;
@@ -275,7 +275,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         private String masterType;
         private int embedCount;
         private List<ImporterDocument> embeddedDocs;
-        public SplitEmbbededParser(String reference, Parser parser, 
+        public SplitEmbbededParser(String reference, Parser parser,
                 ImporterMetadata metadata, CachedStreamFactory streamFactory) {
             super(parser);
             this.streamFactory = streamFactory;
@@ -286,11 +286,11 @@ public class AbstractTikaParser implements IHintsAwareParser {
         public void parse(InputStream stream, ContentHandler handler,
                 Metadata tikaMeta, ParseContext context)
                 throws IOException, SAXException, TikaException {
-  
+
             if (isMasterDoc) {
                 isMasterDoc = false;
                 if (hasNoExtractCondition()) {
-                    masterType = 
+                    masterType =
                             knownDetector.detect(stream, tikaMeta).toString();
                 }
                 super.parse(stream, handler, tikaMeta, context);
@@ -299,14 +299,14 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
                 boolean hasNoExtractFilter = hasNoExtractCondition();
                 if (hasNoExtractFilter) {
-                    String currentType = 
+                    String currentType =
                             knownDetector.detect(stream, tikaMeta).toString();
                     if (!performExtract(masterType, currentType)) {
                         // do not extract this embedded doc
                         return;
                     }
                 }
-                
+
                 embedCount++;
                 if (embeddedDocs == null) {
                     embeddedDocs = new ArrayList<>();
@@ -324,22 +324,23 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 IOUtils.copy(stream, embedOutput);
                 CachedInputStream embedInput = embedOutput.getInputStream();
                 embedOutput.close();
-                
+
                 ImporterDocument embedDoc = new ImporterDocument(
-                        embedRef, embedInput, embedMeta); 
+                        embedRef, embedInput, embedMeta);
                 embedMeta.setReference(embedRef);
                 embedMeta.setEmbeddedParentReference(reference);
-                
+
                 String rootRef = metadata.getEmbeddedParentRootReference();
                 if (StringUtils.isBlank(rootRef)) {
                     rootRef = reference;
                 }
                 embedMeta.setEmbeddedParentRootReference(rootRef);
-                
+
                 embeddedDocs.add(embedDoc);
             }
         }
-        
+
+        @Override
         public List<ImporterDocument> getEmbeddedDocuments() {
             return embeddedDocs;
         }
@@ -347,7 +348,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         private String resolveEmbeddedResourceName(
                 Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {
             String name = null;
-            
+
             // Package item file name (e.g. a file in a zip)
             name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
             if (StringUtils.isNotBlank(name)) {
@@ -356,7 +357,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 return name;
             }
 
-            // Name of Embedded file in regular document 
+            // Name of Embedded file in regular document
             // (e.g. excel file in a word doc)
             name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
             if (StringUtils.isNotBlank(name)) {
@@ -364,10 +365,10 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 embedMeta.setEmbeddedType("file-file");
                 return name;
             }
-            
-            // Name of embedded content in regular document 
+
+            // Name of embedded content in regular document
             // (e.g. image with no name in a word doc)
-            // Make one up with content type 
+            // Make one up with content type
             // (which should be OK most of the time).
             name = tikaMeta.get(Metadata.CONTENT_TYPE);
             if (StringUtils.isNotBlank(name)) {
@@ -377,23 +378,23 @@ public class AbstractTikaParser implements IHintsAwareParser {
                     return "embedded-" + embedCount + "." + ct.getExtension();
                 }
             }
-            
+
             // Default... we could not find any name so make a unique one.
             embedMeta.setEmbeddedType("unknown");
             return "embedded-" + embedCount + ".unknown";
         }
     }
-    
-    protected class MergeEmbeddedParser 
+
+    protected class MergeEmbeddedParser
             extends ParserDecorator implements RecursiveParser  {
         private static final long serialVersionUID = -5011890258694908887L;
         private final Writer writer;
         private final ImporterMetadata metadata;
-        
-        private LinkedList<String> hierarchy = new LinkedList<>();
-        
-        
-        public MergeEmbeddedParser(Parser parser, 
+
+        private final LinkedList<String> hierarchy = new LinkedList<>();
+
+
+        public MergeEmbeddedParser(Parser parser,
                 Writer writer, ImporterMetadata metadata) {
             super(parser);
             this.writer = writer;
@@ -407,13 +408,13 @@ public class AbstractTikaParser implements IHintsAwareParser {
             boolean hasNoExtractFilter = hasNoExtractCondition();
             if (hasNoExtractFilter) {
                 String parentType = hierarchy.peekLast();
-                String currentType = 
+                String currentType =
                         knownDetector.detect(stream, tikaMeta).toString();
                 hierarchy.add(currentType);
                 performExtract = performExtract(parentType, currentType);
             }
             if (performExtract) {
-                super.parse(stream, 
+                super.parse(stream,
                         new BodyContentHandler(writer), tikaMeta, context);
                 addTikaMetadataToImporterMetadata(tikaMeta, metadata);
             }
@@ -426,7 +427,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             return null;
         }
     }
-    
+
     protected interface RecursiveParser extends Parser {
         List<ImporterDocument> getEmbeddedDocuments();
     }
@@ -458,40 +459,40 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 .getNoExtractEmbeddedContentTypes();
     }
 
-    
+
     private boolean performExtract(String parentType, String currentType) {
         if (parseHints == null || parentType == null) {
             return true;
         }
-        
+
         //--- Container ---
         String containerRegex = getNoExtractContainerRegex();
         if (StringUtils.isNotBlank(containerRegex)
                 && parentType.matches(containerRegex)) {
             return false;
         }
-        
+
         //--- Embedded ---
         String embeddedRegex = getNoExtractEmbeddedRegex();
         return StringUtils.isBlank(embeddedRegex)
                 || !currentType.matches(embeddedRegex);
     }
-    
-    
-    
-    
+
+
+
+
     //TODO create in a separate class, and make it that it caches
     // embedded detections as well, with the cash reset upon setting
     // a new thread-safe reference via a new cacheReference(ref, contentType).
-    // Class name: 
+    // Class name:
 
     // Then use this to autodetect before actual parsing to skip embedded
     // if configured to do so.
-    
+
     /**
      * This class prevents detecting the content type a second time when
      * we already know what it is.  Only the content type for the root
-     * reference is not detected again. Any embedded documents will have 
+     * reference is not detected again. Any embedded documents will have
      * default detection behavior applied on them.
      */
     class ThreadSafeCacheableAutoDetectWrapper implements Detector {
@@ -517,7 +518,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         public MediaType detect(InputStream input, Metadata metadata)
                 throws IOException {
             Cache cache = threadCache.get();
-            
+
             String ref = metadata.get(Metadata.RESOURCE_NAME_KEY);
             String embedId = metadata.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
             if (StringUtils.isNotBlank(embedId)) {
@@ -526,8 +527,8 @@ public class AbstractTikaParser implements IHintsAwareParser {
             if (StringUtils.isBlank(ref)) {
                 ref = cache.rootReference + "__hash__" + input.hashCode();
             }
-            
-            if (cache.currentType == null 
+
+            if (cache.currentType == null
                     || !Objects.equal(cache.currentReference, ref)) {
                 cache.currentReference = ref;
                 cache.currentType = originalDetector.detect(input, metadata);
@@ -580,7 +581,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         }
         return parseHints.getOcrConfig();
     }
-    
+
     /**
      * Gets whether embedded documents should be split to become "standalone"
      * distinct documents.
@@ -598,7 +599,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
     /**
      * Sets whether embedded documents should be split to become "standalone"
      * distinct documents.
-     * @param splitEmbedded <code>true</code> if parser should split 
+     * @param splitEmbedded <code>true</code> if parser should split
      *                      embedded documents.
      * @deprecated Use {@link #initialize(ParseHints)}
      */

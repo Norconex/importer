@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,78 +24,78 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Keep only the metadata fields provided, delete all other ones.  
+ * <p>Keep only the metadata fields provided, delete all other ones.
  * Exact field names (case-insensitive)
  * to keep can be provided as well as a regular expression that matches
  * one or many fields (since 2.1.0).</p>
- * 
- * <p><b>Note:</b> Unless you have good reasons for doing otherwise, it is 
+ *
+ * <p><b>Note:</b> Unless you have good reasons for doing otherwise, it is
  * recommended to use this handler as one of the last ones to be executed.
  * This is a good practice to ensure all metadata fields are available
  * to other handlers that may require them even if they are not otherwise
  * required.</p>
- * 
+ *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
- *      
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;fields&gt;(coma-separated list of fields to keep)&lt;/fields&gt;
  *      &lt;fieldsRegex&gt;(regular expression matching fields to keep)&lt;/fieldsRegex&gt;
- *      
- *  &lt;/tagger&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following keeps only the title and description fields from all
  * extracted fields.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
  *      &lt;fields&gt;title, description&lt;/fields&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @see Pattern
  */
 public class KeepOnlyTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(KeepOnlyTagger.class);
+    private static final Logger LOG =
+            LoggerFactory.getLogger(KeepOnlyTagger.class);
 
-    private final List<String> fields = new ArrayList<String>();
+    private final List<String> fields = new ArrayList<>();
     private String fieldsRegex;
-    
+
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         // If fields is empty, it means we should keep nothing
         if (fields.isEmpty() && StringUtils.isBlank(fieldsRegex)) {
             if (LOG.isDebugEnabled()) {
@@ -115,7 +115,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
             for (String key : removeList) {
                 metadata.remove(key);
             }
-            
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Removed metadata fields \""
                         + StringUtils.join(removeList, ",")
@@ -131,7 +131,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
                 return true;
             }
         }
-        
+
         // Check with regex
         if (StringUtils.isNotBlank(fieldsRegex)
                 && Pattern.matches(fieldsRegex, fieldToMatch)) {
@@ -139,8 +139,8 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
         }
         return false;
     }
-    
-    
+
+
     public List<String> getFields() {
         return Collections.unmodifiableList(fields);
     }
@@ -151,7 +151,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     public void removeField(String field) {
         fields.remove(field);
     }
-    
+
     public String getFieldsRegex() {
         return fieldsRegex;
     }
@@ -160,62 +160,31 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        String fieldsStr = xml.getString("[@fields]",
-                StringUtils.join(fields, ","));
-        if (StringUtils.isNotBlank(fieldsStr)) {
-            LOG.warn("Configuring fields to keep via the \"fields\" "
-                   + "attribute is now deprecated. Now use the <fields> "
-                   + "element instead.");
-        }
-        String fieldsElement = xml.getString(
-                "fields", StringUtils.join(fields, ","));
-        if (StringUtils.isNotBlank(fieldsElement)) {
-            fieldsStr = fieldsElement;
-        }
-
-        String[] configFields = StringUtils.split(fieldsStr, ",");
-        for (String field : configFields) {
-            addField(field.trim());
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        for (String fld : xml.getDelimitedStringList("fields", fields)) {
+            addField(fld);
         }
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
-    
+
     @Override
     protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeElementString("fields", StringUtils.join(fields, ","));
         writer.writeElementString("fieldsRegex", fieldsRegex);
     }
-    
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof KeepOnlyTagger)) {
-            return false;
-        }
-        KeepOnlyTagger castOther = (KeepOnlyTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(fieldsRegex, castOther.fieldsRegex)
-                .append(fields, castOther.fields)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(fieldsRegex)
-                .append(fields)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("fieldsRegex", fieldsRegex)
-                .append("fields", fields)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

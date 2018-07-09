@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ import java.io.Reader;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.TextReader;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -148,9 +148,9 @@ public abstract class AbstractStringFilter
             EnhancedXMLStreamWriter writer) throws XMLStreamException;
 
     @Override
-    protected final void loadCharStreamFilterFromXML(XMLConfiguration xml)
+    protected final void loadCharStreamFilterFromXML(XML xml) 
             throws IOException {
-        setMaxReadSize(xml.getInt("[@maxReadSize]", getMaxReadSize()));
+        setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
         loadStringFilterFromXML(xml);
     }
     /**
@@ -158,42 +158,19 @@ public abstract class AbstractStringFilter
      * @param xml xml configuration
      * @throws IOException could not load from XML
      */
-    protected abstract void loadStringFilterFromXML(XMLConfiguration xml)
-            throws IOException;    
+    protected abstract void loadStringFilterFromXML(XML xml) throws IOException;    
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof AbstractStringFilter)) {
-            return false;
-        }
-        AbstractStringFilter other = (AbstractStringFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(maxReadSize, other.maxReadSize)
-            .isEquals();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(maxReadSize)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-    
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("maxReadSize", maxReadSize)
-            .toString();
+        return new ReflectionToStringBuilder(this, 
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-    
-
 }

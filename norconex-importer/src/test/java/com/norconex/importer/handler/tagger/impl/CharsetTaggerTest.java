@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,26 +21,26 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CharsetTaggerTest {
 
     @Test
-    public void testCharsetTagger() 
+    public void testCharsetTagger()
             throws IOException, ImporterHandlerException {
-        
+
         testCharsetTagger("ISO-8859-1",   "ISO-8859-1");
         testCharsetTagger("ISO-8859-2",   "ISO-8859-1");
         testCharsetTagger("windows-1250", "ISO-8859-1");
         testCharsetTagger("UTF-8",        "ISO-8859-1");
-    
+
         testCharsetTagger("ISO-8859-1",   "ISO-8859-2");
         testCharsetTagger("ISO-8859-2",   "ISO-8859-2");
         testCharsetTagger("windows-1250", "ISO-8859-2");
         testCharsetTagger("UTF-8",        "ISO-8859-2");
-    
+
         testCharsetTagger("ISO-8859-1",   "windows-1250");
         testCharsetTagger("ISO-8859-2",   "windows-1250");
         testCharsetTagger("windows-1250", "windows-1250");
@@ -56,14 +56,14 @@ public class CharsetTaggerTest {
         testCharsetTagger("windows-1250", "KOI8-R");
         testCharsetTagger("UTF-8",        "KOI8-R");
     }
-    
-    
-    private void testCharsetTagger(String fromCharset, String toCharset) 
+
+
+    private void testCharsetTagger(String fromCharset, String toCharset)
             throws IOException, ImporterHandlerException {
 
         byte[] sourceBytes = "En télécommunications".getBytes(fromCharset);
         byte[] targetBytes = "En télécommunications".getBytes(toCharset);
-        
+
         CharsetTagger t = new CharsetTagger();
         //t.setSourceCharset(fromCharset);
         t.setTargetCharset(toCharset);
@@ -72,15 +72,15 @@ public class CharsetTaggerTest {
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString("field1", new String(sourceBytes, fromCharset));
         metadata.setString(ImporterMetadata.DOC_CONTENT_ENCODING, fromCharset);
-        
+
         t.tagDocument(
-                "ref-" + fromCharset + "-" + toCharset, 
-                new NullInputStream(0), 
+                "ref-" + fromCharset + "-" + toCharset,
+                new NullInputStream(0),
                 metadata, false);
 
         String convertedValue = metadata.getString("field1");
         byte[] convertedBytes = convertedValue.getBytes(toCharset);
-        
+
 //        String sourceValue = new String(sourceBytes, fromCharset);
 //        String targetValue = new String(targetBytes, toCharset);
 //        System.out.println("=== " + fromCharset + " > " + toCharset + "===");
@@ -91,7 +91,7 @@ public class CharsetTaggerTest {
 //        System.out.println("   target bytes: " + Arrays.toString(targetBytes));
 //        System.out.println("converted bytes: " + Arrays.toString(convertedBytes));
 
-        Assert.assertArrayEquals(fromCharset + " > " + toCharset, 
+        Assert.assertArrayEquals(fromCharset + " > " + toCharset,
                 targetBytes, convertedBytes);
     }
 
@@ -100,8 +100,6 @@ public class CharsetTaggerTest {
         CharsetTagger t = new CharsetTagger();
         t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
         t.setFieldsRegex(".*");
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

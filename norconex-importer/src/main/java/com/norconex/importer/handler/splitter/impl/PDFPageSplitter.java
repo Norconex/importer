@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -33,6 +32,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -67,7 +67,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
  *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -81,16 +81,16 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *          reference. Default is "#".)
  *      &lt;/referencePagePrefix&gt;
  *
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>The following example will split PDFs and will append the page number
  * to the original PDF reference as "#page1", "#page2", etc.
  * </p>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
  *      &lt;referencePagePrefix&gt;#page&lt;/referencePagePrefix&gt;
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.9.0
@@ -152,7 +152,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
                 // metadata
                 ImporterMetadata pageMeta = new ImporterMetadata();
-                pageMeta.load(doc.getMetadata());
+                pageMeta.loadFromMap(doc.getMetadata());
                 pageMeta.setReference(pageRef);
                 pageMeta.setEmbeddedReference(Integer.toString(pageNo));
                 pageMeta.setEmbeddedParentReference(doc.getReference());
@@ -183,7 +183,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) throws IOException {
         setReferencePagePrefix(
                 xml.getString("referencePagePrefix", referencePagePrefix));
     }

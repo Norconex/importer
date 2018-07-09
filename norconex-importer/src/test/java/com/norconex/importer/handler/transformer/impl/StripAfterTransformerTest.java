@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,15 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.transformer.impl.StripAfterTransformer;
 
 public class StripAfterTransformerTest {
 
     @Test
-    public void testTransformTextDocument() 
+    public void testTransformTextDocument()
             throws IOException, ImporterHandlerException {
         StripAfterTransformer t = new StripAfterTransformer();
         t.setStripAfterRegex("<p>");
@@ -44,13 +43,13 @@ public class StripAfterTransformerTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        
+
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(), 
+                htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
 //        System.out.println(os.toString());
-        
+
         Assert.assertEquals(
                 "Length of doc content after transformation is incorrect.",
                 552, os.toString().length());
@@ -58,15 +57,13 @@ public class StripAfterTransformerTest {
         is.close();
         os.close();
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         StripAfterTransformer t = new StripAfterTransformer();
         t.setInclusive(true);
         t.setStripAfterRegex("<p>");
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

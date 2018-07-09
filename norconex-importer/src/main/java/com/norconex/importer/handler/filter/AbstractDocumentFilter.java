@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ import java.io.InputStream;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -92,10 +92,6 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     private final AbstractOnMatchFilter onMatch = new AbstractOnMatchFilter() {
     };
     
-    public AbstractDocumentFilter() {
-        super("filter");
-    }
-
     @Override
     public OnMatch getOnMatch() {
         return onMatch.getOnMatch();
@@ -138,41 +134,23 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             throws XMLStreamException;
 
     @Override
-    protected final void loadHandlerFromXML(
-            XMLConfiguration xml) throws IOException {
+    protected final void loadHandlerFromXML(XML xml) throws IOException {
         onMatch.loadFromXML(xml);
         loadFilterFromXML(xml);
     }
-    protected abstract void loadFilterFromXML(
-            XMLConfiguration xml) throws IOException;
-
-
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("onMatch", onMatch)
-                .toString();
-    }
+    protected abstract void loadFilterFromXML(XML xml) throws IOException;
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractDocumentFilter)) {
-            return false;
-        }
-        AbstractDocumentFilter castOther = (AbstractDocumentFilter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(other))
-                .append(onMatch, castOther.onMatch)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(onMatch)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(this, 
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

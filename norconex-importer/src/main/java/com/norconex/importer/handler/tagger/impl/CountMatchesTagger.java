@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,16 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
@@ -46,10 +44,10 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </p>
  * <p>
  * If no "fromField" is specified, the document content will be used.
- * If the "toField" already exists before counting begins, it will be 
+ * If the "toField" already exists before counting begins, it will be
  * overwritten with the result of the match count.
  * If within this tagger the "toField" is repeated,
- * the sum of all count will be added. 
+ * the sum of all count will be added.
  * If the fromField has multiple values, the total count of all matches
  * will be stored as a single value.
  * </p>
@@ -58,18 +56,18 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * when the "fromField" is used.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
  *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;  
- *          
+ *          maxReadSize="(max characters to read at once)" &gt;
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *          
- *      &lt;countMatches 
- *              fromField="(optional source field)" 
+ *
+ *      &lt;countMatches
+ *              fromField="(optional source field)"
  *              toField="(target field)"
  *              caseSensitive="[false|true]"
  *              regex="[false|true]"&gt;
@@ -77,40 +75,40 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/countMatches&gt;
  *      &lt;!-- multiple countMatches tags allowed --&gt;
  *
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
- * The following will count the number of segments in a URL: 
+ * The following will count the number of segments in a URL:
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"&gt;  
- *      &lt;countMatches 
- *              fromField="document.reference" 
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"&gt;
+ *      &lt;countMatches
+ *              fromField="document.reference"
  *              toField="urlSegmentCount"
  *              regex="true"&gt;
  *          /[^/]+
  *      &lt;/countMatches&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @see Pattern
  * @since 2.6.0
  */
 public class CountMatchesTagger extends AbstractStringTagger {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CountMatchesTagger.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(CountMatchesTagger.class);
+
     private final List<MatchDetails> matchesDetails = new ArrayList<>();
-    
+
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex) 
+            ImporterMetadata metadata, boolean parsed, int sectionIndex)
             throws ImporterHandlerException {
-        // initialize all toFields to 0 so values can then be added 
+        // initialize all toFields to 0 so values can then be added
         // without concerns with previous data
         if (sectionIndex == 0) {
             for (MatchDetails md : matchesDetails) {
@@ -119,7 +117,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
                 }
             }
         }
-        
+
         // perform the match counts
         for (MatchDetails md : matchesDetails) {
             // "toField" and value must be present.
@@ -133,14 +131,14 @@ public class CountMatchesTagger extends AbstractStringTagger {
                         + "no match will be attempted.");
                 continue;
             }
-            
+
             boolean isFieldUsed = StringUtils.isNotBlank(md.getFromField());
             // if we have done the field matching already in the first section,
             // move on
             if (isFieldUsed && sectionIndex > 0) {
                 continue;
             }
-            
+
             List<String> sourceValues = null;
             if (isFieldUsed) {
                 sourceValues = metadata.getStrings(md.getFromField());
@@ -163,13 +161,13 @@ public class CountMatchesTagger extends AbstractStringTagger {
                     count = countSubstringMatches(
                             sourceValue, md.getValue(), md.isCaseSensitive());
                 }
-                
+
                 int newCount = count + metadata.getInt(md.getToField());
                 metadata.setInt(md.getToField(), newCount);
             }
         }
     }
-    
+
 
     private int countRegexMatches(
             String haystack, String needle, boolean caseSensitive) {
@@ -190,7 +188,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
         return countRegexMatches(
                 haystack, Pattern.quote(needle), caseSensitive);
     }
-        
+
     public List<MatchDetails> getMatchesDetails() {
         return Collections.unmodifiableList(matchesDetails);
     }
@@ -198,7 +196,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
     public void removeMatchDetails(MatchDetails matchDetails) {
         matchesDetails.remove(matchDetails);
     }
-    
+
     /**
      * Adds a match details.
      * @param matchDetails the match details
@@ -209,7 +207,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
         }
     }
 
-    
+
     public static class MatchDetails {
         private String fromField;
         private String toField;
@@ -268,7 +266,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
         }
         /**
          * Sets whether the <code>value</code> to match is a regular expression.
-         * @param regex <code>true</code> if <code>value</code> is a 
+         * @param regex <code>true</code> if <code>value</code> is a
          *              regular expression
          */
         public void setRegex(boolean regex) {
@@ -283,53 +281,33 @@ public class CountMatchesTagger extends AbstractStringTagger {
         public void setCaseSensitive(boolean caseSensitive) {
             this.caseSensitive = caseSensitive;
         }
-        @Override
-        public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("fromField", fromField)
-                    .append("toField", toField)
-                    .append("value", value)
-                    .append("regex", regex)
-                    .append("caseSensitive", caseSensitive)
-                    .toString();
-        }
+
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof MatchDetails))
-                return false;
-            MatchDetails castOther = (MatchDetails) other;
-            return new EqualsBuilder()
-                    .append(fromField, castOther.fromField)
-                    .append(toField, castOther.toField)
-                    .append(value, castOther.value)
-                    .append(regex, castOther.regex)
-                    .append(caseSensitive, castOther.caseSensitive)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                        .append(fromField)
-                        .append(toField)
-                        .append(value)
-                        .append(regex)
-                        .append(caseSensitive)
-                        .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-    
+
     @Override
-    protected void loadStringTaggerFromXML(XMLConfiguration xml)
+    protected void loadStringTaggerFromXML(XML xml)
             throws IOException {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("countMatches");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+        List<XML> nodes = xml.getXMLList("countMatches");
+        for (XML node : nodes) {
             MatchDetails m = new MatchDetails();
-            m.setFromField(node.getString("[@fromField]"));
-            m.setToField(node.getString("[@toField]", null));
-            m.setRegex(node.getBoolean("[@regex]", false));
-            m.setCaseSensitive(node.getBoolean("[@caseSensitive]", false));
-            m.setValue(node.getString(""));
+            m.setFromField(node.getString("@fromField"));
+            m.setToField(node.getString("@toField", null));
+            m.setRegex(node.getBoolean("@regex", false));
+            m.setCaseSensitive(node.getBoolean("@caseSensitive", false));
+            m.setValue(node.getString("."));
             addMatchDetails(m);
         }
     }
@@ -351,29 +329,15 @@ public class CountMatchesTagger extends AbstractStringTagger {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CountMatchesTagger)) {
-            return false;
-        }
-        CountMatchesTagger castOther = (CountMatchesTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(matchesDetails, castOther.matchesDetails)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(matchesDetails)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("matchesDetails", matchesDetails)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

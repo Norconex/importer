@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,18 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TestStatisticsTaggerTest {
 
     @Test
-    public void testTagTextDocument() 
+    public void testTagTextDocument()
             throws IOException, ImporterHandlerException {
-        
-        
-        String txt = 
+
+
+        String txt =
             "White Rabbit checking watch"
           + "\n\n"
           + "  In another moment down went Alice after it, never once "
@@ -63,26 +63,24 @@ public class TestStatisticsTaggerTest {
         Assert.assertEquals(115, meta.getInt("document.stat.wordCount"));
         Assert.assertEquals(8, meta.getInt("document.stat.sentenceCount"));
         Assert.assertEquals(4, meta.getInt("document.stat.paragraphCount"));
-        Assert.assertEquals("4.2", 
+        Assert.assertEquals("4.2",
                 meta.getString("document.stat.averageWordCharacterCount"));
-        Assert.assertEquals("77.0", 
+        Assert.assertEquals("77.0",
                 meta.getString("document.stat.averageSentenceCharacterCount"));
-        Assert.assertEquals("14.4", 
+        Assert.assertEquals("14.4",
                 meta.getString("document.stat.averageSentenceWordCount"));
-        Assert.assertEquals("154.0", 
+        Assert.assertEquals("154.0",
                 meta.getString("document.stat.averageParagraphCharacterCount"));
-        Assert.assertEquals("2.0", 
+        Assert.assertEquals("2.0",
                 meta.getString("document.stat.averageParagraphSentenceCount"));
-        Assert.assertEquals("28.8", 
+        Assert.assertEquals("28.8",
                 meta.getString("document.stat.averageParagraphWordCount"));
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         TextStatisticsTagger tagger = new TextStatisticsTagger();
         tagger.setFieldName("afield");
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

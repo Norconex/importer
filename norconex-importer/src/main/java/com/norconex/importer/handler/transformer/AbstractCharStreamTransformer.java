@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,17 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -45,14 +45,14 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses can safely be used as either pre-parse or post-parse handlers
  * restricted to text documents only (see {@link AbstractImporterHandler}).
  * </p>
- * 
+ *
  * <p>
  * Sub-classes can restrict to which document to apply this transformation
  * based on document metadata (see {@link AbstractImporterHandler}).
  * </p>
- * 
+ *
  * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
- * this class attempts to detect the content character 
+ * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}.  If the character
  * set cannot be established, UTF-8 is assumed.
@@ -60,15 +60,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * parsing converts content to UTF-8, UTF-8 is always assumed when
  * used as a post-parse handler.
  * </p>
- * 
+ *
  * <p>
- * Subclasses implementing {@link IXMLConfigurable} should allow this inner 
+ * Subclasses implementing {@link IXMLConfigurable} should allow this inner
  * configuration:
  * </p>
  * <pre>
- *  &lt;!-- parent tag has these attribute: 
+ *  &lt;!-- parent tag has these attribute:
  *      sourceCharset="(character encoding)"
- *    --&gt; 
+ *    --&gt;
  *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
  *      (regular expression of value to match)
@@ -77,17 +77,17 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * </pre>
  * @author Pascal Essiembre
  */
-public abstract class AbstractCharStreamTransformer 
+public abstract class AbstractCharStreamTransformer
             extends AbstractDocumentTransformer {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractCharStreamTransformer.class);    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractCharStreamTransformer.class);
 
     private String sourceCharset = null;
-    
+
     /**
      * Gets the assumed source character encoding.
-     * @return character encoding of the source to be transformed 
+     * @return character encoding of the source to be transformed
      * @since 2.5.0
      */
     public String getSourceCharset() {
@@ -98,31 +98,31 @@ public abstract class AbstractCharStreamTransformer
      * @param sourceCharset character encoding of the source to be transformed
      * @since 2.5.0
      */
-    public void setSourceCharset(String sourceCharset) {
+    public void setSourceCharset(final String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
 
     @Override
     protected final void transformApplicableDocument(
-            String reference, InputStream input,
-            OutputStream output, ImporterMetadata metadata, boolean parsed)
+            final String reference, final InputStream input,
+            final OutputStream output, final ImporterMetadata metadata, final boolean parsed)
             throws ImporterHandlerException {
-        
+
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, input, metadata, parsed);
         if (StringUtils.isBlank(inputCharset)) {
             LOG.warn("Character encoding could not be detected (will assume "
                     + "UTF-8). If this leads to a failure, it could be that "
-                    + "you are using this transformer "
+                    + "you are using this transformer ("
                     + getClass().getCanonicalName()
-                    + " with binary content. You can avoid this by applying "
+                    + ") with binary content. You can avoid this by applying "
                     + "restrictions or making sure it was parsed first. "
                     + "Reference: " + reference);
             inputCharset = StandardCharsets.UTF_8.toString();
         }
         try {
             InputStreamReader is = new InputStreamReader(input, inputCharset);
-            OutputStreamWriter os = 
+            OutputStreamWriter os =
                     new OutputStreamWriter(output, inputCharset);
             transformTextDocument(reference, is, os, metadata, parsed);
             os.flush();
@@ -136,10 +136,10 @@ public abstract class AbstractCharStreamTransformer
             String reference, Reader input,
             Writer output, ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException;
-    
-    
+
+
     @Override
-    protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected final void saveHandlerToXML(final EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         saveCharStreamTransformerToXML(writer);
@@ -148,7 +148,7 @@ public abstract class AbstractCharStreamTransformer
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
-     * 
+     *
      * @param writer the xml writer
      * @throws XMLStreamException could not save to XML
      */
@@ -157,8 +157,8 @@ public abstract class AbstractCharStreamTransformer
 
     @Override
     protected final void loadHandlerFromXML(
-            XMLConfiguration xml) throws IOException {
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+            final XML xml) throws IOException {
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         loadCharStreamTransformerFromXML(xml);
     }
     /**
@@ -167,40 +167,19 @@ public abstract class AbstractCharStreamTransformer
      * @throws IOException could not load from XML
      */
     protected abstract void loadCharStreamTransformerFromXML(
-            XMLConfiguration xml) throws IOException;
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof AbstractCharStreamTransformer)) {
-            return false;
-        }
-        AbstractCharStreamTransformer other = 
-                (AbstractCharStreamTransformer) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(sourceCharset, other.sourceCharset)
-            .isEquals();
-    }
+            XML xml) throws IOException;
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(sourceCharset)
-            .toHashCode();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-    
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("sourceCharset", sourceCharset)
-            .toString();
-    }    
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
 }

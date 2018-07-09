@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,15 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -63,7 +63,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
  *      field="(target field)"
  *      format="(date format)"
  *      locale="(locale)"
@@ -74,7 +74,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
@@ -83,7 +83,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * in a "crawl_date" field. 
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
  *      field="crawl_date" format="yyyy-MM-dd HH:mm" /&gt;
  * </pre>
  * 
@@ -175,14 +175,14 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        field = xml.getString("[@field]", field);
-        format = xml.getString("[@format]", format);
-        String localeStr = xml.getString("[@locale]", null);
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        field = xml.getString("@field", field);
+        format = xml.getString("@format", format);
+        String localeStr = xml.getString("@locale", null);
         if (StringUtils.isNotBlank(localeStr)) {
             setLocale(LocaleUtils.toLocale(localeStr));
         }
-        overwrite = xml.getBoolean("[@overwrite]", overwrite);
+        overwrite = xml.getBoolean("@overwrite", overwrite);
     }
 
     @Override
@@ -197,38 +197,16 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append(super.toString())
-                .append("field", field)
-                .append("format", format)
-                .append("locale", locale)
-                .append("overwrite", overwrite)
-                .toString();
-    }
-
-    @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CurrentDateTagger))
-            return false;
-        CurrentDateTagger castOther = (CurrentDateTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(other))
-                .append(field, castOther.field)
-                .append(format, castOther.format)
-                .append(locale, castOther.locale)
-                .append(overwrite, castOther.overwrite)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(field)
-                .append(format)
-                .append(locale)
-                .append(overwrite)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

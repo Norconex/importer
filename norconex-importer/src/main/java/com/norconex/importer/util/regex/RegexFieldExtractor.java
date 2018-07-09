@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,32 +21,38 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.regex.KeyValueExtractor;
 
 /**
  * Simplify extraction of field names and values from any text,
- * using regular expression match groups for the field name and value. 
+ * using regular expression match groups for the field name and value.
+ * At least one of "field" or "fieldGroup" must be specified.  If fieldGroup
+ * is specified without a "field" and finds no matches, the matching
+ * of the value is ignored.
  * @author Pascal Essiembre
  * @since 2.8.0
+ * @deprecated Since 3.0.0, use {@link KeyValueExtractor} from
+ *         Norconex Commons Lang
  */
-//TODO consider moving to Norconex Commons Lang?
+@Deprecated
 public class RegexFieldExtractor {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(RegexFieldExtractor.class);
-    
-    public static final RegexFieldExtractor[] EMPTY_ARRAY = 
+    private static final Logger LOG =
+            LoggerFactory.getLogger(RegexFieldExtractor.class);
+
+    public static final RegexFieldExtractor[] EMPTY_ARRAY =
             new RegexFieldExtractor[] {};
-    
+
     private String field;
     private String regex;
     private boolean caseSensitive;
     private int fieldGroup = -1;
     private int valueGroup = -1;
-    
+
     public RegexFieldExtractor() {
         super();
     }
@@ -103,16 +109,20 @@ public class RegexFieldExtractor {
         this.field = field;
         return this;
     }
-    
+
     public void extractFields(Properties dest, CharSequence text) {
+        if (StringUtils.isBlank(field) && !hasFieldGroup()) {
+            throw new IllegalArgumentException(
+                    "At least one of 'field' or 'fieldGroup' expected.");
+        }
         Matcher m = matcher(text);
         while (m.find()) {
             String fieldName = extractFieldName(m);
             String fieldValue = extractFieldValue(m);
             if (StringUtils.isBlank(fieldName)) {
-                LOG.warn("No field name for value: " + fieldValue);
+                LOG.debug("No field name for value: {}", fieldValue);
             } else if (fieldValue == null) {
-                LOG.warn("Null value for field: " + field);
+                LOG.debug("Null value for field: {}", field);
             } else {
                 dest.addString(fieldName, fieldValue);
             }
@@ -122,7 +132,7 @@ public class RegexFieldExtractor {
         Properties dest = new Properties();
         extractFields(dest, text);
         return dest;
-    }    
+    }
 
     private Matcher matcher(CharSequence text) {
         return RegexUtil.compileDotAll(regex, isCaseSensitive()).matcher(text);
@@ -132,11 +142,10 @@ public class RegexFieldExtractor {
         if (hasFieldGroup()) {
             if (m.groupCount() < getFieldGroup()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group " + getFieldGroup()
-                            + " for field name in regex \"" + getRegex() 
-                            + "\" for match value \"" + m.group()
-                            + "\". Defaulting to field name: \""
-                            + field + "\".");
+                    LOG.debug("No match group {} for field name in regex \"{}\""
+                            + "for match value \"{}\". Defaulting to field "
+                            + "name: \"{}\".",
+                            getFieldGroup(), getRegex(), m.group(), field);
                 }
             } else {
                 f = m.group(getFieldGroup());
@@ -148,10 +157,11 @@ public class RegexFieldExtractor {
         if (hasValueGroup()) {
             if (m.groupCount() < getValueGroup()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("No match group " + getFieldGroup()
-                            + " for field value in regex \"" + getRegex() 
-                            + "\" for match value \"" + m.group()
-                            + "\". Defaulting to entire match.");
+                    LOG.debug("No match group {} "
+                            + "for field value in regex \"{}\" "
+                            + "for match value \"{}\". "
+                            + "Defaulting to entire match.",
+                            getFieldGroup(), getRegex(), m.group());
                 }
             } else {
                 return m.group(getValueGroup());
@@ -165,7 +175,7 @@ public class RegexFieldExtractor {
     private boolean hasValueGroup() {
         return getValueGroup() > -1;
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);

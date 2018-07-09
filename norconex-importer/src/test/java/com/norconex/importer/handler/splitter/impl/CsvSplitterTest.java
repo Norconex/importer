@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -40,7 +40,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
 public class CsvSplitterTest {
 
     private InputStream input;
-    
+
     @Before
     public void setup() throws IOException {
         input = CsvSplitterTest.class.getResourceAsStream(
@@ -53,73 +53,73 @@ public class CsvSplitterTest {
     }
 
     @Test
-    public void testReferenceColumnByName() 
+    public void testReferenceColumnByName()
             throws IOException, ImporterHandlerException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         splitter.setReferenceColumn("clientPhone");
         List<ImporterDocument> docs = split(splitter);
         Assert.assertEquals(
-                "Could not find embedded William Dalton phone reference.", 
+                "Could not find embedded William Dalton phone reference.",
                 "654-0987", docs.get(2).getMetadata().getEmbeddedReference());
     }
 
     @Test
-    public void testReferenceColumnByPosition() 
+    public void testReferenceColumnByPosition()
             throws IOException, ImporterHandlerException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(false);
         splitter.setReferenceColumn("2");
         List<ImporterDocument> docs = split(splitter);
-        Assert.assertEquals("Could not find embedded William Dalton reference.", 
-                "William Dalton", 
+        Assert.assertEquals("Could not find embedded William Dalton reference.",
+                "William Dalton",
                 docs.get(3).getMetadata().getEmbeddedReference());
     }
-    
-    
+
+
     @Test
-    public void testContentColumn() 
+    public void testContentColumn()
             throws ImporterHandlerException, IOException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         splitter.setContentColumns("clientName", "3");
 
         List<ImporterDocument> docs = split(splitter);
-        Assert.assertEquals("William Dalton 654-0987", 
-                IOUtils.toString(docs.get(2).getContent(), 
+        Assert.assertEquals("William Dalton 654-0987",
+                IOUtils.toString(docs.get(2).getContent(),
                         StandardCharsets.UTF_8));
     }
-    
-    
+
+
     @Test
-    public void testFirstRowHeader() 
+    public void testFirstRowHeader()
             throws ImporterHandlerException, IOException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         List<ImporterDocument> docs = split(splitter);
-        
+
         Assert.assertEquals(
                 "Invalid number of docs returned.", 4, docs.size());
 
-        Assert.assertEquals("Could not find William Dalton by column name.", 
-                "William Dalton", 
+        Assert.assertEquals("Could not find William Dalton by column name.",
+                "William Dalton",
                 docs.get(2).getMetadata().getString("clientName"));
     }
-    
-    private List<ImporterDocument> split(CsvSplitter splitter) 
+
+    private List<ImporterDocument> split(CsvSplitter splitter)
             throws IOException, ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
         SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
-        
+
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
-        
+
         List<ImporterDocument> docs = splitter.splitApplicableDocument(
                 doc, new NullOutputStream(), factory, false);
         return docs;
-        
+
     }
-    
+
     @Test
     public void testWriteRead() throws IOException {
         CsvSplitter splitter = new CsvSplitter();
@@ -129,9 +129,6 @@ public class CsvSplitterTest {
         splitter.addRestriction("key", "value", true);
         splitter.setSeparatorCharacter('@');
         splitter.setUseFirstRowAsFields(true);
-        System.out.println("Writing/Reading this: " + splitter);
-        XMLConfigurationUtil.assertWriteRead(splitter);
+        XML.assertWriteRead(splitter, "handler");
     }
-
-
 }

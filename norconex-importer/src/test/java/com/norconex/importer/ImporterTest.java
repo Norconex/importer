@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -32,9 +33,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.ConfigurationValidationException;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.XMLValidationException;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -50,8 +51,7 @@ public class ImporterTest {
     @Before
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(new IDocumentTransformer[] {
-                new IDocumentTransformer() {
+        config.setPostParseHandlers(Arrays.asList(new IDocumentTransformer() {
             @Override
             public void transformDocument(String reference, InputStream input,
                     OutputStream output, ImporterMetadata metadata, 
@@ -70,7 +70,7 @@ public class ImporterTest {
                     throw new ImporterHandlerException(e);
                 }
             }
-        }});
+        }));
         importer = new Importer(config);
     }
 
@@ -123,8 +123,8 @@ public class ImporterTest {
     @Test
     public void testImportRejected() throws IOException, ImporterException {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(new RegexMetadataFilter(
-                "Content-Type", "application/pdf", OnMatch.EXCLUDE));
+        config.setPostParseHandlers(Arrays.asList(new RegexMetadataFilter(
+                "Content-Type", "application/pdf", OnMatch.EXCLUDE)));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
@@ -154,7 +154,7 @@ public class ImporterTest {
         
         try (Reader r = new InputStreamReader(is)) {
             ImporterConfigLoader.loadImporterConfig(r, false);
-        } catch (ConfigurationValidationException e) {
+        } catch (XMLValidationException e) {
             Assert.fail(e.getErrors().size()
                     + "Validation warnings/errors were found.");
         }

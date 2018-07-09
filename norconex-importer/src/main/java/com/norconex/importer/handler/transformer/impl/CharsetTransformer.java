@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,18 @@ import java.nio.charset.StandardCharsets;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.utils.CharsetUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
@@ -44,11 +44,11 @@ import com.norconex.importer.util.CharsetUtil;
  * encoding (charset) to a target one. Both the source and target character
  * encodings are optional. If no source character encoding is explicitly
  * provided, it first tries to detect the encoding of the document
- * content before converting it to the target encoding. If the source 
+ * content before converting it to the target encoding. If the source
  * character encoding cannot be established, the content encoding will remain
  * unchanged. When no target character encoding is specified, UTF-8 is assumed.
  * </p>
- * 
+ *
  * <h3>Should I use this transformer?</h3>
  * <p>
  * Before using this transformer, you need to know the parsing of documents
@@ -56,12 +56,12 @@ import com.norconex.importer.util.CharsetUtil;
  * and return content as UTF-8 (for most, if not all content-types).
  * If UTF-8 is your desired target, it only make sense to use this transformer
  * as a pre-parsing handler (for text content-types only) when it is important
- * to work with a specific character encoding before parsing. 
- * If on the other hand you wish to convert to a character encoding to a 
+ * to work with a specific character encoding before parsing.
+ * If on the other hand you wish to convert to a character encoding to a
  * target different than UTF-8, you can use this transformer as a post-parsing
  * handler to do so.
  * </p>
- * 
+ *
  * <h3>Conversion is not flawless</h3>
  * <p>
  * Because character encoding detection is not always accurate and because
@@ -70,15 +70,15 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
  *      sourceCharset="(character encoding)" targetCharset="(character encoding)"&gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/transformer&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -86,7 +86,7 @@ import com.norconex.importer.util.CharsetUtil;
  * to "UTF-8".
  * </p>
  * <pre>
- *  &lt;transformer class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
  *      sourceCharset="ISO-8859-1" targetCharset="UTF-8" /&gt;
  * </pre>
  * @author Pascal Essiembre
@@ -95,20 +95,20 @@ import com.norconex.importer.util.CharsetUtil;
 public class CharsetTransformer extends AbstractDocumentTransformer
         implements IXMLConfigurable {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(CharsetTransformer.class);    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(CharsetTransformer.class);
 
-    public static final String DEFAULT_TARGET_CHARSET = 
+    public static final String DEFAULT_TARGET_CHARSET =
             StandardCharsets.UTF_8.toString();
-    
+
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
 
     @Override
-    protected void transformApplicableDocument(String reference,
-            InputStream input, OutputStream output, ImporterMetadata metadata,
-            boolean parsed) throws ImporterHandlerException {
-        
+    protected void transformApplicableDocument(final String reference,
+            final InputStream input, final OutputStream output, final ImporterMetadata metadata,
+            final boolean parsed) throws ImporterHandlerException {
+
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, input, metadata, false);
 
@@ -127,74 +127,57 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             }
             return;
         }
-        
+
         //--- Convert ---
         try {
             CharsetUtil.convertCharset(
                     input, inputCharset, output, outputCharset);
         } catch (IOException e) {
             LOG.warn("Cannot convert character encoding from " + inputCharset
-                    + " to " + outputCharset 
+                    + " to " + outputCharset
                     + ". Encoding will remain unchanged. "
                     + "Reference: " + reference, e);
         }
     }
-    
+
     public String getTargetCharset() {
         return targetCharset;
     }
-    public void setTargetCharset(String targetCharset) {
+    public void setTargetCharset(final String targetCharset) {
         this.targetCharset = targetCharset;
     }
 
     public String getSourceCharset() {
         return sourceCharset;
     }
-    public void setSourceCharset(String sourceCharset) {
+    public void setSourceCharset(final String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
-        setTargetCharset(xml.getString("[@targetCharset]", getTargetCharset()));
+    protected void loadHandlerFromXML(final XML xml) throws IOException {
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
     }
-    
+
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
+    protected void saveHandlerToXML(final EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
         writer.writeAttributeString("sourceCharset", getSourceCharset());
         writer.writeAttributeString("targetCharset", getTargetCharset());
     }
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(sourceCharset)
-            .append(targetCharset)
-            .toHashCode();
-    }
-
-    @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CharsetTransformer)) {
-            return false;
-        }
-        CharsetTransformer castOther = (CharsetTransformer) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(sourceCharset, castOther.sourceCharset)
-                .append(targetCharset, castOther.targetCharset)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("sourceCharset", sourceCharset)
-                .append("targetCharset", targetCharset)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

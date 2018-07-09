@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,15 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -61,7 +59,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
  *  
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -79,7 +77,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *      
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <p>
  * <b>Note:</b> To preserve white space add <code>xml:space="preserve"</code>
@@ -95,12 +93,12 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * in the "fruit" field.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
  *      &lt;replace fromField="fruit" replaceAll="true"&gt;
  *          &lt;fromValue&gt;apple&lt;/fromValue&gt;
  *          &lt;toValue&gt;orange&lt;/toValue&gt;
  *      &lt;/replace&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  */
@@ -369,62 +367,32 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
         
         @Override
-        public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("fromField", fromField)
-                    .append("fromValue", fromValue)
-                    .append("toField", toField)
-                    .append("toValue", toValue)
-                    .append("regex", regex)
-                    .append("caseSensitive", caseSensitive)
-                    .append("wholeMatch", wholeMatch)
-                    .append("replaceAll", replaceAll)
-                    .toString();
-        }
-        @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof Replacement))
-                return false;
-            Replacement castOther = (Replacement) other;
-            return new EqualsBuilder()
-                    .append(fromField, castOther.fromField)
-                    .append(fromValue, castOther.fromValue)
-                    .append(toField, castOther.toField)
-                    .append(toValue, castOther.toValue)
-                    .append(regex, castOther.regex)
-                    .append(caseSensitive, castOther.caseSensitive)
-                    .append(wholeMatch, castOther.wholeMatch)
-                    .append(replaceAll, castOther.replaceAll)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                        .append(fromField)
-                        .append(fromValue)
-                        .append(toField)
-                        .append(toValue)
-                        .append(regex)
-                        .append(caseSensitive)
-                        .append(wholeMatch)
-                        .append(replaceAll)
-                        .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = xml.configurationsAt("replace");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        for (XML node : xml.getXMLList("replace")) {
             Replacement r = new Replacement();
             r.setFromValue(node.getString("fromValue"));
             r.setToValue(node.getString("toValue"));
-            r.setFromField(node.getString("[@fromField]"));
-            r.setToField(node.getString("[@toField]", null));
-            r.setRegex(node.getBoolean("[@regex]", false));
-            r.setCaseSensitive(node.getBoolean("[@caseSensitive]", false));
-            r.setWholeMatch(node.getBoolean("[@wholeMatch]", false));
-            r.setReplaceAll(node.getBoolean("[@replaceAll]", false));
+            r.setFromField(node.getString("@fromField"));
+            r.setToField(node.getString("@toField", null));
+            r.setRegex(node.getBoolean("@regex", false));
+            r.setCaseSensitive(node.getBoolean("@caseSensitive", false));
+            r.setWholeMatch(node.getBoolean("@wholeMatch", false));
+            r.setReplaceAll(node.getBoolean("@replaceAll", false));
             addReplacement(r);
         }
     }
@@ -453,29 +421,15 @@ public class ReplaceTagger extends AbstractDocumentTagger {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ReplaceTagger)) {
-            return false;
-        }
-        ReplaceTagger castOther = (ReplaceTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(replacements, castOther.replacements)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(replacements)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("replacements", replacements)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

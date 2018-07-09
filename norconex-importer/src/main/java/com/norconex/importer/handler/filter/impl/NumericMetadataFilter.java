@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,19 +23,17 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
@@ -44,18 +42,18 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <p>
  * Accepts or rejects a document based on the numeric value(s) of a metadata
  * field, supporting decimals. If multiple values are found for a field, only
- * one of them needs to match for this filter to take effect. 
+ * one of them needs to match for this filter to take effect.
  * If the value is not a valid number, it is considered not to be matching.
- * The decimal character is expected to be a dot. 
+ * The decimal character is expected to be a dot.
  * To reject decimals or to deal with
  * non-numeric fields in your own way, you can use {@link RegexMetadataFilter}.
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
- *          onMatch="[include|exclude]" 
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+ *          onMatch="[include|exclude]"
  *          field="(name of metadata field to match)" &gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -63,7 +61,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
  *      &lt;!-- Use one or two (for ranges) conditions,
- *           where possible operators are: 
+ *           where possible operators are:
  *
  *               gt -&gt; greater than
  *               ge -&gt; greater equal
@@ -73,30 +71,30 @@ import com.norconex.importer.handler.filter.OnMatch;
  *        --&gt;
  *
  *      &lt;condition operator="[gt|ge|lt|le|eq]" number="(number)" /&gt;
- *      
- *  &lt;/filter&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
- * <h4>Usage example:</h4> 
+ * <h4>Usage example:</h4>
  * <p>For example, let's say you are importing customer profile documents
  *    and you have a field called "age" and you need to only consider documents
  *    for customers in their twenties (greater or equal to
  *    20, but lower than 30). The following would achieve that</p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
  *          onMatch="include" field="age" &gt;
  *      &lt;condition operator="ge" number="20" /&gt;
  *      &lt;condition operator="lt" number="30" /&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.2.0
  */
 public class NumericMetadataFilter extends AbstractDocumentFilter {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(NumericMetadataFilter.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(NumericMetadataFilter.class);
+
     public enum Operator {
         GREATER_THAN("gt") {@Override
         public boolean evaluate(double fieldNumber, double conditionNumber) {
@@ -140,7 +138,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         public abstract boolean evaluate(
                 double fieldNumber, double conditionNumber);
     }
-    
+
     private String field;
     private final List<Condition> conditions = new ArrayList<>(2);
 
@@ -155,7 +153,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         this.field = field;
         setOnMatch(onMatch);
     }
-    
+
     public String getField() {
         return field;
     }
@@ -172,7 +170,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     public void addCondition(Operator operator, double number) {
         conditions.add(new Condition(operator, number));
     }
-    
+
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
@@ -189,7 +187,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         }
         return false;
     }
-    
+
     private boolean meetsAllConditions(String fieldValue) {
         if (!NumberUtils.isCreatable(fieldValue)) {
             return false;
@@ -205,13 +203,12 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        setField(xml.getString("[@field]", getField()));
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("condition");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            String op = node.getString("[@operator]", null);
-            String num = node.getString("[@number]", null);
+    protected void loadFilterFromXML(XML xml) throws IOException {
+        setField(xml.getString("@field", getField()));
+        List<XML> nodes = xml.getXMLList("condition");
+        for (XML node : nodes) {
+            String op = node.getString("@operator", null);
+            String num = node.getString("@number", null);
             if (StringUtils.isBlank(op) || StringUtils.isBlank(num)) {
                 LOG.warn("Both \"operator\" and \"number\" must be provided.");
                 break;
@@ -229,7 +226,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
             addCondition(operator, number);
         }
     }
-    
+
     @Override
     protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
@@ -239,38 +236,21 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
             writer.writeAttributeString("operator", condition.operator.abbr);
             writer.writeAttributeDouble("number", condition.number);
             writer.writeEndElement();
-        }        
+        }
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof NumericMetadataFilter)) {
-            return false;
-        }
-        NumericMetadataFilter castOther = (NumericMetadataFilter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(conditions, castOther.conditions)
-                .append(field, castOther.field)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(conditions)
-                .append(field)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("conditions", conditions)
-                .append("field", field)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
     public static class Condition {
@@ -287,31 +267,19 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         public double getNumber() {
             return number;
         }
-        
+
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof Condition)) {
-                return false;
-            }
-            Condition castOther = (Condition) other;
-            return new EqualsBuilder()
-                    .append(operator, castOther.operator)
-                    .append(number, castOther.number)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(operator)
-                    .append(number)
-                    .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
         }
         @Override
         public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("operator", operator)
-                    .append("number", number)
-                    .toString();
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
 }

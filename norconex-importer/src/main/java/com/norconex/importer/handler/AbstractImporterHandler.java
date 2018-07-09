@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,38 +25,36 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.utils.CharsetUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
  * Base class for handlers applying only to certain type of documents
- * by providing a way to restrict applicable documents based on 
+ * by providing a way to restrict applicable documents based on
  * a metadata field value, where the value matches a regular expression. For
- * instance, to apply a handler only to text documents, you can use the 
+ * instance, to apply a handler only to text documents, you can use the
  * following:
- * 
+ *
  * <pre>
  *   myHandler.setRestriction("document.contentType", "^text/.*$");
- * </pre> 
- * 
+ * </pre>
+ *
+ * <h3>XML configuration usage:</h3>
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
- * 
+ *
  * <pre>
  *  &lt;restrictTo caseSensitive="[false|true]"
  *          field="(name of metadata field name to match)"&gt;
@@ -65,7 +63,7 @@ import com.norconex.importer.util.CharsetUtil;
  *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  * </pre>
  * <p>
- * Subclasses <b>must</b> test if a document is accepted using the 
+ * Subclasses <b>must</b> test if a document is accepted using the
  * {@link #isApplicable(String, ImporterMetadata, boolean)} method.
  * </p>
  * <p>
@@ -76,15 +74,13 @@ import com.norconex.importer.util.CharsetUtil;
  */
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(AbstractImporterHandler.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(AbstractImporterHandler.class);
+
     private final List<PropertyMatcher> restrictions = new ArrayList<>();
-    private final String xmltag;
-    
-    public AbstractImporterHandler(String xmltag) {
+
+    public AbstractImporterHandler() {
         super();
-        this.xmltag = xmltag;
     }
 
     /**
@@ -121,7 +117,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             }
         }
     }
-    
+
     /**
      * Removes all restrictions on a given field.
      * @param field the field to remove restrictions on
@@ -134,7 +130,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         while (it.hasNext()) {
             PropertyMatcher r = it.next();
             if (r.isCaseSensitive() && r.getKey().equals(field)
-                    || !r.isCaseSensitive() 
+                    || !r.isCaseSensitive()
                             && r.getKey().equalsIgnoreCase(field)) {
                 it.remove();
                 count++;
@@ -152,7 +148,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public synchronized boolean removeRestriction(PropertyMatcher restriction) {
         return restrictions.remove(restriction);
     }
-    
+
     /**
      * Clears all restrictions.
      * @since 2.4.0
@@ -160,7 +156,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public synchronized void clearRestrictions() {
         restrictions.clear();
     }
-    
+
     /**
      * Gets all restrictions
      * @return the restrictions
@@ -188,9 +184,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 return true;
             }
         }
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(getClass() + " handler does not apply to: " + reference);
-        }
+        LOG.debug("{} handler does not apply to: {}", getClass(), reference);
         return false;
     }
 
@@ -207,23 +201,21 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @return detected and clean encoding.
      */
     protected final String detectCharsetIfBlank(
-            String charset, 
-            String reference, 
-            InputStream document, 
+            String charset,
+            String reference,
+            InputStream document,
             ImporterMetadata metadata,
             boolean parsed) {
         if (parsed) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Document already parsed, assuming UTF-8 charset: "
-                        + reference);
-            }
+            LOG.debug("Document already parsed, assuming UTF-8 charset: {}",
+                    reference);
             return StandardCharsets.UTF_8.toString();
         }
 
         String detectedCharset = charset;
         if (StringUtils.isNotBlank(detectedCharset)) {
             return CharsetUtils.clean(detectedCharset);
-        } else { 
+        } else {
             String declaredEncoding = null;
             if (metadata != null) {
                 declaredEncoding = metadata.getString(
@@ -240,26 +232,26 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         if (StringUtils.isBlank(detectedCharset)) {
             detectedCharset = StandardCharsets.UTF_8.toString();
             LOG.debug("Cannot detect source encoding. UTF-8 will be "
-                    + "assumed for: " + reference);
+                    + "assumed for {}: ", reference);
         } else {
             detectedCharset = CharsetUtils.clean(detectedCharset);
         }
         return detectedCharset;
     }
-    
+
     @Override
     public final void loadFromXML(Reader in) throws IOException {
-        XMLConfiguration xml = XMLConfigurationUtil.newXMLConfiguration(in);
+        XML xml = new XML(in);
         loadHandlerFromXML(xml);
-        List<HierarchicalConfiguration<ImmutableNode>> nodes = 
-                xml.configurationsAt("restrictTo");
+        List<XML> nodes = xml.getXMLList("restrictTo");
+
         if (!nodes.isEmpty()) {
             restrictions.clear();
-            for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+            for (XML node : nodes) {
                 addRestriction(
-                        node.getString("[@field]"), 
-                        node.getString("", null),
-                        node.getBoolean("[@caseSensitive]", false));
+                        node.getString("@field"),
+                        node.getString("."),
+                        node.getBoolean("@caseSensitive"));
             }
         }
     }
@@ -268,78 +260,62 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param xml xml configuration
      * @throws IOException could not load from XML
      */
-    protected abstract void loadHandlerFromXML(XMLConfiguration xml)
+    protected abstract void loadHandlerFromXML(XML xml)
             throws IOException;
-    
-    
-    @Override
-    public final void saveToXML(Writer out) throws IOException {
-        try {
-            EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-            writer.writeStartElement(xmltag);
-            writer.writeAttribute("class", getClass().getCanonicalName());
 
-            saveHandlerToXML(writer);
-            
+    @Override
+    public void saveToXML(Writer writer, String tagName) throws IOException {
+        try {
+            EnhancedXMLStreamWriter w = new EnhancedXMLStreamWriter(writer);
+            w.writeStartElement(tagName, getClass());
+
+            saveHandlerToXML(w);
+
             for (PropertyMatcher restriction : restrictions) {
-                writer.writeStartElement("restrictTo");
+                w.writeStartElement("restrictTo");
                 if (restriction.getKey() != null) {
-                    writer.writeAttribute("field", restriction.getKey());
+                    w.writeAttribute("field", restriction.getKey());
                 }
-                writer.writeAttribute("caseSensitive", 
+                w.writeAttribute("caseSensitive",
                         Boolean.toString(restriction.isCaseSensitive()));
                 if (restriction.getRegex() != null) {
-                    writer.writeCharacters(restriction.getRegex());
+                    w.writeCharacters(restriction.getRegex());
                 }
-                writer.writeEndElement();
+                w.writeEndElement();
             }
 
-            writer.writeEndElement();
-            writer.flush();
-            writer.close();
-            
+            w.writeEndElement();
+            w.flush();
+            w.close();
+
         } catch (XMLStreamException e) {
             throw new IOException("Cannot save as XML.", e);
         }
     }
-    
+
     /**
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
-     * 
+     *
      * @param writer the xml writer
      * @throws XMLStreamException could not save to XML
      */
-    protected abstract void saveHandlerToXML(EnhancedXMLStreamWriter writer) 
+    protected abstract void saveHandlerToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException;
 
-    
+
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof AbstractImporterHandler)) {
-            return false;
-        }
-        AbstractImporterHandler castOther = (AbstractImporterHandler) other;
-        return new EqualsBuilder()
-                .append(xmltag, castOther.xmltag)
-                .append(restrictions, castOther.restrictions)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(xmltag)
-                .append(restrictions)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("restrictions", restrictions)
-                .toString();
-    }    
-
+        return new ReflectionToStringBuilder(this,
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
 }

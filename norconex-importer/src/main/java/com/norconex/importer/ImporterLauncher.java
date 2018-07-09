@@ -28,10 +28,10 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.norconex.commons.lang.config.ConfigurationValidationException;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.xml.XMLValidationException;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -46,6 +46,7 @@ public final class ImporterLauncher {
     private static final String ARG_INPUTFILE = "inputFile";
     private static final String ARG_OUTPUTFILE = "outputFile";
     private static final String ARG_CONTENTTYPE = "contentType";
+    private static final String ARG_OUTMETAFORMAT = "outputMetaFormat";
     private static final String ARG_CONTENTENCODING = "contentEncoding";
     private static final String ARG_REFERENCE = "reference";
     private static final String ARG_CONFIG = "config";
@@ -107,7 +108,8 @@ public final class ImporterLauncher {
             ImporterResponse response = new Importer(config).importDocument(
                     inputFile, contentType, contentEncoding, 
                     metadata, reference);
-            writeResponse(response, output, 0, 0);
+            writeResponse(response, output, 
+                    cmd.getOptionValue(ARG_OUTMETAFORMAT), 0, 0);
         } catch (Exception e) {
             System.err.println(
                     "A problem occured while importing " + inputFile);
@@ -139,15 +141,15 @@ public final class ImporterLauncher {
         try {
             ImporterConfigLoader.loadImporterConfig(configFile, varFile, false);
             System.out.println("No XML configuration errors.");
-        } catch (ConfigurationValidationException e) {
+        } catch (XMLValidationException e) {
             System.err.println("There were " + e.getErrors().size()
                     + " XML configuration error(s).");
             System.exit(-1);
         }
     }
     
-    private static void writeResponse(
-            ImporterResponse response, String outputPath, int depth, int index) 
+    private static void writeResponse(ImporterResponse response, 
+            String outputPath, String outputFormat, int depth, int index) 
                     throws IOException {
         if (!response.isSuccess()) {
             String statusLabel = "REJECTED: ";
@@ -169,7 +171,6 @@ public final class ImporterLauncher {
                 path.insert(pathLength - extLength, nameSuffix);
             }
             File docfile = new File(path.toString());
-            File metafile = new File(path.toString() + ".meta");
 
             // Write document file
             FileOutputStream docOutStream = new FileOutputStream(docfile);
@@ -182,8 +183,19 @@ public final class ImporterLauncher {
                 IOUtils.closeQuietly(docInStream);
 
                 // Write metadata file
-                metaOut = new FileOutputStream(metafile);
-                doc.getMetadata().store(metaOut, null);
+                if ("json".equalsIgnoreCase(outputFormat)) {
+                    File metafile = new File(path.toString() + ".json");
+                    metaOut = new FileOutputStream(metafile);
+                    doc.getMetadata().storeToJSON(metaOut);
+                } else if ("xml".equalsIgnoreCase(outputFormat)) {
+                    File metafile = new File(path.toString() + ".xml");
+                    metaOut = new FileOutputStream(metafile);
+                    doc.getMetadata().storeToXML(metaOut);
+                } else {
+                    File metafile = new File(path.toString() + ".properties");
+                    metaOut = new FileOutputStream(metafile);
+                    doc.getMetadata().storeToProperties(metaOut);
+                }
                 System.out.println("IMPORTED: " + response.getReference());
             } catch (IOException e) {
                 System.err.println(
@@ -199,7 +211,8 @@ public final class ImporterLauncher {
         ImporterResponse[] nextedResponses = response.getNestedResponses();
         for (int i = 0; i < nextedResponses.length; i++) {
             ImporterResponse nextedResponse = nextedResponses[i];
-            writeResponse(nextedResponse, outputPath, depth + 1, i + 1);
+            writeResponse(nextedResponse, outputPath, 
+                    outputFormat, depth + 1, i + 1);
         }
     }
     
@@ -209,6 +222,9 @@ public final class ImporterLauncher {
                 "File to be imported (required unless \"checkcfg\" is used).");
         options.addOption("o", ARG_OUTPUTFILE, true, 
                 "Optional: File where the imported content will be stored.");
+        options.addOption("f", ARG_OUTMETAFORMAT, true, 
+                "Optional: File format for extracted metadata fields. "
+              + "One of \"properties\" (default), \"json\", or \"xml\"");
         options.addOption("t", ARG_CONTENTTYPE, true, 
                 "Optional: The MIME Content-type of the input file.");
         options.addOption("e", ARG_CONTENTENCODING, true, 

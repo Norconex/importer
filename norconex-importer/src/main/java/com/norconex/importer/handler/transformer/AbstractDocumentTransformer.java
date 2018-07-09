@@ -1,4 +1,4 @@
-/* Copyright 2010-2015 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 /**
  * Base class for transformers.
  * <br><br>
- * 
+ *
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -37,19 +37,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public abstract class AbstractDocumentTransformer 
+public abstract class AbstractDocumentTransformer
             extends AbstractImporterHandler
             implements IDocumentTransformer {
 
-    public AbstractDocumentTransformer() {
-        super("transformer");
-    }
-
     @Override
-    public final void transformDocument(String reference, InputStream input,
-            OutputStream output, ImporterMetadata metadata, boolean parsed)
+    public final void transformDocument(final String reference, final InputStream input,
+            final OutputStream output, final ImporterMetadata metadata, final boolean parsed)
             throws ImporterHandlerException {
-        
+
         if (!isApplicable(reference, metadata, parsed)) {
             return;
         }

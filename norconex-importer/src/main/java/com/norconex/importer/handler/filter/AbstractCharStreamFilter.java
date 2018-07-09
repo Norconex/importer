@@ -1,4 +1,4 @@
-/* Copyright 2010-2016 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ import java.io.UnsupportedEncodingException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -128,9 +128,8 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
     
 
     @Override
-    protected final void loadFilterFromXML(
-            XMLConfiguration xml) throws IOException {
-        setSourceCharset(xml.getString("[@sourceCharset]", getSourceCharset()));
+    protected final void loadFilterFromXML(XML xml) throws IOException {
+        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         loadCharStreamFilterFromXML(xml);
     }
     /**
@@ -138,41 +137,21 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
      * @param xml xml configuration
      * @throws IOException could not load from XML
      */
-    protected abstract void loadCharStreamFilterFromXML(
-            XMLConfiguration xml) throws IOException;
+    protected abstract void loadCharStreamFilterFromXML(XML xml) 
+            throws IOException;
     
     
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof AbstractCharStreamFilter)) {
-            return false;
-        }
-        AbstractCharStreamFilter other = (AbstractCharStreamFilter) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(sourceCharset, other.sourceCharset)
-            .isEquals();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(sourceCharset)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-    
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("sourceCharset", sourceCharset)
-            .toString();
+        return new ReflectionToStringBuilder(this, 
+                ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

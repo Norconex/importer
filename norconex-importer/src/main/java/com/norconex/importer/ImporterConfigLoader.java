@@ -18,13 +18,11 @@ import java.io.File;
 import java.io.Reader;
 import java.util.List;
 
-import org.apache.commons.configuration2.XMLConfiguration;
-
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.ConfigurationLoader;
-import com.norconex.commons.lang.config.ConfigurationValidationError;
-import com.norconex.commons.lang.config.ConfigurationValidationException;
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.XMLValidationError;
+import com.norconex.commons.lang.xml.XMLValidationException;
 
 /**
  * Importer configuration loader.  Configuration options are defined
@@ -39,7 +37,7 @@ public final class ImporterConfigLoader {
 
     /**
      * Loads importer configuration.
-     * Throws {@link ConfigurationValidationException} if the configuration
+     * Throws {@link XMLValidationException} if the configuration
      * has validation errors unless errors are ignored.
      * @param configFile configuration file
      * @param configVariables configuration variables 
@@ -52,10 +50,8 @@ public final class ImporterConfigLoader {
     public static ImporterConfig loadImporterConfig(
             File configFile, File configVariables, boolean ignoreErrors) {
         try {
-            ConfigurationLoader configLoader = new ConfigurationLoader();
-            XMLConfiguration xml = configLoader.loadXML(
-                    configFile, configVariables);
-            return loadImporterConfig(xml, ignoreErrors);
+            return loadImporterConfig(new ConfigurationLoader().loadXML(
+                    configFile, configVariables), ignoreErrors);
         } catch (Exception e) {
             throw configurationException(
                     "Could not load configuration file: " + configFile, e);
@@ -64,7 +60,7 @@ public final class ImporterConfigLoader {
 
     /**
      * Loads importer configuration.
-     * Throws {@link ConfigurationValidationException} if the configuration
+     * Throws {@link XMLValidationException} if the configuration
      * has validation errors unless errors are ignored.
      * @param reader reader for the configuration file
      * @param ignoreErrors 
@@ -74,18 +70,12 @@ public final class ImporterConfigLoader {
      */    
     public static ImporterConfig loadImporterConfig(
             Reader reader, boolean ignoreErrors)  {
-        ImporterConfig config = new ImporterConfig();
-        List<ConfigurationValidationError> errors = 
-                XMLConfigurationUtil.loadFromXML(config, reader);
-        if (!ignoreErrors && !errors.isEmpty()) {
-            throw new ConfigurationValidationException(errors);
-        }
-        return config;
+        return loadImporterConfig(new XML(reader), ignoreErrors);
     }
     
     /**
      * Loads importer configuration.
-     * Throws {@link ConfigurationValidationException} if the configuration
+     * Throws {@link XMLValidationException} if the configuration
      * has validation errors unless errors are ignored. 
      * @param xml XMLConfiguration instance
      * @param ignoreErrors 
@@ -94,12 +84,11 @@ public final class ImporterConfigLoader {
      * @throws ConfigurationException problem loading configuration
      */
     public static ImporterConfig loadImporterConfig(
-            XMLConfiguration xml, boolean ignoreErrors) {
+            XML xml, boolean ignoreErrors) {
         ImporterConfig config = new ImporterConfig();
-        List<ConfigurationValidationError> errors = 
-                XMLConfigurationUtil.loadFromXML(config, xml);
+        List<XMLValidationError> errors = xml.configure(config);
         if (!ignoreErrors && !errors.isEmpty()) {
-            throw new ConfigurationValidationException(errors);
+            throw new XMLValidationException(errors);
         }
         return config;
     }

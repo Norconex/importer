@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
-import com.norconex.importer.handler.tagger.impl.CopyTagger;
+import com.norconex.commons.lang.xml.XML;
 
 public class CopyTaggerTest {
 
@@ -28,8 +27,6 @@ public class CopyTaggerTest {
         CopyTagger tagger = new CopyTagger();
         tagger.addCopyDetails("from1", "to1", false);
         tagger.addCopyDetails("from2", "to2", true);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
-
 }

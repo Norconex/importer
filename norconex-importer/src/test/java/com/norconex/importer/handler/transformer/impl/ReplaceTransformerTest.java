@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,42 +26,42 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReplaceTransformerTest {
 
-    private final String restrictionTestConfig = "<transformer>"
+    private final String restrictionTestConfig = "<handler>"
             + "<replace><fromValue>CAKES</fromValue>"
             + "<toValue>FRUITS</toValue></replace>"
             + "<replace><fromValue>candies</fromValue>"
             + "<toValue>vegetables</toValue></replace>"
             + "<restrictTo caseSensitive=\"false\" "
             + "field=\"document.reference\">.*test.*</restrictTo>"
-            + "</transformer>";
-    private final String restrictionTestContent = 
+            + "</handler>";
+    private final String restrictionTestContent =
             "I like to eat cakes and candies.";
 
     @Test
-    public void testReplaceEolWithWhiteSpace() 
+    public void testReplaceEolWithWhiteSpace()
             throws ImporterHandlerException, IOException {
         String input = "line1\r\nline2\rline3\nline4";
         String expectedOutput = "line1 line2 line3 line4";
 
-        String preserveTestConfig = 
-                "<transformer>"
+        String preserveTestConfig =
+                "<handler>"
 //                  "<transformer xml:space=\"preserve\">"
                 + "<replace><fromValue>[\\r\\n]+</fromValue>"
                 + "<toValue xml:space=\"preserve\"> </toValue></replace>"
-                + "</transformer>";
+                + "</handler>";
         String response1 = transformTextDocument(
                 preserveTestConfig, "N/A", input);
         Assert.assertEquals(expectedOutput, response1);
     }
 
     @Test
-    public void testTransformRestrictedTextDocument() 
+    public void testTransformRestrictedTextDocument()
             throws IOException, ImporterHandlerException {
         String response = transformTextDocument(
                 restrictionTestConfig, "rejectme.html", restrictionTestContent);
@@ -69,41 +69,41 @@ public class ReplaceTransformerTest {
     }
 
     @Test
-    public void testTransformUnrestrictedTextDocument() 
+    public void testTransformUnrestrictedTextDocument()
             throws IOException, ImporterHandlerException {
         String response = transformTextDocument(
                 restrictionTestConfig, "test.html", restrictionTestContent);
         Assert.assertEquals(
-                "i like to eat fruits and vegetables.", 
+                "i like to eat fruits and vegetables.",
                 response.toLowerCase());
     }
-    
+
     private String transformTextDocument(
             String config, String reference, String content)
             throws IOException, ImporterHandlerException {
-        
+
         ReplaceTransformer t = new ReplaceTransformer();
 
         Reader reader = new InputStreamReader(
                 IOUtils.toInputStream(config, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
-        
+
         InputStream is = IOUtils.toInputStream(content, StandardCharsets.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        
+
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString("document.reference", reference);
 
         t.transformDocument(reference, is, os, metadata, true);
-        
+
         String response = os.toString();
         is.close();
         os.close();
         return response;
     }
-    
-    
+
+
     @Test
     public void testWriteRead() throws IOException {
         ReplaceTransformer t = new ReplaceTransformer();
@@ -112,8 +112,6 @@ public class ReplaceTransformerTest {
                 restrictionTestConfig, StandardCharsets.UTF_8));
         t.loadFromXML(reader);
         reader.close();
-        System.out.println("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+        XML.assertWriteRead(t, "handler");
     }
-
 }

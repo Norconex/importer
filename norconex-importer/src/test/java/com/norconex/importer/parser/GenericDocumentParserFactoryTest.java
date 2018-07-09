@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
@@ -38,9 +38,9 @@ public class GenericDocumentParserFactoryTest {
     @Test
     public void testWriteRead() throws IOException {
         GenericDocumentParserFactory f = new GenericDocumentParserFactory();
-        
+
         // default read/write
-        XMLConfigurationUtil.assertWriteRead(f);
+//        XMLConfigurationUtil.assertWriteRead(f);
 
         // more complex read/write
         f.setIgnoredContentTypesRegex("test");
@@ -53,18 +53,18 @@ public class GenericDocumentParserFactoryTest {
         ocr.setContentTypes("ocrContentTypesTest");
         ocr.setLanguages("ocrLanguages");
         ocr.setPath("ocrPath");
-        
+
         ExternalParser app = new ExternalParser();
         app.setCommand("command.exe");
         f.registerParser(ContentType.BMP, app);
-        XMLConfigurationUtil.assertWriteRead(f);
+        XML.assertWriteRead(f, "documentParserFactory");
     }
-    
+
     @Test
-    public void testIgnoringContentTypes() 
+    public void testIgnoringContentTypes()
             throws IOException, ImporterException {
-        
-        GenericDocumentParserFactory factory = 
+
+        GenericDocumentParserFactory factory =
                 new GenericDocumentParserFactory();
         factory.setIgnoredContentTypesRegex("application/pdf");
         ImporterMetadata metadata = new ImporterMetadata();
@@ -73,9 +73,9 @@ public class GenericDocumentParserFactoryTest {
         config.setParserFactory(factory);
         Importer importer = new Importer(config);
         ImporterDocument doc = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
+                TestUtil.getAlicePdfFile(), ContentType.PDF, null,
                         metadata, "n/a").getDocument();
-        
+
         try (InputStream is = doc.getContent()) {
             String output = IOUtils.toString(
                     is, StandardCharsets.UTF_8).substring(0, 100);

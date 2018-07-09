@@ -41,21 +41,15 @@
     <parseErrorsSaveDir></parseErrorsSaveDir>
 
     <preParseHandlers>
-        <!-- These tags can be mixed, in the desired order of execution. -->
-        <tagger class="..." />
-        <transformer class="..." />
-        <filter class="..." />
-        <splitter class="..." />
+        <!-- Any number of handlers, in desired order of execution. -->
+        <handler class="..." />
     </preParseHandlers>
 
     <documentParserFactory class="..." />
 
     <postParseHandlers>
-        <!-- These tags can be mixed, in the desired order of execution. -->
-        <tagger class="..." />
-        <transformer class="..." />
-        <filter class="..." />
-        <splitter class="..." />
+        <!-- Any number of handlers, in desired order of execution. -->
+        <handler class="..." />
     </postParseHandlers>
 
     <responseProcessors>

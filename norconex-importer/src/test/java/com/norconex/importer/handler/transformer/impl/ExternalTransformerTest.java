@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,18 +24,19 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
+import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.ExternalApp;
-import com.norconex.importer.util.regex.RegexFieldExtractor;
 
 public class ExternalTransformerTest {
-    
+
     public static final String INPUT = "1 2 3\n4 5 6\n7 8 9";
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
-    
+
     @Test
     public void testWriteRead() throws IOException {
         ExternalTransformer t = new ExternalTransformer();
@@ -44,55 +45,54 @@ public class ExternalTransformerTest {
 
         t.setMetadataInputFormat("json");
         t.setMetadataOutputFormat("xml");
-        
+
         t.setMetadataExtractionPatterns(
-            new RegexFieldExtractor("asdf.*", "blah"),
-            new RegexFieldExtractor("qwer.*", "halb")
+            new KeyValueExtractor("asdf.*", "blah"),
+            new KeyValueExtractor("qwer.*", "halb")
         );
-        
+
         Map<String, String> envs = new HashMap<>();
         envs.put("env1", "value1");
         envs.put("env2", "value2");
         t.setEnvironmentVariables(envs);
-        System.out.println("Writing/Reading this: " + t);
-        
-        XMLConfigurationUtil.assertWriteRead(t);
+
+        XML.assertWriteRead(t, "handler");
     }
-    
+
     @Test
-    public void testInFileOutFile() 
+    public void testInFileOutFile()
             throws IOException, ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
-    public void testInFileStdout() 
+    public void testInFileStdout()
             throws IOException, ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT}");
     }
     @Test
-    public void testStdinOutFile() 
+    public void testStdinOutFile()
             throws IOException, ImporterHandlerException {
         testWithExternalApp("-oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
-    public void testStdinStdout() 
+    public void testStdinStdout()
             throws IOException, ImporterHandlerException {
         testWithExternalApp("");
     }
-    
+
     @Test
-    public void testMetaInputOutputFiles() 
+    public void testMetaInputOutputFiles()
             throws IOException, ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} "
                 + "-im ${INPUT_META} -om ${OUTPUT_META} "
                 + "-ref ${REFERENCE}", true);
     }
 
-    private void testWithExternalApp(String command) 
+    private void testWithExternalApp(String command)
             throws IOException, ImporterHandlerException {
         testWithExternalApp(command, false);
     }
-    private void testWithExternalApp(String command, boolean metaFiles) 
+    private void testWithExternalApp(String command, boolean metaFiles)
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
         ByteArrayOutputStream output = outputAsStream();
@@ -100,26 +100,26 @@ public class ExternalTransformerTest {
         if (metaFiles) {
             metadata.setString(
                     "metaFileField1", "this is a first test");
-            metadata.setString("metaFileField2", 
-                    "this is a second test value1", 
+            metadata.setString("metaFileField2",
+                    "this is a second test value1",
                     "this is a second test value2");
         }
-        
+
         ExternalTransformer t = new ExternalTransformer();
         t.setCommand(ExternalApp.newCommandLine(command));
         addPatternsAndEnvs(t);
-        t.setMetadataInputFormat("properties");
-        t.setMetadataOutputFormat("properties");
-        t.transformDocument("c:\\ref with spaces\\doc.txt", 
+        t.setMetadataInputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
+        t.setMetadataOutputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
+        t.transformDocument("c:\\ref with spaces\\doc.txt",
                 input, output, metadata, false);
 
         String content = output.toString();
-        // remove any stdout content that could be mixed with output to 
+        // remove any stdout content that could be mixed with output to
         // properly validate
         content = content.replace("field1:StdoutBefore", "");
         content = content.replace("<field2>StdoutAfter</field2>", "");
         content = content.trim();
-        
+
         Assert.assertEquals(EXPECTED_OUTPUT, content);
         if (metaFiles) {
             assertMetadataFiles(metadata);
@@ -127,15 +127,15 @@ public class ExternalTransformerTest {
             assertMetadata(metadata, command.contains("${REFERENCE}"));
         }
     }
-    
+
     private void assertMetadataFiles(ImporterMetadata meta) {
         Assert.assertEquals(
                 "test first a is this", meta.getString("metaFileField1"));
         Assert.assertEquals(
-                "value1 test second a is this", 
+                "value1 test second a is this",
                 meta.getStrings("metaFileField2").get(0));
         Assert.assertEquals(
-                "value2 test second a is this", 
+                "value2 test second a is this",
                 meta.getStrings("metaFileField2").get(1));
     }
     private void assertMetadata(ImporterMetadata meta, boolean testReference) {
@@ -144,11 +144,11 @@ public class ExternalTransformerTest {
         Assert.assertEquals("field3 StdErrBefore", meta.getString("field3"));
         Assert.assertEquals("StdErrAfter", meta.getString("field4"));
         if (testReference) {
-            Assert.assertEquals("c:\\ref with spaces\\doc.txt", 
+            Assert.assertEquals("c:\\ref with spaces\\doc.txt",
                     meta.getString("reference"));
         }
     }
-    
+
     private void addPatternsAndEnvs(ExternalTransformer t) {
         Map<String, String> envs = new HashMap<>();
         envs.put(ExternalApp.ENV_STDOUT_BEFORE, "field1:StdoutBefore");
@@ -158,14 +158,14 @@ public class ExternalTransformerTest {
         t.setEnvironmentVariables(envs);
 
         t.setMetadataExtractionPatterns(
-            new RegexFieldExtractor("^(f.*):(.*)", 1, 2),
-            new RegexFieldExtractor("^<field2>(.*)</field2>", "field2", 1),
-            new RegexFieldExtractor("^f.*StdErr.*", "field3", 1),
-            new RegexFieldExtractor("^(S.*?):(.*)", 2, 1),
-            new RegexFieldExtractor("^(reference)\\=(.*)", 1, 2)            
+            new KeyValueExtractor("^(f.*):(.*)", 1, 2),
+            new KeyValueExtractor("^<field2>(.*)</field2>", "field2", 1),
+            new KeyValueExtractor("^f.*StdErr.*", "field3", 1),
+            new KeyValueExtractor("^(S.*?):(.*)", 2, 1),
+            new KeyValueExtractor("^(reference)\\=(.*)", 1, 2)
         );
     }
-    
+
     private InputStream inputAsStream() throws IOException {
         return new ByteArrayInputStream(INPUT.getBytes());
     }

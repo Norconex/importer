@@ -1,4 +1,4 @@
-/* Copyright 2016 Norconex Inc.
+/* Copyright 2016-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.CountMatchesTagger.MatchDetails;
@@ -31,9 +31,9 @@ public class CountMatchesTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         MatchDetails m = null;
-        
+
         CountMatchesTagger tagger = new CountMatchesTagger();
-        
+
         m = new MatchDetails();
         m.setFromField("fromFiel1");
         m.setToField("toField1");
@@ -47,22 +47,21 @@ public class CountMatchesTaggerTest {
         m.setValue("value2");
         tagger.addMatchDetails(m);
 
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 
     @Test
-    public void testMatchesCount() 
+    public void testMatchesCount()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("url", "http://domain/url/test"); 
-        meta.addString("fruits", "grapefruit, apple, orange, APPLE"); 
+        meta.addString("url", "http://domain/url/test");
+        meta.addString("fruits", "grapefruit, apple, orange, APPLE");
         String content = "potato carrot Potato";
-        
+
         MatchDetails m = null;
-        
+
         CountMatchesTagger tagger = new CountMatchesTagger();
-        
+
         // Count slashes with substrings (4)
         m = new MatchDetails();
         m.setFromField("url");
@@ -83,7 +82,7 @@ public class CountMatchesTaggerTest {
         m.setValue("/[^/]+");
         m.setRegex(true);
         tagger.addMatchDetails(m);
-        
+
         // Count fruits with substrings case-sensitive (1)
         m = new MatchDetails();
         m.setFromField("fruits");
@@ -112,8 +111,8 @@ public class CountMatchesTaggerTest {
         m.setValue("(apple|orange|grapefruit)");
         m.setRegex(true);
         tagger.addMatchDetails(m);
-        
-        
+
+
         // Count vegetables with substrings case-sensitive (1)
         m = new MatchDetails();
         m.setToField("potatoCountSensitiveNormal");
@@ -138,38 +137,38 @@ public class CountMatchesTaggerTest {
         m.setValue("(potato|carrot)");
         m.setRegex(true);
         tagger.addMatchDetails(m);
-        
+
         tagger.tagDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), meta, true);
 
         Assert.assertEquals(4, meta.getInt("slashesCountNormal"));
         Assert.assertEquals(4, meta.getInt("slashesCountRegex"));
         Assert.assertEquals(3, meta.getInt("segmentCountRegex"));
-        
+
         Assert.assertEquals(1, meta.getInt("appleCountSensitiveNormal"));
         Assert.assertEquals(2, meta.getInt("appleCountInsensitiveNormal"));
         Assert.assertEquals(3, meta.getInt("fruitsCountSensitiveRegex"));
         Assert.assertEquals(4, meta.getInt("fruitsCountInsensitiveRegex"));
-        
+
         Assert.assertEquals(1, meta.getInt("potatoCountSensitiveNormal"));
         Assert.assertEquals(2, meta.getInt("potatoCountInsensitiveNormal"));
         Assert.assertEquals(2, meta.getInt("vegetableCountSensitiveRegex"));
         Assert.assertEquals(3, meta.getInt("vegetableCountInsensitiveRegex"));
     }
-    
+
     @Test
-    public void testLargeContent() 
+    public void testLargeContent()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("fruits", "orange orange");
         String content = "potato whatever whatever whatever whatever"
                 + "potato whatever whatever whatever whatever";
-        
+
         CountMatchesTagger tagger = new CountMatchesTagger();
         tagger.setMaxReadSize(20);
 
         MatchDetails m = null;
-        
+
         m = new MatchDetails();
         m.setToField("potatoCount");
         m.setValue("potato");
@@ -183,24 +182,24 @@ public class CountMatchesTaggerTest {
 
         tagger.tagDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), meta, true);
-        
+
         Assert.assertEquals(2, meta.getInt("potatoCount"));
         Assert.assertEquals(2, meta.getInt("orangeCount"));
     }
 
     @Test
-    public void testAddToSameFieldAndNoMatch() 
+    public void testAddToSameFieldAndNoMatch()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.addString("orange", "orange orange");
         meta.addString("apple", "apple apple apple");
         meta.addString("potato", "carrot");
-        
+
         CountMatchesTagger tagger = new CountMatchesTagger();
         tagger.setMaxReadSize(20);
 
         MatchDetails m = null;
-        
+
         m = new MatchDetails();
         m.setFromField("orange");
         m.setToField("fruitCount");
@@ -220,7 +219,7 @@ public class CountMatchesTaggerTest {
         tagger.addMatchDetails(m);
 
         tagger.tagDocument("n/a", null, meta, true);
-        
+
         // we should get the sum of both oranges and apples
         Assert.assertEquals(5, meta.getInt("fruitCount"));
         // we should get zero (use string to make sure).

@@ -20,14 +20,14 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.tika.Tika;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.file.ContentType;
 
@@ -38,11 +38,11 @@ import com.norconex.commons.lang.file.ContentType;
  */
 public class ContentTypeDetector {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(ContentTypeDetector.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(ContentTypeDetector.class);
+
     private final Pattern extPattern = Pattern.compile("^.*(\\.[A-z0-9]+).*");
-    
+
     private TikaConfig tikaConfig;
 
     /**
@@ -102,7 +102,7 @@ public class ContentTypeDetector {
             throws IOException {
         return doDetect(content, fileName);
     }
-    
+
     private TikaConfig getTikaConfig() throws IOException {
         if (tikaConfig == null) {
             try {
@@ -126,16 +126,16 @@ public class ContentTypeDetector {
                     + "for content type detector.", e);
         }
     }
-    
+
     private ContentType doDetect(
             InputStream is, String fileName) throws IOException {
         try (TikaInputStream tikaStream = TikaInputStream.get(is)) {
             Metadata meta = new Metadata();
             String extension = extPattern.matcher(fileName).replaceFirst("$1");
             meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
-            MediaType media = 
+            MediaType media =
                     getTikaConfig().getDetector().detect(tikaStream, meta);
-            
+
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Detected \"" + media.toString()
                         + "\" content-type for: " + fileName);

@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,17 +23,17 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
@@ -104,7 +104,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          sourceCharset="(character encoding)"
  *          fieldName="(optional field name instead of using content)" &gt;
  *      
@@ -113,14 +113,14 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
  * The following store the statistics in a field called "statistics".
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          fieldName="statistics" /&gt;
  * </pre>
  * 
@@ -227,9 +227,9 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     }
 
     @Override
-    protected void loadCharStreamTaggerFromXML(XMLConfiguration xml)
+    protected void loadCharStreamTaggerFromXML(XML xml)
             throws IOException {
-        setFieldName(xml.getString("[@fieldName]", getFieldName()));
+        setFieldName(xml.getString("@fieldName", getFieldName()));
     }
 
     @Override
@@ -242,29 +242,15 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof TextStatisticsTagger)) {
-            return false;
-        }
-        TextStatisticsTagger castOther = (TextStatisticsTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(fieldName, castOther.fieldName)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(fieldName)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("fieldName", fieldName)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

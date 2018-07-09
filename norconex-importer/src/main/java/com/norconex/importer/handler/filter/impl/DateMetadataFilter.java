@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,22 +28,20 @@ import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
@@ -51,33 +49,33 @@ import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.util.FormatUtil;
 /**
  * <p>Accepts or rejects a document based on the date value(s) of a metadata
- * field, stored in a specified format. If multiple values are found for a 
- * field, only one of them needs to match for this filter to take effect. 
- * If the value cannot be parsed to a valid date, it is considered not to be 
- * matching. 
+ * field, stored in a specified format. If multiple values are found for a
+ * field, only one of them needs to match for this filter to take effect.
+ * If the value cannot be parsed to a valid date, it is considered not to be
+ * matching.
  * </p>
- * 
+ *
  * <h3>Metadata date field format:</h3>
  * <p>To successfully parse a date, an optional date format can be specified,
- * as per the formatting options found on {@link SimpleDateFormat}. 
+ * as per the formatting options found on {@link SimpleDateFormat}.
  * The default format when not specified is EPOCH (the difference, measured in
  * milliseconds, between the date and midnight, January 1, 1970).</p>
- * 
+ *
  * <h3>Dynamic vs static dates:</h3>
  * <p>When adding a condition, you can specify a static date (i.e. a constant
  * date value), or you can tell this filter you want to use a date
  * relative to the current type. There is a distinction to be made between
- * TODAY and NOW.  TODAY is the current day without the hours, minutes, and 
- * seconds, where as NOW is the current day with the hours, minutes, and 
+ * TODAY and NOW.  TODAY is the current day without the hours, minutes, and
+ * seconds, where as NOW is the current day with the hours, minutes, and
  * seconds. You can also decide whether you want the current date to be fixed
  * (does not change after being set for the first time), or whether
  * it should be refreshed on every call to reflect system date time changes.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *          onMatch="[include|exclude]" 
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ *          onMatch="[include|exclude]"
  *          field="(name of metadata field to match)"
  *          format="(date format)" &gt;
  *
@@ -86,24 +84,24 @@ import com.norconex.importer.util.FormatUtil;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *          
+ *
  *      &lt;!-- Use one or two (for ranges) conditions where:
- *           
- *           Possible operators are: 
+ *
+ *           Possible operators are:
  *
  *               gt -&gt; greater than
  *               ge -&gt; greater equal
  *               lt -&gt; lower than
  *               le -&gt; lowe equal
  *               eq -&gt; equals
- *               
+ *
  *           Condition date value format are either one of:
- *           
- *               yyyy-MM-dd            -&gt; date (e.g. 2015-05-31) 
- *               yyyy-MM-ddThh:mm:ss[.SSS]   -&gt; date and time with optional 
+ *
+ *               yyyy-MM-dd            -&gt; date (e.g. 2015-05-31)
+ *               yyyy-MM-ddThh:mm:ss[.SSS]   -&gt; date and time with optional
  *                                              milliseconds (e.g. 2015-05-31T22:44:15)
  *               TODAY[-+]9[YMDhms][*] -&gt; the string "TODAY" (at 0:00:00) minus
- *                                        or plus a number of years, months, days, 
+ *                                        or plus a number of years, months, days,
  *                                        hours, minutes, or seconds
  *                                        (e.g. 1 week ago: TODAY-7d).
  *                                        * means TODAY can change from one invocation
@@ -114,32 +112,32 @@ import com.norconex.importer.util.FormatUtil;
  *                                       (e.g. 1 week ago: NOW-7d).
  *                                       * means NOW changes from one invocation
  *                                       to another to adjust to the current time.
- *               
+ *
  *        --&gt;
  *
  *      &lt;condition operator="[gt|ge|lt|le|eq]" date="(a date)" /&gt;
- *      
- *  &lt;/filter&gt;
+ *
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>For example, let's say you want to keep only documents from the last
  *    seven days, not including today. The following would achieve that:</p>
  * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ *  &lt;handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
  *          onMatch="include" field="publish_date" &gt;
  *      &lt;condition operator="ge" date="TODAY-7" /&gt;
  *      &lt;condition operator="lt" date="TODAY" /&gt;
- *  &lt;/filter&gt;
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.2.0
  */
 public class DateMetadataFilter extends AbstractDocumentFilter {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(DateMetadataFilter.class);
-    
+    private static final Logger LOG =
+            LoggerFactory.getLogger(DateMetadataFilter.class);
+
     public enum Operator {
         GREATER_THAN("gt") {@Override
         public boolean evaluate(long fieldDate, long conditionDate) {
@@ -183,13 +181,13 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         public abstract boolean evaluate(
                 long fieldDate, long conditionDate);
     }
-    
+
     public enum TimeUnit {
-        YEAR(Calendar.YEAR, "Y"), 
+        YEAR(Calendar.YEAR, "Y"),
         MONTH(Calendar.MONTH, "M"),
         DAY(Calendar.DAY_OF_MONTH, "D"),
         HOUR(Calendar.HOUR, "h"),
-        MINUTE(Calendar.MINUTE, "m"), 
+        MINUTE(Calendar.MINUTE, "m"),
         SECOND(Calendar.SECOND, "s");
         private final int field;
         private final String abbr;
@@ -216,7 +214,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             return null;
         }
     }
-    
+
     private String field;
     private String format;
     private final List<Condition> conditions = new ArrayList<>(2);
@@ -232,7 +230,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         this.field = field;
         setOnMatch(onMatch);
     }
-    
+
     public String getField() {
         return field;
     }
@@ -256,7 +254,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             Operator operator, TimeUnit timeUnit, int value, boolean fixed) {
         conditions.add(new Condition(operator, timeUnit, value, fixed, true));
     }
-    
+
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
@@ -273,9 +271,9 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
         return false;
     }
-    
+
     private boolean meetsAllConditions(String fieldValue) {
-        String epochString = 
+        String epochString =
                 FormatUtil.formatDateString(fieldValue, format, null, field);
         if (StringUtils.isBlank(epochString)) {
             return false;
@@ -289,16 +287,15 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
         return true;
     }
-    
+
     @Override
-    protected void loadFilterFromXML(XMLConfiguration xml) throws IOException {
-        setField(xml.getString("[@field]", getField()));
-        setFormat(xml.getString("[@format]", getFormat()));
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("condition");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
-            String op = node.getString("[@operator]", null);
-            String date = node.getString("[@date]", null);
+    protected void loadFilterFromXML(XML xml) throws IOException {
+        setField(xml.getString("@field", getField()));
+        setFormat(xml.getString("@format", getFormat()));
+        List<XML> nodes = xml.getXMLList("condition");
+        for (XML node : nodes) {
+            String op = node.getString("@operator", null);
+            String date = node.getString("@date", null);
             if (StringUtils.isBlank(op) || StringUtils.isBlank(date)) {
                 LOG.warn("Both \"operator\" and \"date\" must be provided.");
                 break;
@@ -316,7 +313,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             conditions.add(condition);
         }
     }
-    
+
     @Override
     protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
             throws XMLStreamException {
@@ -327,48 +324,28 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             writer.writeAttributeString("operator", condition.operator.abbr);
             writer.writeAttributeString("date", condition.getDateString());
             writer.writeEndElement();
-        }        
+        }
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DateMetadataFilter)) {
-            return false;
-        }
-        DateMetadataFilter castOther = (DateMetadataFilter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(conditions, castOther.conditions)
-                .append(field, castOther.field)
-                .append(format, castOther.format)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(conditions)
-                .append(field)
-                .append(format)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("conditions", conditions)
-                .append("field", field)
-                .append("format", format)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
     public static class Condition {
         private enum Type { STATIC, DYN_FIXED, DYN_FLOAT }
         private final Operator operator;
         private final Type type;
-        
+
         // static date fields
         private final long epochDate;
 
@@ -377,7 +354,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         private final int amount;
         private final boolean today; // default is false == NOW
 
-        
+
         // static date constructor
         public Condition(Operator operator, long epochDate) {
             super();
@@ -390,9 +367,9 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
         // dynamic date constructor
         public Condition(
-                Operator operator, 
-                TimeUnit unit, 
-                int amount, 
+                Operator operator,
+                TimeUnit unit,
+                int amount,
                 boolean fixed,
                 boolean today) {
             super();
@@ -413,7 +390,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 this.epochDate = -1;
             }
         }
-        
+
         public String getDateString() {
             if (type == Type.STATIC) {
                 return FastDateFormat.getInstance(
@@ -435,7 +412,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             }
             return b.toString();
         }
-        
+
         public long getEpochDate() {
             if (type == Type.STATIC || type == Type.DYN_FIXED) {
                 return epochDate;
@@ -448,7 +425,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             cal.add(unit.field, amount);
             return cal.getTimeInMillis();
         }
-        
+
         private static final Pattern RELATIVE_PARTS = Pattern.compile(
                 "^(\\w{3,5})([-+]{1})(\\d+)([YMDhms]{1})(\\*{0,1})$");
         public static Condition parse(Operator operator, String dateString) {
@@ -489,7 +466,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 }
 
                 // yyyy-MM-dd
-                return new Condition(operator, 
+                return new Condition(operator,
                         DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                                 d).getTime());
             } catch (ParseException e) {
@@ -498,45 +475,18 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             return null;
         }
 
-        
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof Condition)) {
-                return false;
-            }
-            Condition castOther = (Condition) other;
-            return new EqualsBuilder()
-                    .append(operator, castOther.operator)
-                    .append(epochDate, castOther.epochDate)
-                    .append(type, castOther.type)
-                    .append(unit, castOther.unit)
-                    .append(amount, castOther.amount)
-                    .append(today, castOther.today)
-                    .isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
-
         @Override
         public int hashCode() {
-            return new HashCodeBuilder()
-                    .append(operator)
-                    .append(epochDate)
-                    .append(type)
-                    .append(unit)
-                    .append(amount)
-                    .append(today)
-                    .toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
         }
-
         @Override
         public String toString() {
-            return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                    .append("operator", operator)
-                    .append("epochDate", epochDate)
-                    .append("type", type)
-                    .append("unit", unit)
-                    .append("amount", amount)
-                    .append("today", today)
-                    .toString();
+            return new ReflectionToStringBuilder(this,
+                    ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
 }

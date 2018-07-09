@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,28 +22,28 @@ import java.util.Objects;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
+
+import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * <p>Split files with Coma-Separated values (or any other characters, like tab) 
@@ -54,7 +54,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * 
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=""
  *          quoteCharacter=""
  *          escapeCharacter=""
@@ -69,7 +69,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;   
  *
- *  &lt;/splitter&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4> 
  * <p>
@@ -85,7 +85,7 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * after the header row):
  * </p>
  * <pre>
- *  &lt;splitter class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ *  &lt;handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=","
  *          quoteCharacter="'"
  *          escapeCharacter="\"
@@ -157,7 +157,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
         while ((cols = cvsreader.readNext()) != null) {
             count++;
             ImporterMetadata childMeta = new ImporterMetadata();
-            childMeta.load(doc.getMetadata());
+            childMeta.loadFromMap(doc.getMetadata());
             String childEmbedRef = "row-" + count;
             if (count == 1 && useFirstRowAsFields) {
                 colNames = cols;
@@ -321,20 +321,20 @@ public class CsvSplitter extends AbstractDocumentSplitter
     
 
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) {
+    protected void loadHandlerFromXML(XML xml) {
         setSeparatorCharacter(loadCharacter(
-                xml, "[@separatorCharacter]", separatorCharacter));
+                xml, "@separatorCharacter", separatorCharacter));
         setQuoteCharacter(loadCharacter(
-                xml, "[@quoteCharacter]", quoteCharacter));
+                xml, "@quoteCharacter", quoteCharacter));
         setEscapeCharacter(loadCharacter(
-                xml, "[@escapeCharacter]", escapeCharacter));
+                xml, "@escapeCharacter", escapeCharacter));
         setUseFirstRowAsFields(
-                xml.getBoolean("[@useFirstRowAsFields]", useFirstRowAsFields));
-        setLinesToSkip(xml.getInt("[@linesToSkip]", linesToSkip));
+                xml.getBoolean("@useFirstRowAsFields", useFirstRowAsFields));
+        setLinesToSkip(xml.getInteger("@linesToSkip", linesToSkip));
         setReferenceColumn(
-                xml.getString("[@referenceColumn]", referenceColumn));
+                xml.getString("@referenceColumn", referenceColumn));
 
-        String contentCols = xml.getString("[@contentColumns]", null);
+        String contentCols = xml.getString("@contentColumns", null);
         if (StringUtils.isNotBlank(contentCols)) {
             setContentColumns(contentCols.split(","));
         }
@@ -363,7 +363,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
     }
 
     private char loadCharacter(
-            XMLConfiguration xml, String key, char defaultCharacter) {
+            XML xml, String key, char defaultCharacter) {
         String character = xml.getString(key, null);
         if (StringUtils.isEmpty(character)) {
             return defaultCharacter;
@@ -378,47 +378,15 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof CsvSplitter)) {
-            return false;
-        }
-        CsvSplitter castOther = (CsvSplitter) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(separatorCharacter, castOther.separatorCharacter)
-                .append(quoteCharacter, castOther.quoteCharacter)
-                .append(escapeCharacter, castOther.escapeCharacter)
-                .append(useFirstRowAsFields, castOther.useFirstRowAsFields)
-                .append(linesToSkip, castOther.linesToSkip)
-                .append(referenceColumn, castOther.referenceColumn)
-                .append(contentColumns, castOther.contentColumns)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(separatorCharacter)
-                .append(quoteCharacter)
-                .append(escapeCharacter)
-                .append(useFirstRowAsFields)
-                .append(linesToSkip)
-                .append(referenceColumn)
-                .append(contentColumns)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("separatorCharacter", separatorCharacter)
-                .append("quoteCharacter", quoteCharacter)
-                .append("escapeCharacter", escapeCharacter)
-                .append("useFirstRowAsFields", useFirstRowAsFields)
-                .append("linesToSkip", linesToSkip)
-                .append("referenceColumn", referenceColumn)
-                .append("contentColumns", contentColumns)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

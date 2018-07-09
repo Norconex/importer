@@ -1,4 +1,4 @@
-/* Copyright 2017 Norconex Inc.
+/* Copyright 2017-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,15 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TruncateTaggerTest {
 
-    private static final Logger LOG = 
-            LogManager.getLogger(TruncateTaggerTest.class);
-    
     @Test
     public void testWriteRead() throws IOException {
         TruncateTagger t = new TruncateTagger();
@@ -40,23 +35,22 @@ public class TruncateTaggerTest {
         t.setSuffix("suffix");
         t.setToField("toField");
         t.addRestriction("field", "regex", true);
-        
-        LOG.debug("Writing/Reading this: " + t);
-        XMLConfigurationUtil.assertWriteRead(t);
+
+        XML.assertWriteRead(t, "handler");
     }
 
     @Test
     public void testWithSuffixAndHash() throws ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.addString("from", 
+        metadata.addString("from",
                 "Please truncate me before you start thinking I am too long.",
                 "Another long string to test similar with suffix and no hash",
                 "Another long string to test similar without suffix, a hash",
                 "Another long string to test similar without suffix, no hash",
                 "A small one");
-        
+
         TruncateTagger t = new TruncateTagger();
-        
+
         t.setFromField("from");
         t.setToField("to");
         t.setMaxLength(50);
@@ -67,7 +61,7 @@ public class TruncateTaggerTest {
         t.setSuffix("!");
         t.tagDocument("N/A", null, metadata, false);
         Assert.assertEquals(
-                "Please truncate me before you start thi!0996700004", 
+                "Please truncate me before you start thi!0996700004",
                 metadata.getStrings("to").get(0));
         Assert.assertNotEquals("Must have different hashes",
                 metadata.getStrings("to").get(1),
@@ -78,7 +72,7 @@ public class TruncateTaggerTest {
         t.setSuffix("...");
         t.tagDocument("N/A", null, metadata, false);
         Assert.assertEquals(
-                "Another long string to test similar with suffix...", 
+                "Another long string to test similar with suffix...",
                 metadata.getStrings("to").get(1));
 
         // no hash + suffix
@@ -86,7 +80,7 @@ public class TruncateTaggerTest {
         t.setSuffix(null);
         t.tagDocument("N/A", null, metadata, false);
         Assert.assertEquals(
-                "Another long string to test similar with0939281732", 
+                "Another long string to test similar with0939281732",
                 metadata.getStrings("to").get(2));
 
         // no hash + no suffix
@@ -94,7 +88,7 @@ public class TruncateTaggerTest {
         t.setSuffix(null);
         t.tagDocument("N/A", null, metadata, false);
         Assert.assertEquals(
-                "Another long string to test similar without suffix", 
+                "Another long string to test similar without suffix",
                 metadata.getStrings("to").get(3));
 
         // too small for truncate

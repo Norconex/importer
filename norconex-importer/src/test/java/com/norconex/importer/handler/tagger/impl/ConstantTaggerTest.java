@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.ConstantTagger;
 import com.norconex.importer.handler.tagger.impl.ConstantTagger.OnConflict;
 
 public class ConstantTaggerTest {
@@ -37,8 +36,7 @@ public class ConstantTaggerTest {
         tagger.addConstant("constant2", "valueA");
         tagger.addConstant("constant3", "valueZ");
         tagger.setOnConflict(OnConflict.REPLACE);
-        System.out.println("Writing/Reading this: " + tagger);
-        XMLConfigurationUtil.assertWriteRead(tagger);
+        XML.assertWriteRead(tagger, "handler");
     }
 
     @Test

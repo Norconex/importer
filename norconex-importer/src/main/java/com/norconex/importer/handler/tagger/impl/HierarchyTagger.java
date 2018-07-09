@@ -1,4 +1,4 @@
-/* Copyright 2014-2017 Norconex Inc.
+/* Copyright 2014-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,15 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -63,7 +61,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
  *      
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -77,7 +75,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *              toSeparator="(optional new separator)"
  *              overwrite="[false|true]" /&gt;
  *      &lt;!-- multiple hierarchy tags allowed --&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * <h4>Usage example:</h4>
@@ -86,10 +84,10 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * "vegetable" field into a "vegetableHierarchy" field.
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
+ *  &lt;handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
  *      &lt;hierarchy fromField="vegetable" toField="vegetableHierarchy" 
  *                 fromSeparator="/"/&gt;
- *  &lt;/tagger&gt;
+ *  &lt;/handler&gt;
  * </pre>
  * 
  * @author Pascal Essiembre
@@ -113,45 +111,22 @@ public class HierarchyTagger extends AbstractDocumentTagger {
             this.overwrite = overwrite;
         }
 
-
-        @Override
-        public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE);
-            builder.append("fromField", fromField);
-            builder.append("toField", toField);
-            builder.append("fromSeparator", fromSeparator);
-            builder.append("toSeparator", toSeparator);
-            builder.append("overwrite", overwrite);
-            return builder.toString();
-        }
-
-
         @Override
         public boolean equals(final Object other) {
-            if (!(other instanceof HierarchyDetails)) {
-                return false;
-            }
-            HierarchyDetails castOther = (HierarchyDetails) other;
-            return new EqualsBuilder().append(fromField, castOther.fromField)
-                    .append(toField, castOther.toField)
-                    .append(fromSeparator, castOther.fromSeparator)
-                    .append(toSeparator, castOther.toSeparator)
-                    .append(overwrite, castOther.overwrite).isEquals();
+            return EqualsBuilder.reflectionEquals(this, other);
         }
-
-
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(fromField).append(toField)
-                    .append(fromSeparator).append(toSeparator)
-                    .append(overwrite).toHashCode();
+            return HashCodeBuilder.reflectionHashCode(this);
         }
-        
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
     }
     
-    private final List<HierarchyDetails> list = 
-            new ArrayList<HierarchyDetails>();
+    private final List<HierarchyDetails> list = new ArrayList<>();
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
@@ -214,16 +189,15 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     }
     
     @Override
-    protected void loadHandlerFromXML(XMLConfiguration xml) throws IOException {
-        List<HierarchicalConfiguration<ImmutableNode>> nodes =
-                xml.configurationsAt("hierarchy");
-        for (HierarchicalConfiguration<ImmutableNode> node : nodes) {
+    protected void loadHandlerFromXML(XML xml) throws IOException {
+        List<XML> nodes = xml.getXMLList("hierarchy");
+        for (XML node : nodes) {
             addHierarcyDetails(
-                    node.getString("[@fromField]", null),
-                    node.getString("[@toField]", null),
-                    node.getString("[@fromSeparator]", null),
-                    node.getString("[@toSeparator]", null),
-                    node.getBoolean("[@overwrite]", false));
+                    node.getString("@fromField", null),
+                    node.getString("@toField", null),
+                    node.getString("@fromSeparator", null),
+                    node.getString("@toSeparator", null),
+                    node.getBoolean("@overwrite", false));
         }
     }
 
@@ -253,30 +227,15 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof HierarchyTagger)) {
-            return false;
-        }
-        HierarchyTagger castOther = (HierarchyTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(list, castOther.list)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(list)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE);
-        builder.appendSuper(super.toString());
-        builder.append("list", list);
-        return builder.toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
