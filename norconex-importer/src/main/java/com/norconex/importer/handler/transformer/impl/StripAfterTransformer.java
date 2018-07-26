@@ -14,11 +14,8 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -28,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -88,11 +85,13 @@ public class StripAfterTransformer extends AbstractStringTransformer
             LOG.error("No regular expression provided.");
             return;
         }
-        int flags = Pattern.DOTALL;
-        if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
-        Pattern pattern = Pattern.compile(stripAfterRegex, flags);
+
+        Pattern pattern = Regex.compileDotAll(stripAfterRegex, !caseSensitive);
+//        int flags = Pattern.DOTALL;
+//        if (!caseSensitive) {
+//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+//        }
+//        Pattern pattern = Pattern.compile(stripAfterRegex, flags);
         Matcher match = pattern.matcher(content);
         if (match.find()) {
             if (inclusive) {
@@ -132,22 +131,17 @@ public class StripAfterTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void loadStringTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadStringTransformerFromXML(final XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
         setInclusive(xml.getBoolean("@inclusive", false));
         setStripAfterRegex(xml.getString("stripAfterRegex", null));
     }
 
     @Override
-    protected void saveStringTransformerToXML(final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
-        writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
-        writer.writeStartElement("stripAfterRegex");
-        writer.writeCharacters(stripAfterRegex);
-        writer.writeEndElement();
+    protected void saveStringTransformerToXML(final XML xml) {
+        xml.setAttribute("caseSensitive", isCaseSensitive());
+        xml.setAttribute("inclusive", isInclusive());
+        xml.addElement("stripAfterRegex", stripAfterRegex);
     }
 
     @Override

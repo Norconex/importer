@@ -18,8 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
@@ -106,9 +104,10 @@ public class KeepOnlyTaggerTest {
 
         KeepOnlyTagger tagger = new KeepOnlyTagger();
 
-        Reader r = new StringReader(
-                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
-        tagger.loadFromXML(r);
+//        Reader r = new StringReader(
+//                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
+        tagger.loadFromXML(new XML(
+                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>"));
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 

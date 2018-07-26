@@ -14,11 +14,8 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -26,7 +23,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -38,31 +35,31 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
- *          onMatch="[include|exclude]" 
+ *          onMatch="[include|exclude]"
  *          caseSensitive="[false|true]"&gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *          
+ *
  *      &lt;regex&gt;(regular expression of reference to match)&lt;/regex&gt;
  *  &lt;/handler&gt;
  * </pre>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * 
- * <h4>Usage example:</h4> 
+ *
+ * <h4>Usage example:</h4>
  * <p>
- * The following will reject documents having "/login/" in their reference. 
- * </p> 
+ * The following will reject documents having "/login/" in their reference.
+ * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
  *          onMatch="exclude"&gt;
  *      &lt;regex&gt;.*&#47;login/.*&lt;/regex&gt;
- *  &lt;/handler&gt; 
+ *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.7.0
  */
@@ -88,7 +85,7 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
         setOnMatch(onMatch);
         setRegex(regex);
     }
-    
+
     public String getRegex() {
         return regex;
     }
@@ -114,7 +111,7 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
         }
         return getCachedPattern().matcher(reference).matches();
     }
-    
+
     private synchronized Pattern getCachedPattern() {
         if (cachedPattern != null) {
             return cachedPattern;
@@ -123,29 +120,24 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
         if (regex == null) {
             p = Pattern.compile(".*");
         } else {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            p = Pattern.compile(regex, flags);
+            p = Regex.compileDotAll(regex, !caseSensitive);
         }
         cachedPattern = p;
         return p;
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
+    protected void loadFilterFromXML(XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         setRegex(xml.getString("regex", regex));
     }
-    
+
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeBoolean("caseSensitive", caseSensitive);
-        writer.writeElementString("regex", regex);
+    protected void saveFilterToXML(XML xml) {
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.addElement("regex", regex);
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");

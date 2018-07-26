@@ -14,15 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -32,7 +29,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -99,7 +95,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
         // If fields is empty, it means we should keep nothing
         if (fields.isEmpty() && StringUtils.isBlank(fieldsRegex)) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Clear all metadata from " + reference);
+                LOG.debug("Clear all metadata from: {}", reference);
             }
             metadata.clear();
         } else {
@@ -133,18 +129,22 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
         }
 
         // Check with regex
-        if (StringUtils.isNotBlank(fieldsRegex)
-                && Pattern.matches(fieldsRegex, fieldToMatch)) {
-            return true;
-        }
-        return false;
+        return StringUtils.isNotBlank(fieldsRegex)
+                && Pattern.matches(fieldsRegex, fieldToMatch);
     }
-
 
     public List<String> getFields() {
         return Collections.unmodifiableList(fields);
     }
-
+    /**
+     * Sets the fields to keep.
+     * @param fields fields to keep
+     * @since 3.0.0
+     */
+    public void setFields(List<String> fields) {
+        this.fields.clear();
+        this.fields.addAll(fields);
+    }
     public void addField(String field) {
         fields.add(field);
     }
@@ -160,18 +160,14 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
-        for (String fld : xml.getDelimitedStringList("fields", fields)) {
-            addField(fld);
-        }
+    protected void loadHandlerFromXML(XML xml) {
+        setFields(xml.getDelimitedStringList("fields", fields));
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
-
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeElementString("fields", StringUtils.join(fields, ","));
-        writer.writeElementString("fieldsRegex", fieldsRegex);
+    protected void saveHandlerToXML(XML xml) {
+        xml.addDelimitedElementList("fields", fields);
+        xml.addElement("fieldsRegex", fieldsRegex);
     }
 
     @Override

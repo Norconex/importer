@@ -14,17 +14,13 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
-
 import javax.script.Bindings;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -34,7 +30,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 /**
  * <p>
  * Tag incoming documents using a scripting language.
- * The default script engine is <code>JavaScript</code>. 
+ * The default script engine is <code>JavaScript</code>.
  * </p><p>
  * Refer to {@link ScriptRunner} for more information on using a scripting
  * language with Norconex Importer.
@@ -46,27 +42,27 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </p>
  * <ul>
  *   <li><b>reference:</b> Document unique reference as a string.</li>
- *   <li><b>content:</b> Document content, as a string 
+ *   <li><b>content:</b> Document content, as a string
  *       (of <code>maxReadSize</code> length).</li>
  *   <li><b>metadata:</b> Document metadata as a {@link ImporterMetadata}
  *       object.</li>
- *   <li><b>parsed:</b> Whether the document was already parsed, as a 
+ *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
- *   <li><b>sectionIndex:</b> Content section index if it had to be split, 
+ *   <li><b>sectionIndex:</b> Content section index if it had to be split,
  *       as an integer.</li>
  * </ul>
  * <p>
  * There are no expected return value from your script. Returning
  * one has no effect.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
  *          engineName="(script engine name)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -74,10 +70,10 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
  *      &lt;script&gt;(your script)&lt;/script&gt;
- * 
+ *
  *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>The following example simply adds new metadata field indicating which
  * fruit is a document about.</p>
@@ -98,7 +94,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *    ]]&gt;&lt;/script&gt;
  *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.4.0
  * @see ScriptRunner
@@ -106,7 +102,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 public class ScriptTagger extends AbstractStringTagger {
 
     private final ScriptRunner<Void> scriptRunner = new ScriptRunner<>();
-    
+
     public String getEngineName() {
         return scriptRunner.getEngineName();
     }
@@ -135,15 +131,13 @@ public class ScriptTagger extends AbstractStringTagger {
     }
 
     @Override
-    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("engineName", getEngineName());
-        writer.writeElementString("script", getScript());
+    protected void saveStringTaggerToXML(XML xml) {
+        xml.setAttribute("engineName", getEngineName());
+        xml.addElement("script", getScript());
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
         setScript(xml.getString("script"));
     }

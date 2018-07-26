@@ -14,15 +14,12 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -33,7 +30,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -99,16 +96,20 @@ public class StripBetweenTransformer extends AbstractStringTransformer
             final StringBuilder content, final ImporterMetadata metadata,
             final boolean parsed,
             final int sectionIndex) {
-        int flags = Pattern.DOTALL;
-        if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
+
+        Regex regex = new Regex().dotAll().setCaseInsensitive(!caseSensitive);
+//        int flags = Pattern.DOTALL;
+//        if (!caseSensitive) {
+//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+//        }
         for (Pair<String, String> pair : stripPairs) {
             List<Pair<Integer, Integer>> matches = new ArrayList<>();
-            Pattern leftPattern = Pattern.compile(pair.getLeft(), flags);
+            Pattern leftPattern = regex.compile(pair.getLeft());
+//                    Pattern.compile(pair.getLeft(), flags);
             Matcher leftMatch = leftPattern.matcher(content);
             while (leftMatch.find()) {
-                Pattern rightPattern = Pattern.compile(pair.getRight(), flags);
+                Pattern rightPattern = regex.compile(pair.getRight());
+//                        Pattern.compile(pair.getRight(), flags);
                 Matcher rightMatch = rightPattern.matcher(content);
                 if (rightMatch.find(leftMatch.end())) {
                     if (inclusive) {
@@ -165,8 +166,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void loadStringTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadStringTransformerFromXML(final XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
         setInclusive(xml.getBoolean("@inclusive", false));
         for (XML node : xml.getXMLList("stripBetween")) {
@@ -176,20 +176,13 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void saveStringTransformerToXML(
-            final EnhancedXMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
-        writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
+    protected void saveStringTransformerToXML(final XML xml) {
+        xml.setAttribute("caseSensitive", isCaseSensitive());
+        xml.setAttribute("inclusive", isInclusive());
         for (Pair<String, String> pair : stripPairs) {
-            writer.writeStartElement("stripBetween");
-            writer.writeStartElement("start");
-            writer.writeCharacters(pair.getLeft());
-            writer.writeEndElement();
-            writer.writeStartElement("end");
-            writer.writeCharacters(pair.getRight());
-            writer.writeEndElement();
-            writer.writeEndElement();
+            XML sbXML = xml.addElement("stripBetween");
+            sbXML.addElement("start", pair.getLeft());
+            sbXML.addElement("end", pair.getRight());
         }
     }
 

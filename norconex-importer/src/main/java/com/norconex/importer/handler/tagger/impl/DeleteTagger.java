@@ -14,14 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +29,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -88,7 +84,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
         String[] metaFields = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("All meta fields: " + ArrayUtils.toString(metaFields));
+            LOG.debug("All meta fields: {}", ArrayUtils.toString(metaFields));
             LOG.debug("All fields to remove: "
                     + ArrayUtils.toString(fieldsToRemove.toArray()));
         }
@@ -96,7 +92,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
             if (mustDelete(metaField)) {
                 metadata.remove(metaField);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Removed field: " + metaField);
+                    LOG.debug("Removed field: {}", metaField);
                 }
             }
         }
@@ -111,11 +107,8 @@ public class DeleteTagger extends AbstractDocumentTagger {
         }
 
         // Check with regex
-        if (StringUtils.isNotBlank(fieldsRegex)
-                && Pattern.matches(fieldsRegex, metaField)) {
-            return true;
-        }
-        return false;
+        return StringUtils.isNotBlank(fieldsRegex)
+                && Pattern.matches(fieldsRegex, metaField);
     }
 
 
@@ -129,6 +122,15 @@ public class DeleteTagger extends AbstractDocumentTagger {
     public void removeField(String field) {
         fieldsToRemove.remove(field);
     }
+    /**
+     * Sets the fields to delete.
+     * @param fieldsToRemove fields to delete
+     * @since 3.0.0
+     */
+    public void setFields(List<String> fieldsToRemove) {
+        this.fieldsToRemove.clear();
+        this.fieldsToRemove.addAll(fieldsToRemove);
+    }
 
     public String getFieldsRegex() {
         return fieldsRegex;
@@ -138,33 +140,15 @@ public class DeleteTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
-        String fieldsStr = xml.getString("@fields",
-                StringUtils.join(fieldsToRemove, ","));
-        if (StringUtils.isNotBlank(fieldsStr)) {
-            LOG.warn("Configuring fields to delete via the \"fields\" "
-                   + "attribute is now deprecated. Now use the <fields> "
-                   + "element instead.");
-        }
-        String fieldsElement = xml.getString(
-                "fields", StringUtils.join(fieldsToRemove, ","));
-        if (StringUtils.isNotBlank(fieldsElement)) {
-            fieldsStr = fieldsElement;
-        }
-
-        String[] configFields = StringUtils.split(fieldsStr, ",");
-        for (String field : configFields) {
-            addField(field.trim());
-        }
+    protected void loadHandlerFromXML(XML xml) {
+        setFields(xml.getDelimitedStringList("fields", fieldsToRemove));
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeElementString(
-                "fields", StringUtils.join(fieldsToRemove, ","));
-        writer.writeElementString("fieldsRegex", fieldsRegex);
+    protected void saveHandlerToXML(XML xml) {
+        xml.addDelimitedElementList("fields", fieldsToRemove);
+        xml.addElement("fieldsRegex", fieldsRegex);
     }
 
     @Override

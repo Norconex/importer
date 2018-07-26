@@ -14,20 +14,16 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -141,8 +137,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
 
     @Override
-    protected void loadStringTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadStringTransformerFromXML(final XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
 
         List<XML> nodes = xml.getXMLList("reduce");
@@ -157,20 +152,16 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     }
 
     @Override
-    protected void saveStringTransformerToXML(final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
+    protected void saveStringTransformerToXML(final XML xml) {
+        xml.setAttribute("caseSensitive", isCaseSensitive());
         for (String reduction : reductions) {
             if (reduction != null) {
-                writer.writeStartElement("reduce");
                 String text = reduction;
                 text = text.replaceAll(" ", "\\\\s");
                 text = text.replaceAll("\t", "\\\\t");
                 text = text.replaceAll("\n", "\\\\n");
                 text = text.replaceAll("\r", "\\\\r");
-                writer.writeCharacters(text);
-                writer.writeEndElement();
+                xml.addElement("reduce", text);
             }
         }
     }

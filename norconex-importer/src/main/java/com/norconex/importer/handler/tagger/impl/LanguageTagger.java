@@ -21,8 +21,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -34,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -328,7 +325,7 @@ public class LanguageTagger extends AbstractStringTagger
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XML xml) throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         setKeepProbabilities(xml.getBoolean(
                 "@keepProbabilities", isKeepProbabilities()));
         setFallbackLanguage(xml.getString(
@@ -337,13 +334,10 @@ public class LanguageTagger extends AbstractStringTagger
     }
 
     @Override
-    protected void saveStringTaggerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttributeBoolean("keepProbabilities", keepProbabilities);
-        writer.writeAttribute("fallbackLanguage", fallbackLanguage);
-        if (!languages.isEmpty()) {
-            writer.writeElementDelimited("languages", languages);
-        }
+    protected void saveStringTaggerToXML(XML xml) {
+        xml.setAttribute("keepProbabilities", keepProbabilities);
+        xml.setAttribute("fallbackLanguage", fallbackLanguage);
+        xml.addDelimitedElementList("languages", languages);
     }
 
     @Override

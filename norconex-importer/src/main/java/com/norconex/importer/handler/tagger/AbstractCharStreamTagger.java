@@ -14,13 +14,10 @@
  */
 package com.norconex.importer.handler.tagger;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -29,31 +26,30 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
- * <p>Base class for taggers dealing with the body of text documents only.  
+ * <p>Base class for taggers dealing with the body of text documents only.
  * Subclasses can safely be used as either pre-parse or post-parse handlers
  * restricted to text documents only (see {@link AbstractImporterHandler}).
  * </p>
- * 
+ *
  * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
- * this class attempts to detect the content character 
+ * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
  * parsing converts content to UTF-8, UTF-8 is always assumed when
  * used as a post-parse handler.
  * </p>
- *  
+ *
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * <pre>
- *  &lt;!-- parent tag has these attribute: 
+ *  &lt;!-- parent tag has these attribute:
  *      sourceCharset="(character encoding)"
- *    --&gt; 
+ *    --&gt;
  *  &lt;restrictTo
  *          caseSensitive="[false|true]"
  *          field="(name of header/metadata field name to match)"&gt;
@@ -66,7 +62,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     private String sourceCharset = null;
-    
+
     /**
      * Gets the assumed source character encoding.
      * @return character encoding of the source to be transformed
@@ -83,11 +79,11 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
     public void setSourceCharset(String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
-    
+
     @Override
     protected final void tagApplicableDocument(
             String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed) 
+            ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
         InputStream nonNullDocument = document;
         if (nonNullDocument == null) {
@@ -97,7 +93,7 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, nonNullDocument, metadata, parsed);
         try {
-            InputStreamReader is = 
+            InputStreamReader is =
                     new InputStreamReader(nonNullDocument, inputCharset);
             tagTextDocument(reference, is, metadata, parsed);
         } catch (UnsupportedEncodingException e) {
@@ -109,41 +105,33 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
             String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException;
-    
-    
+
+
     @Override
-    protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        saveCharStreamTaggerToXML(writer);
+    protected final void saveHandlerToXML(XML xml) {
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        saveCharStreamTaggerToXML(xml);
     }
     /**
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
-     * 
-     * @param writer the xml writer
-     * @throws XMLStreamException could not save to XML
+     *
+     * @param xml the XML
      */
-    protected abstract void saveCharStreamTaggerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException;
-    
-    
+    protected abstract void saveCharStreamTaggerToXML(XML xml);
+
     @Override
-    protected final void loadHandlerFromXML(
-            XML xml) throws IOException {
+    protected final void loadHandlerFromXML(XML xml) {
         setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         loadCharStreamTaggerFromXML(xml);
     }
     /**
      * Loads configuration settings specific to the implementing class.
      * @param xml xml configuration
-     * @throws IOException could not load from XML
      */
-    protected abstract void loadCharStreamTaggerFromXML(
-            XML xml) throws IOException;
-    
-    
+    protected abstract void loadCharStreamTaggerFromXML(XML xml);
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -156,5 +144,5 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
     public String toString() {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }   
+    }
 }

@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -27,7 +25,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -127,15 +124,13 @@ public class SubstringTransformer extends AbstractCharStreamTransformer
     }
 
     @Override
-    protected void saveCharStreamTransformerToXML(
-            final EnhancedXMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttributeLong("begin", begin);
-        writer.writeAttributeLong("end", end);
+    protected void saveCharStreamTransformerToXML(final XML xml) {
+        xml.setAttribute("begin", begin);
+        xml.setAttribute("end", end);
     }
 
     @Override
-    protected void loadCharStreamTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadCharStreamTransformerFromXML(final XML xml) {
         setBegin(xml.getLong("@begin", getBegin()));
         setEnd(xml.getLong("@end", getEnd()));
     }

@@ -14,13 +14,10 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,7 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -141,29 +138,24 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
         if (regex == null) {
             p = Pattern.compile(".*");
         } else {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            p = Pattern.compile(regex, flags);
+            p = Regex.compileDotAll(regex, !caseSensitive);
         }
         cachedPattern = p;
         return p;
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
+    protected void loadFilterFromXML(XML xml) {
         setField(xml.getString("@field"));
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
         setRegex(xml.getString("regex", getRegex()));
     }
 
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("field", field);
-        writer.writeAttributeBoolean("caseSensitive", caseSensitive);
-        writer.writeElementString("regex", regex);
+    protected void saveFilterToXML(XML xml) {
+        xml.setAttribute("field", field);
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.addElement("regex", regex);
     }
 
     @Override

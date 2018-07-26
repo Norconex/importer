@@ -14,36 +14,35 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 /**
- * <p>Accepts or rejects a document based on whether any of the specified 
- * metadata fields are empty or not.  Any control characters (char &lt;= 32) 
+ * <p>Accepts or rejects a document based on whether any of the specified
+ * metadata fields are empty or not.  Any control characters (char &lt;= 32)
  * are removed before evaluating if a property is empty or not.</p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *          onMatch="[include|exclude]" 
+ *          onMatch="[include|exclude]"
  *          fields="(coma separated list of fields to match)" &gt;
- *          
+ *
  *    &lt;restrictTo caseSensitive="[false|true]"
  *            field="(name of header/metadata field name to match)"&gt;
  *        (regular expression of value to match)
@@ -51,7 +50,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/handler&gt;
  * </pre>
- * <h4>Usage example:</h4> 
+ * <h4>Usage example:</h4>
  * <p>
  * To exclude documents without titles:
  * </p>
@@ -59,30 +58,34 @@ import com.norconex.importer.handler.filter.OnMatch;
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
  *          onMatch="exclude" fields="title,dc:title" /&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 1.2
  */
 public class EmptyMetadataFilter extends AbstractDocumentFilter {
 
-    private String[] fields;
-    
+    private final List<String> fields = new ArrayList<>();
+
 
     public EmptyMetadataFilter() {
         this(OnMatch.INCLUDE, (String) null);
     }
     public EmptyMetadataFilter(
-            OnMatch onMatch, String... properties) {
+            OnMatch onMatch, String... fields) {
         super();
-        this.fields = properties;
+        this.fields.addAll(Arrays.asList(fields));
         setOnMatch(onMatch);
     }
 
-    public String[] getFields() {
-        return ArrayUtils.clone(fields);
+    public List<String> getFields() {
+        return Collections.unmodifiableList(fields);
     }
-    public void setFields(String... properties) {
-        this.fields = properties;
+    public void setFields(String... fields) {
+        setFields(Arrays.asList(fields));
+    }
+    public void setFields(List<String> fields) {
+        this.fields.clear();
+        this.fields.addAll(fields);
     }
 
     @Override
@@ -90,12 +93,12 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (ArrayUtils.isEmpty(fields)) {
+        if (fields.isEmpty()) {
             return true;
         }
         for (String prop : fields) {
             Collection<String> values =  metadata.getStrings(prop);
-            
+
             boolean isPropEmpty = true;
             for (String value : values) {
                 if (!StringUtils.isBlank(StringUtils.trim(value))) {
@@ -109,24 +112,17 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
         }
         return false;
     }
-    
+
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
-        String fieldsStr = xml.getString("@fields");
-        String[] props = StringUtils.split(fieldsStr, ",");
-        if (ArrayUtils.isEmpty(props)) {
-            props = ArrayUtils.EMPTY_STRING_ARRAY;
-        }
-        setFields(props);
+    protected void loadFilterFromXML(XML xml) {
+        setFields(xml.getDelimitedStringList("@fields", getFields()));
     }
-    
+
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute(
-                "fields", StringUtils.join(fields, ","));
+    protected void saveFilterToXML(XML xml) {
+        xml.setDelimitedAttributeList("fields", fields);
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);

@@ -14,11 +14,8 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -26,31 +23,30 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Generates a random Universally unique identifier (UUID) and stores it 
- * in the specified <code>field</code>.  
- * If no <code>field</code> is provided, the UUID will be added to 
+ * <p>Generates a random Universally unique identifier (UUID) and stores it
+ * in the specified <code>field</code>.
+ * If no <code>field</code> is provided, the UUID will be added to
  * <code>document.uuid</code>.
  * </p>
- * 
- * <p>If <code>field</code> already has one or more values, 
- * the new UUID will be <i>added</i> to the list of 
+ *
+ * <p>If <code>field</code> already has one or more values,
+ * the new UUID will be <i>added</i> to the list of
  * existing values, unless "overwrite" is set to <code>true</code>.</p>
- * 
+ *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
  *      field="(target field)"
  *      overwrite="[false|true]" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -58,27 +54,27 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following generates a UUID and stores it in a "uuid" field, overwriting
- * any existing values under that field. 
+ * any existing values under that field.
  * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
  *      field="uuid" overwrite="true" /&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.7.0
  */
 public class UUIDTagger extends AbstractDocumentTagger {
 
     public static final String DEFAULT_FIELD = "document.uuid";
-    
+
     private String field = DEFAULT_FIELD;
     private boolean overwrite;
-    
+
     /**
      * Constructor.
      */
@@ -92,7 +88,7 @@ public class UUIDTagger extends AbstractDocumentTagger {
             throws ImporterHandlerException {
 
         String uuid = UUID.randomUUID().toString();
-        
+
         String finalField = field;
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
@@ -119,16 +115,15 @@ public class UUIDTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         field = xml.getString("@field", field);
         overwrite = xml.getBoolean("@overwrite", overwrite);
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("field", field);
-        writer.writeAttributeBoolean("overwrite", overwrite);
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("field", field);
+        xml.setAttribute("overwrite", overwrite);
     }
 
     @Override

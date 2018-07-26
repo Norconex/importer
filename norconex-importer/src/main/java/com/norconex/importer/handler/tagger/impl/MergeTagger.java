@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,15 +23,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -241,7 +237,7 @@ public class MergeTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("merge");
         for (XML node : nodes) {
             Merge m = new Merge();
@@ -261,20 +257,16 @@ public class MergeTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        for (Merge merge : merges) {
-            writer.writeStartElement("merge");
-            writer.writeAttributeString("toField", merge.getToField());
-            writer.writeAttributeBoolean(
-                    "deleteFromFields", merge.isDeleteFromFields());
-            writer.writeAttributeBoolean("singleValue", merge.isSingleValue());
-            writer.writeAttributeString(
-                    "singleValueSeparator", merge.getSingleValueSeparator());
-            writer.writeElementDelimited("fromFields", merge.getFromFields());
-            writer.writeElementString(
-                    "fromFieldsRegex", merge.getFromFieldsRegex());
-            writer.writeEndElement();
+    protected void saveHandlerToXML(XML xml) {
+        for (Merge m : merges) {
+            XML mergeXML = xml.addElement("merge")
+                    .setAttribute("toField", m.getToField())
+                    .setAttribute("deleteFromFields", m.isDeleteFromFields())
+                    .setAttribute("singleValue", m.isSingleValue())
+                    .setAttribute("singleValueSeparator",
+                            m.getSingleValueSeparator());
+            mergeXML.addDelimitedElementList("fromFields", m.getFromFields());
+            mergeXML.addElement("fromFieldsRegex", m.getFromFieldsRegex());
         }
     }
 

@@ -14,12 +14,9 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -30,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.StringUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -196,7 +192,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         fromField = xml.getString("@fromField", fromField);
         appendHash = xml.getBoolean("@appendHash", appendHash);
         suffix = xml.getString("@suffix", suffix);
@@ -205,14 +201,13 @@ public class TruncateTagger extends AbstractDocumentTagger {
         maxLength = xml.getInteger("@maxLength", maxLength);
     }
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("fromField", fromField);
-        writer.writeAttributeBoolean("appendHash", appendHash);
-        writer.writeAttributeString("suffix", suffix);
-        writer.writeAttributeString("toField", toField);
-        writer.writeAttributeBoolean("overwrite", overwrite);
-        writer.writeAttributeInteger("maxLength", maxLength);
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("fromField", fromField);
+        xml.setAttribute("appendHash", appendHash);
+        xml.setAttribute("suffix", suffix);
+        xml.setAttribute("toField", toField);
+        xml.setAttribute("overwrite", overwrite);
+        xml.setAttribute("maxLength", maxLength);
     }
 
     @Override

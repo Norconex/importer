@@ -14,12 +14,9 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +26,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -101,13 +98,16 @@ public class ReplaceTransformer extends AbstractStringTransformer
         content.setLength(0);
         Pattern pattern;
 
-        for (String from : replacements.keySet()) {
-            String to = StringUtils.defaultString(replacements.get(from));
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            pattern = Pattern.compile(from, flags);
+        for (Entry<String, String> entry : replacements.entrySet()) {
+            String from = entry.getKey();
+            String to = StringUtils.defaultString(entry.getValue());
+
+            pattern = Regex.compileDotAll(from, !caseSensitive);
+//          int flags = Pattern.DOTALL;
+//          if (!caseSensitive) {
+//              flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+//          }
+//          pattern = Pattern.compile(from, flags);
             text = pattern.matcher(text).replaceAll(to);
         }
         content.append(text);
@@ -133,8 +133,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void loadStringTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadStringTransformerFromXML(final XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
         for (XML node : xml.getXMLList("replace")) {
             replacements.put(
@@ -143,15 +142,13 @@ public class ReplaceTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void saveStringTransformerToXML(final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute(
+    protected void saveStringTransformerToXML(final XML xml) {
+        xml.setAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));
         for (Entry<String, String> entry : replacements.entrySet()) {
-            writer.writeStartElement("replace");
-            writer.writeElementString("fromValue", entry.getKey());
-            writer.writeElementString("toValue", entry.getValue());
-            writer.writeEndElement();
+            XML rxml = xml.addElement("replace");
+            rxml.addElement("fromValue", entry.getKey());
+            rxml.addElement("toValue", entry.getValue());
         }
     }
 

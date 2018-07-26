@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -50,7 +49,6 @@ import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -707,7 +705,7 @@ public class ExternalHandler {
     }
 
 
-    public void loadHandlerFromXML(XML xml) throws IOException {
+    public void loadHandlerFromXML(XML xml) {
         setCommand(xml.getString("command", getCommand()));
         String dir = xml.getString("tempDir", null);
         if (StringUtils.isNotBlank(dir)) {
@@ -741,38 +739,28 @@ public class ExternalHandler {
         }
     }
 
-    public void saveHandlerToXML(EnhancedXMLStreamWriter writer) {
-        writer.writeElementString("command", getCommand());
-        writer.writeElementString(
-                "tempDir", Objects.toString(getTempDir(), null));
+    public void saveHandlerToXML(XML xml) {
+        xml.addElement("command", getCommand());
+        xml.addElement("tempDir", getTempDir());
         if (!getMetadataExtractionPatterns().isEmpty()) {
-            writer.writeStartElement("metadata");
-            writer.writeAttributeString(
-                    "inputFormat", getMetadataInputFormat());
-            writer.writeAttributeString(
-                    "outputFormat", getMetadataOutputFormat());
+            XML metaXML = xml.addElement("metadata")
+                    .setAttribute("inputFormat", getMetadataInputFormat())
+                    .setAttribute("outputFormat", getMetadataOutputFormat());
             for (KeyValueExtractor rfe : patterns) {
-                writer.writeStartElement("pattern");
-                writer.writeAttributeString("field", rfe.getKey());
-                writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
-                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
-                writer.writeAttributeBoolean(
-                        "caseSensitive", rfe.isCaseSensitive());
-                writer.writeCharacters(rfe.getRegex());
-                writer.writeEndElement();
+                metaXML.addElement("pattern", rfe.getRegex())
+                        .setAttribute("field", rfe.getKey())
+                        .setAttribute("fieldGroup", rfe.getKeyGroup())
+                        .setAttribute("valueGroup", rfe.getValueGroup())
+                        .setAttribute("caseSensitive", rfe.isCaseSensitive());
             }
-            writer.writeEndElement();
         }
         if (getEnvironmentVariables() != null) {
-            writer.writeStartElement("environment");
+            XML envXML = xml.addElement("environment");
             for (Entry<String, String> entry
                     : getEnvironmentVariables().entrySet()) {
-                writer.writeStartElement("variable");
-                writer.writeAttribute("name", entry.getKey());
-                writer.writeCharacters(entry.getValue());
-                writer.writeEndElement();
+                envXML.addElement("variable", entry.getValue())
+                        .setAttribute("name", entry.getKey());
             }
-            writer.writeEndElement();
         }
     }
 

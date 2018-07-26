@@ -14,19 +14,17 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -40,7 +38,6 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -254,6 +251,14 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             Operator operator, TimeUnit timeUnit, int value, boolean fixed) {
         conditions.add(new Condition(operator, timeUnit, value, fixed, true));
     }
+    /**
+     * Gets the date filter conditions.
+     * @return conditions
+     * @since 3.0.0
+     */
+    public List<Condition> getConditions() {
+        return Collections.unmodifiableList(conditions);
+    }
 
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
@@ -289,7 +294,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
+    protected void loadFilterFromXML(XML xml) {
         setField(xml.getString("@field", getField()));
         setFormat(xml.getString("@format", getFormat()));
         List<XML> nodes = xml.getXMLList("condition");
@@ -302,12 +307,12 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             }
             Operator operator = Operator.getOperator(op);
             if (operator == null) {
-                LOG.warn("Unsupported operator: " + op);
+                LOG.warn("Unsupported operator: {}", op);
                 break;
             }
             Condition condition = Condition.parse(operator, date);
             if (condition == null) {
-                LOG.debug("Not a valid date value: " + date);
+                LOG.debug("Not a valid date value: {}", date);
                 break;
             }
             conditions.add(condition);
@@ -315,15 +320,13 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("field", field);
-        writer.writeAttribute("format", format);
+    protected void saveFilterToXML(XML xml) {
+        xml.setAttribute("field", field);
+        xml.setAttribute("format", format);
         for (Condition condition : conditions) {
-            writer.writeStartElement("condition");
-            writer.writeAttributeString("operator", condition.operator.abbr);
-            writer.writeAttributeString("date", condition.getDateString());
-            writer.writeEndElement();
+            xml.addElement("condition")
+                    .setAttribute("operator", condition.operator.abbr)
+                    .setAttribute("date", condition.getDateString());
         }
     }
 
@@ -437,16 +440,17 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 if (d.startsWith("NOW") || d.startsWith("TODAY")) {
                     Matcher m = RELATIVE_PARTS.matcher(d);
                     if (!m.matches() || m.groupCount() != 5) {
-                        LOG.debug("Invalid format for value: " + dateString);
+                        LOG.debug("Invalid format for value: {}", dateString);
                         return null;
                     }
                     int amount = NumberUtils.toInt(m.group(3));
                     if  ("-".equals(m.group(2))) {
                         amount = -amount;
                     }
-                    TimeUnit unit = TimeUnit.getTimeUnit(m.group(4));
+                    String unitStr = m.group(4);
+                    TimeUnit unit = TimeUnit.getTimeUnit(unitStr);
                     if (unit == null) {
-                        LOG.debug("Invalid time unit: " + m.group(4));
+                        LOG.debug("Invalid time unit: {}", unitStr);
                     }
                     boolean fixed = !"*".equals(m.group(5));
                     boolean today = "TODAY".equals(m.group(1));

@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -34,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -126,12 +124,12 @@ public class CharsetTagger extends AbstractDocumentTagger
 
         String[] metaFields = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
-        Pattern pattern = Pattern.compile(fieldsRegex, Pattern.DOTALL
-                | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+        Pattern pattern = new Regex(
+                fieldsRegex).dotAll().caseInsensitive().compile();
         for (String metaField : metaFields) {
             if (pattern.matcher(metaField).matches()) {
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Field to convert charset: " + metaField);
+                    LOG.debug("Field to convert charset: {}", metaField);
                 }
                 convertCharset(reference, metadata, metaField);
             }
@@ -230,18 +228,17 @@ public class CharsetTagger extends AbstractDocumentTagger
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        writer.writeAttributeString("targetCharset", getTargetCharset());
-        writer.writeElementString("fieldsRegex", fieldsRegex);
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("targetCharset", getTargetCharset());
+        xml.addElement("fieldsRegex", fieldsRegex);
     }
 
     @Override

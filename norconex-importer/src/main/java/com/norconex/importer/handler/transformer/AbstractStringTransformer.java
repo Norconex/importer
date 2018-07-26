@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -27,7 +25,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.TextReader;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -125,36 +122,29 @@ public abstract class AbstractStringTransformer
            boolean parsed, int sectionIndex) throws ImporterHandlerException;
 
     @Override
-    protected final void saveCharStreamTransformerToXML(
-            final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
-        saveStringTransformerToXML(writer);
+    protected final void saveCharStreamTransformerToXML(final XML xml) {
+        xml.setAttribute("maxReadSize", getMaxReadSize());
+        saveStringTransformerToXML(xml);
     }
     /**
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
      *
-     * @param writer the xml writer
-     * @throws XMLStreamException could not save to XML
+     * @param xml the XML
      */
-    protected abstract void saveStringTransformerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException;
+    protected abstract void saveStringTransformerToXML(XML xml);
 
     @Override
-    protected final void loadCharStreamTransformerFromXML(final XML xml)
-            throws IOException {
+    protected final void loadCharStreamTransformerFromXML(final XML xml) {
         setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
         loadStringTransformerFromXML(xml);
     }
     /**
      * Loads configuration settings specific to the implementing class.
-     * @param xml xml configuration
-     * @throws IOException could not load from XML
+     * @param xml XML configuration
      */
-    protected abstract void loadStringTransformerFromXML(XML xml)
-            throws IOException;
+    protected abstract void loadStringTransformerFromXML(XML xml);
 
     @Override
     public boolean equals(final Object other) {

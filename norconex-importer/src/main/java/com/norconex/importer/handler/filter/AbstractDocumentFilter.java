@@ -14,10 +14,7 @@
  */
 package com.norconex.importer.handler.filter;
 
-import java.io.IOException;
 import java.io.InputStream;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -25,7 +22,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
@@ -34,12 +30,12 @@ import com.norconex.importer.handler.ImporterHandlerException;
 /**
  * <p>Base class for document filters.  Subclasses can be set an attribute
  * called "onMatch".  The logic whether to include or exclude a document
- * upon matching it is handled by this class.  Subclasses only 
+ * upon matching it is handled by this class.  Subclasses only
  * need to focus on whether the document gets matched or not by
- * implementing the 
+ * implementing the
  * {@link #isDocumentMatched(String, InputStream, ImporterMetadata, boolean)}
  * method.</p>
- * 
+ *
  * <h3 id="logic">Inclusion/exclusion logic:</h3>
  * <p>The logic for accepting or rejecting documents when a subclass condition
  * is met ("matches") is as follow:</p>
@@ -61,17 +57,17 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *  <tr>
  *   <td>no</td><td>include</td>
  *   <td>Document is accepted if it was accepted by at least one filter with
- *       onMatch="include". If no other one exists or if none matched, 
+ *       onMatch="include". If no other one exists or if none matched,
  *       the document is rejected.</td>
  *  </tr>
  * </table>
  * <p>
- * When multiple filters are defined and a combination of both "include" and 
+ * When multiple filters are defined and a combination of both "include" and
  * "exclude" are possible, the "exclude" will always take precedence.
- * In other words, it only take one matching "exclude" to reject a document, 
+ * In other words, it only take one matching "exclude" to reject a document,
  * not matter how many matching "include" were triggered.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <p>Subclasses inherit this {@link IXMLConfigurable} configuration:</p>
  * <pre>
@@ -91,7 +87,7 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     private final AbstractOnMatchFilter onMatch = new AbstractOnMatchFilter() {
     };
-    
+
     @Override
     public OnMatch getOnMatch() {
         return onMatch.getOnMatch();
@@ -102,14 +98,14 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     }
 
     @Override
-    public boolean acceptDocument(String reference, 
+    public boolean acceptDocument(String reference,
             InputStream input, ImporterMetadata metadata,
             boolean parsed) throws ImporterHandlerException {
-        
+
         if (!isApplicable(reference, metadata, parsed)) {
             return true;
         }
-        
+
         boolean matched = isDocumentMatched(reference, input, metadata, parsed);
 
         if (matched) {
@@ -120,25 +116,23 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     }
 
     protected abstract boolean isDocumentMatched(
-            String reference, InputStream input, 
-            ImporterMetadata metadata, boolean parsed) 
+            String reference, InputStream input,
+            ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException;
 
     @Override
-    protected final void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        onMatch.saveToXML(writer);
-        saveFilterToXML(writer);
+    protected final void saveHandlerToXML(XML xml) {
+        onMatch.saveToXML(xml);
+        saveFilterToXML(xml);
     }
-    protected abstract void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException;
+    protected abstract void saveFilterToXML(XML xml);
 
     @Override
-    protected final void loadHandlerFromXML(XML xml) throws IOException {
+    protected final void loadHandlerFromXML(XML xml) {
         onMatch.loadFromXML(xml);
         loadFilterFromXML(xml);
     }
-    protected abstract void loadFilterFromXML(XML xml) throws IOException;
+    protected abstract void loadFilterFromXML(XML xml);
 
     @Override
     public boolean equals(final Object other) {
@@ -150,7 +144,7 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(this, 
+        return new ReflectionToStringBuilder(this,
                 ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

@@ -14,13 +14,10 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,7 +28,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
@@ -170,8 +166,7 @@ public class TextPatternTagger
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("pattern");
         for (XML node : nodes) {
             addPattern(new KeyValueExtractor(node.getString(".", null))
@@ -183,17 +178,13 @@ public class TextPatternTagger
     }
 
     @Override
-    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected void saveStringTaggerToXML(XML xml) {
         for (KeyValueExtractor rfe : patterns) {
-            writer.writeStartElement("pattern");
-            writer.writeAttributeString("field", rfe.getKey());
-            writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
-            writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
-            writer.writeAttributeBoolean(
-                    "caseSensitive", rfe.isCaseSensitive());
-            writer.writeCharacters(rfe.getRegex());
-            writer.writeEndElement();
+            xml.addElement("pattern", rfe.getRegex())
+                    .setAttribute("field", rfe.getKey())
+                    .setAttribute("fieldGroup", rfe.getKeyGroup())
+                    .setAttribute("valueGroup", rfe.getValueGroup())
+                    .setAttribute("caseSensitive", rfe.isCaseSensitive());
         }
     }
 

@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,7 +29,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.ConfigurationException;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -177,18 +174,15 @@ public class ConstantTagger extends AbstractDocumentTagger{
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("onConflict",
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("onConflict",
                 onConflict.toString().toLowerCase());
-        for (String name : constants.keySet()) {
-            List<String> values = constants.get(name);
+        for (Entry<String, List<String>> entry : constants.entrySet()) {
+            List<String> values = entry.getValue();
             for (String value : values) {
                 if (value != null) {
-                    writer.writeStartElement("constant");
-                    writer.writeAttribute("name", name);
-                    writer.writeCharacters(value);
-                    writer.writeEndElement();
+                    xml.addElement("constant", value)
+                            .setAttribute("name", entry.getKey());
                 }
             }
         }

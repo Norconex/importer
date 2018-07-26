@@ -15,21 +15,15 @@
 package com.norconex.importer.parser.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ExternalHandler;
@@ -114,7 +108,7 @@ import com.norconex.importer.parser.IDocumentParser;
 public class ExternalParser implements IDocumentParser, IXMLConfigurable {
 
     private final ExternalHandler h = new ExternalHandler();
-    private String contentType;
+//    private String contentType;
 
     /**
      * Gets the command to execute.
@@ -307,66 +301,13 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
     }
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        String xml = IOUtils.toString(in);
-        xml = xml.replaceFirst("(.*?)contentType\\s*=\\s*\".*?\"(.*)", "$1$2");
-        h.loadHandlerFromXML(new XML(xml));
-
-//        String xml = IOUtils.toString(in);
-//        xml = xml.replaceAll("<(/{0,1})parser", "<$1transformer");
-//        contentType = xml.replaceFirst(
-//                ".*?contentType\\s*=\\s*\"(.*?)\".*", "$1");
-//        xml = xml.replaceFirst("(.*?)contentType\\s*=\\s*\".*?\"(.*)", "$1$2");
-//        StringReader r = new StringReader(xml);
-//        h.loadFromXML(r);
+    public void loadFromXML(XML xml) {
+        h.loadHandlerFromXML(xml);
     }
 
     @Override
-    public void saveToXML(Writer out, String tagName) throws IOException {
-
-        // Copied and modified until we make it that XML can be written
-        // to as well:
-
-        EnhancedXMLStreamWriter writer = new EnhancedXMLStreamWriter(out);
-        writer.writeStartElement(tagName, getClass());
-        writer.writeAttributeString("contentType", contentType);
-
-        writer.writeElementString("command", getCommand());
-        writer.writeElementString(
-                "tempDir", Objects.toString(getTempDir(), null));
-        if (!getMetadataExtractionPatterns().isEmpty()) {
-            writer.writeStartElement("metadata");
-            writer.writeAttributeString(
-                    "inputFormat", getMetadataInputFormat());
-            writer.writeAttributeString(
-                    "outputFormat", getMetadataOutputFormat());
-            for (KeyValueExtractor rfe : getMetadataExtractionPatterns()) {
-                writer.writeStartElement("pattern");
-                writer.writeAttributeString("field", rfe.getKey());
-                writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
-                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
-                writer.writeAttributeBoolean(
-                        "caseSensitive", rfe.isCaseSensitive());
-                writer.writeCharacters(rfe.getRegex());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-        if (getEnvironmentVariables() != null) {
-            writer.writeStartElement("environment");
-            for (Entry<String, String> entry
-                    : getEnvironmentVariables().entrySet()) {
-                writer.writeStartElement("variable");
-                writer.writeAttribute("name", entry.getKey());
-                writer.writeCharacters(entry.getValue());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-
-        writer.writeEndElement();
-        writer.flush();
-        writer.close();
+    public void saveToXML(XML xml) {
+        h.saveHandlerToXML(xml);
     }
 
     @Override

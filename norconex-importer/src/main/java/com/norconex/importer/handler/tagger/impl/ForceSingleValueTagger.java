@@ -14,14 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -29,14 +27,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 /**
  * <p>
- * Forces a metadata field to be single-value.  The action can be one of the 
+ * Forces a metadata field to be single-value.  The action can be one of the
  * following:
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
@@ -44,32 +41,32 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *    keepFirst          Keeps the first occurrence found.
  *    keepLast           Keeps the first occurrence found.
  *    mergeWith:&lt;sep&gt;    Merges all occurrences, joining them with the
- *                       specified separator (&lt;sep&gt;). 
+ *                       specified separator (&lt;sep&gt;).
  * </pre>
  * <p>
  * If you do not specify any action, the default behavior is to merge all
  * occurrences, joining values with a comma.
- * </p> 
+ * </p>
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
- *  
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  
+ *
  *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
  *      &lt;!-- multiple single value fields allowed --&gt;
- *      
+ *
  *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * <h4>Usage example:</h4>
  * <p>
- * For documents where multiple title fields are found, the following only 
- * keeps the first title value captured. 
+ * For documents where multiple title fields are found, the following only
+ * keeps the first title value captured.
  * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
@@ -80,19 +77,20 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
-    private final Map<String, String> singleFields = 
+    private final Map<String, String> singleFields =
             new HashMap<>();
-    
+
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document, 
+            String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
-        for (String name : singleFields.keySet()) {
-            List<String> values = metadata.getStrings(name);  
-            String action = singleFields.get(name);
-            if (values != null && !values.isEmpty() 
+
+        for (Entry<String, String> entry: singleFields.entrySet()) {
+            String name = entry.getKey();
+            String action = entry.getValue();
+            List<String> values = metadata.getStrings(name);
+            if (values != null && !values.isEmpty()
                     && StringUtils.isNotBlank(action)) {
                 String singleValue = null;
                 if ("keepFirst".equalsIgnoreCase(action)) {
@@ -125,7 +123,7 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("singleValue");
         for (XML node : nodes) {
             String name = node.getString("@field");
@@ -135,19 +133,18 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        for (String name : singleFields.keySet()) {
-            String action = singleFields.get(name);
+    protected void saveHandlerToXML(XML xml) {
+        for (Entry<String, String> entry: singleFields.entrySet()) {
+            String name = entry.getKey();
+            String action = entry.getValue();
             if (action != null) {
-                writer.writeStartElement("singleValue");
-                writer.writeAttribute("field", name);
-                writer.writeAttribute("action", action);
-                writer.writeEndElement();
+                xml.addElement("singleValue")
+                        .setAttribute("field", name)
+                        .setAttribute("action", action);
             }
         }
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);

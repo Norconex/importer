@@ -16,14 +16,10 @@ package com.norconex.importer.handler;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -36,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.map.PropertyMatcher;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.util.CharsetUtil;
@@ -184,7 +179,8 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 return true;
             }
         }
-        LOG.debug("{} handler does not apply to: {}", getClass(), reference);
+        LOG.debug("{} handler does not apply to: {} (parsed={}).",
+                getClass(), reference, parsed);
         return false;
     }
 
@@ -240,8 +236,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     }
 
     @Override
-    public final void loadFromXML(Reader in) throws IOException {
-        XML xml = new XML(in);
+    public final void loadFromXML(XML xml) {
         loadHandlerFromXML(xml);
         List<XML> nodes = xml.getXMLList("restrictTo");
 
@@ -251,59 +246,31 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 addRestriction(
                         node.getString("@field"),
                         node.getString("."),
-                        node.getBoolean("@caseSensitive"));
+                        node.getBoolean("@caseSensitive", false));
             }
         }
     }
     /**
      * Loads configuration settings specific to the implementing class.
-     * @param xml xml configuration
-     * @throws IOException could not load from XML
+     * @param xml XML configuration
      */
-    protected abstract void loadHandlerFromXML(XML xml)
-            throws IOException;
+    protected abstract void loadHandlerFromXML(XML xml);
 
     @Override
-    public void saveToXML(Writer writer, String tagName) throws IOException {
-        try {
-            EnhancedXMLStreamWriter w = new EnhancedXMLStreamWriter(writer);
-            w.writeStartElement(tagName, getClass());
-
-            saveHandlerToXML(w);
-
-            for (PropertyMatcher restriction : restrictions) {
-                w.writeStartElement("restrictTo");
-                if (restriction.getKey() != null) {
-                    w.writeAttribute("field", restriction.getKey());
-                }
-                w.writeAttribute("caseSensitive",
-                        Boolean.toString(restriction.isCaseSensitive()));
-                if (restriction.getRegex() != null) {
-                    w.writeCharacters(restriction.getRegex());
-                }
-                w.writeEndElement();
-            }
-
-            w.writeEndElement();
-            w.flush();
-            w.close();
-
-        } catch (XMLStreamException e) {
-            throw new IOException("Cannot save as XML.", e);
+    public void saveToXML(XML xml) {
+        for (PropertyMatcher restriction : restrictions) {
+            XML rxml = xml.addElement("restrictTo", restriction.getRegex());
+            rxml.setAttribute("field", restriction.getKey());
+            rxml.setAttribute("caseSensitive", restriction.isCaseSensitive());
         }
+        saveHandlerToXML(xml);
     }
 
     /**
      * Saves configuration settings specific to the implementing class.
-     * The parent tag along with the "class" attribute are already written.
-     * Implementors must not close the writer.
-     *
-     * @param writer the xml writer
-     * @throws XMLStreamException could not save to XML
+     * @param xml the XML
      */
-    protected abstract void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException;
-
+    protected abstract void saveHandlerToXML(XML xml);
 
     @Override
     public boolean equals(final Object other) {

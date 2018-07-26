@@ -14,15 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.ArrayUtils;
@@ -32,7 +29,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -47,19 +43,19 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
- *  
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
 
- *      &lt;split fromField="sourceFieldName" toField="targetFieldName" 
+ *      &lt;split fromField="sourceFieldName" toField="targetFieldName"
  *               regex="[false|true]"&gt;
  *          &lt;separator&gt;(separator value)&lt;/separator&gt;
  *      &lt;/split&gt;
  *      &lt;!-- multiple split tags allowed --&gt;
- *      
+ *
  *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
@@ -80,18 +76,18 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 public class SplitTagger extends AbstractDocumentTagger {
 
     private final List<Split> splits = new ArrayList<>();
-    
+
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         for (Split split : splits) {
             if (metadata.containsKey(split.getFromField())) {
                 String[] metaValues = metadata.getStrings(split.getFromField())
                         .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-                List<String> sameFieldValues = 
+                List<String> sameFieldValues =
                         SetUniqueList.setUniqueList(new ArrayList<String>());
                 for (int i = 0; i < metaValues.length; i++) {
                     String metaValue = metaValues[i];
@@ -112,14 +108,14 @@ public class SplitTagger extends AbstractDocumentTagger {
                     }
                 }
                 if (StringUtils.isBlank(split.getToField())) {
-                    metadata.setString(split.getFromField(), 
+                    metadata.setString(split.getFromField(),
                             sameFieldValues.toArray(
                                     ArrayUtils.EMPTY_STRING_ARRAY));
                 }
             }
         }
     }
-    
+
 
     private String[] regexSplit(String metaValue, String separator) {
         String[] values = metaValue.split(separator);
@@ -134,7 +130,7 @@ public class SplitTagger extends AbstractDocumentTagger {
     private String[] regularSplit(String metaValue, String separator) {
         return StringUtils.splitByWholeSeparator(metaValue, separator);
     }
-        
+
     public List<Split> getSplits() {
         return Collections.unmodifiableList(splits);
     }
@@ -150,7 +146,7 @@ public class SplitTagger extends AbstractDocumentTagger {
             splits.removeAll(toRemove);
         }
     }
-    
+
     public void addSplit(
             String fromField, String separator, boolean regex) {
         splits.add(new Split(fromField, null, separator, regex));
@@ -160,7 +156,7 @@ public class SplitTagger extends AbstractDocumentTagger {
         splits.add(new Split(fromField, toField, separator, regex));
     }
 
-    
+
     public static class Split {
         private final String fromField;
         private final String toField;
@@ -201,9 +197,9 @@ public class SplitTagger extends AbstractDocumentTagger {
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         for (XML node : xml.getXMLList("split")) {
             addSplit(
                     node.getString("@fromField"),
@@ -214,20 +210,13 @@ public class SplitTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected void saveHandlerToXML(XML xml) {
         for (Split split : splits) {
-            writer.writeStartElement("split");
-            writer.writeAttribute("fromField", split.getFromField());
-            if (split.getToField() != null) {
-                writer.writeAttribute("toField", split.getToField());
-            }
-            writer.writeAttribute("regex", 
-                    Boolean.toString(split.isRegex()));
-            writer.writeStartElement("separator");
-            writer.writeCharacters(split.getSeparator());
-            writer.writeEndElement();
-            writer.writeEndElement();
+            XML sxml = xml.addElement("split")
+                    .setAttribute("fromField", split.getFromField())
+                    .setAttribute("toField", split.getToField())
+                    .setAttribute("regex", split.isRegex());
+            sxml.addElement("separator", split.getSeparator());
         }
     }
 

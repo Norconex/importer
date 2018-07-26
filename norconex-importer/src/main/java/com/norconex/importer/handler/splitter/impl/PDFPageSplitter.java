@@ -19,8 +19,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,7 +29,6 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -183,15 +180,14 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         setReferencePagePrefix(
                 xml.getString("referencePagePrefix", referencePagePrefix));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeElementString("referencePagePrefix", referencePagePrefix);
+    protected void saveHandlerToXML(XML xml) {
+        xml.addElement("referencePagePrefix", referencePagePrefix);
     }
 
     @Override

@@ -14,11 +14,9 @@
  */
 package com.norconex.importer.handler.transformer.impl;
 
-import java.io.IOException;
 import java.util.Objects;
 
 import javax.script.Bindings;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -26,7 +24,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -148,15 +145,13 @@ public class ScriptTransformer extends AbstractStringTransformer
 
     @Override
     protected void saveStringTransformerToXML(
-            final EnhancedXMLStreamWriter writer)
-                    throws XMLStreamException {
-        writer.writeAttributeString("engineName", getEngineName());
-        writer.writeElementString("script", getScript());
+            final XML xml) {
+        xml.setAttribute("engineName", getEngineName());
+        xml.addElement("script", getScript());
     }
 
     @Override
-    protected void loadStringTransformerFromXML(final XML xml)
-            throws IOException {
+    protected void loadStringTransformerFromXML(final XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
         setScript(xml.getString("script"));
     }

@@ -14,14 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.LocaleUtils;
@@ -30,10 +28,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -114,12 +109,9 @@ import com.norconex.importer.util.FormatUtil;
  */
 public class DateFormatTagger extends AbstractDocumentTagger {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(DateFormatTagger.class);
-
     private String fromField;
     private String toField;
-    private String[] fromFormats;
+    private final List<String> fromFormats = new ArrayList<>();
     private String toFormat;
     private Locale fromLocale;
     private Locale toLocale;
@@ -163,9 +155,11 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     private String formatDate(String fromDate) {
-        String[] formats = fromFormats;
-        if (ArrayUtils.isEmpty(fromFormats)) {
-            formats = new String[] { "EPOCH" };
+        List<String> formats = new ArrayList<>();
+        if (fromFormats.isEmpty()) {
+            formats.add("EPOCH");
+        } else {
+            formats.addAll(fromFormats);
         }
         for (String fromFormat : formats) {
             String toDate = FormatUtil.formatDateString(
@@ -194,33 +188,11 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     /**
-     * Gets the source format to match.
-     * @return source date formats
-     * @deprecated Since 2.6.0, user {@link #getFromFormats()}
-     */
-    @Deprecated
-    public String getFromFormat() {
-        if (ArrayUtils.isEmpty(fromFormats)) {
-            return null;
-        }
-        return fromFormats[0];
-    }
-    /**
-     * Sets the source format to match.
-     * @param fromFormat source date formats
-     * @deprecated Since 2.6.0, user {@link #setFromFormats(String...)}
-     */
-    @Deprecated
-    public void setFromFormat(String fromFormat) {
-        setFromFormats(fromFormats);
-    }
-
-    /**
      * Gets the source date formats to match.
      * @return source date formats
      * @since 2.6.0
      */
-    public String[] getFromFormats() {
+    public List<String> getFromFormats() {
         return fromFormats;
     }
     /**
@@ -229,7 +201,16 @@ public class DateFormatTagger extends AbstractDocumentTagger {
      * @since 2.6.0
      */
     public void setFromFormats(String... fromFormats) {
-        this.fromFormats = fromFormats;
+        setFromFormats(Arrays.asList(fromFormats));
+    }
+    /**
+     * Sets the source date formats to match.
+     * @param fromFormats source date formats
+     * @since 3.0.0
+     */
+    public void setFromFormats(List<String> fromFormats) {
+        this.fromFormats.clear();
+        this.fromFormats.addAll(fromFormats);
     }
 
     public String getToFormat() {
@@ -299,17 +280,9 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         fromField = xml.getString("@fromField", fromField);
         toField = xml.getString("@toField", toField);
-
-        String fromFormat = xml.getString("@fromFormat", null);
-        if (StringUtils.isNotBlank(fromFormat)) {
-            LOG.warn("\"fromFormat\" attribute is now deprecated and is "
-                    + "now specified as a repeatable <fromFormat> tag.");
-            setFromFormats(fromFormat);
-        }
-
         toFormat = xml.getString("@toFormat", toFormat);
         overwrite = xml.getBoolean("@overwrite", overwrite);
         keepBadDates = xml.getBoolean("@keepBadDates", keepBadDates);
@@ -321,37 +294,23 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         if (StringUtils.isNotBlank(toLocaleStr)) {
             setToLocale(LocaleUtils.toLocale(toLocaleStr));
         }
-
-        List<XML> nodes = xml.getXMLList("fromFormat");
-        if (!nodes.isEmpty()) {
-            List<String> fromFormats = new ArrayList<>(nodes.size());
-            for (XML node : nodes) {
-                fromFormats.add(node.getString(".", null));
-            }
-            setFromFormats(fromFormats.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
-        }
+        setFromFormats(xml.getStringList("fromFormat", getFromFormats()));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("fromField", fromField);
-        writer.writeAttributeString("toField", toField);
-        writer.writeAttributeString("toFormat", toFormat);
-        writer.writeAttributeBoolean("overwrite", overwrite);
-        writer.writeAttributeBoolean("keepBadDates", keepBadDates);
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("fromField", fromField);
+        xml.setAttribute("toField", toField);
+        xml.setAttribute("toFormat", toFormat);
+        xml.setAttribute("overwrite", overwrite);
+        xml.setAttribute("keepBadDates", keepBadDates);
         if (fromLocale != null) {
-            writer.writeAttributeString("fromLocale", fromLocale.toString());
+            xml.setAttribute("fromLocale", fromLocale);
         }
         if (toLocale != null) {
-            writer.writeAttributeString("toLocale", toLocale.toString());
+            xml.setAttribute("toLocale", toLocale);
         }
-
-        if (getFromFormats() != null) {
-            for (String fromFormat : fromFormats) {
-                writer.writeElementString("fromFormat", fromFormat);
-            }
-        }
+        xml.addElementList("fromFormat", fromFormats);
     }
 
     @Override

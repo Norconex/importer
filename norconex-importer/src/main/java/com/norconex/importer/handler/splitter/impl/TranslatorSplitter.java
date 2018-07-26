@@ -14,22 +14,20 @@
  */
 package com.norconex.importer.handler.splitter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -47,7 +45,6 @@ import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.io.TextReader;
 import com.norconex.commons.lang.unit.DataUnit;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterDocument;
@@ -57,8 +54,8 @@ import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
 /**
- * <p>Translate documents using one of the supported translation API.  The 
- * following lists the supported APIs, along with the required authentication 
+ * <p>Translate documents using one of the supported translation API.  The
+ * following lists the supported APIs, along with the required authentication
  * properties or settings for each:</p>
  * <ul>
  *   <li><a href="http://blogs.msdn.com/b/translation/p/gettingstarted1.aspx">microsoft</a>
@@ -89,16 +86,16 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *     </ul>
  *   </li>
  * </ul>
- * 
+ *
  * <p>For example, the
- * Microsoft Translation API requires a client ID and a client 
+ * Microsoft Translation API requires a client ID and a client
  * secret,
  * both obtained on Microsoft Azure Marketplace with your Microsoft account.
  * </p><p>
- * Translated documents will have the original document language stored in 
+ * Translated documents will have the original document language stored in
  * a field "document.translatedFrom".
  * </p><p>
- * This class is not a document "splitter" per se, but like regular splitters, 
+ * This class is not a document "splitter" per se, but like regular splitters,
  * the translation
  * will create children documents for each translation performed.  The parent
  * document will always remain the original document, while the children
@@ -113,24 +110,24 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;sourceLanguageField&gt;(field containing language)&lt;/sourceLanguageField&gt;
  *      &lt;sourceLanguage&gt;(language when no source language field)&lt;/sourceLanguage&gt;
  *      &lt;targetLanguages&gt;(coma-separated list of languages)&lt;/targetLanguages&gt;
- *      
+ *
  *      &lt;!-- Microsoft --&gt;
  *      &lt;clientId&gt;...&lt;/clientId&gt;
  *      &lt;clientSecret&gt;...&lt;/clientSecret&gt;
- *      
+ *
  *      &lt;!-- Google --&gt;
  *      &lt;apiKey&gt;...&lt;/apiKey&gt;
- *      
+ *
  *      &lt;!-- Lingo24 --&gt;
  *      &lt;userKey&gt;...&lt;/userKey&gt;
- *      
+ *
  *      &lt;!-- Moses --&gt;
  *      &lt;smtPath&gt;...&lt;/smtPath&gt;
  *      &lt;scriptPath&gt;...&lt;/scriptPath&gt;
- *      
+ *
  *      &lt;!-- Yandex --&gt;
  *      &lt;apiKey&gt;...&lt;/apiKey&gt;
- *          
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -138,11 +135,11 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *  &lt;/handler&gt;
  * </pre>
- * <h4>Usage example:</h4> 
+ * <h4>Usage example:</h4>
  * <p>
  * The following uses the Google translation API to translate documents into
  * French, taking the source document language from a field called "langField".
- * </p> 
+ * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
  *          api="google" &gt;
@@ -161,23 +158,23 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     public static final String API_LINGO24 = "lingo24";
     public static final String API_MOSES = "moses";
     public static final String API_YANDEX = "yandex";
-    
+
     private final Map<String, TranslatorStrategy> translators = new HashMap<>();
-    
+
     private String api;
-    
+
     private boolean ignoreContent;
-    
-    private String[] fieldsToTranslate;
+
+    private final List<String> fieldsToTranslate = new ArrayList<>();
     private boolean ignoreNonTranslatedFields;
-            
+
     //TODO method: add a field with _fr suffix
     // splitter is for new docs... adding field should be in transformer?
 
     private String sourceLanguageField;
     private String sourceLanguage;
-    private String[] targetLanguages;
-    
+    private final List<String> targetLanguages = new ArrayList<>();
+
     // Microsoft
     private String clientId;
     private String clientSecret;
@@ -187,11 +184,11 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
     // Lingo24
     private String userKey;
-    
+
     // Moses
     private String smtPath;
     private String scriptPath;
-    
+
     /**
      * Constructor.
      */
@@ -278,17 +275,17 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
-  
+
         // Do not re-translate a document already translated
         if (doc.getMetadata().containsKey(
                 ImporterMetadata.DOC_TRANSLATED_FROM)) {
-            return null;
+            return Collections.emptyList();
         }
 
         validateProperties(doc);
 
         List<ImporterDocument> translatedDocs = new ArrayList<>();
-        
+
         InputStream is = doc.getInput();
         CachedInputStream cachedInput = null;
         if (is instanceof CachedInputStream) {
@@ -296,20 +293,20 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         } else {
             cachedInput = streamFactory.newInputStream(is);
         }
-        
+
         for (String lang : targetLanguages) {
             if (Objects.equals(sourceLanguage, lang)) {
                 continue;
             }
             cachedInput.rewind();
             try (TextReader reader = new TextReader(
-                    new InputStreamReader(cachedInput, StandardCharsets.UTF_8), 
+                    new InputStreamReader(cachedInput, StandardCharsets.UTF_8),
                     getTranslatorStrategy().getReadSize())) {
                 translatedDocs.add(
                         translateDocument(doc, streamFactory, lang, reader));
             } catch (Exception e) {
                 String extra = "";
-                if (API_GOOGLE.equals(api) 
+                if (API_GOOGLE.equals(api)
                         && e instanceof IndexOutOfBoundsException) {
                     extra = " \"apiKey\" is likely invalid.";
                 }
@@ -321,7 +318,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         }
         return translatedDocs;
     }
-    
+
     public boolean isIgnoreContent() {
         return ignoreContent;
     }
@@ -329,11 +326,15 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         this.ignoreContent = ignoreContent;
     }
 
-    public String[] getFieldsToTranslate() {
-        return fieldsToTranslate;
+    public List<String> getFieldsToTranslate() {
+        return Collections.unmodifiableList(fieldsToTranslate);
     }
     public void setFieldsToTranslate(String... fieldsToTranslate) {
-        this.fieldsToTranslate = fieldsToTranslate;
+        setFieldsToTranslate(Arrays.asList(fieldsToTranslate));
+    }
+    public void setFieldsToTranslate(List<String> fieldsToTranslate) {
+        this.fieldsToTranslate.clear();
+        this.fieldsToTranslate.addAll(fieldsToTranslate);
     }
 
     public boolean isIgnoreNonTranslatedFields() {
@@ -358,27 +359,31 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         this.sourceLanguage = sourceLanguage;
     }
 
-    public String[] getTargetLanguages() {
+    public List<String> getTargetLanguages() {
         return targetLanguages;
     }
     public void setTargetLanguages(String... targetLanguages) {
-        this.targetLanguages = targetLanguages;
+        setTargetLanguages(Arrays.asList(targetLanguages));
     }
-    
+    public void setTargetLanguages(List<String> targetLanguages) {
+        this.targetLanguages.clear();
+        this.targetLanguages.addAll(targetLanguages);
+    }
+
     public String getApiKey() {
         return apiKey;
     }
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
-    
+
     public String getUserKey() {
         return userKey;
     }
     public void setUserKey(String userKey) {
         this.userKey = userKey;
     }
-    
+
     public String getSmtPath() {
         return smtPath;
     }
@@ -401,24 +406,24 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         }
         return strategy;
     }
-    
+
     private ImporterDocument translateDocument(SplittableDocument doc,
             CachedStreamFactory streamFactory, String targetLang,
             TextReader reader) throws Exception {
-        
+
         Translator translator = getTranslatorStrategy().getTranslator();
         String sourceLang = getResolvedSourceLanguage(doc);
-        
-        
+
+
         //--- Do Fields ---
         ImporterMetadata childMeta = translateFields(
                 doc, translator, sourceLang, targetLang);
-                
+
         //--- Do Content ---
         CachedInputStream childInput = null;
         if (!ignoreContent) {
             CachedOutputStream childContent = streamFactory.newOuputStream();
-            
+
             String text = null;
             while ((text = reader.readText()) != null) {
                 String txt = translator.translate(text, sourceLang, targetLang);
@@ -436,7 +441,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         String childDocRef = doc.getReference() + "!" + childEmbedRef;
 
         ImporterDocument childDoc = new ImporterDocument(
-                childDocRef, childInput, childMeta); 
+                childDocRef, childInput, childMeta);
 
         childMeta.setReference(childDocRef);
         childMeta.setEmbeddedReference(childEmbedRef);
@@ -446,13 +451,13 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         childMeta.setString(ImporterMetadata.DOC_TRANSLATED_FROM, sourceLang);
         return childDoc;
     }
-    
+
     private ImporterMetadata translateFields(
-            SplittableDocument doc, Translator translator, 
+            SplittableDocument doc, Translator translator,
             String sourceLang, String targetLang) throws Exception {
         ImporterMetadata childMeta = new ImporterMetadata();
         if (ignoreNonTranslatedFields) {
-            if (fieldsToTranslate == null) {
+            if (fieldsToTranslate.isEmpty()) {
                 return childMeta;
             }
             for (String key : fieldsToTranslate) {
@@ -463,14 +468,14 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             }
         } else {
             childMeta.loadFromMap(doc.getMetadata());
-            if (fieldsToTranslate == null) {
+            if (fieldsToTranslate.isEmpty()) {
                 return childMeta;
             }
         }
-        
+
         StringBuilder b = new StringBuilder();
-        for (int i = 0; i < fieldsToTranslate.length; i++) {
-            List<String> values = doc.getMetadata().get(fieldsToTranslate[i]);
+        for (String fld : fieldsToTranslate) {
+            List<String> values = doc.getMetadata().get(fld);
             for (String value : values) {
                 b.append("[" + value.replaceAll("[\n\\[\\]]", " ") + "]");
             }
@@ -479,7 +484,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         if (b.length() == 0) {
             return childMeta;
         }
-        
+
         String txt = translator.translate(b.toString(), sourceLang, targetLang);
         List<String> lines = IOUtils.readLines(new StringReader(txt));
         int index = 0;
@@ -487,23 +492,23 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             line = StringUtils.removeStart(line, "[");
             line = StringUtils.removeEnd(line, "]");
             String[] values = StringUtils.splitByWholeSeparator(line, "][");
-            childMeta.setString(fieldsToTranslate[index], values);
+            childMeta.setString(fieldsToTranslate.get(index), values);
             index++;
         }
         return childMeta;
     }
-    
-    private void validateProperties(SplittableDocument doc) 
+
+    private void validateProperties(SplittableDocument doc)
             throws ImporterHandlerException {
         if (StringUtils.isBlank(getApi())) {
             throw new ImporterHandlerException(
                     "Must specify a translation api.");
         }
-        if (ArrayUtils.isEmpty(targetLanguages)) {
+        if (targetLanguages.isEmpty()) {
             throw new ImporterHandlerException(
                     "No translation target language(s) specified.");
         }
-        
+
         String sourceLang = getResolvedSourceLanguage(doc);
         if (sourceLang == null || Language.fromString(sourceLang) == null) {
             throw new ImporterHandlerException(
@@ -539,7 +544,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     public void setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
     }
-    
+
     public String getApi() {
         return api;
     }
@@ -550,32 +555,22 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     public static void main(String[] args) throws ImporterHandlerException {
         new TranslatorSplitter().splitApplicableDocument(null, null, null, false);
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         setApi(xml.getString("@api", api));
         setIgnoreContent(xml.getBoolean("ignoreContent", ignoreContent));
         setIgnoreNonTranslatedFields(xml.getBoolean(
                 "ignoreNonTranslatedFields", ignoreNonTranslatedFields));
-        
-        String[] fields = fieldsToTranslate;
-        String fieldsString = xml.getString("fieldsToTranslate", null);
-        if (StringUtils.isNotBlank(fieldsString)) {
-            fields = fieldsString.split("\\s*,\\s*");
-        }
-        setFieldsToTranslate(fields);
-
+        setFieldsToTranslate(xml.getDelimitedStringList(
+                "fieldsToTranslate", getFieldsToTranslate()));
         setSourceLanguageField(xml.getString(
                 "sourceLanguageField", sourceLanguageField));
         setSourceLanguage(xml.getString("sourceLanguage", sourceLanguage));
 
-        String[] langs = targetLanguages;
-        String langsString = xml.getString("targetLanguages", null);
-        if (StringUtils.isNotBlank(langsString)) {
-            langs = langsString.split("\\s*,\\s*");
-        }
-        setTargetLanguages(langs);
-        
+        setTargetLanguages(xml.getDelimitedStringList(
+                "targetLanguages", getTargetLanguages()));
+
         setClientId(xml.getString("clientId", clientId));
         setClientSecret(xml.getString("clientSecret", clientSecret));
         setApiKey(xml.getString("apiKey", apiKey));
@@ -585,25 +580,20 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("api", api);
-        writer.writeElementBoolean("ignoreContent", ignoreContent);
-        writer.writeElementBoolean(
-                "ignoreNonTranslatedFields", ignoreNonTranslatedFields);
-        writer.writeElementString("fieldsToTranslate", 
-                StringUtils.join(fieldsToTranslate, ","));
-        writer.writeElementString("sourceLanguageField", sourceLanguageField);
-        writer.writeElementString("sourceLanguage", sourceLanguage);
-        writer.writeElementString("targetLanguages", 
-                StringUtils.join(targetLanguages, ","));
-        
-        writer.writeElementString("clientId", clientId);
-        writer.writeElementString("clientSecret", clientSecret);
-        writer.writeElementString("apiKey", apiKey);
-        writer.writeElementString("userKey", userKey);
-        writer.writeElementString("smtPath", smtPath);
-        writer.writeElementString("scriptPath", scriptPath);
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("api", api);
+        xml.addElement("ignoreContent", ignoreContent);
+        xml.addElement("ignoreNonTranslatedFields", ignoreNonTranslatedFields);
+        xml.addDelimitedElementList("fieldsToTranslate", fieldsToTranslate);
+        xml.addElement("sourceLanguageField", sourceLanguageField);
+        xml.addElement("sourceLanguage", sourceLanguage);
+        xml.addDelimitedElementList("targetLanguages", targetLanguages);
+        xml.addElement("clientId", clientId);
+        xml.addElement("clientSecret", clientSecret);
+        xml.addElement("apiKey", apiKey);
+        xml.addElement("userKey", userKey);
+        xml.addElement("smtPath", smtPath);
+        xml.addElement("scriptPath", scriptPath);
     }
 
     @Override
@@ -623,7 +613,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
 
     private abstract static class TranslatorStrategy {
-        private static final int DEFAULT_READ_SIZE = 
+        private static final int DEFAULT_READ_SIZE =
                 (int) DataUnit.KB.toBytes(2);
         private Translator translator;
         public int getReadSize() {
@@ -636,7 +626,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             return translator;
         }
         protected abstract Translator createTranslator();
-        public abstract void validateProperties() 
+        public abstract void validateProperties()
                 throws ImporterHandlerException;
     }
 }

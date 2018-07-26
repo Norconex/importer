@@ -15,8 +15,6 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.Assert;
@@ -74,11 +72,14 @@ public class DeleteTaggerTest {
 
         DeleteTagger tagger = new DeleteTagger();
 
-        Reader r = new StringReader(
-                "<tagger><fields>X-ACCESS-LEVEL,X-content-type-options,"
-              + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT</fields>"
-              + "</tagger>");
-        tagger.loadFromXML(r);
+//        Reader r = new StringReader(
+//                "<tagger><fields>X-ACCESS-LEVEL,X-content-type-options,"
+//              + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT</fields>"
+//              + "</tagger>");
+        tagger.loadFromXML(new XML(
+                  "<tagger><fields>X-ACCESS-LEVEL,X-content-type-options,"
+                + "X-FRAME-OPTIONS,X-PARSED-BY,X-RATE-LIMIT-LIMIT</fields>"
+                + "</tagger>"));
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
@@ -100,9 +101,10 @@ public class DeleteTaggerTest {
 
         DeleteTagger tagger = new DeleteTagger();
 
-        Reader r = new StringReader(
-                "<tagger><fieldsRegex>^[Xx]-.*</fieldsRegex></tagger>");
-        tagger.loadFromXML(r);
+//        Reader r = new StringReader(
+//                "<tagger><fieldsRegex>^[Xx]-.*</fieldsRegex></tagger>");
+        tagger.loadFromXML(new XML(
+                "<tagger><fieldsRegex>^[Xx]-.*</fieldsRegex></tagger>"));
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 

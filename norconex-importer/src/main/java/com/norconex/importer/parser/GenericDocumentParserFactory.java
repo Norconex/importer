@@ -15,10 +15,6 @@
 package com.norconex.importer.parser;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.file.ContentType;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.parser.impl.FallbackParser;
 import com.norconex.importer.parser.impl.xfdl.XFDLParser;
@@ -347,8 +342,7 @@ public class GenericDocumentParserFactory
 
 
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        XML xml = new XML(in);
+    public void loadFromXML(XML xml) {
         setIgnoredContentTypesRegex(xml.getString(
                 "ignoredContentTypes", getIgnoredContentTypesRegex()));
 
@@ -393,79 +387,42 @@ public class GenericDocumentParserFactory
 
 
     @Override
-    public void saveToXML(Writer out, String tagName) throws IOException {
-        EnhancedXMLStreamWriter xml = new EnhancedXMLStreamWriter(out);
-        xml.writeStartElement(tagName, getClass());
-
+    public void saveToXML(XML xml) {
         if (ignoredContentTypesRegex != null) {
-            xml.writeStartElement("ignoredContentTypes");
-            xml.writeCharacters(ignoredContentTypesRegex);
-            xml.writeEndElement();
+            xml.addElement("ignoredContentTypes", ignoredContentTypesRegex);
         }
 
         saveParseHintsToXML(xml);
 
-        xml.writeObject("fallbackParser", fallbackParser);
+        xml.addElement("fallbackParser", fallbackParser);
 
         if (!parsers.isEmpty()) {
-            xml.writeStartElement("parsers");
+            XML parsersXML = xml.addElement("parsers");
+
             for (Entry<ContentType, IDocumentParser> entry:
                     parsers.entrySet()) {
-                ContentType ct = entry.getKey();
-                IDocumentParser parser = entry.getValue();
-                //TODO simplify this
-                if (parser instanceof IXMLConfigurable) {
-                    // Writing a comment here is a necessary workaround to
-                    // close <parsers> tag.
-                    xml.writeComment(" ");
-                    xml.flush();
-                    StringWriter sout = new StringWriter();
-                    ((IXMLConfigurable) parser).saveToXML(sout, "parser");
-                    String parserXML = sout.toString();
-                    if (!parserXML.matches("\\S+contentType\\s*=")) {
-                        parserXML = parserXML.replaceFirst("^<parser",
-                                "<parser contentType=\""
-                                        + ct.toString() + "\"");
-                    }
-                    out.write(parserXML);
-                    out.flush();
-                } else {
-                    xml.writeStartElement("parser");
-                    xml.writeAttributeString("class",
-                            parser.getClass().getCanonicalName());
-                    xml.writeAttributeString("contentType", ct.toString());
-                    xml.writeEndElement();
-                }
-
+                parsersXML.addElement("parser", entry.getValue())
+                        .setAttribute("contentType", entry.getKey().toString());
             }
-            xml.writeEndElement();
         }
-
-        xml.writeEndElement();
-        xml.flush();
-        xml.close();
     }
 
-    private void saveParseHintsToXML(EnhancedXMLStreamWriter xml) {
+    private void saveParseHintsToXML(XML xml) {
         EmbeddedConfig emb = parseHints.getEmbeddedConfig();
         if (!emb.isEmpty()) {
-            xml.writeStartElement("embedded");
-            xml.writeElementString("splitContentTypes",
-                    emb.getSplitContentTypes());
-            xml.writeElementString("noExtractEmbeddedContentTypes",
+            XML embXML = xml.addElement("embedded");
+            embXML.addElement("splitContentTypes", emb.getSplitContentTypes());
+            embXML.addElement("noExtractEmbeddedContentTypes",
                     emb.getNoExtractEmbeddedContentTypes());
-            xml.writeElementString("noExtractContainerContentTypes",
+            embXML.addElement("noExtractContainerContentTypes",
                     emb.getNoExtractContainerContentTypes());
-            xml.writeEndElement();
         }
         OCRConfig ocr = parseHints.getOcrConfig();
         if (!ocr.isEmpty()) {
-            xml.writeStartElement("ocr");
-            xml.writeAttributeString("path", ocr.getPath());
-            xml.writeElementString("languages", ocr.getLanguages());
-            xml.writeElementString(
-                    "contentTypes", ocr.getContentTypes());
-            xml.writeEndElement();
+            XML ocrXML = xml.addElement("ocr");
+            ocrXML.setAttribute("path", ocr.getPath());
+            ocrXML.addElement("languages", ocr.getLanguages());
+            ocrXML.addElement("contentTypes", ocr.getContentTypes());
         }
     }
 

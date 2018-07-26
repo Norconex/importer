@@ -14,13 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.stream.XMLStreamException;
+import java.util.Map.Entry;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,7 +26,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -37,22 +34,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 /**
  * <p>Rename metadata fields to different names.  If the target name already
  * exists, the values of the original field name will be added, unless
- * "overwrite" is set to <code>true</code>. 
+ * "overwrite" is set to <code>true</code>.
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;rename fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
  *      &lt;-- multiple rename tags allowed --&gt;
- *      
+ *
  *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
@@ -69,17 +66,18 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class RenameTagger extends AbstractDocumentTagger {
 
-    private final Map<String, RenameDetails> renames = 
-            new HashMap<String, RenameDetails>();
-    
+    private final Map<String, RenameDetails> renames =
+            new HashMap<>();
+
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document, 
+            String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
-        for (String from : renames.keySet()) {
-            RenameDetails details = renames.get(from);
+
+        for (Entry<String, RenameDetails> entry : renames.entrySet()) {
+            String from = entry.getKey();
+            RenameDetails details = entry.getValue();
             List<String> fromValues = metadata.get(from);
             List<String> toValues = metadata.get(details.toField);
             if (details.overwrite || toValues == null) {
@@ -94,15 +92,15 @@ public class RenameTagger extends AbstractDocumentTagger {
     }
 
     public void addRename(String fromField, String toField, boolean overwrite) {
-        if (StringUtils.isNotBlank(fromField) 
+        if (StringUtils.isNotBlank(fromField)
                 && StringUtils.isNotBlank(toField)) {
-            renames.put(fromField, 
+            renames.put(fromField,
                     new RenameDetails(fromField, toField, overwrite));
         }
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("rename");
         for (XML node : nodes) {
             addRename(node.getString("@fromField", null),
@@ -112,23 +110,19 @@ public class RenameTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        for (String fromField : renames.keySet()) {
-            RenameDetails details = renames.get(fromField);
-            writer.writeStartElement("rename");
-            writer.writeAttribute("fromField", details.fromField);
-            writer.writeAttribute("toField", details.toField);
-            writer.writeAttribute(
-                    "overwrite", Boolean.toString(details.overwrite));
-            writer.writeEndElement();
+    protected void saveHandlerToXML(XML xml) {
+        for (RenameDetails details : renames.values()) {
+            xml.addElement("rename")
+                    .setAttribute("fromField", details.fromField)
+                    .setAttribute("toField", details.toField)
+                    .setAttribute("overwrite", details.overwrite);
         }
     }
-    
+
     public static class RenameDetails {
-        private String fromField;
-        private String toField;
-        private boolean overwrite;
+        private final String fromField;
+        private final String toField;
+        private final boolean overwrite;
         public RenameDetails(
                 String fromField, String toField, boolean overwrite) {
             super();
@@ -150,7 +144,7 @@ public class RenameTagger extends AbstractDocumentTagger {
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);

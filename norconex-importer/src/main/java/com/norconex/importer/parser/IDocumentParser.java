@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,18 @@ import java.util.List;
 import com.norconex.importer.doc.ImporterDocument;
 
 /**
- * Implementations are responsible for parsing a document to 
+ * Implementations are responsible for parsing a document to
  * extract its text and metadata, as well as any embedded documents
  * (when applicable).
  * @author Pascal Essiembre
  * @see IDocumentParserFactory
  */
-@SuppressWarnings("nls")
 public interface IDocumentParser {
 
     /**
      * Parses a document.
      * @param doc importer document to parse
-     * @param output where to store extracted or modified content of the 
+     * @param output where to store extracted or modified content of the
      *        supplied document
      * @return a list of first-level embedded documents, if any
      * @throws DocumentParserException problem parsing document

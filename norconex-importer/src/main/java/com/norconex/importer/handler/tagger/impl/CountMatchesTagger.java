@@ -14,14 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -31,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -171,11 +168,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
 
     private int countRegexMatches(
             String haystack, String needle, boolean caseSensitive) {
-        int flags = Pattern.DOTALL;
-        if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
-        Pattern p = Pattern.compile(needle, flags);
+        Pattern p = Regex.compileDotAll(needle, !caseSensitive);
         Matcher m = p.matcher(haystack);
         int count = 0;
         while (m.find()) {
@@ -202,9 +195,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
      * @param matchDetails the match details
      */
     public void addMatchDetails(MatchDetails matchDetails) {
-        if (matchesDetails != null) {
-            matchesDetails.add(matchDetails);
-        }
+        matchesDetails.add(matchDetails);
     }
 
 
@@ -298,8 +289,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("countMatches");
         for (XML node : nodes) {
             MatchDetails m = new MatchDetails();
@@ -313,17 +303,13 @@ public class CountMatchesTagger extends AbstractStringTagger {
     }
 
     @Override
-    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected void saveStringTaggerToXML(XML xml) {
         for (MatchDetails match : matchesDetails) {
-            writer.writeStartElement("countMatches");
-            writer.writeAttributeString("fromField", match.getFromField());
-            writer.writeAttributeString("toField", match.getToField());
-            writer.writeAttributeBoolean("regex", match.isRegex());
-            writer.writeAttributeBoolean(
-                    "caseSensitive", match.isCaseSensitive());
-            writer.writeCharacters(match.getValue());
-            writer.writeEndElement();
+            xml.addElement("countMatches", match.getValue())
+                    .setAttribute("fromField", match.getFromField())
+                    .setAttribute("toField", match.getToField())
+                    .setAttribute("regex", match.isRegex())
+                    .setAttribute("caseSensitive", match.isCaseSensitive());
         }
     }
 

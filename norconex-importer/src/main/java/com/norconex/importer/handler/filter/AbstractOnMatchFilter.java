@@ -14,9 +14,6 @@
  */
 package com.norconex.importer.handler.filter;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -71,11 +68,10 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
     /**
      * Convenience method for subclasses to save the "onMatch" attribute
      * to an XML file when {@link XML} is used.
-     * @param writer XML stream writer
-     * @throws XMLStreamException problem saving extra content types
+     * @param xml the XML
      */
-    protected void saveToXML(XMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttribute("onMatch", onMatch.toString().toLowerCase());
+    protected void saveToXML(XML xml) {
+        xml.setAttribute("onMatch", onMatch.toString().toLowerCase());
     }
 
     @Override

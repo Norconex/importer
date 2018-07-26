@@ -14,15 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.CompareToBuilder;
@@ -34,15 +31,15 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
- * <p>Extracts and add values found between a matching start and 
- * end strings to a document metadata field.      
- * The matching string end-points are defined in pairs and multiple ones 
+ * <p>Extracts and add values found between a matching start and
+ * end strings to a document metadata field.
+ * The matching string end-points are defined in pairs and multiple ones
  * can be specified at once. The field specified for a pair of end-points
  * is considered a multi-value field.</p>
  * <p>
@@ -52,31 +49,31 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
- *          inclusive="[false|true]" 
+ *          inclusive="[false|true]"
  *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * 
+ *
  *      &lt;textBetween name="targetFieldName"&gt;
  *          &lt;start&gt;(regex)&lt;/start&gt;
  *          &lt;end&gt;(regex)&lt;/end&gt;
  *      &lt;/textBetween&gt;
  *      &lt;!-- multiple textBetween tags allowed --&gt;
- * 
+ *
  *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
- * The following example extract the content between "OPEN" and 
+ * The following example extract the content between "OPEN" and
  * "CLOSE" strings, excluding these strings, and store it in a "content"
  * field.
- * </p> 
+ * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger" &gt;
  *      &lt;textBetween name="content"&gt;
@@ -88,10 +85,10 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * @author Khalid AlHomoud
  * @author Pascal Essiembre
  */
-public class TextBetweenTagger 
+public class TextBetweenTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
-    private Set<TextBetween> betweens = new TreeSet<TextBetween>();
+    private final Set<TextBetween> betweens = new TreeSet<>();
 
     private boolean inclusive;
     private boolean caseSensitive;
@@ -99,23 +96,29 @@ public class TextBetweenTagger
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        int flags = Pattern.DOTALL;
-        if (!caseSensitive) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
+
+        Regex regex = new Regex().dotAll().setCaseInsensitive(!caseSensitive);
+
+
+//        int flags = Pattern.DOTALL;
+//        if (!caseSensitive) {
+//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+//        }
         for (TextBetween between : betweens) {
             List<Pair<Integer, Integer>> matches = new ArrayList<>();
-            Pattern leftPattern = Pattern.compile(between.start, flags);
+                                //Pattern.compile(between.start, flags);
+            Pattern leftPattern = regex.compile(between.start);
             Matcher leftMatch = leftPattern.matcher(content);
             while (leftMatch.find()) {
-                Pattern rightPattern = Pattern.compile(between.end, flags);
+                                     //Pattern.compile(between.end, flags);
+                Pattern rightPattern = regex.compile(between.end);
                 Matcher rightMatch = rightPattern.matcher(content);
                 if (rightMatch.find(leftMatch.end())) {
                     if (inclusive) {
-                        matches.add(new ImmutablePair<Integer, Integer>(
+                        matches.add(new ImmutablePair<>(
                                 leftMatch.start(), rightMatch.end()));
                     } else {
-                        matches.add(new ImmutablePair<Integer, Integer>(
+                        matches.add(new ImmutablePair<>(
                                 leftMatch.end(), rightMatch.start()));
                     }
                 } else {
@@ -132,12 +135,12 @@ public class TextBetweenTagger
             }
         }
     }
-    
+
     public boolean isInclusive() {
         return inclusive;
     }
     /**
-     * Sets whether start and end text pairs should be kept or 
+     * Sets whether start and end text pairs should be kept or
      * not.
      * @param inclusive <code>true</code> to keep matching start and end text
      */
@@ -169,10 +172,9 @@ public class TextBetweenTagger
         }
         betweens.add(new TextBetween(name, fromText, toText));
     }
-    
+
     @Override
-    protected void loadStringTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
         setInclusive(xml.getBoolean("@inclusive", false));
         List<XML> nodes = xml.getXMLList("textBetween");
@@ -185,24 +187,18 @@ public class TextBetweenTagger
     }
 
     @Override
-    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-         writer.writeAttribute(
+    protected void saveStringTaggerToXML(XML xml) {
+         xml.setAttribute(
                 "caseSensitive", Boolean.toString(isCaseSensitive()));
-        writer.writeAttribute("inclusive", Boolean.toString(isInclusive()));
+        xml.setAttribute("inclusive", Boolean.toString(isInclusive()));
         for (TextBetween between : betweens) {
-            writer.writeStartElement("textBetween");
-            writer.writeAttribute("name", between.name);
-            writer.writeStartElement("start");
-            writer.writeCharacters(between.start);
-            writer.writeEndElement();
-            writer.writeStartElement("end");
-            writer.writeCharacters(between.end);
-            writer.writeEndElement();
-            writer.writeEndElement();
+            XML bxml = xml.addElement("textBetween")
+                    .setAttribute("name", between.name);
+            bxml.addElement("start", between.start);
+            bxml.addElement("end", between.end);
         }
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -216,7 +212,7 @@ public class TextBetweenTagger
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-    
+
     private static class TextBetween implements Comparable<TextBetween> {
         private final String name;
         private final String start;
@@ -227,6 +223,7 @@ public class TextBetweenTagger
             this.start = start;
             this.end = end;
         }
+        @Override
         public int compareTo(final TextBetween other) {
             return CompareToBuilder.reflectionCompare(this, other);
         }

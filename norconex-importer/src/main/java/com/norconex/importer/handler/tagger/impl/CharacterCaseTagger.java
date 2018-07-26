@@ -19,11 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -97,7 +95,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-@SuppressWarnings("nls")
 public class CharacterCaseTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =
@@ -122,15 +119,15 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
 
-        for (String fieldName : fieldCases.keySet()) {
-            CaseChangeDetails d = fieldCases.get(fieldName);
+        for (Entry<String, CaseChangeDetails>  entry : fieldCases.entrySet()) {
+            CaseChangeDetails d = entry.getValue();
             boolean validApplyTo = false;
 
-            String newField = fieldName;
+            String newField = entry.getKey();
 
             // Do field
             if (EqualsUtil.equalsAny(d.applyTo, APPLY_FIELD, APPLY_BOTH)) {
-                newField = changeFieldCase(fieldName, d, metadata);
+                newField = changeFieldCase(entry.getKey(), d, metadata);
                 validApplyTo = true;
             }
 
@@ -142,7 +139,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             }
 
             if (!validApplyTo) {
-                LOG.warn("Unsupported \"applyTo\": " + d.applyTo);
+                LOG.warn("Unsupported \"applyTo\": {}", d.applyTo);
             }
         }
     }
@@ -183,7 +180,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         } else if (CASE_STRING.equals(type)) {
             return capitalizeString(value);
         } else {
-            LOG.warn("Unsupported character case type: " + type);
+            LOG.warn("Unsupported character case type: {}", type);
             return value;
         }
     }
@@ -239,17 +236,15 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        for (String fieldName : fieldCases.keySet()) {
-            writer.writeStartElement("characterCase");
-            writer.writeAttributeString("fieldName", fieldName);
-            CaseChangeDetails d = fieldCases.get(fieldName);
+    protected void saveHandlerToXML(XML xml) {
+        for (Entry<String, CaseChangeDetails> entry : fieldCases.entrySet()) {
+            XML ccXML = xml.addElement("characterCase")
+                    .setAttribute("fieldName", entry.getKey());
+            CaseChangeDetails d = entry.getValue();
             if (d != null) {
-                writer.writeAttributeString("type", d.caseType);
-                writer.writeAttributeString("applyTo", d.applyTo);
+                ccXML.setAttribute("type", d.caseType);
+                ccXML.setAttribute("applyTo", d.applyTo);
             }
-            writer.writeEndElement();
         }
     }
 

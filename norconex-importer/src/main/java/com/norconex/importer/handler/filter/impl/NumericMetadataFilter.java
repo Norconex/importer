@@ -14,14 +14,12 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -32,7 +30,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -161,11 +158,11 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         this.field = property;
     }
     public List<Condition> getConditions() {
-        return conditions;
+        return Collections.unmodifiableList(conditions);
     }
     public void setConditions(Condition... conditions) {
         this.conditions.clear();
-        this.conditions.addAll(Arrays.asList(conditions));;
+        this.conditions.addAll(Arrays.asList(conditions));
     }
     public void addCondition(Operator operator, double number) {
         conditions.add(new Condition(operator, number));
@@ -203,7 +200,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
+    protected void loadFilterFromXML(XML xml) {
         setField(xml.getString("@field", getField()));
         List<XML> nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
@@ -215,11 +212,11 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
             }
             Operator operator = Operator.getOperator(op);
             if (operator == null) {
-                LOG.warn("Unsupported operator: " + op);
+                LOG.warn("Unsupported operator: {}", op);
                 break;
             }
             if (!NumberUtils.isCreatable(num)) {
-                LOG.debug("Not a valid number: " + num);
+                LOG.debug("Not a valid number: {}", num);
                 break;
             }
             double number = NumberUtils.toDouble(num);
@@ -228,14 +225,12 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("field", field);
+    protected void saveFilterToXML(XML xml) {
+        xml.setAttribute("field", field);
         for (Condition condition : conditions) {
-            writer.writeStartElement("condition");
-            writer.writeAttributeString("operator", condition.operator.abbr);
-            writer.writeAttributeDouble("number", condition.number);
-            writer.writeEndElement();
+            xml.addElement("condition")
+                    .setAttribute("operator", condition.operator.abbr)
+                    .setAttribute("number", condition.number);
         }
     }
 

@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -155,16 +152,15 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     }
 
     @Override
-    protected void loadHandlerFromXML(final XML xml) throws IOException {
+    protected void loadHandlerFromXML(final XML xml) {
         setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
     }
 
     @Override
-    protected void saveHandlerToXML(final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        writer.writeAttributeString("targetCharset", getTargetCharset());
+    protected void saveHandlerToXML(final XML xml) {
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("targetCharset", getTargetCharset());
     }
 
     @Override

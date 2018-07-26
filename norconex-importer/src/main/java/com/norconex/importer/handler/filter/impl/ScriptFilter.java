@@ -14,10 +14,7 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
-
 import javax.script.Bindings;
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -26,7 +23,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -141,7 +137,7 @@ public class ScriptFilter extends AbstractStringFilter {
         b.put("sectionIndex", sectionIndex);
         Object obj = scriptRunner.eval(b);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Returned object from ScriptFilter: " + obj);
+            LOG.debug("Returned object from ScriptFilter: {}", obj);
         }
         if (obj == null) {
             return false;
@@ -153,15 +149,13 @@ public class ScriptFilter extends AbstractStringFilter {
     }
 
     @Override
-    protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("engineName", getEngineName());
-        writer.writeElementString("script", getScript());
+    protected void saveStringFilterToXML(XML xml) {
+        xml.setAttribute("engineName", getEngineName());
+        xml.addElement("script", getScript());
     }
 
     @Override
-    protected void loadStringFilterFromXML(XML xml)
-            throws IOException {
+    protected void loadStringFilterFromXML(XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
         setScript(xml.getString("script"));
     }

@@ -86,7 +86,7 @@ public class ReplaceTransformerTest {
 
         Reader reader = new InputStreamReader(
                 IOUtils.toInputStream(config, StandardCharsets.UTF_8));
-        t.loadFromXML(reader);
+        t.loadFromXML(new XML(reader));
         reader.close();
 
         InputStream is = IOUtils.toInputStream(content, StandardCharsets.UTF_8);
@@ -110,7 +110,7 @@ public class ReplaceTransformerTest {
         t.setMaxReadSize(128);
         Reader reader = new InputStreamReader(IOUtils.toInputStream(
                 restrictionTestConfig, StandardCharsets.UTF_8));
-        t.loadFromXML(reader);
+        t.loadFromXML(new XML(reader));
         reader.close();
         XML.assertWriteRead(t, "handler");
     }

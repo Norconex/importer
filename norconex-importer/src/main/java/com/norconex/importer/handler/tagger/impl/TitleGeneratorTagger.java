@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -36,7 +33,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -201,7 +197,6 @@ public class TitleGeneratorTagger
                 title += "[...]";
             }
             metadata.setString(getTargetField(), title);
-            return;
         }
     }
 
@@ -231,25 +226,6 @@ public class TitleGeneratorTagger
     }
     public void setTitleMaxLength(int titleMaxLength) {
         this.titleMaxLength = titleMaxLength;
-    }
-
-    /**
-     * Gets fallback max length.
-     * @return fallback max length
-     * @deprecated Since 2.2.0, use {@link #getTitleMaxLength()}
-     */
-    @Deprecated
-    public int getFallbackMaxLength() {
-        return titleMaxLength;
-    }
-    /**
-     * Sets fallback max length.
-     * @param fallbackMaxLength fallback max length
-     * @deprecated Since 2.2.0, use {@link #setTitleMaxLength(int)}
-     */
-    @Deprecated
-    public void setFallbackMaxLength(int fallbackMaxLength) {
-        this.titleMaxLength = fallbackMaxLength;
     }
 
     public boolean isDetectHeading() {
@@ -393,8 +369,7 @@ public class TitleGeneratorTagger
     }
 
     @Override
-    protected void loadStringTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadStringTaggerFromXML(XML xml) {
         setFromField(xml.getString("@fromField", getFromField()));
         setToField(xml.getString("@toField", getToField()));
         setOverwrite(xml.getBoolean("@overwrite", isOverwrite()));
@@ -408,16 +383,15 @@ public class TitleGeneratorTagger
     }
 
     @Override
-    protected void saveStringTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("fromField", getFromField());
-        writer.writeAttributeString("toField", getToField());
-        writer.writeAttributeBoolean("overwrite", isOverwrite());
-        writer.writeAttributeInteger("titleMaxLength", getTitleMaxLength());
-        writer.writeAttributeBoolean("detectHeading", isDetectHeading());
-        writer.writeAttributeInteger(
+    protected void saveStringTaggerToXML(XML xml) {
+        xml.setAttribute("fromField", getFromField());
+        xml.setAttribute("toField", getToField());
+        xml.setAttribute("overwrite", isOverwrite());
+        xml.setAttribute("titleMaxLength", getTitleMaxLength());
+        xml.setAttribute("detectHeading", isDetectHeading());
+        xml.setAttribute(
                 "detectHeadingMinLength", getDetectHeadingMinLength());
-        writer.writeAttributeInteger(
+        xml.setAttribute(
                 "detectHeadingMaxLength", getDetectHeadingMaxLength());
     }
 

@@ -15,14 +15,9 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -30,7 +25,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.regex.KeyValueExtractor;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
@@ -321,52 +315,15 @@ public class ExternalTagger extends AbstractDocumentTagger {
         h.handleDocument(reference, input, null, metadata);
     }
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         h.loadHandlerFromXML(xml);
         setInputDisabled(
                 xml.getBoolean("command/@inputDisabled", isInputDisabled()));
     }
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-
-        // Copied and modified until we make it that XML can be written
-        // to as well:
-        writer.writeStartElement("command");
-        writer.writeAttributeBoolean("inputDisabled", isInputDisabled());
-        writer.writeCharacters(getCommand());
-        writer.writeEndElement();
-        writer.writeElementString(
-                "tempDir", Objects.toString(getTempDir(), null));
-        if (!getMetadataExtractionPatterns().isEmpty()) {
-            writer.writeStartElement("metadata");
-            writer.writeAttributeString(
-                    "inputFormat", getMetadataInputFormat());
-            writer.writeAttributeString(
-                    "outputFormat", getMetadataOutputFormat());
-            for (KeyValueExtractor rfe : getMetadataExtractionPatterns()) {
-                writer.writeStartElement("pattern");
-                writer.writeAttributeString("field", rfe.getKey());
-                writer.writeAttributeInteger("fieldGroup", rfe.getKeyGroup());
-                writer.writeAttributeInteger("valueGroup", rfe.getValueGroup());
-                writer.writeAttributeBoolean(
-                        "caseSensitive", rfe.isCaseSensitive());
-                writer.writeCharacters(rfe.getRegex());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
-        if (getEnvironmentVariables() != null) {
-            writer.writeStartElement("environment");
-            for (Entry<String, String> entry
-                    : getEnvironmentVariables().entrySet()) {
-                writer.writeStartElement("variable");
-                writer.writeAttribute("name", entry.getKey());
-                writer.writeCharacters(entry.getValue());
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-        }
+    protected void saveHandlerToXML(XML xml) {
+        h.saveHandlerToXML(xml);
+        xml.getXML("command").setAttribute("inputDisabled", isInputDisabled());
     }
 
     @Override

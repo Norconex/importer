@@ -39,20 +39,20 @@ public class PDFParserTest extends AbstractParserTest {
 
     @Test
     public void test_PDF_plain() throws IOException, ImporterException {
-        testParsing("/parser/pdf/plain.pdf", "application/pdf", 
+        testParsing("/parser/pdf/plain.pdf", "application/pdf",
                 DEFAULT_CONTENT_REGEX, "pdf", PDF_FAMILY);
     }
 
     @Test
     public void test_PDF_jpeg() throws IOException, ImporterException {
-        testParsing("/parser/pdf/jpeg.pdf", "application/pdf", 
+        testParsing("/parser/pdf/jpeg.pdf", "application/pdf",
                 ".*PDF with a JPEG image.*", "pdf", PDF_FAMILY, true);
     }
 
     @Test
-    public void test_PDF_jbig2() 
+    public void test_PDF_jbig2()
             throws IOException, ImporterException, SAXException, TikaException {
-        
+
         RecursiveParserWrapper p = new RecursiveParserWrapper(
                 new AutoDetectParser(), new BasicContentHandlerFactory(
                         BasicContentHandlerFactory.HANDLER_TYPE.IGNORE, -1));
@@ -64,12 +64,12 @@ public class PDFParserTest extends AbstractParserTest {
         context.set(Parser.class, p);
 
         try (InputStream stream = getInputStream("/parser/pdf/jbig2.pdf")) {
-            p.parse(stream, 
+            p.parse(stream,
                     new BodyContentHandler(-1), new Metadata(), context);
         }
         List<Metadata> metadatas = p.getMetadata();
 
-        
+
         Assert.assertNull("Exception found: " + metadatas.get(0).get(
                 "X-TIKA:EXCEPTION:warn"), metadatas.get(0).get(
                         "X-TIKA:EXCEPTION:warn"));
@@ -77,9 +77,9 @@ public class PDFParserTest extends AbstractParserTest {
                 "Invalid height.", "91", metadatas.get(1).get("height"));
         Assert.assertEquals(
                 "Invalid width.", "352", metadatas.get(1).get("width"));
-        
+
 //        System.out.println("OUTPUT:" + output);
 //        System.out.println("METADATA:" + metadatas.get(1));
-        
+
     }
 }

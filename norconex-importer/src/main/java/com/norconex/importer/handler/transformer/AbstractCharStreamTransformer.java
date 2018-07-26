@@ -23,8 +23,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -34,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
@@ -113,11 +110,11 @@ public abstract class AbstractCharStreamTransformer
         if (StringUtils.isBlank(inputCharset)) {
             LOG.warn("Character encoding could not be detected (will assume "
                     + "UTF-8). If this leads to a failure, it could be that "
-                    + "you are using this transformer ("
-                    + getClass().getCanonicalName()
-                    + ") with binary content. You can avoid this by applying "
+                    + "you are using this transformer ({}) with binary "
+                    + "content. You can avoid this by applying "
                     + "restrictions or making sure it was parsed first. "
-                    + "Reference: " + reference);
+                    + "Reference: {}",
+                    getClass().getCanonicalName(), reference);
             inputCharset = StandardCharsets.UTF_8.toString();
         }
         try {
@@ -139,35 +136,29 @@ public abstract class AbstractCharStreamTransformer
 
 
     @Override
-    protected final void saveHandlerToXML(final EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        saveCharStreamTransformerToXML(writer);
+    protected final void saveHandlerToXML(final XML xml) {
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        saveCharStreamTransformerToXML(xml);
     }
     /**
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
      *
-     * @param writer the xml writer
-     * @throws XMLStreamException could not save to XML
+     * @param xml the XML
      */
-    protected abstract void saveCharStreamTransformerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException;
+    protected abstract void saveCharStreamTransformerToXML(XML xml);
 
     @Override
-    protected final void loadHandlerFromXML(
-            final XML xml) throws IOException {
+    protected final void loadHandlerFromXML(final XML xml) {
         setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         loadCharStreamTransformerFromXML(xml);
     }
     /**
      * Loads configuration settings specific to the implementing class.
-     * @param xml xml configuration
-     * @throws IOException could not load from XML
+     * @param xml XML configuration
      */
-    protected abstract void loadCharStreamTransformerFromXML(
-            XML xml) throws IOException;
+    protected abstract void loadCharStreamTransformerFromXML(XML xml);
 
     @Override
     public boolean equals(final Object other) {

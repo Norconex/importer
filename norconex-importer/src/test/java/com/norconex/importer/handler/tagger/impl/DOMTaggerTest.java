@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -157,7 +156,7 @@ public class DOMTaggerTest {
                 + "defaultValue=\"   \"/>"
                 + "</tagger>";
         DOMTagger t = new DOMTagger();
-        t.loadFromXML(new StringReader(cfg));
+        t.loadFromXML(new XML(cfg));
 
         String xml = "<test><author><name></name></author></test>";
 

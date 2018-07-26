@@ -21,8 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -36,7 +34,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -382,7 +379,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
         setFromField(xml.getString("@fromField", getFromField()));
         setParser(xml.getString("@parser", getParser()));
@@ -403,22 +400,18 @@ public class DOMTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        writer.writeAttributeString("fromField", getFromField());
-        writer.writeAttributeString("parser", getParser());
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("fromField", getFromField());
+        xml.setAttribute("parser", getParser());
         for (DOMExtractDetails details : extractions) {
-            writer.writeStartElement("dom");
-            writer.writeAttributeString("selector", details.getSelector());
-            writer.writeAttributeString("toField", details.getToField());
-            writer.writeAttributeBoolean("overwrite", details.isOverwrite());
-            writer.writeAttributeString("extract", details.getExtract());
-            writer.writeAttributeBoolean(
-                    "matchBlanks", details.isMatchBlanks());
-            writer.writeAttributeString(
-                    "defaultValue", details.getDefaultValue());
-            writer.writeEndElement();
+            xml.addElement("dom")
+                    .setAttribute("selector", details.getSelector())
+                    .setAttribute("toField", details.getToField())
+                    .setAttribute("overwrite", details.isOverwrite())
+                    .setAttribute("extract", details.getExtract())
+                    .setAttribute("matchBlanks", details.isMatchBlanks())
+                    .setAttribute("defaultValue", details.getDefaultValue());
         }
     }
 

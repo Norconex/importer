@@ -17,8 +17,6 @@ package com.norconex.importer.handler.tagger;
 import java.io.IOException;
 import java.io.Reader;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -26,7 +24,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.TextReader;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -34,22 +31,22 @@ import com.norconex.importer.handler.ImporterHandlerException;
 /**
  * <p>Base class to facilitate creating taggers based on text content, loading
  * text into {@link StringBuilder} for memory processing.
- * 
- * <p><b>Since 2.2.0</b> this class limits the memory used for analysing 
+ *
+ * <p><b>Since 2.2.0</b> this class limits the memory used for analysing
  * content by reading one section of text at a time.  Each
  * sections are sent for tagging once they are read,
- * so that no two sections exists in memory at once.  Sub-classes should 
- * respect this approach.  Each of them have a maximum number of characters 
+ * so that no two sections exists in memory at once.  Sub-classes should
+ * respect this approach.  Each of them have a maximum number of characters
  * equal to the maximum read size defined using {@link #setMaxReadSize(int)}.
- * When none is set, the default read size is defined by 
+ * When none is set, the default read size is defined by
  * {@link TextReader#DEFAULT_MAX_READ_SIZE}.
  * </p>
- * 
- * <p>An attempt is made to break sections nicely after a paragraph, sentence, 
+ *
+ * <p>An attempt is made to break sections nicely after a paragraph, sentence,
  * or word.  When not possible, long text will be cut at a size equal
  * to the maximum read size.
  * </p>
- * 
+ *
  * <p>
  * Implementors should be conscious about memory when dealing with the string
  * builder.
@@ -58,7 +55,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * </p>
  * <pre>
- *  &lt;!-- parent tag has this attribute: 
+ *  &lt;!-- parent tag has this attribute:
  *      maxReadSize="(max characters to read at once)"
  *      sourceCharset="(character encoding)"
  *    --&gt;
@@ -70,7 +67,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * </pre>
  * @author Pascal Essiembre
  */
-public abstract class AbstractStringTagger 
+public abstract class AbstractStringTagger
             extends AbstractCharStreamTagger {
 
     private int maxReadSize = TextReader.DEFAULT_MAX_READ_SIZE;
@@ -80,7 +77,7 @@ public abstract class AbstractStringTagger
             String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
         String text = null;
@@ -106,7 +103,7 @@ public abstract class AbstractStringTagger
         b.setLength(0);
         b = null;
     }
-    
+
     /**
      * Gets the maximum number of characters to read from content for tagging
      * at once. Default is {@link TextReader#DEFAULT_MAX_READ_SIZE}.
@@ -123,43 +120,37 @@ public abstract class AbstractStringTagger
     public void setMaxReadSize(int maxReadSize) {
         this.maxReadSize = maxReadSize;
     }
-    
+
     protected abstract void tagStringContent(
            String reference, StringBuilder content, ImporterMetadata metadata,
-           boolean parsed, int sectionIndex) 
+           boolean parsed, int sectionIndex)
                    throws ImporterHandlerException;
-    
+
     @Override
-    protected final void saveCharStreamTaggerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException {
-        writer.writeAttributeInteger("maxReadSize", getMaxReadSize());
-        saveStringTaggerToXML(writer);
+    protected final void saveCharStreamTaggerToXML(XML xml) {
+        xml.setAttribute("maxReadSize", getMaxReadSize());
+        saveStringTaggerToXML(xml);
     }
     /**
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
-     * 
-     * @param writer the xml writer
-     * @throws XMLStreamException could not save to XML
+     *
+     * @param xml the XML
      */
-    protected abstract void saveStringTaggerToXML(
-            EnhancedXMLStreamWriter writer) throws XMLStreamException;
-    
+    protected abstract void saveStringTaggerToXML(XML xml);
+
     @Override
-    protected final void loadCharStreamTaggerFromXML(XML xml)
-            throws IOException {
+    protected final void loadCharStreamTaggerFromXML(XML xml) {
         setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
         loadStringTaggerFromXML(xml);
     }
     /**
      * Loads configuration settings specific to the implementing class.
      * @param xml xml configuration
-     * @throws IOException could not load from XML
      */
-    protected abstract void loadStringTaggerFromXML(XML xml)
-            throws IOException;
-    
+    protected abstract void loadStringTaggerFromXML(XML xml);
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -185,7 +176,7 @@ public abstract class AbstractStringTagger
             .append(maxReadSize)
             .toHashCode();
     }
-    
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
@@ -193,6 +184,6 @@ public abstract class AbstractStringTagger
             .append("maxReadSize", maxReadSize)
             .toString();
     }
-    
+
 
 }

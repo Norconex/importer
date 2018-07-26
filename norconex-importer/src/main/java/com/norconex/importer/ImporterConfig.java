@@ -15,9 +15,6 @@
 package com.norconex.importer;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +27,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
@@ -43,40 +39,40 @@ import com.norconex.importer.response.IImporterResponseProcessor;
  */
 public class ImporterConfig implements IXMLConfigurable {
 
-    public static final String DEFAULT_TEMP_DIR_PATH = 
+    public static final String DEFAULT_TEMP_DIR_PATH =
             FileUtils.getTempDirectoryPath();
-    public static final int DEFAULT_MAX_FILE_CACHE_SIZE = 
+    public static final int DEFAULT_MAX_FILE_CACHE_SIZE =
             (int) DataUnit.MB.toBytes(100);
-    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE = 
+    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE =
             (int) DataUnit.GB.toBytes(1);
-    
-    private IDocumentParserFactory documentParserFactory = 
+
+    private IDocumentParserFactory documentParserFactory =
             new GenericDocumentParserFactory();
 
     private final List<IImporterHandler> preParseHandlers = new ArrayList<>();
     private final List<IImporterHandler> postParseHandlers = new ArrayList<>();
-    private final List<IImporterResponseProcessor> responseProcessors = 
+    private final List<IImporterResponseProcessor> responseProcessors =
             new ArrayList<>();
 
     private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
     private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
     private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
     private File parseErrorsSaveDir;
-    
+
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
     }
     public void setParserFactory(IDocumentParserFactory parserFactory) {
         this.documentParserFactory = parserFactory;
     }
-    
+
     public File getTempDir() {
         return tempDir;
     }
     public void setTempDir(File tempDir) {
         this.tempDir = tempDir;
     }
-    
+
     /**
      * Gets the directory where file generating parsing errors will be saved.
      * Default is <code>null</code> (not storing errors).
@@ -112,7 +108,7 @@ public class ImporterConfig implements IXMLConfigurable {
             this.postParseHandlers.addAll(postParseHandlers);
         }
     }
-    
+
     public List<IImporterResponseProcessor> getResponseProcessors() {
         return Collections.unmodifiableList(responseProcessors);
     }
@@ -130,7 +126,7 @@ public class ImporterConfig implements IXMLConfigurable {
     public void setMaxFileCacheSize(int maxFileCacheSize) {
         this.maxFileCacheSize = maxFileCacheSize;
     }
-    
+
     public int getMaxFilePoolCacheSize() {
         return maxFilePoolCacheSize;
     }
@@ -138,67 +134,39 @@ public class ImporterConfig implements IXMLConfigurable {
         this.maxFilePoolCacheSize = maxFilePoolCacheSize;
     }
     @Override
-    public void loadFromXML(Reader in) throws IOException {
-        if (in == null) {
-            return;
-        }
-        XML xml = new XML(in);
-
-        //--- Temp directory -----------------------------------------------
+    public void loadFromXML(XML xml) {
         setTempDir(new File(xml.getString(
                 "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
-
-        //--- Parse errors save dir ----------------------------------------
-        String saveDir = xml.getString("parseErrorsSaveDir", null);
-        setParseErrorsSaveDir(saveDir != null ? new File(saveDir) : null);
-        
-        //--- File Mem Cache Size ------------------------------------------
-        setMaxFileCacheSize(xml.getInteger("maxFileCacheSize", 
+        setParseErrorsSaveDir(
+                xml.getFile("parseErrorsSaveDir", getParseErrorsSaveDir()));
+        setMaxFileCacheSize(xml.getInteger("maxFileCacheSize",
                 DEFAULT_MAX_FILE_CACHE_SIZE));
-        //--- File Pool Mem Cache Size -------------------------------------
-        setMaxFilePoolCacheSize(xml.getInteger("maxFilePoolCacheSize", 
+        setMaxFilePoolCacheSize(xml.getInteger("maxFilePoolCacheSize",
                 DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
-        
-        //--- Pre-Import Handlers ------------------------------------------
         setPreParseHandlers(xml.getObjectList("preParseHandlers/*",
                 getPreParseHandlers()));
-
-        //--- Document Parser Factory --------------------------------------
         setParserFactory(
                 xml.getObject("documentParserFactory", getParserFactory()));
-
-        //--- Post-Import Handlers -----------------------------------------
-        setPostParseHandlers(xml.getObjectList("postParseHandlers/*", 
+        setPostParseHandlers(xml.getObjectList("postParseHandlers/*",
                 getPostParseHandlers()));
-                    
-        //--- Response Processors ------------------------------------------
         setResponseProcessors(xml.getObjectList(
-                "responseProcessors/responseProcessor", 
+                "responseProcessors/responseProcessor",
                         getResponseProcessors()));
     }
-    
+
     @Override
-    public void saveToXML(Writer out,String elementName) throws IOException {
-        EnhancedXMLStreamWriter w = new EnhancedXMLStreamWriter(out);
-        w.writeStartElement(elementName);
-        //writer.writeStartElement("importer");
-        w.writeElementFile("tempDir", getTempDir());
-        w.writeElementFile("parseErrorsSaveDir", getParseErrorsSaveDir());
-        w.writeElementInteger("maxFileCacheSize", getMaxFileCacheSize());
-        w.writeElementInteger(
-                "maxFilePoolCacheSize", getMaxFilePoolCacheSize());
-        w.writeObjectList(
+    public void saveToXML(XML xml) {
+        xml.addElement("tempDir", getTempDir());
+        xml.addElement("parseErrorsSaveDir", getParseErrorsSaveDir());
+        xml.addElement("maxFileCacheSize", getMaxFileCacheSize());
+        xml.addElement("maxFilePoolCacheSize", getMaxFilePoolCacheSize());
+        xml.addElementList(
                 "preParseHandlers", "handler", getPreParseHandlers());
-        w.writeObject("documentParserFactory", getParserFactory());
-        w.writeObjectList(
+        xml.addElement("documentParserFactory", getParserFactory());
+        xml.addElementList(
                 "postParseHandlers", "handler", getPostParseHandlers());
-        
-        
-        w.writeObjectList("responseProcessors", "responseProcessor", 
+        xml.addElementList("responseProcessors", "responseProcessor",
                 getResponseProcessors());
-        
-        w.writeEndElement();
-        w.flush();
     }
 
     @Override
@@ -245,5 +213,5 @@ public class ImporterConfig implements IXMLConfigurable {
                 .append("maxFilePoolCacheSize", maxFilePoolCacheSize)
                 .append("parseErrorsSaveDir", parseErrorsSaveDir)
                 .toString();
-    }    
+    }
 }

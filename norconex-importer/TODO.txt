@@ -1,8 +1,13 @@
 TODO:
 ==============
 
+- Convert all arrays to final List for consistency (with unmodifiable getters).
+
 - Consider merging tagger and transformer and detecting if content has changed,
   and offer in most case to do operation on either field or content (or both).
+
+- Have a handler that stores the file in its current state in a location
+  of your choice.
 
 - Use init() / destroy() interface where appropriate.
 

@@ -14,10 +14,7 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -25,7 +22,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -133,26 +130,19 @@ public class RegexContentFilter extends AbstractStringFilter {
         if (regex == null) {
             p = Pattern.compile(".*");
         } else {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            p = Pattern.compile(regex, flags);
+            p = Regex.compileDotAll(regex, !caseSensitive);
         }
         cachedPattern = p;
         return p;
     }
 
     @Override
-    protected void saveStringFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttribute("caseSensitive",
-                Boolean.toString(caseSensitive));
-        writer.writeElementString("regex", regex);
+    protected void saveStringFilterToXML(XML xml) {
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.addElement("regex", regex);
     }
     @Override
-    protected void loadStringFilterFromXML(XML xml)
-            throws IOException {
+    protected void loadStringFilterFromXML(XML xml) {
         setRegex(xml.getString("regex"));
         setCaseSensitive(xml.getBoolean("@caseSensitive", false));
     }

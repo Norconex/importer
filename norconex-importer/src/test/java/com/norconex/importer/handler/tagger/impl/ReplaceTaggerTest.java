@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
-import java.io.StringReader;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -72,7 +71,7 @@ public class ReplaceTaggerTest {
                 + "</replace>"
                 + "</tagger>";
         tagger = new ReplaceTagger();
-        tagger.loadFromXML(new StringReader(xml));
+        tagger.loadFromXML(new XML(xml));
         r = new Replacement();
         tagger.addReplacement(r);
         tagger.tagDocument("n/a", null, meta, true);

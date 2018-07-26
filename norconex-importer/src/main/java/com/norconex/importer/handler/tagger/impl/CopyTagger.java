@@ -14,12 +14,9 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -27,7 +24,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -37,28 +33,28 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Copies metadata fields. If a target field already
  * exists, the values of the original field name will be <i>added</i>, unless
  * "overwrite" is set to <code>true</code>.</p>
- * 
+ *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
- *  
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;copy fromField="(from field)" toField="(to field)" overwrite="[false|true]" /&gt;
  *      &lt;-- multiple copy tags allowed --&gt;
- *      
+ *
  *  &lt;/handler&gt;
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
- * Copies the value of a "creator" and "publisher" fields into an "author" 
- * field, adding to any existing values in the "author" field. 
+ * Copies the value of a "creator" and "publisher" fields into an "author"
+ * field, adding to any existing values in the "author" field.
  * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CopyTagger"&gt;
@@ -66,7 +62,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;copy fromField="publisher" toField="author" overwrite="true" /&gt;
  *  &lt;/handler&gt;
  * </pre>
- *  
+ *
  * @author Pascal Dimassimo
  * @author Pascal Essiembre
  * @since 1.3.0
@@ -74,16 +70,16 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 public class CopyTagger extends AbstractDocumentTagger {
 
     private static class CopyDetails {
-        private String fromField;
-        private String toField;
-        private boolean overwrite;
-        
+        private final String fromField;
+        private final String toField;
+        private final boolean overwrite;
+
         CopyDetails(String from, String to, boolean overwrite) {
             this.fromField = from;
             this.toField = to;
             this.overwrite = overwrite;
         }
-        
+
         @Override
         public boolean equals(final Object other) {
             return EqualsBuilder.reflectionEquals(this, other);
@@ -98,13 +94,13 @@ public class CopyTagger extends AbstractDocumentTagger {
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-    
-    
+
+
     private final List<CopyDetails> list = new ArrayList<>();
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed) 
+            ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
 
         for (CopyDetails details : list) {
@@ -117,10 +113,10 @@ public class CopyTagger extends AbstractDocumentTagger {
             }
         }
     }
-    
+
     /**
      * Adds copy instructions.
-     * @param fromField source field name 
+     * @param fromField source field name
      * @param toField target field name
      * @param overwrite whether toField overwrite target field if it exists
      */
@@ -136,30 +132,27 @@ public class CopyTagger extends AbstractDocumentTagger {
         }
         list.add(new CopyDetails(fromField, toField, overwrite));
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("copy");
         if (!nodes.isEmpty()) {
             list.clear();
         }
-        for (XML node : nodes) {   
+        for (XML node : nodes) {
             addCopyDetails(node.getString("@fromField", null),
                       node.getString("@toField", null),
                       node.getBoolean("@overwrite", false));
         }
     }
-    
+
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected void saveHandlerToXML(XML xml) {
         for (CopyDetails details : list) {
-            writer.writeStartElement("copy");
-            writer.writeAttribute("fromField", details.fromField);
-            writer.writeAttribute("toField", details.toField);
-            writer.writeAttribute("overwrite", 
-                    Boolean.toString(details.overwrite));
-            writer.writeEndElement();
+            xml.addElement("copy")
+                    .setAttribute("fromField", details.fromField)
+                    .setAttribute("toField", details.toField)
+                    .setAttribute("overwrite",details.overwrite);
         }
     }
     @Override

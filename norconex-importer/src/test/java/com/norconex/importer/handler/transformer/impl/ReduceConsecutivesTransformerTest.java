@@ -43,15 +43,9 @@ public class ReduceConsecutivesTransformerTest {
 
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
 
-        Reader reader = new InputStreamReader(
-                IOUtils.toInputStream(xml, StandardCharsets.UTF_8));
-        try {
-            t.loadFromXML(reader);
-        } catch (IOException e) {
-            throw new ImporterHandlerException(
-                    "Could not reduce consecutives.", e);
-        } finally {
-            IOUtils.closeQuietly(reader);
+        try (Reader reader = new InputStreamReader(
+                IOUtils.toInputStream(xml, StandardCharsets.UTF_8))) {
+            t.loadFromXML(new XML(reader));
         }
 
         InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
@@ -77,7 +71,7 @@ public class ReduceConsecutivesTransformerTest {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
         Reader reader = new InputStreamReader(
                 IOUtils.toInputStream(xml, StandardCharsets.UTF_8));
-        t.loadFromXML(reader);
+        t.loadFromXML(new XML(reader));
         reader.close();
         XML.assertWriteRead(t, "handler");
     }

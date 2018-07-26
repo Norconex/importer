@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -30,7 +28,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -40,26 +38,26 @@ import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.util.DOMUtil;
 
 /**
- * <p>Uses a Document Object Model (DOM) representation of an HTML, XHTML, or 
- * XML document content to perform filtering based on matching an 
- * element/attribute or element/attribute value. 
+ * <p>Uses a Document Object Model (DOM) representation of an HTML, XHTML, or
+ * XML document content to perform filtering based on matching an
+ * element/attribute or element/attribute value.
  * </p>
  * <p>
  * In order to construct a DOM tree, a document content is loaded entirely
  * into memory. Use this filter with caution if you know you'll need to parse
- * huge files. You can use {@link RegexContentFilter} instead if this is a 
+ * huge files. You can use {@link RegexContentFilter} instead if this is a
  * concern.
  * </p>
  * <p>
- * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load a 
- * document content into a DOM tree. Elements are referenced using a 
+ * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load a
+ * document content into a DOM tree. Elements are referenced using a
  * <a href="http://jsoup.org/cookbook/extracting-data/selector-syntax">
  * CSS or JQuery-like syntax</a>.
  * </p>
  * <p>
  * If an element is referenced without a value to match, its mere presence
  * constitutes a match. If both an element and a regular expression is provided
- * the element value will be retrieved and the regular expression will be 
+ * the element value will be retrieved and the regular expression will be
  * applied against it for a match.
  * </p>
  * <p>
@@ -69,71 +67,71 @@ import com.norconex.importer.util.DOMUtil;
  * <h3>Content-types</h3>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
- * the restrictions returned by 
- * {@link CommonRestrictions#domContentTypes()}. 
+ * the restrictions returned by
+ * {@link CommonRestrictions#domContentTypes()}.
  * You can specify your own content types if you know they represent a file
  * with HTML or XML-like markup tags.  For documents that are
  * incompatible, consider using {@link RegexContentFilter}
  * instead.
  * </p>
- * 
+ *
  * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
- * this class attempts to detect the content character 
+ * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
  * parsing converts content to UTF-8, UTF-8 is always assumed when
  * used as a post-parse handler.
  * </p>
- * 
- * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted 
- * exactly for matching purposes thanks to the "extract" argument of the 
+ *
+ * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted
+ * exactly for matching purposes thanks to the "extract" argument of the
  * new method {@link #setExtract(String)}.  Version 2.6.0
  * introduced several more extract options. Possible values are:</p>
  * <ul>
- *   <li><b>text</b>: Default option when extract is blank. The text of 
+ *   <li><b>text</b>: Default option when extract is blank. The text of
  *       the element, including combined children.</li>
- *   <li><b>html</b>: Extracts an element inner 
+ *   <li><b>html</b>: Extracts an element inner
  *       HTML (including children).</li>
- *   <li><b>outerHtml</b>: Extracts an element outer 
+ *   <li><b>outerHtml</b>: Extracts an element outer
  *       HTML (like "html", but includes the "current" tag).</li>
- *   <li><b>ownText</b>: Extracts the text owned by this element only; 
+ *   <li><b>ownText</b>: Extracts the text owned by this element only;
  *       does not get the combined text of all children.</li>
- *   <li><b>data</b>: Extracts the combined data of a data-element (e.g. 
+ *   <li><b>data</b>: Extracts the combined data of a data-element (e.g.
  *       &lt;script&gt;).</li>
  *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
  *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
- *   <li><b>val</b>: Extracts the value of a form element 
+ *   <li><b>val</b>: Extracts the value of a form element
  *       (input, textarea, etc).</li>
- *   <li><b>className</b>: Extracts the literal value of the element's 
- *       "class" attribute, which may include multiple class names, 
+ *   <li><b>className</b>: Extracts the literal value of the element's
+ *       "class" attribute, which may include multiple class names,
  *       space separated.</li>
- *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely 
+ *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely
  *       select (identify) this element.</li>
  *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
  *       attribute matching your replacement for "attributeKey"
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
- * </ul> 
- *  
+ * </ul>
+ *
  * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
  * documents. The default is "html" and will normalize the content
- * as HTML. This is generally a desired behavior, but this can sometimes 
+ * as HTML. This is generally a desired behavior, but this can sometimes
  * have your selector fail. If you encounter this
  * problem, try switching to "xml" parser, which does not attempt normalization
  * on the content. The drawback with "xml" is you may not get all HTML-specific
  * selector options to work.  If you know you are dealing with XML to begin
  * with, specifying "xml" should be a good option.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          onMatch="[include|exclude]" 
+ *          onMatch="[include|exclude]"
  *          caseSensitive="[false|true]"
- *          sourceCharset="(character encoding)"          
+ *          sourceCharset="(character encoding)"
  *          selector="(selector syntax)"
  *          parser="[html|xml]"
  *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" &gt;
- *          
+ *
  *    &lt;restrictTo caseSensitive="[false|true]"
  *            field="(name of header/metadata field name to match)"&gt;
  *        (regular expression of value to match)
@@ -157,20 +155,20 @@ import com.norconex.importer.util.DOMUtil;
  *    &lt;regex&gt;\bskip me\b&lt;/regex&gt;
  *  &lt;/handler&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.4.0
  */
 public class DOMContentFilter extends AbstractDocumentFilter {
-    
+
     private boolean caseSensitive;
     private String regex;
     private Pattern cachedPattern;
     private String selector;
     private String extract;
-    private String sourceCharset = null;    
+    private String sourceCharset = null;
     private String parser = DOMUtil.PARSER_HTML;
-    
+
     public DOMContentFilter() {
         this(null, OnMatch.INCLUDE);
     }
@@ -180,7 +178,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     public DOMContentFilter(String regex, OnMatch onMatch) {
         this(regex, onMatch, false);
     }
-    public DOMContentFilter(String regex, 
+    public DOMContentFilter(String regex,
             OnMatch onMatch, boolean caseSensitive) {
         super();
         this.caseSensitive = caseSensitive;
@@ -209,9 +207,9 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     public void setSelector(String selector) {
         this.selector = selector;
     }
-    
+
     /**
-     * Gets what should be extracted for the value. One of 
+     * Gets what should be extracted for the value. One of
      * "text" (default), "html", or "outerHtml". <code>null</code> means
      * this class will use the default ("text").
      * @return what should be extracted for the value
@@ -221,7 +219,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         return extract;
     }
     /**
-     * Sets what should be extracted for the value. One of 
+     * Sets what should be extracted for the value. One of
      * "text" (default), "html", or "outerHtml". <code>null</code> means
      * this class will use the default ("text").
      * @param extract what should be extracted for the value
@@ -246,7 +244,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     public void setSourceCharset(String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
-    
+
     /**
      * Gets the parser to use when creating the DOM-tree.
      * @return <code>html</code> (default) or <code>xml</code>.
@@ -262,18 +260,18 @@ public class DOMContentFilter extends AbstractDocumentFilter {
      */
     public void setParser(String parser) {
         this.parser = parser;
-    }    
-    
+    }
+
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, input, metadata, parsed);
-        
+
         try {
-            Document doc = Jsoup.parse(input, inputCharset, 
+            Document doc = Jsoup.parse(input, inputCharset,
                     reference, DOMUtil.toJSoupParser(getParser()));
             Elements elms = doc.select(selector);
             // no elements matching
@@ -296,7 +294,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                     "Cannot parse document into a DOM-tree.", e);
         }
     }
-    
+
     private synchronized Pattern getCachedPattern() {
         if (cachedPattern != null) {
             return cachedPattern;
@@ -305,28 +303,23 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         if (regex == null) {
             p = Pattern.compile(".*");
         } else {
-            int flags = Pattern.DOTALL;
-            if (!caseSensitive) {
-                flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-            }
-            p = Pattern.compile(regex, flags);
+            p = Regex.compileDotAll(regex, !caseSensitive);
         }
         cachedPattern = p;
         return p;
     }
-    
+
     @Override
-    protected void saveFilterToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeBoolean("caseSensitive", caseSensitive);
-        writer.writeAttributeString("selector", selector);
-        writer.writeAttributeString("parser", getParser());
-        writer.writeAttributeString("sourceCharset", getSourceCharset());
-        writer.writeAttributeString("extract", getExtract());
-        writer.writeElementString("regex", regex);
+    protected void saveFilterToXML(XML xml) {
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setAttribute("selector", selector);
+        xml.setAttribute("parser", getParser());
+        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("extract", getExtract());
+        xml.addElement("regex", regex);
     }
     @Override
-    protected void loadFilterFromXML(XML xml) throws IOException {
+    protected void loadFilterFromXML(XML xml) {
         setCaseSensitive(xml.getBoolean("@caseSensitive", isCaseSensitive()));
         setSelector(xml.getString("@selector", getSelector()));
         setParser(xml.getString("@parser", getParser()));

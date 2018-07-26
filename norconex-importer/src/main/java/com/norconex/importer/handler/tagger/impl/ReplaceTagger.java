@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +22,6 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -32,26 +29,26 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
+import com.norconex.commons.lang.regex.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Replaces an existing metadata value with another one. The "toField" 
+ * <p>Replaces an existing metadata value with another one. The "toField"
  * argument is optional. The same field will be used for the replacement if no
- * "toField" is specified. If there are no matches and a "toField" is 
+ * "toField" is specified. If there are no matches and a "toField" is
  * specified, no value will be added to the "toField".  To have the original
- * value copied in the "toField" when there are no matches, first copy the 
- * original value using {@link CopyTagger} to your target field then use this 
- * class on that new field without a "toField". 
+ * value copied in the "toField" when there are no matches, first copy the
+ * original value using {@link CopyTagger} to your target field then use this
+ * class on that new field without a "toField".
  * </p>
  * <p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
  * <p>
- * Since 2.6.1, you can specify whether matches should be made 
+ * Since 2.6.1, you can specify whether matches should be made
  * against the whole field value or not (default). You can also specify whether
  * replacement should be attempted on first match only (default) or all
  * occurrences. This last option is only applicable when whole value matching
@@ -60,23 +57,23 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ReplaceTagger"&gt;
- *  
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;replace fromField="sourceFieldName" toField="targetFieldName"
  *               caseSensitive="[false|true]"
- *               regex="[false|true]" 
- *               wholeMatch="[false|true]" 
+ *               regex="[false|true]"
+ *               wholeMatch="[false|true]"
  *               replaceAll="[false|true]"&gt;
  *          &lt;fromValue&gt;Source Value&lt;/fromValue&gt;
  *          &lt;toValue&gt;Target Value&lt;/toValue&gt;
  *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
- *      
+ *
  *  &lt;/handler&gt;
  * </pre>
  * <p>
@@ -86,7 +83,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
  * </pre>
- *  
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following example replaces occurrences of "apple" to "orange"
@@ -106,15 +103,15 @@ public class ReplaceTagger extends AbstractDocumentTagger {
 
     //TODO add "applyTo=field|value" to replace tag, and remove "fromField"
     // and "toField" and rename from|toValue to just from and to.
-    
+
     private final List<Replacement> replacements = new ArrayList<>();
-    
+
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        
+
         for (Replacement repl : replacements) {
             if (metadata.containsKey(repl.getFromField())) {
                 String[] metaValues = metadata.getStrings(repl.getFromField())
@@ -141,13 +138,9 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         if (!r.isRegex()) {
             fromValue = Pattern.quote(fromValue);
         }
-        int flags = Pattern.DOTALL;
-        if (!r.isCaseSensitive()) {
-            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        }
-        Pattern p = Pattern.compile(fromValue, flags);
+        Pattern p = Regex.compileDotAll(fromValue, !r.isCaseSensitive());
         Matcher m = p.matcher(metaValue);
-        
+
         if (r.isWholeMatch() && m.matches()
                 || !r.isWholeMatch() && m.find()) {
             String toValue = StringUtils.defaultString(r.getToValue());
@@ -174,65 +167,6 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             replacements.removeAll(toRemove);
         }
     }
-    
-    /**
-     * Adds a replacement.
-     * @param fromValue value to replace
-     * @param toValue replacement value
-     * @param fromField field holding the value to replace
-     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
-     *             instead.
-     */
-    @Deprecated
-    public void addReplacement(
-            String fromValue, String toValue, String fromField) {
-        addReplacement(fromValue, toValue, fromField, null, false);
-    }
-    /**
-     * Adds a replacement.
-     * @param fromValue value to replace
-     * @param toValue replacement value
-     * @param fromField field holding the value to replace
-     * @param regex <code>true</code> if a regular expression
-     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
-     *             instead.
-     */
-    @Deprecated
-    public void addReplacement(
-            String fromValue, String toValue, String fromField, boolean regex) {
-        addReplacement(fromValue, toValue, fromField, null, regex);
-    }
-    /**
-     * Adds a replacement.
-     * @param fromValue value to replace
-     * @param toValue replacement value
-     * @param fromField field holding the value to replace
-     * @param toField field to store the replaced value
-     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
-     *             instead.
-     */
-    @Deprecated
-    public void addReplacement(String fromValue, String toValue, 
-            String fromField, String toField) {
-        addReplacement(fromValue, toValue, fromField, toField, false);
-    }
-    /**
-     * Adds a replacement.
-     * @param fromValue value to replace
-     * @param toValue replacement value
-     * @param fromField field holding the value to replace
-     * @param toField field to store the replaced value
-     * @param regex <code>true</code> if a regular expression
-     * @deprecated Since 2.2.0, use {@link #addReplacement(Replacement)} 
-     *             instead.
-     */
-    @Deprecated
-    public void addReplacement(String fromValue, String toValue, 
-            String fromField, String toField, boolean regex) {
-        Replacement r = new Replacement(fromField, fromValue, toField, toValue);
-        r.setRegex(regex);
-        addReplacement(r);
-    }
 
     /**
      * Adds a replacement.
@@ -245,7 +179,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
     }
 
-    
+
     public static class Replacement {
         private String fromField;
         private String fromValue;
@@ -259,7 +193,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             super();
         }
         public Replacement(
-                String fromField, String fromValue, 
+                String fromField, String fromValue,
                 String toField, String toValue) {
             super();
             this.fromField = fromField;
@@ -330,7 +264,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
         /**
          * Sets whether the <code>fromValue</code> is a regular expression.
-         * @param regex <code>true</code> if <code>fromValue</code> is a 
+         * @param regex <code>true</code> if <code>fromValue</code> is a
          *              regular expression
          * @since 2.2.0
          */
@@ -348,7 +282,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             this.caseSensitive = caseSensitive;
         }
         /**
-         * Sets whether the specified "from" value should match the entire 
+         * Sets whether the specified "from" value should match the entire
          * field value or not (default is <code>false</code>).
          * @param wholeMatch <b>true</b> for whole match
          * @since 2.6.1
@@ -357,7 +291,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             this.wholeMatch = wholeMatch;
         }
         /**
-         * Sets whether to replace all occurrences of the "from" value  
+         * Sets whether to replace all occurrences of the "from" value
          * with the "to" value. (default is <code>false</code>).
          * @param replaceAll <b>true</b> to replace all occurrences
          * @since 2.6.1
@@ -365,7 +299,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         public void setReplaceAll(boolean replaceAll) {
             this.replaceAll = replaceAll;
         }
-        
+
         @Override
         public boolean equals(final Object other) {
             return EqualsBuilder.reflectionEquals(this, other);
@@ -380,9 +314,9 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-    
+
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         for (XML node : xml.getXMLList("replace")) {
             Replacement r = new Replacement();
             r.setFromValue(node.getString("fromValue"));
@@ -396,26 +330,20 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             addReplacement(r);
         }
     }
-    
+
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
+    protected void saveHandlerToXML(XML xml) {
         for (Replacement replacement : replacements) {
-            writer.writeStartElement("replace");
-            writer.writeAttribute("fromField", replacement.getFromField());
-            if (replacement.getToField() != null) {
-                writer.writeAttribute("toField", replacement.getToField());
-            }
-            writer.writeAttributeBoolean("regex", replacement.isRegex());
-            writer.writeAttributeBoolean(
-                    "caseSensitive", replacement.isCaseSensitive());
-            writer.writeAttributeBoolean(
-                    "wholeMatch", replacement.isWholeMatch());
-            writer.writeAttributeBoolean(
-                    "replaceAll", replacement.isReplaceAll());
-            writer.writeElementString("fromValue", replacement.getFromValue());
-            writer.writeElementString("toValue", replacement.getToValue());
-            writer.writeEndElement();
+            XML rxml = xml.addElement("replace")
+                    .setAttribute("fromField", replacement.getFromField())
+                    .setAttribute("toField", replacement.getToField())
+                    .setAttribute("regex", replacement.isRegex())
+                    .setAttribute(
+                            "caseSensitive", replacement.isCaseSensitive())
+                    .setAttribute("wholeMatch", replacement.isWholeMatch())
+                    .setAttribute("replaceAll", replacement.isReplaceAll());
+            rxml.addElement("fromValue", replacement.getFromValue());
+            rxml.addElement("toValue", replacement.getToValue());
         }
     }
 

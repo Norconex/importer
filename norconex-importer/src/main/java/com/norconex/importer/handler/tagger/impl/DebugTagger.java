@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -35,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import com.norconex.commons.lang.SLF4JUtil;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -162,18 +159,17 @@ public class DebugTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) throws IOException {
+    protected void loadHandlerFromXML(XML xml) {
         setLogContent(xml.getBoolean("@logContent", isLogContent()));
         setLogFields(xml.getDelimitedStringList("@logFields", getLogFields()));
         setLogLevel(xml.getString("@logLevel", getLogLevel()));
     }
 
     @Override
-    protected void saveHandlerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        writer.writeAttributeBoolean("logContent", isLogContent());
-        writer.writeAttributeDelimited("logFields", logFields);
-        writer.writeAttributeString("logLevel", getLogLevel());
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("logContent", isLogContent());
+        xml.setDelimitedAttributeList("logFields", logFields);
+        xml.setAttribute("logLevel", getLogLevel());
     }
 
     @Override
@@ -189,5 +185,4 @@ public class DebugTagger extends AbstractDocumentTagger {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
 }

@@ -14,14 +14,11 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.text.BreakIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
@@ -32,7 +29,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.config.IXMLConfigurable;
-import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -43,7 +39,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  * information about its content or field as metadata fields.  Default
  * behavior provide the statistics about the content. Refer to the following
  * for the new metadata fields to be created along with their description.</p>
- * 
+ *
  * <table border="1">
  *  <caption>Statistic fields</caption>
  *   <tr>
@@ -52,7 +48,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *   </tr>
  *   <tr>
  *     <td>document.stat.characterCount</td>
- *     <td>Total number of characters (excluding carriage returns/line 
+ *     <td>Total number of characters (excluding carriage returns/line
  *         feed).</td>
  *   </tr>
  *   <tr>
@@ -73,7 +69,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *   </tr>
  *   <tr>
  *     <td>document.stat.averageSentenceCharacterCount</td>
- *     <td>Average number of character in sentences (including non-word 
+ *     <td>Average number of character in sentences (including non-word
  *         characters, such as spaces, or slashes).</td>
  *   </tr>
  *   <tr>
@@ -82,7 +78,7 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *   </tr>
  *   <tr>
  *     <td>document.stat.averageParagraphCharacterCount</td>
- *     <td>Average number of characters in paragraphs (including non-word 
+ *     <td>Average number of characters in paragraphs (including non-word
  *         characters, such as spaces, or slashes).</td>
  *   </tr>
  *   <tr>
@@ -94,20 +90,20 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *     <td>Average number of words per paragraphs.</td>
  *   </tr>
  * </table>
- * 
- * <p>You can specify a field name to obtain statistics about that field instead. 
+ *
+ * <p>You can specify a field name to obtain statistics about that field instead.
  * When you do so, the field name will be inserted in the above
  * names, right after "document.stat.". E.g.:
  * <code>document.stat.myfield.characterCount</code></p>
- * 
+ *
  * <p>Can be used both as a pre-parse (text-only) or post-parse handler.</p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          sourceCharset="(character encoding)"
  *          fieldName="(optional field name instead of using content)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
@@ -123,18 +119,18 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
  *          fieldName="statistics" /&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class TextStatisticsTagger extends AbstractCharStreamTagger 
+public class TextStatisticsTagger extends AbstractCharStreamTagger
         implements IXMLConfigurable {
 
     private static final Pattern PATTERN_WORD = Pattern.compile(
             "\\w+\\-{0,1}\\w*", Pattern.UNICODE_CHARACTER_CLASS);
 
     private String fieldName;
-    
+
     @Override
     protected void tagTextDocument(String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
@@ -153,7 +149,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
             if (StringUtils.isBlank(line)) {
                 continue;
             }
-            
+
             // Paragraph
             paragraphCount++;
 
@@ -167,14 +163,14 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
                 wordCount++;
                 wordCharCount += wordLength;
             }
-            
+
             // Sentence
             BreakIterator boundary = BreakIterator.getSentenceInstance();
             boundary.setText(line);
             int start = boundary.first();
             for (int end = boundary.next(); end != BreakIterator.DONE;
                     start = end, end = boundary.next()) {
-                sentenceCharCount += (end - start); 
+                sentenceCharCount += (end - start);
                 sentenceCount++;
             }
         }
@@ -183,7 +179,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         if (StringUtils.isNotBlank(fieldName)) {
             field = fieldName.trim() + ".";
         }
-    
+
         //--- Add fields ---
         metadata.addLong(
                 "document.stat." + field + "characterCount", charCount);
@@ -210,12 +206,12 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         metadata.addString(
                 "document.stat." + field + "averageParagraphWordCount",
                 divide(wordCount, paragraphCount));
-        
+
     }
-    
+
     private String divide(long value, long divisor) {
         return BigDecimal.valueOf(value).divide(
-                BigDecimal.valueOf(divisor), 1, 
+                BigDecimal.valueOf(divisor), 1,
                         BigDecimal.ROUND_HALF_UP).toString();
     }
 
@@ -227,19 +223,15 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     }
 
     @Override
-    protected void loadCharStreamTaggerFromXML(XML xml)
-            throws IOException {
+    protected void loadCharStreamTaggerFromXML(XML xml) {
         setFieldName(xml.getString("@fieldName", getFieldName()));
     }
 
     @Override
-    protected void saveCharStreamTaggerToXML(EnhancedXMLStreamWriter writer)
-            throws XMLStreamException {
-        if (StringUtils.isNotBlank(fieldName)) {
-            writer.writeAttribute("fieldName", fieldName);
-        }
+    protected void saveCharStreamTaggerToXML(XML xml) {
+        xml.setAttribute("fieldName", fieldName);
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
