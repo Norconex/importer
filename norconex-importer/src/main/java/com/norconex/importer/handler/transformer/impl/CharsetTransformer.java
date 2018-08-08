@@ -153,14 +153,14 @@ public class CharsetTransformer extends AbstractDocumentTransformer
 
     @Override
     protected void loadHandlerFromXML(final XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
-        setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
+        setTargetCharset(xml.getString("@targetCharset", targetCharset));
     }
 
     @Override
     protected void saveHandlerToXML(final XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
-        xml.setAttribute("targetCharset", getTargetCharset());
+        xml.setAttribute("sourceCharset", sourceCharset);
+        xml.setAttribute("targetCharset", targetCharset);
     }
 
     @Override

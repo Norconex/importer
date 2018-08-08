@@ -16,7 +16,6 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -161,8 +161,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
         return Collections.unmodifiableList(conditions);
     }
     public void setConditions(Condition... conditions) {
-        this.conditions.clear();
-        this.conditions.addAll(Arrays.asList(conditions));
+        CollectionUtil.setAll(this.conditions, conditions);
     }
     public void addCondition(Operator operator, double number) {
         conditions.add(new Condition(operator, number));
@@ -201,7 +200,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setField(xml.getString("@field", getField()));
+        setField(xml.getString("@field", field));
         List<XML> nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
             String op = node.getString("@operator", null);

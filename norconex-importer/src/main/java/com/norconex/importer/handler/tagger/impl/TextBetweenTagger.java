@@ -175,8 +175,8 @@ public class TextBetweenTagger
 
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
-        setInclusive(xml.getBoolean("@inclusive", false));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setInclusive(xml.getBoolean("@inclusive", inclusive));
         List<XML> nodes = xml.getXMLList("textBetween");
         for (XML node : nodes) {
             addTextEndpoints(
@@ -188,9 +188,8 @@ public class TextBetweenTagger
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
-         xml.setAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
-        xml.setAttribute("inclusive", Boolean.toString(isInclusive()));
+         xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setAttribute("inclusive", inclusive);
         for (TextBetween between : betweens) {
             XML bxml = xml.addElement("textBetween")
                     .setAttribute("name", between.name);

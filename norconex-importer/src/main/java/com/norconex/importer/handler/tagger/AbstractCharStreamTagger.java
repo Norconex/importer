@@ -109,7 +109,7 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     @Override
     protected final void saveHandlerToXML(XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("sourceCharset", sourceCharset);
         saveCharStreamTaggerToXML(xml);
     }
     /**
@@ -123,7 +123,7 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     @Override
     protected final void loadHandlerFromXML(XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         loadCharStreamTaggerFromXML(xml);
     }
     /**

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import com.norconex.commons.lang.SLF4JUtil;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -138,10 +139,7 @@ public class DebugTagger extends AbstractDocumentTagger {
         return Collections.unmodifiableList(logFields);
     }
     public void setLogFields(List<String> logFields) {
-        this.logFields.clear();
-        if (logFields != null) {
-            this.logFields.addAll(logFields);
-        }
+        CollectionUtil.setAll(this.logFields, logFields);
     }
 
     public boolean isLogContent() {
@@ -160,16 +158,16 @@ public class DebugTagger extends AbstractDocumentTagger {
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setLogContent(xml.getBoolean("@logContent", isLogContent()));
-        setLogFields(xml.getDelimitedStringList("@logFields", getLogFields()));
-        setLogLevel(xml.getString("@logLevel", getLogLevel()));
+        setLogContent(xml.getBoolean("@logContent", logContent));
+        setLogFields(xml.getDelimitedStringList("@logFields", logFields));
+        setLogLevel(xml.getString("@logLevel", logLevel));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("logContent", isLogContent());
+        xml.setAttribute("logContent", logContent);
         xml.setDelimitedAttributeList("logFields", logFields);
-        xml.setAttribute("logLevel", getLogLevel());
+        xml.setAttribute("logLevel", logLevel);
     }
 
     @Override

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -272,7 +273,7 @@ public class ExternalHandler {
 
     private String metadataInputFormat = META_FORMAT_JSON;
     private String metadataOutputFormat = META_FORMAT_JSON;
-    private File tempDir;
+    private Path tempDir;
 
     /**
      * Gets the command to execute.
@@ -296,7 +297,7 @@ public class ExternalHandler {
      * handler as file paths.
      * @return temporary directory
      */
-    public File getTempDir() {
+    public Path getTempDir() {
         return tempDir;
     }
     /**
@@ -304,7 +305,7 @@ public class ExternalHandler {
      * handler as file paths.
      * @param tempDir temporary directory
      */
-    public void setTempDir(File tempDir) {
+    public void setTempDir(Path tempDir) {
         this.tempDir = tempDir;
     }
 
@@ -596,7 +597,7 @@ public class ExternalHandler {
                     throws ImporterHandlerException {
         File tempDirectory;
         if (tempDir != null) {
-            tempDirectory = tempDir;
+            tempDirectory = tempDir.toFile();
         } else if (stream instanceof ICachedStream) {
             tempDirectory = ((ICachedStream) stream).getCacheDirectory();
         } else {
@@ -706,16 +707,12 @@ public class ExternalHandler {
 
 
     public void loadHandlerFromXML(XML xml) {
-        setCommand(xml.getString("command", getCommand()));
-        String dir = xml.getString("tempDir", null);
-        if (StringUtils.isNotBlank(dir)) {
-            setTempDir(new File(dir));
-        }
-
+        setCommand(xml.getString("command", command));
+        setTempDir(xml.getPath("tempDir", tempDir));
         setMetadataInputFormat(xml.getString(
-                "metadata/@inputFormat", getMetadataInputFormat()));
+                "metadata/@inputFormat", metadataInputFormat));
         setMetadataOutputFormat(xml.getString(
-                "metadata/@outputFormat", getMetadataOutputFormat()));
+                "metadata/@outputFormat", metadataOutputFormat));
 
         List<XML> nodes = xml.getXMLList("metadata/pattern");
         for (XML node : nodes) {
@@ -740,12 +737,12 @@ public class ExternalHandler {
     }
 
     public void saveHandlerToXML(XML xml) {
-        xml.addElement("command", getCommand());
-        xml.addElement("tempDir", getTempDir());
+        xml.addElement("command", command);
+        xml.addElement("tempDir", tempDir);
         if (!getMetadataExtractionPatterns().isEmpty()) {
             XML metaXML = xml.addElement("metadata")
-                    .setAttribute("inputFormat", getMetadataInputFormat())
-                    .setAttribute("outputFormat", getMetadataOutputFormat());
+                    .setAttribute("inputFormat", metadataInputFormat)
+                    .setAttribute("outputFormat", metadataOutputFormat);
             for (KeyValueExtractor rfe : patterns) {
                 metaXML.addElement("pattern", rfe.getRegex())
                         .setAttribute("field", rfe.getKey())

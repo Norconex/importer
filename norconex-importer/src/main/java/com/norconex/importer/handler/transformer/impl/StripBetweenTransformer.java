@@ -167,8 +167,8 @@ public class StripBetweenTransformer extends AbstractStringTransformer
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
-        setInclusive(xml.getBoolean("@inclusive", false));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setInclusive(xml.getBoolean("@inclusive", inclusive));
         for (XML node : xml.getXMLList("stripBetween")) {
             addStripEndpoints(
                     node.getString("start", null), node.getString("end", null));
@@ -177,8 +177,8 @@ public class StripBetweenTransformer extends AbstractStringTransformer
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", isCaseSensitive());
-        xml.setAttribute("inclusive", isInclusive());
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setAttribute("inclusive", inclusive);
         for (Pair<String, String> pair : stripPairs) {
             XML sbXML = xml.addElement("stripBetween");
             sbXML.addElement("start", pair.getLeft());

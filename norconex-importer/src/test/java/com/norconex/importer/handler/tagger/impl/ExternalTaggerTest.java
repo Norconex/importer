@@ -15,9 +15,9 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,7 +40,7 @@ public class ExternalTaggerTest {
         ExternalTagger t = new ExternalTagger();
         t.setCommand("my command");
         t.setInputDisabled(true);
-        t.setTempDir(new File("/some/path"));
+        t.setTempDir(Paths.get("/some/path"));
 
         t.setMetadataInputFormat("json");
         t.setMetadataOutputFormat("xml");

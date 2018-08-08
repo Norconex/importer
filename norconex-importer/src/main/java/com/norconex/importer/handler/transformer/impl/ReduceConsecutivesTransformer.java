@@ -24,6 +24,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
@@ -112,8 +113,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
         return new ArrayList<>(reductions);
     }
     public void setReductions(final String... reductions) {
-        this.reductions.clear();
-        addReductions(reductions);
+        CollectionUtil.setAll(this.reductions, reductions);
     }
     public void addReductions(final String... reductions) {
         this.reductions.addAll(Arrays.asList(reductions));
@@ -138,7 +138,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
 
         List<XML> nodes = xml.getXMLList("reduce");
         for (XML node : nodes) {
@@ -153,7 +153,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", isCaseSensitive());
+        xml.setAttribute("caseSensitive", caseSensitive);
         for (String reduction : reductions) {
             if (reduction != null) {
                 String text = reduction;

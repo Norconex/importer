@@ -31,6 +31,7 @@ import org.apache.tika.language.detect.LanguageResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -310,10 +311,7 @@ public class LanguageTagger extends AbstractStringTagger
      */
     public void setLanguages(List<String> languages) {
         ensureNotInitialized();
-        this.languages.clear();
-        if (languages != null) {
-            this.languages.addAll(languages);
-        }
+        CollectionUtil.setAll(this.languages, languages);
     }
 
     private void ensureNotInitialized() {
@@ -327,10 +325,10 @@ public class LanguageTagger extends AbstractStringTagger
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
         setKeepProbabilities(xml.getBoolean(
-                "@keepProbabilities", isKeepProbabilities()));
+                "@keepProbabilities", keepProbabilities));
         setFallbackLanguage(xml.getString(
-                "@fallbackLanguage", getFallbackLanguage()));
-        setLanguages(xml.getDelimitedStringList("languages", getLanguages()));
+                "@fallbackLanguage", fallbackLanguage));
+        setLanguages(xml.getDelimitedStringList("languages", languages));
     }
 
     @Override

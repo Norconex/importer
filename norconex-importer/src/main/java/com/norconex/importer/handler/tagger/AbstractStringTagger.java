@@ -128,7 +128,7 @@ public abstract class AbstractStringTagger
 
     @Override
     protected final void saveCharStreamTaggerToXML(XML xml) {
-        xml.setAttribute("maxReadSize", getMaxReadSize());
+        xml.setAttribute("maxReadSize", maxReadSize);
         saveStringTaggerToXML(xml);
     }
     /**
@@ -142,7 +142,7 @@ public abstract class AbstractStringTagger
 
     @Override
     protected final void loadCharStreamTaggerFromXML(XML xml) {
-        setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
+        setMaxReadSize(xml.getInteger("@maxReadSize", maxReadSize));
         loadStringTaggerFromXML(xml);
     }
     /**

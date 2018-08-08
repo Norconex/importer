@@ -313,19 +313,20 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     protected void saveFilterToXML(XML xml) {
         xml.setAttribute("caseSensitive", caseSensitive);
         xml.setAttribute("selector", selector);
-        xml.setAttribute("parser", getParser());
-        xml.setAttribute("sourceCharset", getSourceCharset());
-        xml.setAttribute("extract", getExtract());
+        xml.setAttribute("parser", parser);
+        xml.setAttribute("sourceCharset", sourceCharset);
+        xml.setAttribute("extract", extract);
         xml.addElement("regex", regex);
     }
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", isCaseSensitive()));
-        setSelector(xml.getString("@selector", getSelector()));
-        setParser(xml.getString("@parser", getParser()));
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
-        setSourceCharset(xml.getString("@extract", getExtract()));
-        setRegex(xml.getString("regex"));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setSelector(xml.getString("@selector", selector));
+        setParser(xml.getString("@parser", parser));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
+        setSourceCharset(xml.getString("@extract", extract));
+        setRegex(xml.getString("regex", regex));
+        cachedPattern = null;
     }
 
     @Override

@@ -131,8 +131,8 @@ public class SubstringTransformer extends AbstractCharStreamTransformer
 
     @Override
     protected void loadCharStreamTransformerFromXML(final XML xml) {
-        setBegin(xml.getLong("@begin", getBegin()));
-        setEnd(xml.getLong("@end", getEnd()));
+        setBegin(xml.getLong("@begin", begin));
+        setEnd(xml.getLong("@end", end));
     }
 
     @Override

@@ -14,9 +14,9 @@
  */
 package com.norconex.importer.parser.impl;
 
-import java.io.File;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -132,7 +132,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @return temporary directory
      * @since 2.8.0
      */
-    public File getTempDir() {
+    public Path getTempDir() {
         return h.getTempDir();
     }
     /**
@@ -140,7 +140,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param tempDir temporary directory
      * @since 2.8.0
      */
-    public void setTempDir(File tempDir) {
+    public void setTempDir(Path tempDir) {
         h.setTempDir(tempDir);
     }
 

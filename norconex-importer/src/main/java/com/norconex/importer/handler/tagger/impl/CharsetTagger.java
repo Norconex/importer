@@ -229,15 +229,15 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
-        setTargetCharset(xml.getString("@targetCharset", getTargetCharset()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
+        setTargetCharset(xml.getString("@targetCharset", targetCharset));
         setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
-        xml.setAttribute("targetCharset", getTargetCharset());
+        xml.setAttribute("sourceCharset", sourceCharset);
+        xml.setAttribute("targetCharset", targetCharset);
         xml.addElement("fieldsRegex", fieldsRegex);
     }
 

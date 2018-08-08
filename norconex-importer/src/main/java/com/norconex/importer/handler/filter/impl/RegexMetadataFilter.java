@@ -146,9 +146,10 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setField(xml.getString("@field"));
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
-        setRegex(xml.getString("regex", getRegex()));
+        setField(xml.getString("@field", field));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setRegex(xml.getString("regex", regex));
+        cachedPattern = null;
     }
 
     @Override

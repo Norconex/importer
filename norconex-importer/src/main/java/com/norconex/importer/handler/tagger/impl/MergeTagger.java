@@ -29,6 +29,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -185,10 +186,7 @@ public class MergeTagger extends AbstractDocumentTagger {
             return Collections.unmodifiableList(fromFields);
         }
         public void setFromFields(List<String> fromFields) {
-            this.fromFields.clear();
-            if (fromFields != null) {
-                this.fromFields.addAll(fromFields);
-            }
+            CollectionUtil.setAll(this.fromFields, fromFields);
         }
         public String getFromFieldsRegex() {
             return fromFieldsRegex;

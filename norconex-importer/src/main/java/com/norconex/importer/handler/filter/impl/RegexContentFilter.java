@@ -143,8 +143,8 @@ public class RegexContentFilter extends AbstractStringFilter {
     }
     @Override
     protected void loadStringFilterFromXML(XML xml) {
-        setRegex(xml.getString("regex"));
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+        setRegex(xml.getString("regex", regex));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
     }
 
     @Override

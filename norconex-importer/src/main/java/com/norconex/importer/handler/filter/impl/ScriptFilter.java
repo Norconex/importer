@@ -157,7 +157,7 @@ public class ScriptFilter extends AbstractStringFilter {
     @Override
     protected void loadStringFilterFromXML(XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
-        setScript(xml.getString("script"));
+        setScript(xml.getString("script", getScript()));
     }
 
     @Override

@@ -40,6 +40,9 @@
         RegexFieldExtractor and RegexUtil have been deprecated in favor
         of Norconex Commons Lang KeyValueExtractor and Regex.
       </action>
+      <action dev="essiembre" type="update">
+        Now using Path instead of File in many cases. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>

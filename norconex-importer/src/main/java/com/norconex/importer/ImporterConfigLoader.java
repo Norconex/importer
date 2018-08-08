@@ -16,6 +16,7 @@ package com.norconex.importer;
 
 import java.io.File;
 import java.io.Reader;
+import java.nio.file.Path;
 import java.util.List;
 
 import com.norconex.commons.lang.config.ConfigurationException;
@@ -28,7 +29,11 @@ import com.norconex.commons.lang.xml.XMLValidationException;
  * Importer configuration loader.  Configuration options are defined
  * as part of general product documentation.
  * @author Pascal Essiembre
+ * @deprecated Since 3.0.0
  */
+//TODO Really deprecate? Implement directly on config? See Collector Core for
+// example.
+@Deprecated
 public final class ImporterConfigLoader {
 
     private ImporterConfigLoader() {
@@ -40,46 +45,61 @@ public final class ImporterConfigLoader {
      * Throws {@link XMLValidationException} if the configuration
      * has validation errors unless errors are ignored.
      * @param configFile configuration file
-     * @param configVariables configuration variables 
+     * @param configVariables configuration variables
      *        (.variables or .properties)
-     * @param ignoreErrors 
+     * @param ignoreErrors
      *     <code>true</code> to ignore configuration validation errors
      * @return importer configuration
      * @throws ConfigurationException problem loading configuration
      */
     public static ImporterConfig loadImporterConfig(
             File configFile, File configVariables, boolean ignoreErrors) {
-        try {
-            return loadImporterConfig(new ConfigurationLoader().loadXML(
-                    configFile, configVariables), ignoreErrors);
-        } catch (Exception e) {
-            throw configurationException(
-                    "Could not load configuration file: " + configFile, e);
-        }
-    }    
+        return loadImporterConfig(
+                configFile == null ? null : configFile.toPath(),
+                configVariables == null ? null : configFile.toPath(),
+                ignoreErrors);
+    }
+    /**
+     * Loads importer configuration.
+     * Throws {@link XMLValidationException} if the configuration
+     * has validation errors unless errors are ignored.
+     * @param configFile configuration file
+     * @param configVariables configuration variables
+     *        (.variables or .properties)
+     * @param ignoreErrors
+     *     <code>true</code> to ignore configuration validation errors
+     * @return importer configuration
+     * @throws ConfigurationException problem loading configuration
+     * @since 3.0.0
+     */
+    public static ImporterConfig loadImporterConfig(
+            Path configFile, Path configVariables, boolean ignoreErrors) {
+        return loadImporterConfig(new ConfigurationLoader().loadXML(
+                configFile, configVariables), ignoreErrors);
+    }
 
     /**
      * Loads importer configuration.
      * Throws {@link XMLValidationException} if the configuration
      * has validation errors unless errors are ignored.
      * @param reader reader for the configuration file
-     * @param ignoreErrors 
+     * @param ignoreErrors
      *     <code>true</code> to ignore configuration validation errors
      * @return importer configuration
      * @throws ConfigurationException problem loading configuration
-     */    
+     */
     public static ImporterConfig loadImporterConfig(
             Reader reader, boolean ignoreErrors)  {
         return loadImporterConfig(new XML(reader), ignoreErrors);
     }
-    
+
     /**
      * Loads importer configuration.
      * Throws {@link XMLValidationException} if the configuration
-     * has validation errors unless errors are ignored. 
+     * has validation errors unless errors are ignored.
      * @param xml XMLConfiguration instance
-     * @param ignoreErrors 
-     *     <code>true</code> to ignore configuration validation errors 
+     * @param ignoreErrors
+     *     <code>true</code> to ignore configuration validation errors
      * @return importer configuration
      * @throws ConfigurationException problem loading configuration
      */
@@ -92,7 +112,7 @@ public final class ImporterConfigLoader {
         }
         return config;
     }
-    
+
     private static ConfigurationException configurationException(
             String msg, Exception e) {
         if (e instanceof ConfigurationException) {

@@ -40,6 +40,7 @@ import org.apache.tika.language.translate.Translator;
 import org.apache.tika.language.translate.YandexTranslator;
 
 import com.memetix.mst.language.Language;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -333,8 +334,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         setFieldsToTranslate(Arrays.asList(fieldsToTranslate));
     }
     public void setFieldsToTranslate(List<String> fieldsToTranslate) {
-        this.fieldsToTranslate.clear();
-        this.fieldsToTranslate.addAll(fieldsToTranslate);
+        CollectionUtil.setAll(this.fieldsToTranslate, fieldsToTranslate);
     }
 
     public boolean isIgnoreNonTranslatedFields() {
@@ -366,8 +366,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         setTargetLanguages(Arrays.asList(targetLanguages));
     }
     public void setTargetLanguages(List<String> targetLanguages) {
-        this.targetLanguages.clear();
-        this.targetLanguages.addAll(targetLanguages);
+        CollectionUtil.setAll(this.targetLanguages, targetLanguages);
     }
 
     public String getApiKey() {

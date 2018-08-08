@@ -228,16 +228,16 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setSelector(xml.getString("@selector", getSelector()));
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
-        setParser(xml.getString("@parser", getParser()));
+        setSelector(xml.getString("@selector", selector));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
+        setParser(xml.getString("@parser", parser));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("selector", getSelector());
-        xml.setAttribute("sourceCharset", getSourceCharset());
-        xml.setAttribute("parser", getParser());
+        xml.setAttribute("selector", selector);
+        xml.setAttribute("sourceCharset", sourceCharset);
+        xml.setAttribute("parser", parser);
     }
 
     @Override

@@ -17,11 +17,13 @@ package com.norconex.importer.handler.splitter.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -29,6 +31,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -119,7 +122,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     // These can be either column names or position, starting at 1
     private String referenceColumn;
-    private String[] contentColumns;
+    private final List<String> contentColumns = new ArrayList<>();
 
     @Override
     protected List<ImporterDocument> splitApplicableDocument(
@@ -170,7 +173,8 @@ public class CsvSplitter extends AbstractDocumentSplitter
                     String colValue = cols[i];
 
                     // If a reference column, set reference value
-                    if (isColumnMatching(colName, colPos, referenceColumn)) {
+                    if (isColumnMatching(
+                            colName, colPos, Arrays.asList(referenceColumn))) {
                         childEmbedRef = colValue;
                     }
                     // If a content column, add it to content
@@ -205,8 +209,8 @@ public class CsvSplitter extends AbstractDocumentSplitter
     }
 
     private boolean isColumnMatching(
-            String colName, int colPosition, String... namesOrPossToMatch) {
-        if (ArrayUtils.isEmpty(namesOrPossToMatch)) {
+            String colName, int colPosition, List<String> namesOrPossToMatch) {
+        if (CollectionUtils.isEmpty(namesOrPossToMatch)) {
             return false;
         }
         for (String nameOrPosToMatch : namesOrPossToMatch) {
@@ -308,14 +312,20 @@ public class CsvSplitter extends AbstractDocumentSplitter
         this.referenceColumn = referenceColumn;
     }
 
-    public String[] getContentColumns() {
-        return ArrayUtils.clone(contentColumns);
+    public List<String> getContentColumns() {
+        return Collections.unmodifiableList(contentColumns);
     }
     public void setContentColumns(String... contentColumns) {
-        this.contentColumns = contentColumns;
+        setContentColumns(Arrays.asList(contentColumns));
     }
-
-
+    /**
+     * Sets content columns.
+     * @param contentColumns content columns
+     * @since 3.0.0
+     */
+    public void setContentColumns(List<String> contentColumns) {
+        CollectionUtil.setAll(this.contentColumns, contentColumns);
+    }
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
@@ -331,31 +341,19 @@ public class CsvSplitter extends AbstractDocumentSplitter
         setReferenceColumn(
                 xml.getString("@referenceColumn", referenceColumn));
 
-        String contentCols = xml.getString("@contentColumns", null);
-        if (StringUtils.isNotBlank(contentCols)) {
-            setContentColumns(contentCols.split(","));
-        }
+        setContentColumns(
+                xml.getDelimitedStringList("@contentColumns", contentColumns));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute(
-                "separatorCharacter", String.valueOf(separatorCharacter));
-        xml.setAttribute(
-                "quoteCharacter", String.valueOf(quoteCharacter));
-        xml.setAttribute(
-                "escapeCharacter", String.valueOf(escapeCharacter));
-        xml.setAttribute(
-                "useFirstRowAsFields", String.valueOf(useFirstRowAsFields));
-        xml.setAttribute("linesToSkip", String.valueOf(linesToSkip));
-
-        if (StringUtils.isNotBlank(referenceColumn)) {
-            xml.setAttribute("referenceColumn", referenceColumn);
-        }
-        if (ArrayUtils.isNotEmpty(contentColumns)) {
-            xml.setAttribute("contentColumns",
-                    StringUtils.join(contentColumns, ","));
-        }
+        xml.setAttribute("separatorCharacter", separatorCharacter);
+        xml.setAttribute("quoteCharacter", quoteCharacter);
+        xml.setAttribute("escapeCharacter", escapeCharacter);
+        xml.setAttribute("useFirstRowAsFields", useFirstRowAsFields);
+        xml.setAttribute("linesToSkip", linesToSkip);
+        xml.setAttribute("referenceColumn", referenceColumn);
+        xml.setDelimitedAttributeList("contentColumns", contentColumns);
     }
 
     private char loadCharacter(

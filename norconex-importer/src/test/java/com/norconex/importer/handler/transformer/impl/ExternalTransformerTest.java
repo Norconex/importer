@@ -15,9 +15,9 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +41,7 @@ public class ExternalTransformerTest {
     public void testWriteRead() throws IOException {
         ExternalTransformer t = new ExternalTransformer();
         t.setCommand("my command");
-        t.setTempDir(new File("/some/path"));
+        t.setTempDir(Paths.get("/some/path"));
 
         t.setMetadataInputFormat("json");
         t.setMetadataOutputFormat("xml");

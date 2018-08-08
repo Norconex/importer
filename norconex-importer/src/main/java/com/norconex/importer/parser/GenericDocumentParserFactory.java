@@ -344,7 +344,7 @@ public class GenericDocumentParserFactory
     @Override
     public void loadFromXML(XML xml) {
         setIgnoredContentTypesRegex(xml.getString(
-                "ignoredContentTypes", getIgnoredContentTypesRegex()));
+                "ignoredContentTypes", ignoredContentTypesRegex));
 
         // Parse hints
         loadParseHintsFromXML(xml);

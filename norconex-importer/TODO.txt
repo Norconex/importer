@@ -1,6 +1,14 @@
 TODO:
 ==============
 
+- Make OnMatch an IXMLConfigurable object instead of an abstract one.
+
+- Remove "cachedPattern" instances and replace with Model<Pattern> equivalent
+  (transient with string being serialisable). 
+
+- Maybe: rename references to "metadata" to be references to "fields" ?
+- In load/save XML reference local fields instead of getters/setters.
+
 - Convert all arrays to final List for consistency (with unmodifiable getters).
 
 - Consider merging tagger and transformer and detecting if content has changed,

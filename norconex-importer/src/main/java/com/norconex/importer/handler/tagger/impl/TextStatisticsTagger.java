@@ -224,7 +224,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
 
     @Override
     protected void loadCharStreamTaggerFromXML(XML xml) {
-        setFieldName(xml.getString("@fieldName", getFieldName()));
+        setFieldName(xml.getString("@fieldName", fieldName));
     }
 
     @Override

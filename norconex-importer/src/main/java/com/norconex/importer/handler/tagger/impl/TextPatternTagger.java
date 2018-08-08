@@ -26,6 +26,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
@@ -149,13 +150,10 @@ public class TextPatternTagger
     /**
      * Sets one or more patterns that will extract matching field names/values.
      * Clears previously set pattterns.
-     * @param pattern field extractor pattern
+     * @param patterns field extractor pattern
      */
-    public void setPattern(KeyValueExtractor... pattern) {
-        patterns.clear();
-        if (ArrayUtils.isNotEmpty(pattern)) {
-            patterns.addAll(Arrays.asList(pattern));
-        }
+    public void setPattern(KeyValueExtractor... patterns) {
+        CollectionUtil.setAll(this.patterns, patterns);
     }
     /**
      * Gets the patterns used to extract matching field names/values.

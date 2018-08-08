@@ -107,7 +107,7 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
 
     @Override
     protected final void saveFilterToXML(XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("sourceCharset", sourceCharset);
         saveCharStreamFilterToXML(xml);
     }
     /**
@@ -122,7 +122,7 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
 
     @Override
     protected final void loadFilterFromXML(XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         loadCharStreamFilterFromXML(xml);
     }
     /**

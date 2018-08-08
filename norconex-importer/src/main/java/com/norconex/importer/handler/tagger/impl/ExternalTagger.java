@@ -14,8 +14,8 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
@@ -293,14 +293,14 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * Gets directory where to store temporary files used for transformation.
      * @return temporary directory
      */
-    public File getTempDir() {
+    public Path getTempDir() {
         return h.getTempDir();
     }
     /**
      * Sets directory where to store temporary files used for transformation.
      * @param tempDir temporary directory
      */
-    public void setTempDir(File tempDir) {
+    public void setTempDir(Path tempDir) {
         h.setTempDir(tempDir);
     }
 
@@ -318,12 +318,12 @@ public class ExternalTagger extends AbstractDocumentTagger {
     protected void loadHandlerFromXML(XML xml) {
         h.loadHandlerFromXML(xml);
         setInputDisabled(
-                xml.getBoolean("command/@inputDisabled", isInputDisabled()));
+                xml.getBoolean("command/@inputDisabled", inputDisabled));
     }
     @Override
     protected void saveHandlerToXML(XML xml) {
         h.saveHandlerToXML(xml);
-        xml.getXML("command").setAttribute("inputDisabled", isInputDisabled());
+        xml.getXML("command").setAttribute("inputDisabled", inputDisabled);
     }
 
     @Override

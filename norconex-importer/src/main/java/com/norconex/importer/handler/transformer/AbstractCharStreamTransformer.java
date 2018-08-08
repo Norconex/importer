@@ -137,7 +137,7 @@ public abstract class AbstractCharStreamTransformer
 
     @Override
     protected final void saveHandlerToXML(final XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
+        xml.setAttribute("sourceCharset", sourceCharset);
         saveCharStreamTransformerToXML(xml);
     }
     /**
@@ -151,7 +151,7 @@ public abstract class AbstractCharStreamTransformer
 
     @Override
     protected final void loadHandlerFromXML(final XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         loadCharStreamTransformerFromXML(xml);
     }
     /**

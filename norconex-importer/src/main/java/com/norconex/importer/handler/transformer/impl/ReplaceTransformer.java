@@ -134,7 +134,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         for (XML node : xml.getXMLList("replace")) {
             replacements.put(
                     node.getString("fromValue"), node.getString("toValue"));
@@ -143,8 +143,7 @@ public class ReplaceTransformer extends AbstractStringTransformer
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute(
-                "caseSensitive", Boolean.toString(isCaseSensitive()));
+        xml.setAttribute("caseSensitive", caseSensitive);
         for (Entry<String, String> entry : replacements.entrySet()) {
             XML rxml = xml.addElement("replace");
             rxml.addElement("fromValue", entry.getKey());

@@ -14,7 +14,8 @@
  */
 package com.norconex.importer;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,9 +23,10 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.XML;
@@ -54,10 +56,10 @@ public class ImporterConfig implements IXMLConfigurable {
     private final List<IImporterResponseProcessor> responseProcessors =
             new ArrayList<>();
 
-    private File tempDir = new File(DEFAULT_TEMP_DIR_PATH);
+    private Path tempDir = Paths.get(DEFAULT_TEMP_DIR_PATH);
     private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
     private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
-    private File parseErrorsSaveDir;
+    private Path parseErrorsSaveDir;
 
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
@@ -66,10 +68,10 @@ public class ImporterConfig implements IXMLConfigurable {
         this.documentParserFactory = parserFactory;
     }
 
-    public File getTempDir() {
+    public Path getTempDir() {
         return tempDir;
     }
-    public void setTempDir(File tempDir) {
+    public void setTempDir(Path tempDir) {
         this.tempDir = tempDir;
     }
 
@@ -78,14 +80,14 @@ public class ImporterConfig implements IXMLConfigurable {
      * Default is <code>null</code> (not storing errors).
      * @return directory where to save error files
      */
-    public File getParseErrorsSaveDir() {
+    public Path getParseErrorsSaveDir() {
         return parseErrorsSaveDir;
     }
     /**
      * Sets the directory where file generating parsing errors will be saved.
      * @param parseErrorsSaveDir directory where to save error files
      */
-    public void setParseErrorsSaveDir(File parseErrorsSaveDir) {
+    public void setParseErrorsSaveDir(Path parseErrorsSaveDir) {
         this.parseErrorsSaveDir = parseErrorsSaveDir;
     }
 
@@ -93,20 +95,14 @@ public class ImporterConfig implements IXMLConfigurable {
         return Collections.unmodifiableList(preParseHandlers);
     }
     public void setPreParseHandlers(List<IImporterHandler> preParseHandlers) {
-        this.preParseHandlers.clear();
-        if (preParseHandlers != null) {
-            this.preParseHandlers.addAll(preParseHandlers);
-        }
+        CollectionUtil.setAll(this.preParseHandlers, preParseHandlers);
     }
 
     public List<IImporterHandler> getPostParseHandlers() {
         return Collections.unmodifiableList(postParseHandlers);
     }
     public void setPostParseHandlers(List<IImporterHandler> postParseHandlers) {
-        this.postParseHandlers.clear();
-        if (postParseHandlers != null) {
-            this.postParseHandlers.addAll(postParseHandlers);
-        }
+        CollectionUtil.setAll(this.postParseHandlers, postParseHandlers);
     }
 
     public List<IImporterResponseProcessor> getResponseProcessors() {
@@ -114,10 +110,7 @@ public class ImporterConfig implements IXMLConfigurable {
     }
     public void setResponseProcessors(
             List<IImporterResponseProcessor> responseProcessors) {
-        this.responseProcessors.clear();
-        if (responseProcessors != null) {
-            this.responseProcessors.addAll(responseProcessors);
-        }
+        CollectionUtil.setAll(this.responseProcessors, responseProcessors);
     }
 
     public int getMaxFileCacheSize() {
@@ -135,83 +128,47 @@ public class ImporterConfig implements IXMLConfigurable {
     }
     @Override
     public void loadFromXML(XML xml) {
-        setTempDir(new File(xml.getString(
-                "tempDir", ImporterConfig.DEFAULT_TEMP_DIR_PATH)));
+        setTempDir(xml.getPath("tempDir", tempDir));
         setParseErrorsSaveDir(
-                xml.getFile("parseErrorsSaveDir", getParseErrorsSaveDir()));
-        setMaxFileCacheSize(xml.getInteger("maxFileCacheSize",
-                DEFAULT_MAX_FILE_CACHE_SIZE));
-        setMaxFilePoolCacheSize(xml.getInteger("maxFilePoolCacheSize",
-                DEFAULT_MAX_FILE_POOL_CACHE_SIZE));
-        setPreParseHandlers(xml.getObjectList("preParseHandlers/*",
-                getPreParseHandlers()));
+                xml.getPath("parseErrorsSaveDir", parseErrorsSaveDir));
+        setMaxFileCacheSize(
+                xml.getInteger("maxFileCacheSize", maxFileCacheSize));
+        setMaxFilePoolCacheSize(
+                xml.getInteger("maxFilePoolCacheSize", maxFilePoolCacheSize));
+        setPreParseHandlers(
+                xml.getObjectList("preParseHandlers/*", preParseHandlers));
         setParserFactory(
-                xml.getObject("documentParserFactory", getParserFactory()));
-        setPostParseHandlers(xml.getObjectList("postParseHandlers/*",
-                getPostParseHandlers()));
+                xml.getObject("documentParserFactory", documentParserFactory));
+        setPostParseHandlers(
+                xml.getObjectList("postParseHandlers/*", postParseHandlers));
         setResponseProcessors(xml.getObjectList(
-                "responseProcessors/responseProcessor",
-                        getResponseProcessors()));
+                "responseProcessors/responseProcessor", responseProcessors));
     }
 
     @Override
     public void saveToXML(XML xml) {
-        xml.addElement("tempDir", getTempDir());
-        xml.addElement("parseErrorsSaveDir", getParseErrorsSaveDir());
-        xml.addElement("maxFileCacheSize", getMaxFileCacheSize());
-        xml.addElement("maxFilePoolCacheSize", getMaxFilePoolCacheSize());
+        xml.addElement("tempDir", tempDir);
+        xml.addElement("parseErrorsSaveDir", parseErrorsSaveDir);
+        xml.addElement("maxFileCacheSize", maxFileCacheSize);
+        xml.addElement("maxFilePoolCacheSize", maxFilePoolCacheSize);
+        xml.addElementList("preParseHandlers", "handler", preParseHandlers);
+        xml.addElement("documentParserFactory", documentParserFactory);
+        xml.addElementList("postParseHandlers", "handler", postParseHandlers);
         xml.addElementList(
-                "preParseHandlers", "handler", getPreParseHandlers());
-        xml.addElement("documentParserFactory", getParserFactory());
-        xml.addElementList(
-                "postParseHandlers", "handler", getPostParseHandlers());
-        xml.addElementList("responseProcessors", "responseProcessor",
-                getResponseProcessors());
+                "responseProcessors", "responseProcessor", responseProcessors);
     }
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ImporterConfig)) {
-            return false;
-        }
-        ImporterConfig castOther = (ImporterConfig) other;
-        return new EqualsBuilder()
-                .append(documentParserFactory, castOther.documentParserFactory)
-                .append(preParseHandlers, castOther.preParseHandlers)
-                .append(postParseHandlers, castOther.postParseHandlers)
-                .append(responseProcessors, castOther.responseProcessors)
-                .append(tempDir, castOther.tempDir)
-                .append(maxFileCacheSize, castOther.maxFileCacheSize)
-                .append(maxFilePoolCacheSize, castOther.maxFilePoolCacheSize)
-                .append(parseErrorsSaveDir, castOther.parseErrorsSaveDir)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(documentParserFactory)
-                .append(preParseHandlers)
-                .append(postParseHandlers)
-                .append(responseProcessors)
-                .append(tempDir)
-                .append(maxFileCacheSize)
-                .append(maxFilePoolCacheSize)
-                .append(parseErrorsSaveDir)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("documentParserFactory", documentParserFactory)
-                .append("preParseHandlers", preParseHandlers)
-                .append("postParseHandlers", postParseHandlers)
-                .append("responseProcessors", responseProcessors)
-                .append("tempDir", tempDir)
-                .append("maxFileCacheSize", maxFileCacheSize)
-                .append("maxFilePoolCacheSize", maxFilePoolCacheSize)
-                .append("parseErrorsSaveDir", parseErrorsSaveDir)
-                .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

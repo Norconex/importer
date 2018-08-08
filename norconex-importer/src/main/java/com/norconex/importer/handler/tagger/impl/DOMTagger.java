@@ -380,9 +380,9 @@ public class DOMTagger extends AbstractDocumentTagger {
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setSourceCharset(xml.getString("@sourceCharset", getSourceCharset()));
-        setFromField(xml.getString("@fromField", getFromField()));
-        setParser(xml.getString("@parser", getParser()));
+        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
+        setFromField(xml.getString("@fromField", fromField));
+        setParser(xml.getString("@parser", parser));
         List<XML> nodes = xml.getXMLList("dom");
         if (!nodes.isEmpty()) {
             extractions.clear();
@@ -401,9 +401,9 @@ public class DOMTagger extends AbstractDocumentTagger {
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("sourceCharset", getSourceCharset());
-        xml.setAttribute("fromField", getFromField());
-        xml.setAttribute("parser", getParser());
+        xml.setAttribute("sourceCharset", sourceCharset);
+        xml.setAttribute("fromField", fromField);
+        xml.setAttribute("parser", parser);
         for (DOMExtractDetails details : extractions) {
             xml.addElement("dom")
                     .setAttribute("selector", details.getSelector())

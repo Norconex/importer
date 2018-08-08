@@ -129,7 +129,7 @@ public abstract class AbstractStringFilter
 
     @Override
     protected final void saveCharStreamFilterToXML(XML xml) {
-        xml.setAttribute("maxReadSize", getMaxReadSize());
+        xml.setAttribute("maxReadSize", maxReadSize);
         saveStringFilterToXML(xml);
     }
     /**
@@ -143,7 +143,7 @@ public abstract class AbstractStringFilter
 
     @Override
     protected final void loadCharStreamFilterFromXML(XML xml) {
-        setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
+        setMaxReadSize(xml.getInteger("@maxReadSize", maxReadSize));
         loadStringFilterFromXML(xml);
     }
     /**

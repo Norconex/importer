@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,12 @@ package com.norconex.importer.handler.filter;
  * @author Pascal Essiembre
  */
 public enum OnMatch {
-    INCLUDE, EXCLUDE
+    INCLUDE, EXCLUDE;
+
+    public static OnMatch includeIfNull(OnMatch onMatch) {
+        return onMatch != null ? onMatch : INCLUDE;
+    }
+    public static OnMatch excludeIfNull(OnMatch onMatch) {
+        return onMatch != null ? onMatch : EXCLUDE;
+    }
 }

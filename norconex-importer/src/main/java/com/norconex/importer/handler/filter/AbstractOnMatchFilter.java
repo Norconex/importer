@@ -27,7 +27,9 @@ import com.norconex.commons.lang.xml.XML;
  * Convenience base class for implementing filters offering the include/exclude
  * "onmatch" option.  Default behavior on match is to include.
  * @author Pascal Essiembre
+ * @deprecated Use composition with OnMatch instead
  */
+@Deprecated
 public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
 
 	private OnMatch onMatch = OnMatch.INCLUDE;
@@ -51,7 +53,7 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
      * attribute from an XML file when {@link XML} is used.
      * @param xml XML configuration
      */
-    protected final void loadFromXML(XML xml) {
+    protected final void loadOnMatchFromXML(XML xml) {
         OnMatch configOnMatch = OnMatch.INCLUDE;
         String onMatchStr = xml.getString(
                 "@onMatch", OnMatch.INCLUDE.toString()).toUpperCase();
@@ -70,7 +72,7 @@ public abstract class AbstractOnMatchFilter implements IOnMatchFilter {
      * to an XML file when {@link XML} is used.
      * @param xml the XML
      */
-    protected void saveToXML(XML xml) {
+    protected void saveOnMatchToXML(XML xml) {
         xml.setAttribute("onMatch", onMatch.toString().toLowerCase());
     }
 

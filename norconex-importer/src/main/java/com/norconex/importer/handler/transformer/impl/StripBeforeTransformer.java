@@ -130,15 +130,16 @@ public class StripBeforeTransformer extends AbstractStringTransformer
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", false));
-        setInclusive(xml.getBoolean("@inclusive", false));
-        setStripBeforeRegex(xml.getString("stripBeforeRegex", null));
+        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        setInclusive(xml.getBoolean("@inclusive", inclusive));
+        setStripBeforeRegex(
+                xml.getString("stripBeforeRegex", stripBeforeRegex));
     }
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", isCaseSensitive());
-        xml.setAttribute("inclusive", isInclusive());
+        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setAttribute("inclusive", inclusive);
         xml.addElement("stripBeforeRegex", stripBeforeRegex);
     }
 

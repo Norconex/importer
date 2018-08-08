@@ -370,29 +370,26 @@ public class TitleGeneratorTagger
 
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
-        setFromField(xml.getString("@fromField", getFromField()));
-        setToField(xml.getString("@toField", getToField()));
-        setOverwrite(xml.getBoolean("@overwrite", isOverwrite()));
-        setTitleMaxLength(xml.getInteger(
-                "@titleMaxLength", getTitleMaxLength()));
-        setDetectHeading(xml.getBoolean("@detectHeading", isDetectHeading()));
+        setFromField(xml.getString("@fromField", fromField));
+        setToField(xml.getString("@toField", toField));
+        setOverwrite(xml.getBoolean("@overwrite", overwrite));
+        setTitleMaxLength(xml.getInteger("@titleMaxLength", titleMaxLength));
+        setDetectHeading(xml.getBoolean("@detectHeading", detectHeading));
         setDetectHeadingMinLength(xml.getInteger(
-                "@detectHeadingMinLength", getDetectHeadingMinLength()));
+                "@detectHeadingMinLength", detectHeadingMinLength));
         setDetectHeadingMaxLength(xml.getInteger(
-                "@detectHeadingMaxLength", getDetectHeadingMaxLength()));
+                "@detectHeadingMaxLength", detectHeadingMaxLength));
     }
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
-        xml.setAttribute("fromField", getFromField());
-        xml.setAttribute("toField", getToField());
-        xml.setAttribute("overwrite", isOverwrite());
-        xml.setAttribute("titleMaxLength", getTitleMaxLength());
-        xml.setAttribute("detectHeading", isDetectHeading());
-        xml.setAttribute(
-                "detectHeadingMinLength", getDetectHeadingMinLength());
-        xml.setAttribute(
-                "detectHeadingMaxLength", getDetectHeadingMaxLength());
+        xml.setAttribute("fromField", fromField);
+        xml.setAttribute("toField", toField);
+        xml.setAttribute("overwrite", overwrite);
+        xml.setAttribute("titleMaxLength", titleMaxLength);
+        xml.setAttribute("detectHeading", detectHeading);
+        xml.setAttribute("detectHeadingMinLength", detectHeadingMinLength);
+        xml.setAttribute("detectHeadingMaxLength", detectHeadingMaxLength);
     }
 
     @Override

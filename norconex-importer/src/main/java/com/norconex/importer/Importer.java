@@ -21,11 +21,13 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -91,11 +93,11 @@ public class Importer {
         } else {
             this.importerConfig = new ImporterConfig();
         }
-        File tempDir = this.importerConfig.getTempDir();
+        Path tempDir = this.importerConfig.getTempDir();
 
-        if (!tempDir.exists()) {
+        if (!tempDir.toFile().exists()) {
             try {
-                FileUtils.forceMkdir(tempDir);
+                Files.createDirectories(tempDir);
             } catch (IOException e) {
                 throw new ImporterRuntimeException(
                         "Cannot create importer temporary directory: "
@@ -455,18 +457,22 @@ public class Importer {
     }
 
     private void saveParseError(ImporterDocument doc, Exception e) {
-        File saveDir = importerConfig.getParseErrorsSaveDir();
-        if (!saveDir.exists()) {
-            saveDir.mkdirs();
+        Path saveDir = importerConfig.getParseErrorsSaveDir();
+        if (!saveDir.toFile().exists()) {
+            try {
+                Files.createDirectories(saveDir);
+            } catch (IOException ex) {
+                LOG.error("Cannot create importer temporary directory: "
+                        + saveDir, ex);
+            }
         }
 
         String uuid = UUID.randomUUID().toString();
 
         // Save exception
-        try (PrintWriter exWriter = new PrintWriter(
-                new File(saveDir, uuid + "-error.txt"))) {
+        try (PrintWriter exWriter = new PrintWriter(Files.newBufferedWriter(
+                saveDir.resolve(uuid + "-error.txt")))) {
             e.printStackTrace(exWriter);
-            IOUtils.closeQuietly(exWriter);
         } catch (IOException e1) {
             LOG.error("Cannot save parse exception.", e1);
         }
@@ -479,10 +485,9 @@ public class Importer {
         }
 
         // Save metadata
-        try (PrintWriter metaWriter = new PrintWriter(
-                new File(saveDir, uuid + "-meta.txt"))) {
+        try (PrintWriter metaWriter = new PrintWriter(Files.newBufferedWriter(
+                saveDir.resolve(uuid + "-meta.txt")))) {
             doc.getMetadata().storeToProperties(metaWriter);
-            IOUtils.closeQuietly(metaWriter);
         } catch (IOException e1) {
             LOG.error("Cannot save parse error file metadata.", e1);
         }
@@ -500,8 +505,10 @@ public class Importer {
             if (StringUtils.isBlank(ext)) {
                 ext = "unknown";
             }
-            File contentFile = new File(saveDir, uuid + "-content." + ext);
-            FileUtils.copyInputStreamToFile(doc.getContent(), contentFile);
+
+            Files.copy(doc.getContent(),
+                    saveDir.resolve(uuid + "-content." + ext),
+                    StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e1) {
             LOG.error("Cannot save parse error file content.", e1);
         }

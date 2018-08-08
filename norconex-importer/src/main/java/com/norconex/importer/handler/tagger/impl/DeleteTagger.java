@@ -29,6 +29,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -128,8 +129,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
      * @since 3.0.0
      */
     public void setFields(List<String> fieldsToRemove) {
-        this.fieldsToRemove.clear();
-        this.fieldsToRemove.addAll(fieldsToRemove);
+        CollectionUtil.setAll(this.fieldsToRemove, fieldsToRemove);
     }
 
     public String getFieldsRegex() {

@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -209,8 +209,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
      * @since 3.0.0
      */
     public void setFromFormats(List<String> fromFormats) {
-        this.fromFormats.clear();
-        this.fromFormats.addAll(fromFormats);
+        CollectionUtil.setAll(this.fromFormats, fromFormats);
     }
 
     public String getToFormat() {
@@ -286,15 +285,9 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         toFormat = xml.getString("@toFormat", toFormat);
         overwrite = xml.getBoolean("@overwrite", overwrite);
         keepBadDates = xml.getBoolean("@keepBadDates", keepBadDates);
-        String fromLocaleStr = xml.getString("@fromLocale", null);
-        if (StringUtils.isNotBlank(fromLocaleStr)) {
-            setFromLocale(LocaleUtils.toLocale(fromLocaleStr));
-        }
-        String toLocaleStr = xml.getString("@toLocale", null);
-        if (StringUtils.isNotBlank(toLocaleStr)) {
-            setToLocale(LocaleUtils.toLocale(toLocaleStr));
-        }
-        setFromFormats(xml.getStringList("fromFormat", getFromFormats()));
+        fromLocale = xml.getLocale("@fromLocale", fromLocale);
+        toLocale = xml.getLocale("@toLocale", toLocale);
+        setFromFormats(xml.getStringList("fromFormat", fromFormats));
     }
 
     @Override

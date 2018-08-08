@@ -29,6 +29,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -142,8 +143,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
      * @since 3.0.0
      */
     public void setFields(List<String> fields) {
-        this.fields.clear();
-        this.fields.addAll(fields);
+        CollectionUtil.setAll(this.fields, fields);
     }
     public void addField(String field) {
         fields.add(field);

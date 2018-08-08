@@ -123,7 +123,7 @@ public abstract class AbstractStringTransformer
 
     @Override
     protected final void saveCharStreamTransformerToXML(final XML xml) {
-        xml.setAttribute("maxReadSize", getMaxReadSize());
+        xml.setAttribute("maxReadSize", maxReadSize);
         saveStringTransformerToXML(xml);
     }
     /**
@@ -137,7 +137,7 @@ public abstract class AbstractStringTransformer
 
     @Override
     protected final void loadCharStreamTransformerFromXML(final XML xml) {
-        setMaxReadSize(xml.getInteger("@maxReadSize", getMaxReadSize()));
+        setMaxReadSize(xml.getInteger("@maxReadSize", maxReadSize));
         loadStringTransformerFromXML(xml);
     }
     /**

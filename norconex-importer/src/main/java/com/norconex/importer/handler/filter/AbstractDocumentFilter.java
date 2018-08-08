@@ -80,21 +80,19 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
- * @see AbstractOnMatchFilter
  */
 public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             implements IDocumentFilter, IOnMatchFilter {
 
-    private final AbstractOnMatchFilter onMatch = new AbstractOnMatchFilter() {
-    };
+    private OnMatch onMatch = OnMatch.INCLUDE;
 
     @Override
     public OnMatch getOnMatch() {
-        return onMatch.getOnMatch();
+        return onMatch;
     }
 
     public final void setOnMatch(OnMatch onMatch) {
-        this.onMatch.setOnMatch(onMatch);
+        this.onMatch = onMatch;
     }
 
     @Override
@@ -108,10 +106,11 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
         boolean matched = isDocumentMatched(reference, input, metadata, parsed);
 
+        OnMatch safeOnMatch = OnMatch.includeIfNull(onMatch);
         if (matched) {
-            return getOnMatch() == OnMatch.INCLUDE;
+            return safeOnMatch == OnMatch.INCLUDE;
         } else {
-            return getOnMatch() == OnMatch.EXCLUDE;
+            return safeOnMatch == OnMatch.EXCLUDE;
         }
     }
 
@@ -122,14 +121,14 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     @Override
     protected final void saveHandlerToXML(XML xml) {
-        onMatch.saveToXML(xml);
+        xml.setAttribute("onMatch", onMatch);
         saveFilterToXML(xml);
     }
     protected abstract void saveFilterToXML(XML xml);
 
     @Override
     protected final void loadHandlerFromXML(XML xml) {
-        onMatch.loadFromXML(xml);
+        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
         loadFilterFromXML(xml);
     }
     protected abstract void loadFilterFromXML(XML xml);

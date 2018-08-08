@@ -295,8 +295,8 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setField(xml.getString("@field", getField()));
-        setFormat(xml.getString("@format", getFormat()));
+        setField(xml.getString("@field", field));
+        setFormat(xml.getString("@format", format));
         List<XML> nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
             String op = node.getString("@operator", null);
