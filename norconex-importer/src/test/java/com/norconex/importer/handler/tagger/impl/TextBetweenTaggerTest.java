@@ -42,7 +42,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -66,7 +66,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -93,7 +93,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

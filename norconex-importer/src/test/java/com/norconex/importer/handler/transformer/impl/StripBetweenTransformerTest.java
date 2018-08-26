@@ -47,7 +47,7 @@ public class StripBetweenTransformerTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
@@ -84,7 +84,7 @@ public class StripBetweenTransformerTest {
         ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument("fake.html", is, os, metadata, false);
         String output = os.toString();
         is.close();

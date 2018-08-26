@@ -70,9 +70,9 @@ public class ExternalTaggerTest {
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(
+        metadata.set(
                 "metaFileField1", "this is a first test");
-        metadata.setString("metaFileField2",
+        metadata.set("metaFileField2",
                 "this is a second test value1",
                 "this is a second test value2");
 

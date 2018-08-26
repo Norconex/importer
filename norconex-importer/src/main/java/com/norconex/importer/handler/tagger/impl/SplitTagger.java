@@ -101,14 +101,14 @@ public class SplitTagger extends AbstractDocumentTagger {
                     }
                     if (ArrayUtils.isNotEmpty(splitValues)) {
                         if (StringUtils.isNotBlank(split.getToField())) {
-                            metadata.addString(split.getToField(), splitValues);
+                            metadata.add(split.getToField(), splitValues);
                         } else {
                             sameFieldValues.addAll(Arrays.asList(splitValues));
                         }
                     }
                 }
                 if (StringUtils.isBlank(split.getToField())) {
-                    metadata.setString(split.getFromField(),
+                    metadata.set(split.getFromField(),
                             sameFieldValues.toArray(
                                     ArrayUtils.EMPTY_STRING_ARRAY));
                 }

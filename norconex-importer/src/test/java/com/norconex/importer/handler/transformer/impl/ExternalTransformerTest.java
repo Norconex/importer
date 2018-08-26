@@ -98,9 +98,9 @@ public class ExternalTransformerTest {
         ByteArrayOutputStream output = outputAsStream();
         ImporterMetadata metadata = new ImporterMetadata();
         if (metaFiles) {
-            metadata.setString(
+            metadata.set(
                     "metaFileField1", "this is a first test");
-            metadata.setString("metaFileField2",
+            metadata.set("metaFileField2",
                     "this is a second test value1",
                     "this is a second test value2");
         }

@@ -42,12 +42,12 @@ public class ConstantTaggerTest {
     @Test
     public void testOnConflict() throws IOException, ImporterHandlerException {
         ImporterMetadata m = new ImporterMetadata();
-        m.addString("test1", "1");
-        m.addString("test1", "2");
-        m.addString("test2", "1");
-        m.addString("test2", "2");
-        m.addString("test3", "1");
-        m.addString("test3", "2");
+        m.add("test1", "1");
+        m.add("test1", "2");
+        m.add("test2", "1");
+        m.add("test2", "2");
+        m.add("test3", "1");
+        m.add("test3", "2");
 
         ConstantTagger t = new ConstantTagger();
 

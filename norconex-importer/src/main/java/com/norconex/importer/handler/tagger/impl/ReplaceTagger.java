@@ -121,10 +121,10 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     String newValue = replace(metaValue, repl);
                     if (newValue != null) {
                         if (StringUtils.isNotBlank(repl.getToField())) {
-                            metadata.addString(repl.getToField(), newValue);
+                            metadata.add(repl.getToField(), newValue);
                         } else {
                             metaValues[i] = newValue;
-                            metadata.setString(repl.getFromField(), metaValues);
+                            metadata.set(repl.getFromField(), metaValues);
                         }
                     }
                 }

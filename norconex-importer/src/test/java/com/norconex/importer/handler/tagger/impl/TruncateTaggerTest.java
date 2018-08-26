@@ -42,7 +42,7 @@ public class TruncateTaggerTest {
     @Test
     public void testWithSuffixAndHash() throws ImporterHandlerException {
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.addString("from",
+        metadata.add("from",
                 "Please truncate me before you start thinking I am too long.",
                 "Another long string to test similar with suffix and no hash",
                 "Another long string to test similar without suffix, a hash",

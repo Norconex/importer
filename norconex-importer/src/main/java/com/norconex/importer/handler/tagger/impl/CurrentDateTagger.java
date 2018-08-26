@@ -114,9 +114,9 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
             finalField = DEFAULT_FIELD;
         }
         if (overwrite) {
-            metadata.setString(finalField, date);
+            metadata.set(finalField, date);
         } else {
-            metadata.addString(finalField, date);
+            metadata.add(finalField, date);
         }
     }
 

@@ -273,7 +273,7 @@ public class DOMTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -303,7 +303,7 @@ public class DOMTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -324,7 +324,7 @@ public class DOMTaggerTest {
             ImporterMetadata metadata, DOMTagger tagger, String html)
             throws ImporterHandlerException, IOException {
         InputStream is = new ByteArrayInputStream(html.getBytes());
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         tagger.tagDocument("n/a", is, metadata, false);
         is.close();
     }
@@ -380,7 +380,7 @@ public class DOMTaggerTest {
 
         ImporterMetadata metadata = new ImporterMetadata();
         InputStream is = new ByteArrayInputStream(content.getBytes());
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument("n/a", is, metadata, false);
         is.close();
 

@@ -159,9 +159,9 @@ public class HierarchyTagger extends AbstractDocumentTagger {
         }
         String[] nodesArray = nodes.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
         if (details.overwrite) {
-            metadata.setString(field, nodesArray);
+            metadata.set(field, nodesArray);
         } else {
-            metadata.addString(field, nodesArray);
+            metadata.add(field, nodesArray);
         }
     }
 

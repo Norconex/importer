@@ -304,9 +304,9 @@ public class DOMTagger extends AbstractDocumentTagger {
                 String[] vals = extractedValues.toArray(
                         ArrayUtils.EMPTY_STRING_ARRAY);
                 if (details.overwrite) {
-                    metadata.setString(details.toField, vals);
+                    metadata.set(details.toField, vals);
                 } else {
-                    metadata.addString(details.toField, vals);
+                    metadata.add(details.toField, vals);
                 }
             }
         }

@@ -40,7 +40,7 @@ public class DOMContentFilterTest {
             throws IOException, ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(
+        metadata.set(
                 ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
@@ -66,7 +66,7 @@ public class DOMContentFilterTest {
             throws IOException, ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(
+        metadata.set(
                 ImporterMetadata.DOC_CONTENT_TYPE, "application/xml");
         filter.setOnMatch(OnMatch.INCLUDE);
 

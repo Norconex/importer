@@ -251,8 +251,8 @@ public class LanguageTagger extends AbstractStringTagger
             for (LanguageResult lang : results) {
                 count++;
                 String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
-                metadata.setString(prefix + ".tag", lang.getLanguage());
-                metadata.setDouble(prefix + ".probability", lang.getRawScore());
+                metadata.set(prefix + ".tag", lang.getLanguage());
+                metadata.set(prefix + ".probability", lang.getRawScore());
             }
         }
     }

@@ -149,7 +149,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         if (overwrite) {
             metadata.put(finalToField, toDates);
         } else {
-            metadata.addString(finalToField,
+            metadata.add(finalToField,
                     toDates.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
     }

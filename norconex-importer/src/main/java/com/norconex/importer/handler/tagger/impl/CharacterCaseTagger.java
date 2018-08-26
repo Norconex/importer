@@ -150,7 +150,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         String newField = changeCase(field, d.caseType);
         metadata.remove(field);
         if (values != null && !values.isEmpty()) {
-            metadata.setString(
+            metadata.set(
                     newField, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
         return newField;
@@ -163,7 +163,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
                 String value = values.get(i);
                 values.set(i, changeCase(value, d.caseType));
             }
-            metadata.setString(field,
+            metadata.set(field,
                     values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
         }
     }

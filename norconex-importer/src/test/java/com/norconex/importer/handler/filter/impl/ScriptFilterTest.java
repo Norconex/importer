@@ -60,8 +60,8 @@ public class ScriptFilterTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString("fruit", "apple");
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set("fruit", "apple");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
 
         Assert.assertTrue("Filter returned false.",  f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false));

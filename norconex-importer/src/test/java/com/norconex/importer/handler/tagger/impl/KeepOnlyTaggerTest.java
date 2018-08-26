@@ -42,9 +42,9 @@ public class KeepOnlyTaggerTest {
     public void testKeepAllFields() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.addString("key1", "value1");
-        metadata.addString("key2", "value2");
-        metadata.addString("key3", "value3");
+        metadata.add("key1", "value1");
+        metadata.add("key2", "value2");
+        metadata.add("key3", "value3");
 
         // Should only keep all keys
         KeepOnlyTagger tagger = new KeepOnlyTagger();
@@ -60,9 +60,9 @@ public class KeepOnlyTaggerTest {
     public void testKeepSingleField() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.addString("key1", "value1");
-        metadata.addString("key2", "value2");
-        metadata.addString("key3", "value3");
+        metadata.add("key1", "value1");
+        metadata.add("key2", "value2");
+        metadata.add("key3", "value3");
 
         // Should only keep key1
         KeepOnlyTagger tagger = new KeepOnlyTagger();
@@ -77,9 +77,9 @@ public class KeepOnlyTaggerTest {
     public void testDeleteAllMetadata() throws Exception {
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.addString("key1", "value1");
-        metadata.addString("key2", "value2");
-        metadata.addString("key3", "value3");
+        metadata.add("key1", "value1");
+        metadata.add("key2", "value2");
+        metadata.add("key3", "value3");
 
         // Because we are not adding any field to keep, all metadata should be
         // deleted
@@ -93,14 +93,14 @@ public class KeepOnlyTaggerTest {
     public void testKeepFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("content-type", "blah");
-        meta.addString("x-access-level", "blah");
-        meta.addString("X-CONTENT-TYPE-OPTIONS", "blah");
-        meta.addString("X-FRAME-OPTIONS", "blah");
-        meta.addString("X-PARSED-BY", "blah");
-        meta.addString("date", "blah");
-        meta.addString("X-RATE-LIMIT-LIMIT", "blah");
-        meta.addString("source", "blah");
+        meta.add("content-type", "blah");
+        meta.add("x-access-level", "blah");
+        meta.add("X-CONTENT-TYPE-OPTIONS", "blah");
+        meta.add("X-FRAME-OPTIONS", "blah");
+        meta.add("X-PARSED-BY", "blah");
+        meta.add("date", "blah");
+        meta.add("X-RATE-LIMIT-LIMIT", "blah");
+        meta.add("source", "blah");
 
         KeepOnlyTagger tagger = new KeepOnlyTagger();
 

@@ -48,6 +48,12 @@
       </action>
     </release>
 
+    <release version="2.9.1-SNAPSHOT" date="2018-??-??" description="Bugfix release">
+      <action dev="macheteaustria" type="fix">
+        Upgraded pdfbox to 2.0.11 due to potential security issue.
+      </action>
+    </release>
+
     <release version="2.9.0" date="2018-06-17" description="Feature release">
       <action dev="essiembre" type="add">
         New PDFPageSplitter to split PDF pages, treating them as individual 

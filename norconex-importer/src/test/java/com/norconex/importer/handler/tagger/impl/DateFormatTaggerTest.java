@@ -38,9 +38,9 @@ public class DateFormatTaggerTest {
         String dateHTTP = "Wed, 10 Oct 2001 11:32:21";
 
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("dateISO", dateISO);
-        meta.addString("dateEPOCH", dateEPOCH);
-        meta.addString("dateHTTP",  dateHTTP);
+        meta.add("dateISO", dateISO);
+        meta.add("dateEPOCH", dateEPOCH);
+        meta.add("dateHTTP",  dateHTTP);
 
         DateFormatTagger t = new DateFormatTagger();
         t.setToField("date");
@@ -83,8 +83,8 @@ public class DateFormatTaggerTest {
     @Test
     public void testDateFormat() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("datefield1", "2001-10-10T11:32:21");
-        meta.addString("datefield2", "1002727941000");
+        meta.add("datefield1", "2001-10-10T11:32:21");
+        meta.add("datefield2", "1002727941000");
 
         DateFormatTagger tagger;
 
@@ -121,7 +121,7 @@ public class DateFormatTaggerTest {
         DateFormatTagger tagger;
 
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "2001-04-10T11:32:21");
+        meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -132,7 +132,7 @@ public class DateFormatTaggerTest {
         Assert.assertEquals("Tue, 10 Apr 2001", meta.getString("targetField"));
 
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "2001-04-10T11:32:21");
+        meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -150,7 +150,7 @@ public class DateFormatTaggerTest {
         DateFormatTagger tagger;
 
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "Tue, 10 Apr 2001");
+        meta.add("sourceField", "Tue, 10 Apr 2001");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");
@@ -161,7 +161,7 @@ public class DateFormatTaggerTest {
         Assert.assertEquals("2001-04-10", meta.getString("targetField"));
 
         meta = new ImporterMetadata();
-        meta.addString("sourceField", "mar., 10 avr. 2001");
+        meta.add("sourceField", "mar., 10 avr. 2001");
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
         tagger.setFromField("sourceField");

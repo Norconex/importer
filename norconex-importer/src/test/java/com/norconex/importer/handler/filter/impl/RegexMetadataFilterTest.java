@@ -30,8 +30,8 @@ public class RegexMetadataFilterTest {
     public void testAcceptDocument()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "a string to match");
-        meta.addString("field2", "something we want");
+        meta.add("field1", "a string to match");
+        meta.add("field2", "something we want");
 
         RegexMetadataFilter filter = new RegexMetadataFilter();
 

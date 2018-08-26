@@ -31,23 +31,23 @@ public class ImporterMetadata extends Properties {
     private static final String DOC_META_PREFIX = "document.";
 
     public static final String DOC_REFERENCE = DOC_META_PREFIX + "reference";
-    public static final String DOC_CONTENT_TYPE = 
+    public static final String DOC_CONTENT_TYPE =
             DOC_META_PREFIX + "contentType";
-    public static final String DOC_CONTENT_ENCODING = 
+    public static final String DOC_CONTENT_ENCODING =
             DOC_META_PREFIX + "contentEncoding";
-    
-    public static final String DOC_CONTENT_FAMILY = 
+
+    public static final String DOC_CONTENT_FAMILY =
             DOC_META_PREFIX + "contentFamily";
-    public static final String DOC_LANGUAGE = 
+    public static final String DOC_LANGUAGE =
             DOC_META_PREFIX + "language";
-    public static final String DOC_TRANSLATED_FROM = 
+    public static final String DOC_TRANSLATED_FROM =
             DOC_META_PREFIX + "translatedFrom";
-    public static final String DOC_GENERATED_TITLE = 
+    public static final String DOC_GENERATED_TITLE =
             DOC_META_PREFIX + "generatedTitle";
-    public static final String DOC_IMPORTED_DATE = 
+    public static final String DOC_IMPORTED_DATE =
             DOC_META_PREFIX + "importedDate";
 
-    private static final String DOC_EMBEDDED_META_PREFIX = 
+    private static final String DOC_EMBEDDED_META_PREFIX =
             DOC_META_PREFIX + "embedded.";
     public static final String DOC_EMBEDDED_PARENT_REFERENCE =
             DOC_EMBEDDED_META_PREFIX + "parent.reference";
@@ -57,7 +57,7 @@ public class ImporterMetadata extends Properties {
             DOC_EMBEDDED_META_PREFIX + "reference";
     public static final String DOC_EMBEDDED_TYPE =
             DOC_EMBEDDED_META_PREFIX + "type";
-    
+
     public ImporterMetadata() {
         this(true);
     }
@@ -71,46 +71,46 @@ public class ImporterMetadata extends Properties {
     public ImporterMetadata(Map<String, List<String>> map) {
         this(map, true);
     }
-    
+
     public String getLanguage() {
         return getString(DOC_LANGUAGE);
     }
     public void setLanguage(String language) {
-        setString(DOC_LANGUAGE, language);
+        set(DOC_LANGUAGE, language);
     }
 
     public String getReference() {
         return getString(DOC_REFERENCE);
     }
     public void setReference(String documentReference) {
-        setString(DOC_REFERENCE, documentReference);
+        set(DOC_REFERENCE, documentReference);
     }
 
     public String getEmbeddedParentReference() {
         return getString(DOC_EMBEDDED_PARENT_REFERENCE);
     }
     public void setEmbeddedParentReference(String parentReference) {
-        setString(DOC_EMBEDDED_PARENT_REFERENCE, parentReference);
+        set(DOC_EMBEDDED_PARENT_REFERENCE, parentReference);
     }
 
     public String getEmbeddedParentRootReference() {
         return getString(DOC_EMBEDDED_PARENT_ROOT_REFERENCE);
     }
     public void setEmbeddedParentRootReference(String parentRootReference) {
-        setString(DOC_EMBEDDED_PARENT_ROOT_REFERENCE, parentRootReference);
+        set(DOC_EMBEDDED_PARENT_ROOT_REFERENCE, parentRootReference);
     }
-    
+
     public String getEmbeddedReference() {
         return getString(DOC_EMBEDDED_REFERENCE);
     }
     public void setEmbeddedReference(String reference) {
-        setString(DOC_EMBEDDED_REFERENCE, reference);
+        set(DOC_EMBEDDED_REFERENCE, reference);
     }
 
     public String getEmbeddedType() {
         return getString(DOC_EMBEDDED_TYPE);
     }
     public void setEmbeddedType(String type) {
-        setString(DOC_EMBEDDED_TYPE, type);
+        set(DOC_EMBEDDED_TYPE, type);
     }
 }

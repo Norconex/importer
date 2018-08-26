@@ -196,7 +196,7 @@ public class TitleGeneratorTagger
                 title = StringUtils.substring(title, 0, titleMaxLength);
                 title += "[...]";
             }
-            metadata.setString(getTargetField(), title);
+            metadata.set(getTargetField(), title);
         }
     }
 

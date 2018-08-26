@@ -98,9 +98,9 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
             length = is.getCount();
         }
         if (overwrite) {
-            metadata.setInt(field, length);
+            metadata.set(field, length);
         } else {
-            metadata.addInt(field, length);
+            metadata.add(field, length);
         }
     }
 

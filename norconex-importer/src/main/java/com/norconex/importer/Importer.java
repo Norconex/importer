@@ -243,17 +243,16 @@ public class Importer {
             meta = new ImporterMetadata(metadata);
         }
         meta.setReference(reference);
-        meta.setString(ImporterMetadata.DOC_CONTENT_TYPE,
+        meta.set(ImporterMetadata.DOC_CONTENT_TYPE,
                 safeContentType.toString());
         ContentFamily contentFamily =
                 ContentFamily.forContentType(safeContentType.toString());
         if (contentFamily != null) {
-            meta.setString(ImporterMetadata.DOC_CONTENT_FAMILY,
+            meta.set(ImporterMetadata.DOC_CONTENT_FAMILY,
                     contentFamily.toString());
         }
         if (StringUtils.isNotBlank(contentEncoding)) {
-            meta.setString(
-                    ImporterMetadata.DOC_CONTENT_ENCODING, contentEncoding);
+            meta.set(ImporterMetadata.DOC_CONTENT_ENCODING, contentEncoding);
         }
 
         //--- Document Handling ---

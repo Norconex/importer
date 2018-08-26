@@ -168,12 +168,12 @@ public class TruncateTagger extends AbstractDocumentTagger {
         }
         if (StringUtils.isNotBlank(getToField())) {
             if (overwrite) {
-                metadata.setString(getToField(), truncValues);
+                metadata.set(getToField(), truncValues);
             } else {
-                metadata.addString(getToField(), truncValues);
+                metadata.add(getToField(), truncValues);
             }
         } else {
-            metadata.setString(getFromField(), truncValues);
+            metadata.set(getFromField(), truncValues);
         }
     }
 

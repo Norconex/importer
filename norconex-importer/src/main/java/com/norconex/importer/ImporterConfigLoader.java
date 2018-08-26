@@ -112,12 +112,4 @@ public final class ImporterConfigLoader {
         }
         return config;
     }
-
-    private static ConfigurationException configurationException(
-            String msg, Exception e) {
-        if (e instanceof ConfigurationException) {
-            return (ConfigurationException) e;
-        }
-        return new ConfigurationException(msg, e);
-    }
 }

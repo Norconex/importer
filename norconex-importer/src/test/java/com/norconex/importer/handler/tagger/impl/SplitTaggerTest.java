@@ -41,13 +41,13 @@ public class SplitTaggerTest {
     @Test
     public void testRegularSplit() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("metaToSplitSameField", "Joe, Jack, William, Avrel");
-        meta.addString("metaNoSplitSameField", "Joe Jack William Avrel");
-        meta.addString("metaToSplitNewField", "Joe, Jack, William, Avrel");
-        meta.addString("metaNoSplitNewField", "Joe Jack William Avrel");
-        meta.addString("metaMultiSameField",
+        meta.add("metaToSplitSameField", "Joe, Jack, William, Avrel");
+        meta.add("metaNoSplitSameField", "Joe Jack William Avrel");
+        meta.add("metaToSplitNewField", "Joe, Jack, William, Avrel");
+        meta.add("metaNoSplitNewField", "Joe Jack William Avrel");
+        meta.add("metaMultiSameField",
                 "Joe, Jack", "William, Avrel");
-        meta.addString("metaMultiNewField",
+        meta.add("metaMultiNewField",
                 "Joe, Jack", "William, Avrel");
 
 
@@ -86,8 +86,8 @@ public class SplitTaggerTest {
     @Test
     public void testRegexSplit() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("path1", "/a/path/file.doc");
-        meta.addString("path2", "a, b,c d;e, f");
+        meta.add("path1", "/a/path/file.doc");
+        meta.add("path2", "a, b,c d;e, f");
 
         SplitTagger tagger = new SplitTagger();
         tagger.addSplit("path1", "/", true);

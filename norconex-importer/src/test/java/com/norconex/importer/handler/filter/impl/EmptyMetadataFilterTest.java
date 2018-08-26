@@ -29,8 +29,8 @@ public class EmptyMetadataFilterTest {
     @Test
     public void testAcceptDocument() throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "a string to match");
-        meta.addString("field2", "");
+        meta.add("field1", "a string to match");
+        meta.add("field2", "");
 
         EmptyMetadataFilter filter = new EmptyMetadataFilter();
 

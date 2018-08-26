@@ -81,7 +81,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"&gt;
  *    &lt;script&gt;&lt;![CDATA[
- *        metadata.addString('fruit', 'apple');
+ *        metadata.add('fruit', 'apple');
  *    ]]&gt;&lt;/script&gt;
  *  &lt;/handler&gt;
  * </pre>

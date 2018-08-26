@@ -58,7 +58,7 @@ public class CurrentDateTaggerTest {
                         meta.getString(ImporterMetadata.DOC_IMPORTED_DATE)));
 
         meta = new ImporterMetadata();
-        meta.addString("existingField", "1002727941000");
+        meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOverwrite(true);
         tagger.setField("existingField");
@@ -69,7 +69,7 @@ public class CurrentDateTaggerTest {
                 meta.getLong("existingField") > now);
 
         meta = new ImporterMetadata();
-        meta.addString("existingField", "1002727941000");
+        meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOverwrite(false);
         tagger.setField("existingField");

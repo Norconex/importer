@@ -44,9 +44,9 @@ public class ScriptTaggerTest {
     @Test
     public void testJavaScript() throws IOException, ImporterHandlerException {
         testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
-                "metadata.addString('test', 'success');"
+                "metadata.add('test', 'success');"
               + "var story = content.replace(/Alice/g, 'Roger');"
-              + "metadata.addString('story', story);"
+              + "metadata.add('story', story);"
         );
     }
 
@@ -60,7 +60,7 @@ public class ScriptTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

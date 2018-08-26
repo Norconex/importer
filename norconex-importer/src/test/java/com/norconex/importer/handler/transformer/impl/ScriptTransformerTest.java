@@ -46,7 +46,7 @@ public class ScriptTransformerTest {
     public void testJavaScript()
             throws IOException, ImporterHandlerException {
         testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
-                "metadata.addString('test', 'success');"
+                "metadata.add('test', 'success');"
               + "text = content.replace(/Alice/g, 'Roger');"
               + "/*return*/ text;"
         );
@@ -64,7 +64,7 @@ public class ScriptTransformerTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(), is, out, metadata, false);
 

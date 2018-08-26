@@ -32,16 +32,16 @@ public class NumericMetadataFilterTest {
             throws IOException, ImporterHandlerException {
 
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("lowerthan", "-4.25");
-        meta.addString("inrange", "25");
-        meta.addString("greaterthan", "55");
-        meta.addString("multivalInrange", "0");
-        meta.addString("multivalInrange", "20");
-        meta.addString("multivalInrange", "66");
-        meta.addString("multivalOutrange", "0");
-        meta.addString("multivalOutrange", "11");
-        meta.addString("multivalOutrange", "66");
-        meta.addString("equal", "6.5");
+        meta.add("lowerthan", "-4.25");
+        meta.add("inrange", "25");
+        meta.add("greaterthan", "55");
+        meta.add("multivalInrange", "0");
+        meta.add("multivalInrange", "20");
+        meta.add("multivalInrange", "66");
+        meta.add("multivalOutrange", "0");
+        meta.add("multivalOutrange", "11");
+        meta.add("multivalOutrange", "66");
+        meta.add("equal", "6.5");
 
         NumericMetadataFilter filter = new NumericMetadataFilter();
         filter.addCondition(Operator.GREATER_EQUAL, 20);

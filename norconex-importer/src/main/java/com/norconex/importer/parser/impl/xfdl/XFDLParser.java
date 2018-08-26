@@ -133,7 +133,7 @@ public class XFDLParser implements IDocumentParser {
         if (xmlTitles != null && xmlTitles.getLength() > 0) {
             Node titleItem = xmlTitles.item(0);
             if (titleItem instanceof Element) {
-                metadata.addString("title", 
+                metadata.add("title", 
                         ((Element) titleItem).getTextContent());
             }
         }

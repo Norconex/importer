@@ -46,7 +46,7 @@ public class TitleGeneratorTaggerTest {
         t.setDetectHeading(true);
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", null, metadata, true);
 
         Assert.assertNull("Title should be null",
@@ -64,7 +64,7 @@ public class TitleGeneratorTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
@@ -88,7 +88,7 @@ public class TitleGeneratorTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
@@ -108,7 +108,7 @@ public class TitleGeneratorTaggerTest {
                 "This is the first line. This is another line.".getBytes());
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", is, metadata, true);
 
         is.close();

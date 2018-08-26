@@ -31,7 +31,7 @@ public class ReplaceTaggerTest {
     public void testNoValue()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("test", "a b c");
+        meta.add("test", "a b c");
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
@@ -86,8 +86,8 @@ public class ReplaceTaggerTest {
     public void testMatchReturnSameValue()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("EXP_NAME+COUNTRY1", "LAZARUS ANDREW");
-        meta.addString("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]");
+        meta.add("EXP_NAME+COUNTRY1", "LAZARUS ANDREW");
+        meta.add("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]");
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
@@ -176,11 +176,11 @@ public class ReplaceTaggerTest {
     @Test
     public void testRegularReplace() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("fullMatchField", "full value match");
-        meta.addString("partialNoMatchField", "partial value nomatch");
-        meta.addString("matchOldField", "match to new field");
-        meta.addString("nomatchOldField", "no match to new field");
-        meta.addString("caseField", "Value Of Mixed Case");
+        meta.add("fullMatchField", "full value match");
+        meta.add("partialNoMatchField", "partial value nomatch");
+        meta.add("matchOldField", "match to new field");
+        meta.add("nomatchOldField", "no match to new field");
+        meta.add("caseField", "Value Of Mixed Case");
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
@@ -234,9 +234,9 @@ public class ReplaceTaggerTest {
     @Test
     public void testRegexReplace() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("path1", "/this/is/a/path/file.doc");
-        meta.addString("path2", "/that/is/a/path/file.doc");
-        meta.addString("path3", "/That/Is/A/Path/File.doc");
+        meta.add("path1", "/this/is/a/path/file.doc");
+        meta.add("path2", "/that/is/a/path/file.doc");
+        meta.add("path3", "/That/Is/A/Path/File.doc");
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
@@ -281,7 +281,7 @@ public class ReplaceTaggerTest {
 
 
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field", originalValue);
+        meta.add("field", originalValue);
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
@@ -494,7 +494,7 @@ public class ReplaceTaggerTest {
 
         String originalValue = "One dog, two dogs, three dogs";
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field", originalValue);
+        meta.add("field", originalValue);
 
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();

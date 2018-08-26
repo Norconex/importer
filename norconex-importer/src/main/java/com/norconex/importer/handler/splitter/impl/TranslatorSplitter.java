@@ -446,8 +446,8 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         childMeta.setEmbeddedReference(childEmbedRef);
         childMeta.setEmbeddedParentReference(doc.getReference());
         childMeta.setEmbeddedParentRootReference(doc.getReference());
-        childMeta.setString(ImporterMetadata.DOC_LANGUAGE, targetLang);
-        childMeta.setString(ImporterMetadata.DOC_TRANSLATED_FROM, sourceLang);
+        childMeta.set(ImporterMetadata.DOC_LANGUAGE, targetLang);
+        childMeta.set(ImporterMetadata.DOC_TRANSLATED_FROM, sourceLang);
         return childDoc;
     }
 
@@ -491,7 +491,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
             line = StringUtils.removeStart(line, "[");
             line = StringUtils.removeEnd(line, "]");
             String[] values = StringUtils.splitByWholeSeparator(line, "][");
-            childMeta.setString(fieldsToTranslate.get(index), values);
+            childMeta.set(fieldsToTranslate.get(index), values);
             index++;
         }
         return childMeta;

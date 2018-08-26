@@ -181,29 +181,27 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         }
 
         //--- Add fields ---
-        metadata.addLong(
-                "document.stat." + field + "characterCount", charCount);
-        metadata.addLong("document.stat." + field + "wordCount", wordCount);
-        metadata.addLong(
-                "document.stat." + field + "sentenceCount", sentenceCount);
-        metadata.addLong(
+        metadata.add("document.stat." + field + "characterCount", charCount);
+        metadata.add("document.stat." + field + "wordCount", wordCount);
+        metadata.add("document.stat." + field + "sentenceCount", sentenceCount);
+        metadata.add(
                 "document.stat." + field + "paragraphCount", paragraphCount);
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageWordCharacterCount",
                 divide(wordCharCount, wordCount));
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageSentenceCharacterCount",
                 divide(sentenceCharCount, sentenceCount));
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageSentenceWordCount",
                 divide(wordCount, sentenceCount));
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageParagraphCharacterCount",
                 divide(charCount, paragraphCount));
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageParagraphSentenceCount",
                 divide(sentenceCount, paragraphCount));
-        metadata.addString(
+        metadata.add(
                 "document.stat." + field + "averageParagraphWordCount",
                 divide(wordCount, paragraphCount));
 

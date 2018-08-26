@@ -184,7 +184,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
                         }
                         contentStr.append(colValue);
                     }
-                    childMeta.setString(colName, colValue);
+                    childMeta.set(colName, colValue);
                 }
                 String childDocRef = doc.getReference() + "!" + childEmbedRef;
                 CachedInputStream content = null;

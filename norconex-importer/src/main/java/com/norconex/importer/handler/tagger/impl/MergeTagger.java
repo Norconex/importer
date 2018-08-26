@@ -157,7 +157,7 @@ public class MergeTagger extends AbstractDocumentTagger {
 
             // Store in target field
             if (merge.isSingleValue()) {
-                metadata.setString(merge.getToField(), StringUtils.join(
+                metadata.set(merge.getToField(), StringUtils.join(
                         mergedValues, merge.getSingleValueSeparator()));
             } else {
                 metadata.put(merge.getToField(), mergedValues);

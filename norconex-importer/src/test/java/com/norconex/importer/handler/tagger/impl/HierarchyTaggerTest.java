@@ -42,7 +42,7 @@ public class HierarchyTaggerTest {
 
     public void testTagDocument() throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.setString("path", "/vegetable/potato/sweet");
+        meta.set("path", "/vegetable/potato/sweet");
         HierarchyTagger tagger = new HierarchyTagger();
         tagger.addHierarcyDetails(
                 "path", "tree", "/", "~~~", false);

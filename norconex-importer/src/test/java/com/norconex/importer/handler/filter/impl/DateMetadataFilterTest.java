@@ -37,7 +37,7 @@ public class DateMetadataFilterTest {
             throws IOException, ImporterHandlerException, ParseException {
 
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "1980-12-21T12:22:01.123");
+        meta.add("field1", "1980-12-21T12:22:01.123");
 
         DateMetadataFilter filter = null;
 
@@ -70,7 +70,7 @@ public class DateMetadataFilterTest {
 
 
         Calendar now = Calendar.getInstance();
-        meta.addString("field2",
+        meta.add("field2",
                 DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(now));
 
         filter = new DateMetadataFilter();

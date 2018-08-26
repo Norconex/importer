@@ -130,7 +130,7 @@ public class TextBetweenTagger
                 String value = content.substring(
                         matchPair.getLeft(), matchPair.getRight());
                 if (value != null) {
-                    metadata.addString(between.name, value);
+                    metadata.add(between.name, value);
                 }
             }
         }

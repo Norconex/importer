@@ -165,7 +165,7 @@ public class CharsetTagger extends AbstractDocumentTagger
             }
             newValues.add(newValue);
         }
-        metadata.setString(metaField,
+        metadata.set(metaField,
                 newValues.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
     }
 

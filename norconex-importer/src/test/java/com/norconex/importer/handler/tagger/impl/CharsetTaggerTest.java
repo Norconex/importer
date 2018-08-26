@@ -70,8 +70,8 @@ public class CharsetTaggerTest {
         t.setFieldsRegex("field1");
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString("field1", new String(sourceBytes, fromCharset));
-        metadata.setString(ImporterMetadata.DOC_CONTENT_ENCODING, fromCharset);
+        metadata.set("field1", new String(sourceBytes, fromCharset));
+        metadata.set(ImporterMetadata.DOC_CONTENT_ENCODING, fromCharset);
 
         t.tagDocument(
                 "ref-" + fromCharset + "-" + toCharset,

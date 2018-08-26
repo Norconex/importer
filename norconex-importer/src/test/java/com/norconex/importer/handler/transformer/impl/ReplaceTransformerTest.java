@@ -93,7 +93,7 @@ public class ReplaceTransformerTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString("document.reference", reference);
+        metadata.set("document.reference", reference);
 
         t.transformDocument(reference, is, os, metadata, true);
 

@@ -110,7 +110,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
         if (sectionIndex == 0) {
             for (MatchDetails md : matchesDetails) {
                 if (StringUtils.isNotBlank(md.getToField())) {
-                    metadata.setInt(md.getToField(), 0);;
+                    metadata.set(md.getToField(), 0);;
                 }
             }
         }
@@ -160,7 +160,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
                 }
 
                 int newCount = count + metadata.getInt(md.getToField());
-                metadata.setInt(md.getToField(), newCount);
+                metadata.set(md.getToField(), newCount);
             }
         }
     }

@@ -60,12 +60,12 @@ public class MergeTaggerTest {
     @Test
     public void testMultiFieldsMerge() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "1.1", "1.2");
-        meta.addString("field2", "2");
-        meta.addString("field3", "3");
-        meta.addString("fld4", "4");
-        meta.addString("fld5", "5");
-        meta.addString("fld6", "6");
+        meta.add("field1", "1.1", "1.2");
+        meta.add("field2", "2");
+        meta.add("field3", "3");
+        meta.add("fld4", "4");
+        meta.add("fld5", "5");
+        meta.add("fld6", "6");
 
         MergeTagger tagger = new MergeTagger();
 
@@ -102,7 +102,7 @@ public class MergeTaggerTest {
     @Test
     public void testSingleFieldMerge() throws ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field", "1", "2");
+        meta.add("field", "1", "2");
 
         MergeTagger tagger = new MergeTagger();
 

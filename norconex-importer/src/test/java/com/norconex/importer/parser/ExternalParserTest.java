@@ -100,9 +100,9 @@ public class ExternalParserTest {
                         (int) DataUnit.KB.toBytes(5)).newInputStream(input));
         ImporterMetadata metadata = doc.getMetadata();
         if (metaFiles) {
-            metadata.setString(
+            metadata.set(
                     "metaFileField1", "this is a first test");
-            metadata.setString("metaFileField2",
+            metadata.set("metaFileField2",
                     "this is a second test value1",
                     "this is a second test value2");
         }

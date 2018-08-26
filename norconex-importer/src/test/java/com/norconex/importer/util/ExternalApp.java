@@ -128,7 +128,7 @@ public class ExternalApp {
                     for (int i = 0; i < values.length; i++) {
                         values[i] = reverseWords(values[i]);
                     }
-                    p.setString(entry.getKey(), values);
+                    p.set(entry.getKey(), values);
                 }
                 p.storeToProperties(w);
             }
@@ -282,7 +282,8 @@ public class ExternalApp {
             "commons-lang",
             "commons-beanutils",
             "commons-logging",
-            "commons-configuration"
+            "commons-lang3",
+            "commons-collections4"
     };
     private static boolean keepPath(String path) {
         if (StringUtils.isBlank(path)) {

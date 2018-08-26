@@ -54,8 +54,8 @@ public class CountMatchesTaggerTest {
     public void testMatchesCount()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("url", "http://domain/url/test");
-        meta.addString("fruits", "grapefruit, apple, orange, APPLE");
+        meta.add("url", "http://domain/url/test");
+        meta.add("fruits", "grapefruit, apple, orange, APPLE");
         String content = "potato carrot Potato";
 
         MatchDetails m = null;
@@ -160,7 +160,7 @@ public class CountMatchesTaggerTest {
     public void testLargeContent()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("fruits", "orange orange");
+        meta.add("fruits", "orange orange");
         String content = "potato whatever whatever whatever whatever"
                 + "potato whatever whatever whatever whatever";
 
@@ -191,9 +191,9 @@ public class CountMatchesTaggerTest {
     public void testAddToSameFieldAndNoMatch()
             throws ImporterHandlerException, IOException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("orange", "orange orange");
-        meta.addString("apple", "apple apple apple");
-        meta.addString("potato", "carrot");
+        meta.add("orange", "orange orange");
+        meta.add("apple", "apple apple apple");
+        meta.add("potato", "carrot");
 
         CountMatchesTagger tagger = new CountMatchesTagger();
         tagger.setMaxReadSize(20);

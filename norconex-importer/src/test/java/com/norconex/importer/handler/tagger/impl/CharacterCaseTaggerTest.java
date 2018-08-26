@@ -32,9 +32,9 @@ public class CharacterCaseTaggerTest {
     public void testUpperLowerValues()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "Doit être upper");
-        meta.addString("field1", "Must be upper");
-        meta.setString("field2", "DOIT ÊTRE LOWER");
+        meta.add("field1", "Doit être upper");
+        meta.add("field1", "Must be upper");
+        meta.set("field2", "DOIT ÊTRE LOWER");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.addFieldCase("field1", "upper", "value");
@@ -52,9 +52,9 @@ public class CharacterCaseTaggerTest {
     public void testUpperLowerField()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("fieldMustBeUpper", "value 1");
-        meta.addString("fieldMustBeLower", "value 2");
-        meta.setString("fieldMustBeCapitalized", "value 3");
+        meta.add("fieldMustBeUpper", "value 1");
+        meta.add("fieldMustBeLower", "value 2");
+        meta.set("fieldMustBeCapitalized", "value 3");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.addFieldCase("fieldMustBeUpper", "upper", "field");
@@ -75,7 +75,7 @@ public class CharacterCaseTaggerTest {
     public void testSwapCase()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("fieldMustBeSwapped", "ValUe Swap. \n  OK.");
+        meta.add("fieldMustBeSwapped", "ValUe Swap. \n  OK.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.addFieldCase("fieldMustBeSwapped", "swap", "value");
@@ -90,9 +90,9 @@ public class CharacterCaseTaggerTest {
     public void testCapitalizeString()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("string1", "normal string.");
-        meta.addString("string2", " string starting with a space.");
-        meta.addString("string3", "1 string starting with a number.");
+        meta.add("string1", "normal string.");
+        meta.add("string2", " string starting with a space.");
+        meta.add("string3", "1 string starting with a number.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.addFieldCase("string1", "string", "value");

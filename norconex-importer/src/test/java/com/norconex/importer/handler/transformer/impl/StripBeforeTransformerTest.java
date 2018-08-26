@@ -43,7 +43,7 @@ public class StripBeforeTransformerTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         ImporterMetadata metadata = new ImporterMetadata();
-        metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(),
                 is, os, metadata, false);

@@ -109,7 +109,7 @@ public class ConstantTagger extends AbstractDocumentTagger{
             if (onConflict != OnConflict.NOOP
                     || CollectionUtils.isEmpty(metadata.get(name))) {
                 for (String value : newValues) {
-                    metadata.addString(name, value);
+                    metadata.add(name, value);
                 }
             }
         }

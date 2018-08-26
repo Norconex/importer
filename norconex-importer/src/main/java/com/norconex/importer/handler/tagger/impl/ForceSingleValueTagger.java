@@ -104,7 +104,7 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
                 } else {
                     singleValue = StringUtils.join(values, ",");
                 }
-                metadata.setString(name, singleValue);
+                metadata.set(name, singleValue);
             }
         }
     }

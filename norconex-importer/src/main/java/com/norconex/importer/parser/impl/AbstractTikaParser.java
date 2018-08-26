@@ -179,7 +179,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             String[] tikaValues = tikaMeta.getValues(name);
             for (String tikaValue : tikaValues) {
                 if (!nxValues.contains(tikaValue)) {
-                    metadata.addString(name, tikaValue);
+                    metadata.add(name, tikaValue);
                 }
             }
         }

@@ -106,9 +106,9 @@ public class CopyTagger extends AbstractDocumentTagger {
         for (CopyDetails details : list) {
             for (String value : metadata.getStrings(details.fromField)) {
                 if (details.overwrite) {
-                    metadata.setString(details.toField, value);
+                    metadata.set(details.toField, value);
                 } else {
-                    metadata.addString(details.toField, value);
+                    metadata.add(details.toField, value);
                 }
             }
         }

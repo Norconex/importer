@@ -133,8 +133,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
             // Make sure we are not splitting single pages.
             if (document.getNumberOfPages() <= 1) {
-                doc.getMetadata().setInt(DOC_PDF_PAGE_NO, 1);
-                doc.getMetadata().setInt(DOC_PDF_TOTAL_PAGES, 1);
+                doc.getMetadata().set(DOC_PDF_PAGE_NO, 1);
+                doc.getMetadata().set(DOC_PDF_TOTAL_PAGES, 1);
                 return pageDocs;
             }
 
@@ -155,9 +155,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                 pageMeta.setEmbeddedParentReference(doc.getReference());
                 pageMeta.setEmbeddedParentRootReference(doc.getReference());
 
-                pageMeta.setInt(DOC_PDF_PAGE_NO, pageNo);
-                pageMeta.setInt(
-                        DOC_PDF_TOTAL_PAGES, document.getNumberOfPages());
+                pageMeta.set(DOC_PDF_PAGE_NO, pageNo);
+                pageMeta.set(DOC_PDF_TOTAL_PAGES, document.getNumberOfPages());
 
                 // a single page should not be too big to store in memory
                 ByteArrayOutputStream os = new ByteArrayOutputStream();

@@ -94,9 +94,9 @@ public class UUIDTagger extends AbstractDocumentTagger {
             finalField = DEFAULT_FIELD;
         }
         if (overwrite) {
-            metadata.setString(finalField, uuid);
+            metadata.set(finalField, uuid);
         } else {
-            metadata.addString(finalField, uuid);
+            metadata.add(finalField, uuid);
         }
     }
 

@@ -39,11 +39,11 @@ public class DeleteTaggerTest {
     @Test
     public void testDeleteField() throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("field1", "delete me");
-        meta.addString("field1", "delete me too");
-        meta.setString("field2", "delete also");
-        meta.setString("field3", "keep this one");
-        meta.setString("field4", "one last to delete");
+        meta.add("field1", "delete me");
+        meta.add("field1", "delete me too");
+        meta.set("field2", "delete also");
+        meta.set("field3", "keep this one");
+        meta.set("field4", "one last to delete");
 
         DeleteTagger tagger = new DeleteTagger();
         tagger.addField("field1");
@@ -61,14 +61,14 @@ public class DeleteTaggerTest {
     public void testDeleteFieldsViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("content-type", "blah");
-        meta.addString("x-access-level", "blah");
-        meta.addString("X-CONTENT-TYPE-OPTIONS", "blah");
-        meta.addString("X-FRAME-OPTIONS", "blah");
-        meta.addString("X-PARSED-BY", "blah");
-        meta.addString("date", "blah");
-        meta.addString("X-RATE-LIMIT-LIMIT", "blah");
-        meta.addString("source", "blah");
+        meta.add("content-type", "blah");
+        meta.add("x-access-level", "blah");
+        meta.add("X-CONTENT-TYPE-OPTIONS", "blah");
+        meta.add("X-FRAME-OPTIONS", "blah");
+        meta.add("X-PARSED-BY", "blah");
+        meta.add("date", "blah");
+        meta.add("X-RATE-LIMIT-LIMIT", "blah");
+        meta.add("source", "blah");
 
         DeleteTagger tagger = new DeleteTagger();
 
@@ -90,14 +90,14 @@ public class DeleteTaggerTest {
     public void testDeleteFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.addString("content-type", "blah");
-        meta.addString("x-access-level", "blah");
-        meta.addString("X-CONTENT-TYPE-OPTIONS", "blah");
-        meta.addString("X-FRAME-OPTIONS", "blah");
-        meta.addString("X-PARSED-BY", "blah");
-        meta.addString("date", "blah");
-        meta.addString("X-RATE-LIMIT-LIMIT", "blah");
-        meta.addString("source", "blah");
+        meta.add("content-type", "blah");
+        meta.add("x-access-level", "blah");
+        meta.add("X-CONTENT-TYPE-OPTIONS", "blah");
+        meta.add("X-FRAME-OPTIONS", "blah");
+        meta.add("X-PARSED-BY", "blah");
+        meta.add("date", "blah");
+        meta.add("X-RATE-LIMIT-LIMIT", "blah");
+        meta.add("source", "blah");
 
         DeleteTagger tagger = new DeleteTagger();
 
