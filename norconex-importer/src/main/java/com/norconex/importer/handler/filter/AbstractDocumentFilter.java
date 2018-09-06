@@ -128,7 +128,7 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     @Override
     protected final void loadHandlerFromXML(XML xml) {
-        setOnMatch(xml.getEnum(OnMatch.class, "@onMatch", onMatch));
+        setOnMatch(xml.getEnum("@onMatch", OnMatch.class, onMatch));
         loadFilterFromXML(xml);
     }
     protected abstract void loadFilterFromXML(XML xml);
