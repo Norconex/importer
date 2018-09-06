@@ -125,7 +125,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
         List<ImporterDocument> pageDocs = new ArrayList<>();
 
         // Make sure we are not splitting a page that was already split
-        if (doc.getMetadata().getInt(DOC_PDF_PAGE_NO, 0) > 0) {
+        if (doc.getMetadata().getInteger(DOC_PDF_PAGE_NO, 0) > 0) {
             return pageDocs;
         }
 

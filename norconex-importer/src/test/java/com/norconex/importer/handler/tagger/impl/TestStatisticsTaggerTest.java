@@ -59,10 +59,14 @@ public class TestStatisticsTaggerTest {
 
         is.close();
 
-        Assert.assertEquals(616, meta.getInt("document.stat.characterCount"));
-        Assert.assertEquals(115, meta.getInt("document.stat.wordCount"));
-        Assert.assertEquals(8, meta.getInt("document.stat.sentenceCount"));
-        Assert.assertEquals(4, meta.getInt("document.stat.paragraphCount"));
+        Assert.assertEquals(616,
+                (int) meta.getInteger("document.stat.characterCount"));
+        Assert.assertEquals(115,
+                (int) meta.getInteger("document.stat.wordCount"));
+        Assert.assertEquals(8,
+                (int) meta.getInteger("document.stat.sentenceCount"));
+        Assert.assertEquals(4,
+                (int) meta.getInteger("document.stat.paragraphCount"));
         Assert.assertEquals("4.2",
                 meta.getString("document.stat.averageWordCharacterCount"));
         Assert.assertEquals("77.0",

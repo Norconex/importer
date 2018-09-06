@@ -14,11 +14,12 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.xml.XML;
@@ -141,19 +142,20 @@ public class CountMatchesTaggerTest {
         tagger.tagDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), meta, true);
 
-        Assert.assertEquals(4, meta.getInt("slashesCountNormal"));
-        Assert.assertEquals(4, meta.getInt("slashesCountRegex"));
-        Assert.assertEquals(3, meta.getInt("segmentCountRegex"));
+        assertEquals(4, (int) meta.getInteger("slashesCountNormal"));
+        assertEquals(4, (int) meta.getInteger("slashesCountRegex"));
+        assertEquals(3, (int) meta.getInteger("segmentCountRegex"));
 
-        Assert.assertEquals(1, meta.getInt("appleCountSensitiveNormal"));
-        Assert.assertEquals(2, meta.getInt("appleCountInsensitiveNormal"));
-        Assert.assertEquals(3, meta.getInt("fruitsCountSensitiveRegex"));
-        Assert.assertEquals(4, meta.getInt("fruitsCountInsensitiveRegex"));
+        assertEquals(1, (int) meta.getInteger("appleCountSensitiveNormal"));
+        assertEquals(2, (int) meta.getInteger("appleCountInsensitiveNormal"));
+        assertEquals(3, (int) meta.getInteger("fruitsCountSensitiveRegex"));
+        assertEquals(4, (int) meta.getInteger("fruitsCountInsensitiveRegex"));
 
-        Assert.assertEquals(1, meta.getInt("potatoCountSensitiveNormal"));
-        Assert.assertEquals(2, meta.getInt("potatoCountInsensitiveNormal"));
-        Assert.assertEquals(2, meta.getInt("vegetableCountSensitiveRegex"));
-        Assert.assertEquals(3, meta.getInt("vegetableCountInsensitiveRegex"));
+        assertEquals(1, (int) meta.getInteger("potatoCountSensitiveNormal"));
+        assertEquals(2, (int) meta.getInteger("potatoCountInsensitiveNormal"));
+        assertEquals(2, (int) meta.getInteger("vegetableCountSensitiveRegex"));
+        assertEquals(3,
+                (int) meta.getInteger("vegetableCountInsensitiveRegex"));
     }
 
     @Test
@@ -183,8 +185,8 @@ public class CountMatchesTaggerTest {
         tagger.tagDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), meta, true);
 
-        Assert.assertEquals(2, meta.getInt("potatoCount"));
-        Assert.assertEquals(2, meta.getInt("orangeCount"));
+        assertEquals(2, (int) meta.getInteger("potatoCount"));
+        assertEquals(2, (int) meta.getInteger("orangeCount"));
     }
 
     @Test
@@ -221,8 +223,8 @@ public class CountMatchesTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
 
         // we should get the sum of both oranges and apples
-        Assert.assertEquals(5, meta.getInt("fruitCount"));
+        assertEquals(5, (int) meta.getInteger("fruitCount"));
         // we should get zero (use string to make sure).
-        Assert.assertEquals("0", meta.getString("potatoCount"));
+        assertEquals("0", meta.getString("potatoCount"));
     }
 }

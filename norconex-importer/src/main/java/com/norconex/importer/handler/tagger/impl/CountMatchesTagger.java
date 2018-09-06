@@ -159,7 +159,7 @@ public class CountMatchesTagger extends AbstractStringTagger {
                             sourceValue, md.getValue(), md.isCaseSensitive());
                 }
 
-                int newCount = count + metadata.getInt(md.getToField());
+                int newCount = count + metadata.getInteger(md.getToField());
                 metadata.set(md.getToField(), newCount);
             }
         }

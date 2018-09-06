@@ -62,7 +62,7 @@ public class PDFPageSplitterTest {
     }
 
     private int getPageNo(ImporterDocument doc) throws IOException {
-        return doc.getMetadata().getInt(PDFPageSplitter.DOC_PDF_PAGE_NO);
+        return doc.getMetadata().getInteger(PDFPageSplitter.DOC_PDF_PAGE_NO);
     }
 
     @Test
