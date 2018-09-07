@@ -224,7 +224,7 @@ public class LanguageTagger extends AbstractStringTagger
             new Comparator<LanguageResult>() {
         @Override
         public int compare(LanguageResult o1, LanguageResult o2) {
-            return Float.compare(o1.getRawScore(), o2.getRawScore());
+            return Float.compare(o2.getRawScore(), o1.getRawScore());
         }
     };
     
