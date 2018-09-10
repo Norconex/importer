@@ -24,7 +24,7 @@
         <xs:attribute name="onMatch">
           <xs:simpleType>
             <xs:restriction base="xs:string">
-              <xs:pattern value="include|exclude" />
+              <xs:pattern value="INCLUDE|EXCLUDE|include|exclude" />
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
