@@ -36,8 +36,8 @@ import org.apache.tika.langdetect.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 
-import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.config.XMLConfigurationUtil;
 import com.norconex.commons.lang.xml.EnhancedXMLStreamWriter;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -45,9 +45,9 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
  * <p>Detects a document language based on Tika language detection capability.
- * It adds the detected language to the 
- * "<code>document.language</code>" metadata field.  
- * Optionally adds all potential languages detected with their 
+ * It adds the detected language to the
+ * "<code>document.language</code>" metadata field.
+ * Optionally adds all potential languages detected with their
  * probability score as well as additional fields following this pattern:</p>
  * <pre>
  * document.language.&lt;rank&gt;.tag
@@ -56,15 +56,15 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <code>&lt;rank&gt;</code> is to indicate the match order, based
  * on match probability score (starting at 1).
  * </p>
- * <p>This tagger can be used both as a pre-parse (on text only) 
+ * <p>This tagger can be used both as a pre-parse (on text only)
  * or post-parse handler.</p>
- * 
+ *
  * <h3>Accuracy:</h3>
  * <p>
  * To obtain optimal detection, long enough text is expected.  The default
  * detection algorithm is optimized for document with lots of text.
- * This tagger relies on Tika language detection capabilities and future 
- * versions may provide better precision for documents made of short 
+ * This tagger relies on Tika language detection capabilities and future
+ * versions may provide better precision for documents made of short
  * text (e.g. tweets, comments, etc).
  * </p>
  * <p>
@@ -72,13 +72,13 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * accuracy in many cases by limiting the set of languages supported
  * for detection.
  * </p>
- * 
+ *
  * <h3>Supported Languages:</h3>
  * <p>
- * Languages are represented as code values. As of 2.6.0, at least the 
+ * Languages are represented as code values. As of 2.6.0, at least the
  * following 70 languages are supported by the Tika version used:
  * </p>
- * 
+ *
  * <ul>
  *   <li>af Afrikaans</li>
  *   <li>an Aragonese</li>
@@ -151,41 +151,41 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *   <li>zh-cn Simplified Chinese</li>
  *   <li>zh-tw Traditional Chinese</li>
  * </ul>
- * 
+ *
  * <p>
- * It is possible more will be supported automatically with future Tika 
+ * It is possible more will be supported automatically with future Tika
  * upgrades.
  * </p>
- * 
- * <p>If you do not restrict the list of language candidates to detect, 
+ *
+ * <p>If you do not restrict the list of language candidates to detect,
  * the default behavior is to try match all languages currently supported.
  * </p>
- * 
+ *
  * <p>
  * <b>Since 2.6.0</b>, this tagger uses Tika for language detection. As a
  * result, more languages are supported, at the expense of less accuracy with
  * short text.
  * </p>
- * 
+ *
  * <h3>XML configuration usage:</h3>
- * 
+ *
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
  *          keepProbabilities="(false|true)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)"
  *          fallbackLanguage="(default language when detection failed)" &gt;
- *      
+ *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
  *          (regular expression of value to match)
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *      
+ *
  *      &lt;languages&gt;
  *        (CSV list of language tag candidates. Defaults to the above list.)
  *      &lt;/languages&gt;
- *      
+ *
  *  &lt;/tagger&gt;
  * </pre>
  * <h4>Usage example:</h4>
@@ -199,63 +199,63 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;languages&gt;en, fr&lt;/languages&gt;
  *  &lt;/tagger&gt;
  * </pre>
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
 public class LanguageTagger extends AbstractStringTagger
         implements IXMLConfigurable {
 
-    //TODO Check if doc.size is defined in metadata? If so, use it to 
+    //TODO Check if doc.size is defined in metadata? If so, use it to
     //determine if we are going with small or long text?
-    
-    //TODO provide ways to overwrite or specify custom language profiles 
+
+    //TODO provide ways to overwrite or specify custom language profiles
     // in this tagger configuration?
-    
-    private static final Logger LOG = 
+
+    private static final Logger LOG =
             LogManager.getLogger(LanguageTagger.class);
-    
+
     private LanguageDetector detector;
     private boolean keepProbabilities;
     private String[] languages;
     private String fallbackLanguage;
-    
-    private final Comparator<LanguageResult> langResultComparator = 
+
+    private final Comparator<LanguageResult> langResultComparator =
             new Comparator<LanguageResult>() {
         @Override
         public int compare(LanguageResult o1, LanguageResult o2) {
-            return Float.compare(o1.getRawScore(), o2.getRawScore());
+            return Float.compare(o2.getRawScore(), o1.getRawScore());
         }
     };
-    
+
     @Override
     protected void tagStringContent(
-            String reference, StringBuilder content, 
+            String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed,
             int sectionIndex) throws ImporterHandlerException {
-        
+
         // For massive docs: only use first section of document to detect langs
         if (sectionIndex > 0) {
             return;
         }
 
         ensureDetectorInitialization();
-        
+
         List<LanguageResult> results = detector.detectAll(content.toString());
-        
+
         // leave now if no matches
         if (results.isEmpty()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("No language found, using fallback language for " 
+                LOG.debug("No language found, using fallback language for "
                         + reference);
             }
             metadata.setLanguage(fallbackLanguage);
             return;
         }
-        
+
         Collections.sort(results, langResultComparator);
         metadata.setLanguage(results.get(0).getLanguage());
-        
+
         if (keepProbabilities) {
             int count = 0;
             for (LanguageResult lang : results) {
@@ -268,7 +268,7 @@ public class LanguageTagger extends AbstractStringTagger
     }
 
     /**
-     * Gets whether to enable short text detection. 
+     * Gets whether to enable short text detection.
      * @return <code>true</code> to use short text detection
      * @deprecated Since 2.6.0, no special optimization exists for short text
      * and this method always returns false
@@ -280,7 +280,7 @@ public class LanguageTagger extends AbstractStringTagger
     /**
      * Sets whether to use a detection algorithm optimized for short text.
      * Default is <code>false</code> (optimized for long text).
-     * @param shortText <code>true</code> to use a detection algorithm 
+     * @param shortText <code>true</code> to use a detection algorithm
      *                  optimized for short text
      * @deprecated Since 2.6.0, no special optimization exists for short text
      * and calling this method has no effect
@@ -319,7 +319,7 @@ public class LanguageTagger extends AbstractStringTagger
         this.fallbackLanguage = fallbackLanguage;
     }
 
-    private synchronized void ensureDetectorInitialization() 
+    private synchronized void ensureDetectorInitialization()
             throws ImporterHandlerException {
         if (detector == null) {
             OptimaizeLangDetector d = new OptimaizeLangDetector();
@@ -329,7 +329,7 @@ public class LanguageTagger extends AbstractStringTagger
                 if (ArrayUtils.isEmpty(languages)) {
                     d.loadModels();
                 } else {
-                    d.loadModels(new HashSet<String>(Arrays.asList(languages)));
+                    d.loadModels(new HashSet<>(Arrays.asList(languages)));
                 }
             } catch (IOException e) {
                 LOG.error("Cannot initialize language detector.", e);
@@ -358,7 +358,7 @@ public class LanguageTagger extends AbstractStringTagger
                   + "has been initialized (started tagging documents).");
         }
     }
-    
+
     @Override
     protected void loadStringTaggerFromXML(
             XMLConfiguration xml) throws IOException {
@@ -380,7 +380,7 @@ public class LanguageTagger extends AbstractStringTagger
         writer.writeAttribute(
                 "keepProbabilities", Boolean.toString(keepProbabilities));
         writer.writeAttribute("fallbackLanguage", fallbackLanguage);
-        
+
         if (ArrayUtils.isNotEmpty(languages)) {
             writer.writeStartElement("languages");
             writer.writeCharacters(StringUtils.join(languages, ','));
@@ -390,8 +390,9 @@ public class LanguageTagger extends AbstractStringTagger
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof LanguageTagger))
+        if (!(other instanceof LanguageTagger)) {
             return false;
+        }
         LanguageTagger castOther = (LanguageTagger) other;
         return new EqualsBuilder()
                 .appendSuper(super.equals(other))
