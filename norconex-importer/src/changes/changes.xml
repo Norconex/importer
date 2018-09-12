@@ -8,7 +8,7 @@
   <body>
 
     <release version="2.9.1-SNAPSHOT" date="2018-??-??" description="Bugfix release">
-      <action dev="essiembre" type="fix">
+      <action dev="rustyx" type="fix" issue="82">
         Fixed LanguageTagger choosing main language as the one with lowest
         probability.  
       </action>
