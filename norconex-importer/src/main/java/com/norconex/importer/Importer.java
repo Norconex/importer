@@ -395,8 +395,15 @@ public class Importer {
         IDocumentParser parser =
                 factory.getParser(doc.getReference(), doc.getContentType());
 
+        // Do not attempt to parse zero-length content
+        if (doc.getContent().isEmpty()) {
+            LOG.debug("No content for \"{}\".", doc.getReference());
+            return;
+        }
+
         // No parser means no parsing, so we simply return
         if (parser == null) {
+            LOG.debug("No parser for \"{}\"", doc.getReference());
             return;
         }
 
@@ -406,8 +413,9 @@ public class Importer {
 
         try {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Parser \"" + parser.getClass().getCanonicalName()
-                        + "\" about to parse \"" + doc.getReference() + "\".");
+                LOG.debug("Parser \"{}\" about to parse \"{}\".",
+                        parser.getClass().getCanonicalName(),
+                        doc.getReference());
             }
             List<ImporterDocument> nestedDocs =
                     parser.parseDocument(doc, output);
@@ -436,9 +444,8 @@ public class Importer {
 
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Parser \"" + parser.getClass()
-                        + "\" did not produce new content for: "
-                        + doc.getReference());
+                LOG.debug("Parser \"{}\" did not produce new content for: {}",
+                        parser.getClass(), doc.getReference());
             }
             IOUtils.closeQuietly(out);
             doc.getContent().dispose();

@@ -43,6 +43,9 @@
       <action dev="essiembre" type="update">
         Now using Path instead of File in many cases. 
       </action>
+      <action dev="essiembre" type="update">
+        Parsing no longer attempted on zero-length content. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>
