@@ -29,8 +29,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.regex.Regex;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;

@@ -14,13 +14,12 @@
  */
 package com.norconex.importer.handler;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,13 +42,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.exec.SystemCommand;
 import com.norconex.commons.lang.exec.SystemCommandException;
 import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -478,7 +477,7 @@ public class ExternalHandler {
 
         //--- Resolve command tokens ---
         LOG.debug("Command before token replacement: {}", cmd);
-        FileReader outputMetaReader = null;
+        Reader outputMetaReader = null;
         try {
             cmd = resolveInputToken(cmd, files, input);
             cmd = resolveInputMetaToken(cmd, files, input, metadata);
@@ -492,11 +491,13 @@ public class ExternalHandler {
             executeCommand(cmd, files, metadata, input, output);
             try {
                 if (files.hasOutputFile() && output != null) {
-                    FileUtils.copyFile(files.outputFile, output);
+                    FileUtils.copyFile(files.outputFile.toFile(), output);
                     output.flush();
                 }
                 if (files.hasOutputMetaFile()) {
-                    outputMetaReader = new FileReader(files.outputMetaFile);
+                    outputMetaReader = Files.newBufferedReader(
+                            files.outputMetaFile);
+//                    outputMetaReader = new FileReader(files.outputMetaFile);
                     String format = getMetadataOutputFormat();
                     ImporterMetadata metaOverwrite = new ImporterMetadata();
                     if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
@@ -592,23 +593,23 @@ public class ExternalHandler {
                 patterns.toArray(KeyValueExtractor.EMPTY_ARRAY));
     }
 
-    private File createTempFile(
+    private Path createTempFile(
             Object stream, String name, String suffix)
                     throws ImporterHandlerException {
-        File tempDirectory;
+        Path tempDirectory;
         if (tempDir != null) {
-            tempDirectory = tempDir.toFile();
+            tempDirectory = tempDir;
         } else if (stream instanceof ICachedStream) {
             tempDirectory = ((ICachedStream) stream).getCacheDirectory();
         } else {
-            tempDirectory = FileUtils.getTempDirectory();
+            tempDirectory = FileUtils.getTempDirectory().toPath();
         }
-        if (!tempDirectory.exists()) {
-            tempDirectory.mkdirs();
-        }
-        File file = null;
+        Path file = null;
         try {
-            file = File.createTempFile(name, suffix, tempDirectory);
+            if (!tempDirectory.toFile().exists()) {
+                Files.createDirectories(tempDirectory);
+            }
+            file = Files.createTempFile(tempDirectory, name, suffix);
             return file;
         } catch (IOException e) {
             ArgFiles.delete(file);
@@ -624,10 +625,10 @@ public class ExternalHandler {
         }
         String newCmd = cmd;
         files.inputFile = createTempFile(is, "input", ".tmp");
-        newCmd = StringUtils.replace(
-                newCmd, TOKEN_INPUT, files.inputFile.getAbsolutePath());
+        newCmd = StringUtils.replace(newCmd, TOKEN_INPUT,
+                files.inputFile.toAbsolutePath().toString());
         try {
-            FileUtils.copyInputStreamToFile(is, files.inputFile);
+            FileUtils.copyInputStreamToFile(is, files.inputFile.toFile());
             return newCmd;
         } catch (IOException e) {
             ArgFiles.delete(files.inputFile);
@@ -645,9 +646,9 @@ public class ExternalHandler {
         files.inputMetaFile = createTempFile(
                 is, "input-meta", "." + StringUtils.defaultIfBlank(
                         getMetadataInputFormat(), META_FORMAT_JSON));
-        newCmd = StringUtils.replace(newCmd,
-                TOKEN_INPUT_META, files.inputMetaFile.getAbsolutePath());
-        try (FileWriter fw = new FileWriter(files.inputMetaFile)) {
+        newCmd = StringUtils.replace(newCmd, TOKEN_INPUT_META,
+                files.inputMetaFile.toAbsolutePath().toString());
+        try (Writer fw = Files.newBufferedWriter(files.inputMetaFile)) {
             String format = getMetadataInputFormat();
             if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
                 meta.storeToProperties(fw);
@@ -665,15 +666,16 @@ public class ExternalHandler {
         }
     }
 
-    private String resolveOutputToken(String cmd, ArgFiles files, OutputStream os)
+    private String resolveOutputToken(
+            String cmd, ArgFiles files, OutputStream os)
             throws ImporterHandlerException {
         if (!cmd.contains(TOKEN_OUTPUT) || os == null) {
             return cmd;
         }
         String newCmd = cmd;
         files.outputFile = createTempFile(os, "output", ".tmp");
-        newCmd = StringUtils.replace(
-                newCmd, TOKEN_OUTPUT, files.outputFile.getAbsolutePath());
+        newCmd = StringUtils.replace(newCmd, TOKEN_OUTPUT,
+                files.outputFile.toAbsolutePath().toString());
         return newCmd;
     }
 
@@ -687,8 +689,8 @@ public class ExternalHandler {
         files.outputMetaFile = createTempFile(
                 os, "output-meta", "." + StringUtils.defaultIfBlank(
                         getMetadataOutputFormat(), ".tmp"));
-        newCmd = StringUtils.replace(newCmd,
-                TOKEN_OUTPUT_META, files.outputMetaFile.getAbsolutePath());
+        newCmd = StringUtils.replace(newCmd, TOKEN_OUTPUT_META,
+                files.outputMetaFile.toAbsolutePath().toString());
         return newCmd;
     }
 
@@ -783,10 +785,10 @@ public class ExternalHandler {
     }
 
     static class ArgFiles {
-        File inputFile;
-        File inputMetaFile;
-        File outputFile;
-        File outputMetaFile;
+        Path inputFile;
+        Path inputMetaFile;
+        Path outputFile;
+        Path outputMetaFile;
         boolean hasInputFile() {
             return inputFile != null;
         }
@@ -805,13 +807,13 @@ public class ExternalHandler {
             delete(outputFile);
             delete(outputMetaFile);
         }
-        static void delete(File file) {
+        static void delete(Path file) {
             if (file != null) {
                 try {
-                    java.nio.file.Files.delete(file.toPath());
+                    java.nio.file.Files.delete(file);
                 } catch (IOException e) {
                     LOG.warn("Could not delete temporary file: "
-                            + file.getAbsolutePath(), e);
+                            + file.toAbsolutePath(), e);
                 }
             }
         }

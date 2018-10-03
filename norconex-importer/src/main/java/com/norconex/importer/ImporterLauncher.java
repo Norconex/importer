@@ -36,7 +36,7 @@ import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
- * Command line launcher of the Importer application.  Invoked by the 
+ * Command line launcher of the Importer application.  Invoked by the
  * {@link Importer#main(String[])} method.
  * @author Pascal Essiembre
  * @since 2.0.0
@@ -53,7 +53,7 @@ public final class ImporterLauncher {
     public static final String ARG_VARIABLES = "variables";
     public static final String ARG_CHECKCFG = "checkcfg";
     public static final String ARG_IGNOREERRORS = "ignoreErrors";
-    
+
     /**
      * Constructor.
      */
@@ -63,7 +63,7 @@ public final class ImporterLauncher {
 
     public static void launch(String[] args) {
         CommandLine cmd = parseCommandLineArguments(args);
-        
+
         File varFile = null;
         File configFile = null;
 
@@ -83,16 +83,16 @@ public final class ImporterLauncher {
                         + configFile.getAbsolutePath());
                 System.exit(-1);
             }
-        }        
+        }
 
         if (cmd.hasOption(ARG_CHECKCFG)) {
             checkConfig(cmd, configFile, varFile);
             return;
         }
-        
-        
+
+
         // Proceed
-        ContentType contentType = 
+        ContentType contentType =
                 ContentType.valueOf(cmd.getOptionValue(ARG_CONTENTTYPE));
         String contentEncoding = cmd.getOptionValue(ARG_CONTENTENCODING);
         String output = cmd.getOptionValue(ARG_OUTPUTFILE);
@@ -101,14 +101,14 @@ public final class ImporterLauncher {
         }
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
-        ImporterConfig config = 
+        ImporterConfig config =
                 loadCommandLineConfig(cmd, configFile, varFile);
         File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
         try {
             ImporterResponse response = new Importer(config).importDocument(
-                    inputFile, contentType, contentEncoding, 
+                    inputFile, contentType, contentEncoding,
                     metadata, reference);
-            writeResponse(response, output, 
+            writeResponse(response, output,
                     cmd.getOptionValue(ARG_OUTMETAFORMAT), 0, 0);
         } catch (Exception e) {
             System.err.println(
@@ -117,13 +117,13 @@ public final class ImporterLauncher {
             System.exit(-1);
         }
     }
-    
+
     private static ImporterConfig loadCommandLineConfig(
             CommandLine cmd, File configFile, File varFile) {
         if (configFile == null) {
             return null;
         }
-        
+
         ImporterConfig config = null;
         try {
             config = ImporterConfigLoader.loadImporterConfig(
@@ -135,7 +135,7 @@ public final class ImporterLauncher {
         }
         return config;
     }
-    
+
     private static void checkConfig(
             CommandLine cmd, File configFile, File varFile) {
         try {
@@ -147,16 +147,16 @@ public final class ImporterLauncher {
             System.exit(-1);
         }
     }
-    
-    private static void writeResponse(ImporterResponse response, 
-            String outputPath, String outputFormat, int depth, int index) 
+
+    private static void writeResponse(ImporterResponse response,
+            String outputPath, String outputFormat, int depth, int index)
                     throws IOException {
         if (!response.isSuccess()) {
             String statusLabel = "REJECTED: ";
             if (response.getImporterStatus().isError()) {
                 statusLabel = "   ERROR: ";
             }
-            System.out.println(statusLabel + response.getReference() + " (" 
+            System.out.println(statusLabel + response.getReference() + " ("
                     + response.getImporterStatus().getDescription() + ")");
         } else {
             ImporterDocument doc = response.getDocument();
@@ -174,8 +174,8 @@ public final class ImporterLauncher {
 
             // Write document file
             FileOutputStream docOutStream = new FileOutputStream(docfile);
-            CachedInputStream docInStream = doc.getContent();
-            
+            CachedInputStream docInStream = doc.getInputStream();
+
             FileOutputStream metaOut = null;
             try {
                 IOUtils.copy(docInStream, docOutStream);
@@ -211,43 +211,43 @@ public final class ImporterLauncher {
         ImporterResponse[] nextedResponses = response.getNestedResponses();
         for (int i = 0; i < nextedResponses.length; i++) {
             ImporterResponse nextedResponse = nextedResponses[i];
-            writeResponse(nextedResponse, outputPath, 
+            writeResponse(nextedResponse, outputPath,
                     outputFormat, depth + 1, i + 1);
         }
     }
-    
+
     private static CommandLine parseCommandLineArguments(String[] args) {
         Options options = new Options();
-        options.addOption("i", ARG_INPUTFILE, true, 
+        options.addOption("i", ARG_INPUTFILE, true,
                 "File to be imported (required unless \"checkcfg\" is used).");
-        options.addOption("o", ARG_OUTPUTFILE, true, 
+        options.addOption("o", ARG_OUTPUTFILE, true,
                 "Optional: File where the imported content will be stored.");
-        options.addOption("f", ARG_OUTMETAFORMAT, true, 
+        options.addOption("f", ARG_OUTMETAFORMAT, true,
                 "Optional: File format for extracted metadata fields. "
               + "One of \"properties\" (default), \"json\", or \"xml\"");
-        options.addOption("t", ARG_CONTENTTYPE, true, 
+        options.addOption("t", ARG_CONTENTTYPE, true,
                 "Optional: The MIME Content-type of the input file.");
-        options.addOption("e", ARG_CONTENTENCODING, true, 
+        options.addOption("e", ARG_CONTENTENCODING, true,
                 "Optional: The content encoding (charset) of the input file.");
-        options.addOption("r", ARG_REFERENCE, true, 
+        options.addOption("r", ARG_REFERENCE, true,
                 "Optional: Alternate unique qualifier for the input file "
               + "(e.g. URL).");
-        options.addOption("c", ARG_CONFIG, true, 
+        options.addOption("c", ARG_CONFIG, true,
                 "Optional: Importer XML configuration file.");
-        options.addOption("v", ARG_VARIABLES, true, 
+        options.addOption("v", ARG_VARIABLES, true,
                 "Optional: variable file.");
-        options.addOption("k", ARG_CHECKCFG, false,   
+        options.addOption("k", ARG_CHECKCFG, false,
                 "Validates XML configuration without executing the Importer.");
-        options.addOption("s", ARG_IGNOREERRORS, false, 
+        options.addOption("s", ARG_IGNOREERRORS, false,
                 "Optional: Skip/ignore configuration validation errors "
               + "(if possible).");
-        
+
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
         try {
             cmd = parser.parse(options, args);
-            if(!cmd.hasOption(ARG_INPUTFILE) 
-                    && !(cmd.hasOption(ARG_CHECKCFG) 
+            if(!cmd.hasOption(ARG_INPUTFILE)
+                    && !(cmd.hasOption(ARG_CHECKCFG)
                             && cmd.hasOption(ARG_CONFIG))) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp( "importer[.bat|.sh]", options );

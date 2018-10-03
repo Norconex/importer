@@ -27,18 +27,18 @@ import com.norconex.importer.doc.ImporterDocument;
 
 public final class TestUtil {
 
-    private static final String BASE_PATH = 
+    private static final String BASE_PATH =
          "src/site/resources/examples/books/alice-in-wonderland-book-chapter-1";
-    
+
     private TestUtil() {
         super();
     }
 
     public static String getContentAsString(ImporterDocument doc)
             throws IOException {
-        return IOUtils.toString(doc.getContent(), StandardCharsets.UTF_8);
+        return IOUtils.toString(doc.getInputStream(), StandardCharsets.UTF_8);
     }
-    
+
     public static File getAlicePdfFile() {
         return new File(BASE_PATH + ".pdf");
     }
@@ -57,7 +57,7 @@ public final class TestUtil {
     public static Importer getTestConfigImporter() {
         InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");
         Reader r = new InputStreamReader(is);
-        ImporterConfig config = 
+        ImporterConfig config =
                 ImporterConfigLoader.loadImporterConfig(r, false);
         IOUtils.closeQuietly(r);
         return new Importer(config);

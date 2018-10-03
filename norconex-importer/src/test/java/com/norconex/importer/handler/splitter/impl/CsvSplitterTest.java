@@ -86,7 +86,7 @@ public class CsvSplitterTest {
 
         List<ImporterDocument> docs = split(splitter);
         Assert.assertEquals("William Dalton 654-0987",
-                IOUtils.toString(docs.get(2).getContent(),
+                IOUtils.toString(docs.get(2).getInputStream(),
                         StandardCharsets.UTF_8));
     }
 

@@ -76,7 +76,7 @@ public class GenericDocumentParserFactoryTest {
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null,
                         metadata, "n/a").getDocument();
 
-        try (InputStream is = doc.getContent()) {
+        try (InputStream is = doc.getInputStream()) {
             String output = IOUtils.toString(
                     is, StandardCharsets.UTF_8).substring(0, 100);
             output = StringUtils.remove(output, '\n');

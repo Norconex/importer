@@ -314,7 +314,7 @@ public class DOMTagger extends AbstractDocumentTagger {
 
     private void domExtractDoc(List<String> extractedValues,
             Document doc, DOMExtractDetails details) {
-        Elements elms = doc.select(details.selector);
+        Elements elms = doc.select(StringUtils.trim(details.selector));
         boolean hasDefault = details.getDefaultValue() != null;
 
         // no elements matching

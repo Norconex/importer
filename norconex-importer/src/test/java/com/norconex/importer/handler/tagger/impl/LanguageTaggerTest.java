@@ -57,7 +57,7 @@ public class LanguageTaggerTest {
         ImporterDocument doc = new ImporterDocument(
                 "n/a", factory.newInputStream(sampleTexts.get("en")));
         tagger.tagDocument(doc.getReference(),
-                doc.getContent(), doc.getMetadata(), true);
+                doc.getInputStream(), doc.getMetadata(), true);
         Assert.assertNotEquals("en", doc.getMetadata().getLanguage());
     }
 
@@ -72,7 +72,7 @@ public class LanguageTaggerTest {
             ImporterDocument doc = new ImporterDocument(
                     "n/a", factory.newInputStream(sampleTexts.get(lang)));
             tagger.tagDocument(doc.getReference(),
-                    doc.getContent(), doc.getMetadata(), true);
+                    doc.getInputStream(), doc.getMetadata(), true);
             Assert.assertEquals(lang, doc.getMetadata().getLanguage());
         }
     }

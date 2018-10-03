@@ -57,21 +57,22 @@ import com.norconex.importer.parser.IDocumentParser;
  * Parser for PureEdge Extensible Forms Description Language (XFDL).
  * This parser extracts any text found in the XFDL XML, whether that XML
  * is Base64 encoded or just plain XML (two possible format for XFDL).
- * 
- * @author Pascal Essiembre 
+ *
+ * @author Pascal Essiembre
  * @since 2.1.0
  */
 public class XFDLParser implements IDocumentParser {
 
-    private static final char[] MAGIC_BASE64 = 
+    private static final char[] MAGIC_BASE64 =
           "application/vnd.xfdl;content-encoding=\"base64-gzip\"".toCharArray();
-    
+
     @Override
     public List<ImporterDocument> parseDocument(ImporterDocument doc,
             Writer output) throws DocumentParserException {
         try {
             //TODO have a generic utility method for this?
-            BufferedInputStream is = new BufferedInputStream(doc.getContent());
+            BufferedInputStream is =
+                    new BufferedInputStream(doc.getInputStream());
             CharsetDetector detector = new CharsetDetector();
             detector.enableInputFilter(true);
             detector.setText(is);
@@ -89,9 +90,9 @@ public class XFDLParser implements IDocumentParser {
         }
         return null;
     }
-    
+
     private void parse(
-            BufferedReader reader, Writer out, ImporterMetadata metadata) 
+            BufferedReader reader, Writer out, ImporterMetadata metadata)
             throws IOException, ParserConfigurationException, SAXException {
         reader.mark(MAGIC_BASE64.length);
         char[] signature = new char[MAGIC_BASE64.length];
@@ -102,20 +103,20 @@ public class XFDLParser implements IDocumentParser {
         }
 
         //--- Create XML DOM ---
-        DocumentBuilder docBuilder = 
+        DocumentBuilder docBuilder =
                 DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document dom = null;
         if (Arrays.equals(signature, MAGIC_BASE64)) {
             // skip first line
             reader.readLine();
-            
+
             // un-encode first
-            byte[] compressedContent = 
+            byte[] compressedContent =
                     Base64.decodeBase64(IOUtils.toString(reader));
             // deal with compression
             InputStream is = new GZIPInputStream(
                     new ByteArrayInputStream(compressedContent));
-            
+
             dom = docBuilder.parse(is);
             IOUtils.closeQuietly(is);
         } else {
@@ -133,7 +134,7 @@ public class XFDLParser implements IDocumentParser {
         if (xmlTitles != null && xmlTitles.getLength() > 0) {
             Node titleItem = xmlTitles.item(0);
             if (titleItem instanceof Element) {
-                metadata.add("title", 
+                metadata.add("title",
                         ((Element) titleItem).getTextContent());
             }
         }
@@ -173,7 +174,7 @@ public class XFDLParser implements IDocumentParser {
         }
         return stillEmpty;
     }
-    
+
     @Override
     public boolean equals(final Object other) {
         if (!(other instanceof XFDLParser)) {

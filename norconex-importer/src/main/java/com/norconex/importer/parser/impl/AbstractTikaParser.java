@@ -112,7 +112,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         //TODO getContent() here does a rewind just to get stream
         //which may be an unnecessary read.  Have stream factory
         //directly on document instead to save a read?
-        CachedInputStream content = doc.getContent();
+        CachedInputStream content = doc.getInputStream();
 
         tikaMetadata.set(Metadata.CONTENT_TYPE, contentType);
         tikaMetadata.set(Metadata.RESOURCE_NAME_KEY,

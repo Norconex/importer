@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -47,30 +46,26 @@ import com.norconex.importer.response.ImporterResponse;
 public class ImporterTest {
 
     private Importer importer;
-    
+
     @Before
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList(new IDocumentTransformer() {
-            @Override
-            public void transformDocument(String reference, InputStream input,
-                    OutputStream output, ImporterMetadata metadata, 
-                            boolean parsed) throws ImporterHandlerException {
-                try {
-                    // Clean up what we know is extra noise for a given format
-                    Pattern pattern = Pattern.compile("[^a-zA-Z ]");
-                    String txt = IOUtils.toString(
-                            input, StandardCharsets.UTF_8);
-                    txt = pattern.matcher(txt).replaceAll("");
-                    txt = txt.replaceAll("DowntheRabbitHole", "");
-                    txt = StringUtils.replace(txt, " ", "");
-                    txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
-                    IOUtils.write(txt, output, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new ImporterHandlerException(e);
-                }
+        config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (reference, input, output, metadata,
+                parsed) -> {
+            try {
+               // Clean up what we know is extra noise for a given format
+               Pattern pattern = Pattern.compile("[^a-zA-Z ]");
+               String txt = IOUtils.toString(
+                input, StandardCharsets.UTF_8);
+               txt = pattern.matcher(txt).replaceAll("");
+               txt = txt.replaceAll("DowntheRabbitHole", "");
+               txt = StringUtils.replace(txt, " ", "");
+               txt = StringUtils.replace(txt, "httppdfreebooksorg", "");
+               IOUtils.write(txt, output, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+               throw new ImporterHandlerException(e);
             }
-        }));
+         }));
         importer = new Importer(config);
     }
 
@@ -78,15 +73,15 @@ public class ImporterTest {
     public void tearDown() throws Exception {
         importer = null;
     }
-    
+
     @Test
     public void testImportDocument() throws IOException, ImporterException {
-        
+
         // MS Doc
         File docxOutput = File.createTempFile("ImporterTest-doc-", ".txt");
         Properties metaDocx = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAliceDocxFile(), metaDocx).getDocument(), 
+                TestUtil.getAliceDocxFile(), metaDocx).getDocument(),
                         docxOutput);
 
         // PDF
@@ -100,18 +95,18 @@ public class ImporterTest {
         Properties metaRtf = new Properties();
         writeToFile(importer.importDocument(
                 TestUtil.getAliceZipFile(), metaRtf).getDocument(), rtfOutput);
-        
+
         Assert.assertTrue("Converted file size is too small to be valid.",
                 pdfOutput.length() > 10);
 
         double doc = docxOutput.length();
         double pdf = pdfOutput.length();
         double rtf = rtfOutput.length();
-        if (Math.abs(pdf - doc) / 1024.0 > 0.03 
+        if (Math.abs(pdf - doc) / 1024.0 > 0.03
                 || Math.abs(pdf - rtf) / 1024.0 > 0.03) {
             Assert.fail("Content extracted from examples documents are too "
                     + "different from each other. They were not deleted to "
-                    + "help you troubleshoot under: " 
+                    + "help you troubleshoot under: "
                     + FileUtils.getTempDirectoryPath() + "ImporterTest-*");
         } else {
             FileUtils.deleteQuietly(docxOutput);
@@ -127,31 +122,31 @@ public class ImporterTest {
                 "Content-Type", "application/pdf", OnMatch.EXCLUDE)));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, null, 
+                TestUtil.getAlicePdfFile(), ContentType.PDF, null,
                         new ImporterMetadata(), "n/a");
-        
+
 //        System.out.println("Reject desc: "
 //                        + result.getImporterStatus().getDescription());
         Assert.assertTrue("PDF should have been rejected with proper "
-                + "status description.", 
-                result.getImporterStatus().isRejected() 
+                + "status description.",
+                result.getImporterStatus().isRejected()
                 && result.getImporterStatus().getDescription().contains(
                         "RegexMetadataFilter"));
     }
-    
+
     private void writeToFile(ImporterDocument doc, File file)
             throws IOException {
         FileOutputStream out = new FileOutputStream(file);
-        IOUtils.copy(doc.getContent(), out);
+        IOUtils.copy(doc.getInputStream(), out);
         out.close();
     }
-    
-    
+
+
     @Test
     public void testValidation() throws IOException {
         InputStream is = getClass().getResourceAsStream(
                 "/validation/importer-full.xml");
-        
+
         try (Reader r = new InputStreamReader(is)) {
             ImporterConfigLoader.loadImporterConfig(r, false);
         } catch (XMLValidationException e) {

@@ -7,6 +7,9 @@
     </Console>
   </Appenders>
   <Loggers>
+    <Logger name="com.norconex.importer" level="INFO" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
     <Logger name="com.norconex.commons.lang" level="INFO" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>

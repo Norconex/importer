@@ -38,38 +38,38 @@ import com.norconex.importer.response.ImporterResponse;
 
 public abstract class AbstractParserTest {
 
-    public static final String DEFAULT_CONTENT_REGEX = 
+    public static final String DEFAULT_CONTENT_REGEX =
             "Hey Norconex, this is a test\\.";
-    
+
     @Rule
     public TemporaryFolder folder = new TemporaryFolder();
-    
+
     protected File getFile(String resourcePath) throws IOException {
         File file = folder.newFile(
                 StringUtils.substringAfterLast(resourcePath, "/"));
         FileUtils.copyInputStreamToFile(getInputStream(resourcePath), file);
         return file;
     }
-    
+
     protected InputStream getInputStream(String resourcePath) {
         return getClass().getResourceAsStream(resourcePath);
     }
 
     protected ImporterResponse[] testParsing(
-            String resourcePath, String contentType, 
-            String contentRegex, String extension, String family) 
+            String resourcePath, String contentType,
+            String contentRegex, String extension, String family)
                     throws IOException, ImporterException {
-        return testParsing(resourcePath, contentType, 
+        return testParsing(resourcePath, contentType,
                 contentRegex, extension, family, false);
     }
     protected ImporterResponse[] testParsing(
-            String resourcePath, String contentType, 
+            String resourcePath, String contentType,
             String contentRegex, String extension, String family,
-            boolean splitEmbedded) 
+            boolean splitEmbedded)
                     throws IOException, ImporterException {
-        
+
         ImporterResponse[] responses = new ImporterResponse[2];
-        
+
         ImporterMetadata metadata = null;
         ImporterResponse response = null;
         ImporterDocument doc = null;
@@ -79,59 +79,59 @@ public abstract class AbstractParserTest {
             f.getParseHints().getEmbeddedConfig().setSplitContentTypes(".*");
             config.setParserFactory(f);
         }
-        
+
         // Test file
         metadata = new ImporterMetadata();
         response = new Importer(config).importDocument(
                 getFile(resourcePath), metadata);
         doc = response.getDocument();
-        
-        assertDefaults(doc, "FILE", 
+
+        assertDefaults(doc, "FILE",
                 resourcePath, contentType, contentRegex, extension, family);
         responses[0] = response;
-        
+
         // Test input stream
         metadata = new ImporterMetadata();
         response = new Importer(config).importDocument(
                 getInputStream(resourcePath), metadata, "guess");
         doc = response.getDocument();
-        assertDefaults(doc, "STREAM", 
+        assertDefaults(doc, "STREAM",
                 resourcePath, contentType, contentRegex, extension, family);
         responses[1] = response;
         return responses;
     }
-    
+
     private void assertDefaults(
-            ImporterDocument doc, 
-            String testType, 
-            String resourcePath, 
+            ImporterDocument doc,
+            String testType,
+            String resourcePath,
             String contentType,
-            String contentRegex, 
+            String contentRegex,
             String extension,
             String family) throws IOException {
         Pattern p = Pattern.compile(contentRegex, Pattern.DOTALL);
 
         Assert.assertNotNull("Document is null", doc);
-        
-        String content = 
-                IOUtils.toString(doc.getContent(), StandardCharsets.UTF_8);
-        Assert.assertEquals(testType + " content-type detection failed for \"" 
-                + resourcePath + "\".", ContentType.valueOf(contentType), 
+
+        String content =
+                IOUtils.toString(doc.getInputStream(), StandardCharsets.UTF_8);
+        Assert.assertEquals(testType + " content-type detection failed for \""
+                + resourcePath + "\".", ContentType.valueOf(contentType),
                 doc.getContentType());
 
-        Assert.assertTrue(testType + " content extraction failed for \"" 
+        Assert.assertTrue(testType + " content extraction failed for \""
                 + resourcePath + "\". Content:\n" + content,
                 p.matcher(content).find());
 
         String ext = doc.getContentType().getExtension();
-        Assert.assertEquals(testType + " extension detection failed for \"" 
+        Assert.assertEquals(testType + " extension detection failed for \""
                 + resourcePath + "\".", extension, ext);
-        
+
         String familyEnglish = doc.getContentType()
                 .getContentFamily().getDisplayName(Locale.ENGLISH);
 //        System.out.println("FAMILY: " + familyEnglish);
-        Assert.assertEquals(testType + " family detection failed for \"" 
+        Assert.assertEquals(testType + " family detection failed for \""
                 + resourcePath + "\".", family, familyEnglish);
-        
+
     }
 }

@@ -16,7 +16,7 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;

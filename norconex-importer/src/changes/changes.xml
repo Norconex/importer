@@ -34,7 +34,7 @@
       </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Commons Lang 2.0.0,
-        Apache Tika 1.18, Apache Commons CLI 1.4.
+        Apache Tika 1.19, Apache Commons CLI 1.4.
       </action>
       <action dev="essiembre" type="update">
         RegexFieldExtractor and RegexUtil have been deprecated in favor

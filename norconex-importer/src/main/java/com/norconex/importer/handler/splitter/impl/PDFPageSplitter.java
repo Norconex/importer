@@ -27,8 +27,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;

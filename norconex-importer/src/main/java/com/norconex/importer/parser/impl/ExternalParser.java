@@ -22,8 +22,8 @@ import java.util.Map;
 
 import org.apache.commons.io.output.WriterOutputStream;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.ExternalHandler;
@@ -290,7 +290,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
     public List<ImporterDocument> parseDocument(ImporterDocument doc,
             Writer output) throws DocumentParserException {
         try {
-            h.handleDocument(doc.getReference(), doc.getContent(),
+            h.handleDocument(doc.getReference(), doc.getInputStream(),
                     new WriterOutputStream(output, StandardCharsets.UTF_8),
                     doc.getMetadata());
         } catch (ImporterHandlerException e) {

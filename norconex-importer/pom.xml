@@ -26,7 +26,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <tika.version>1.18</tika.version>
+    <tika.version>1.19</tika.version>
+    <!-- ALREADY 2.0.11 in Tika 1.19:      -->
     <pdfbox.version>2.0.11</pdfbox.version>
     <norconex-commons-lang.version>2.0.0-SNAPSHOT</norconex-commons-lang.version>
   </properties>
@@ -72,8 +73,7 @@
     <!-- === Fix transitive dependencies versions: === -->
     
     
-    <!-- PDFBox dependencies:
-      -->
+    <!-- PDFBox dependencies (2.0.11 included in Tika 1.19):
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
@@ -84,17 +84,20 @@
       <artifactId>pdfbox-tools</artifactId>
       <version>${pdfbox.version}</version>
     </dependency>
+    -->
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>xmpbox</artifactId>
       <version>${pdfbox.version}</version>
     </dependency>
 
+    <!-- 1.11.3 included by Tika 1.19:
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
       <version>1.10.3</version>
     </dependency>
+     -->
     <!-- 
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -133,12 +136,15 @@
 
     <!-- Ensures correct version of xmlbeans, as ooxml-schemas 
         (required for Visio-XML parsing) brings it down.
-      -->
+        
+        Tika 1.19 brings version 3.x:
+        
     <dependency>
       <groupId>org.apache.xmlbeans</groupId>
       <artifactId>xmlbeans</artifactId>
       <version>2.6.0</version>
     </dependency>
+      -->
     
     <!-- === Other dependencies: === -->
 
@@ -176,6 +182,12 @@
     	<groupId>org.apache.tika</groupId>
     	<artifactId>tika-parsers</artifactId>
     	<version>${tika.version}</version>
+    	<exclusions>
+    	  <exclusion>
+    	    <groupId>org.slf4j</groupId>
+    	    <artifactId>slf4j-log4j12</artifactId>
+    	  </exclusion>
+    	</exclusions>
     </dependency>
     <dependency>
         <groupId>org.apache.tika</groupId>
@@ -268,12 +280,12 @@
          Consider removing (quite big) once included in poi-ooxml-schemas. See:
          https://poi.apache.org/faq.html#faq-N10025
          https://issues.apache.org/jira/browse/TIKA-2094         
-      -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>ooxml-schemas</artifactId>
       <version>1.3</version>
     </dependency>
+      -->
     
   </dependencies>
   

@@ -107,7 +107,7 @@ public class Importer {
         streamFactory = new CachedStreamFactory(
                 this.importerConfig.getMaxFilePoolCacheSize(),
                 this.importerConfig.getMaxFileCacheSize(),
-                this.importerConfig.getTempDir());
+                this.importerConfig.getTempDir()); // use workdir + /tmp?
     }
 
     /**
@@ -273,7 +273,7 @@ public class Importer {
             }
             for (ImporterDocument childDoc : nestedDocs) {
                 ImporterResponse nestedResponse = importDocument(
-                        childDoc.getContent(),
+                        childDoc.getInputStream(),
                         childDoc.getContentType(),
                         childDoc.getContentEncoding(),
                         childDoc.getMetadata(),
@@ -396,7 +396,7 @@ public class Importer {
                 factory.getParser(doc.getReference(), doc.getContentType());
 
         // Do not attempt to parse zero-length content
-        if (doc.getContent().isEmpty()) {
+        if (doc.getInputStream().isEmpty()) {
             LOG.debug("No content for \"{}\".", doc.getReference());
             return;
         }
@@ -448,17 +448,17 @@ public class Importer {
                         parser.getClass(), doc.getReference());
             }
             IOUtils.closeQuietly(out);
-            doc.getContent().dispose();
-            doc.setContent(streamFactory.newInputStream());
+            doc.getInputStream().dispose();
+            doc.setInputStream(streamFactory.newInputStream());
         } else {
-            doc.getContent().dispose();
+            doc.getInputStream().dispose();
             CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();
             } finally {
                 IOUtils.closeQuietly(out);
             }
-            doc.setContent(newInputStream);
+            doc.setInputStream(newInputStream);
         }
     }
 
@@ -512,7 +512,7 @@ public class Importer {
                 ext = "unknown";
             }
 
-            Files.copy(doc.getContent(),
+            Files.copy(doc.getInputStream(),
                     saveDir.resolve(uuid + "-content." + ext),
                     StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e1) {
@@ -523,7 +523,7 @@ public class Importer {
     private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(),
-                doc.getContent(), doc.getMetadata(), parsed);
+                doc.getInputStream(), doc.getMetadata(), parsed);
     }
 
     private boolean acceptDocument(
@@ -532,10 +532,10 @@ public class Importer {
 
         boolean accepted = filter.acceptDocument(
                 doc.getReference(),
-                doc.getContent(), doc.getMetadata(), parsed);
+                doc.getInputStream(), doc.getMetadata(), parsed);
         //TODO Is the next .rewind() necessary given next call to getContent()
         //will do it?
-        doc.getContent().rewind();
+        doc.getInputStream().rewind();
         if (!accepted) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Document import rejected. Filter=" + filter);
@@ -549,7 +549,7 @@ public class Importer {
             IDocumentTransformer transformer, boolean parsed)
                     throws ImporterHandlerException, IOException {
 
-        CachedInputStream  in = doc.getContent();
+        CachedInputStream  in = doc.getInputStream();
         CachedOutputStream out = createOutputStream();
 
         transformer.transformDocument(
@@ -572,14 +572,14 @@ public class Importer {
                 IOUtils.closeQuietly(out);
             }
         }
-        doc.setContent(newInputStream);
+        doc.setInputStream(newInputStream);
     }
 
     private List<ImporterDocument> splitDocument(
             ImporterDocument doc, IDocumentSplitter h, boolean parsed)
                     throws ImporterHandlerException, IOException {
 
-        CachedInputStream  in = doc.getContent();
+        CachedInputStream  in = doc.getInputStream();
         CachedOutputStream out = createOutputStream();
 
         SplittableDocument sdoc = new SplittableDocument(
@@ -590,7 +590,7 @@ public class Importer {
         try {
             // If writing was performed, get new content
             if (!out.isCacheEmpty()) {
-                doc.setContent(out.getInputStream());
+                doc.setInputStream(out.getInputStream());
                 in.dispose();
             }
         } finally {

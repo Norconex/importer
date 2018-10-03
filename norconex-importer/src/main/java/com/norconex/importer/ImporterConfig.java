@@ -27,8 +27,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.unit.DataUnit;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
@@ -43,9 +43,9 @@ public class ImporterConfig implements IXMLConfigurable {
 
     public static final String DEFAULT_TEMP_DIR_PATH =
             FileUtils.getTempDirectoryPath();
-    public static final int DEFAULT_MAX_FILE_CACHE_SIZE =
+    public static final int DEFAULT_MAX_MEM_INSTANCE =
             (int) DataUnit.MB.toBytes(100);
-    public static final int DEFAULT_MAX_FILE_POOL_CACHE_SIZE =
+    public static final int DEFAULT_MAX_MEM_POOL =
             (int) DataUnit.GB.toBytes(1);
 
     private IDocumentParserFactory documentParserFactory =
@@ -57,9 +57,12 @@ public class ImporterConfig implements IXMLConfigurable {
             new ArrayList<>();
 
     private Path tempDir = Paths.get(DEFAULT_TEMP_DIR_PATH);
-    private int maxFileCacheSize = DEFAULT_MAX_FILE_CACHE_SIZE;
-    private int maxFilePoolCacheSize = DEFAULT_MAX_FILE_POOL_CACHE_SIZE;
+    private int maxFileCacheSize = DEFAULT_MAX_MEM_INSTANCE;
+    private int maxFilePoolCacheSize = DEFAULT_MAX_MEM_POOL;
     private Path parseErrorsSaveDir;
+
+//    private int maxMemoryPool;
+//    private int maxMemoryInstance;
 
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;

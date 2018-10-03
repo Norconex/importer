@@ -17,8 +17,8 @@ package com.norconex.importer.handler.splitter;
 import java.io.OutputStream;
 import java.util.List;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;

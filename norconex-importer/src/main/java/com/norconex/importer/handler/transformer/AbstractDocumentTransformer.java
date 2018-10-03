@@ -17,7 +17,7 @@ package com.norconex.importer.handler.transformer;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.norconex.commons.lang.config.IXMLConfigurable;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
