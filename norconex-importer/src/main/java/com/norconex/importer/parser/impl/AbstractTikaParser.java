@@ -45,6 +45,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import com.google.common.base.Objects;
+import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
@@ -178,11 +179,28 @@ public class AbstractTikaParser implements IHintsAwareParser {
             List<String> nxValues = metadata.getStrings(name);
             String[] tikaValues = tikaMeta.getValues(name);
             for (String tikaValue : tikaValues) {
-                if (!nxValues.contains(tikaValue)) {
+                if (!containsSameValue(name, nxValues, tikaValue)) {
                     metadata.add(name, tikaValue);
+                } else {
+                    metadata.set(name, tikaValue);
                 }
             }
         }
+    }
+
+    private boolean containsSameValue(
+            String name, List<String> nxValues, String tikaValue) {
+        if (EqualsUtil.equalsAnyIgnoreCase(
+                name, Metadata.CONTENT_TYPE, Metadata.CONTENT_ENCODING)) {
+            String tk = tikaValue.replaceAll("[\\s]", "");
+            for (String nxValue : nxValues) {
+                if (nxValue.replaceAll("[\\s]", "").equalsIgnoreCase(tk)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return nxValues.contains(tikaValue);
     }
 
     protected RecursiveParser createRecursiveParser(
