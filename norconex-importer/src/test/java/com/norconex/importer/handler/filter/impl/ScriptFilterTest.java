@@ -15,41 +15,49 @@
 package com.norconex.importer.handler.filter.impl;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.config.XMLConfigurationUtil;
+import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterConfigLoader;
 import com.norconex.importer.TestUtil;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
+import com.norconex.importer.response.ImporterResponse;
+import com.norconex.importer.response.ImporterStatus.Status;
 
 public class ScriptFilterTest {
 
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
-        testScriptFilter(ScriptRunner.LUA_ENGINE, 
+        testScriptFilter(ScriptRunner.LUA_ENGINE,
                 "local test = metadata:getString('fruit') == 'apple' "
               + " and content:find('Alice') ~= nil; "
               + "return test;"
         );
     }
-    
+
     @Test
     public void testJavaScript() throws IOException, ImporterHandlerException {
-        testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE, 
+        testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE,
                 "var test = metadata.getString('fruit') == 'apple'"
               + "  && content.indexOf('Alice') > -1;"
               + "/*return*/ test;"
         );
     }
-    
-    private void testScriptFilter(String engineName, String script) 
+
+    private void testScriptFilter(String engineName, String script)
             throws IOException, ImporterHandlerException {
 
         ScriptFilter f = new ScriptFilter();
@@ -62,13 +70,29 @@ public class ScriptFilterTest {
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.setString("fruit", "apple");
         metadata.setString(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
-        
+
         Assert.assertTrue("Filter returned false.",  f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false));
 
         is.close();
     }
-    
+
+    // Relates to: https://github.com/Norconex/importer/issues/86
+    @Test
+    public void testPrePostScriptFilter() throws IOException {
+        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+            Importer importer =
+                    new Importer(ImporterConfigLoader.loadImporterConfig(r));
+            ImporterResponse resp = importer.importDocument(
+                    new ByteArrayInputStream("test".getBytes()),
+                    new ImporterMetadata(), "N/A");
+            ImporterDocument doc = resp.getDocument();
+            Assert.assertNotNull("Document must not be null", doc);
+            Status status = resp.getImporterStatus().getStatus();
+            Assert.assertEquals(Status.SUCCESS, status);
+        }
+    }
+
     @Test
     public void testWriteRead() throws IOException {
         ScriptFilter f = new ScriptFilter();
