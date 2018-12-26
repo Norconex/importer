@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2018 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  */
 package com.norconex.importer.handler;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.importer.doc.ImporterMetadata;
 
 /**
  * Commonly encountered restrictions that can be applied to subclass instances
  * of {@link AbstractImporterHandler}. Each method return a newly created
  * list that can safely be modified without impacting subsequent calls.
- * 
+ *
  * @author Pascal Essiembre
  * @since 2.4.0
  */
@@ -32,7 +29,7 @@ public final class CommonRestrictions {
 
     private CommonRestrictions() {
     }
-    
+
     /**
      * Default content-types defining a DOM document. That is, documents that
      * are HTML, XHTML, or XML-based. The <code>document.contentType</code>
@@ -44,8 +41,9 @@ public final class CommonRestrictions {
      * </pre>
      * @return list of restrictions
      */
-    public static List<PropertyMatcher> domContentTypes() {
-        return build(ImporterMetadata.DOC_CONTENT_TYPE,
+    public static PropertyMatchers domContentTypes() {
+        PropertyMatchers list = new PropertyMatchers();
+        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml",
@@ -57,6 +55,7 @@ public final class CommonRestrictions {
                 "image/svg\\+xml",
                 "application/mathml\\+xml",
                 "application/rss\\+xml");
+        return list;
     }
 
     /**
@@ -69,19 +68,12 @@ public final class CommonRestrictions {
      * @return list of restrictions
      * @since 2.8.0
      */
-    public static List<PropertyMatcher> htmlContentTypes() {
-        return build(ImporterMetadata.DOC_CONTENT_TYPE,
+    public static PropertyMatchers htmlContentTypes() {
+        PropertyMatchers list = new PropertyMatchers();
+        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml");
-    }    
-    
-    private static List<PropertyMatcher> build(
-            String field, String... regexes) {
-        List<PropertyMatcher> list = new ArrayList<>();
-        for (String regex : regexes) {
-            list.add(new PropertyMatcher(field, regex, false));
-        }
         return list;
     }
 }

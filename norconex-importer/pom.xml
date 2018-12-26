@@ -26,7 +26,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <site.baseurl/>
-    <tika.version>1.19</tika.version>
+    <tika.version>1.19.1</tika.version>
     <!-- ALREADY 2.0.11 in Tika 1.19:      -->
     <pdfbox.version>2.0.11</pdfbox.version>
     <norconex-commons-lang.version>2.0.0-SNAPSHOT</norconex-commons-lang.version>

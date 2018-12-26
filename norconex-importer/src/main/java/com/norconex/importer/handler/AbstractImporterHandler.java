@@ -17,8 +17,6 @@ package com.norconex.importer.handler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -72,7 +71,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     private static final Logger LOG =
             LoggerFactory.getLogger(AbstractImporterHandler.class);
 
-    private final List<PropertyMatcher> restrictions = new ArrayList<>();
+    private final PropertyMatchers restrictions = new PropertyMatchers();
 
     public AbstractImporterHandler() {
         super();
@@ -86,18 +85,16 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      */
     public synchronized void addRestriction(
             String field, String regex, boolean caseSensitive) {
-        restrictions.add(new PropertyMatcher(field, regex, caseSensitive));
+        restrictions.add(field, caseSensitive, regex);
     }
 
     /**
      * Adds one or more restrictions this handler should be restricted to.
-     * @param restriction the restriction
+     * @param restrictions the restrictions
      * @since 2.4.0
      */
-    public synchronized void addRestriction(PropertyMatcher... restriction) {
-        for (PropertyMatcher propertyMatcher : restriction) {
-            restrictions.add(propertyMatcher);
-        }
+    public synchronized void addRestriction(PropertyMatcher... restrictions) {
+        this.restrictions.addAll(restrictions);
     }
     /**
      * Adds restrictions this handler should be restricted to.
@@ -107,9 +104,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public synchronized void addRestrictions(
             List<PropertyMatcher> restrictions) {
         if (restrictions != null) {
-            for (PropertyMatcher propertyMatcher : restrictions) {
-                this.restrictions.add(propertyMatcher);
-            }
+            this.restrictions.addAll(restrictions);
         }
     }
 
@@ -120,18 +115,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @since 2.4.0
      */
     public synchronized  int removeRestriction(String field) {
-        Iterator<PropertyMatcher> it = restrictions.iterator();
-        int count = 0;
-        while (it.hasNext()) {
-            PropertyMatcher r = it.next();
-            if (r.isCaseSensitive() && r.getKey().equals(field)
-                    || !r.isCaseSensitive()
-                            && r.getKey().equalsIgnoreCase(field)) {
-                it.remove();
-                count++;
-            }
-        }
-        return count;
+        return restrictions.remove(field);
     }
 
     /**
@@ -157,7 +141,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @return the restrictions
      * @since 2.4.0
      */
-    public List<PropertyMatcher> getRestrictions() {
+    public PropertyMatchers getRestrictions() {
         return restrictions;
     }
 
@@ -174,10 +158,8 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         if (restrictions.isEmpty()) {
             return true;
         }
-        for (PropertyMatcher restriction : restrictions) {
-            if (restriction.matches(metadata)) {
-                return true;
-            }
+        if (restrictions.matches(metadata)) {
+            return true;
         }
         LOG.debug("{} handler does not apply to: {} (parsed={}).",
                 getClass(), reference, parsed);
@@ -239,14 +221,10 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public final void loadFromXML(XML xml) {
         loadHandlerFromXML(xml);
         List<XML> nodes = xml.getXMLList("restrictTo");
-
         if (!nodes.isEmpty()) {
             restrictions.clear();
             for (XML node : nodes) {
-                addRestriction(
-                        node.getString("@field"),
-                        node.getString("."),
-                        node.getBoolean("@caseSensitive", false));
+                restrictions.add(PropertyMatcher.loadFromXML(node));
             }
         }
     }
@@ -258,11 +236,8 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
     @Override
     public void saveToXML(XML xml) {
-        for (PropertyMatcher restriction : restrictions) {
-            XML rxml = xml.addElement("restrictTo", restriction.getRegex());
-            rxml.setAttribute("field", restriction.getKey());
-            rxml.setAttribute("caseSensitive", restriction.isCaseSensitive());
-        }
+        restrictions.forEach(r ->
+                PropertyMatcher.saveToXML(r, xml.addElement("restrictTo")));
         saveHandlerToXML(xml);
     }
 

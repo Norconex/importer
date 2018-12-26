@@ -17,6 +17,8 @@ TODO:
 - Consider merging tagger and transformer and detecting if content has changed,
   and offer in most case to do operation on either field or content (or both).
 
+- Consider using updated Tika RecursiveParser instead of custom one.
+
 - Have a handler that stores the file in its current state in a location
   of your choice.
 
