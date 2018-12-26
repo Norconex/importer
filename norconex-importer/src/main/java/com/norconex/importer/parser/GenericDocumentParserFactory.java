@@ -369,20 +369,24 @@ public class GenericDocumentParserFactory
     private void loadParseHintsFromXML(XML xml) {
         // Embedded Config
         XML embXml = xml.getXML("embedded");
-        EmbeddedConfig embCfg = parseHints.getEmbeddedConfig();
-        embCfg.setSplitContentTypes(
-                embXml.getString("splitContentTypes", null));
-        embCfg.setNoExtractContainerContentTypes(
-                embXml.getString("noExtractContainerContentTypes", null));
-        embCfg.setNoExtractEmbeddedContentTypes(
-                embXml.getString("noExtractEmbeddedContentTypes", null));
+        if (embXml != null) {
+            EmbeddedConfig embCfg = parseHints.getEmbeddedConfig();
+            embCfg.setSplitContentTypes(
+                    embXml.getString("splitContentTypes", null));
+            embCfg.setNoExtractContainerContentTypes(
+                    embXml.getString("noExtractContainerContentTypes", null));
+            embCfg.setNoExtractEmbeddedContentTypes(
+                    embXml.getString("noExtractEmbeddedContentTypes", null));
+        }
 
         // OCR Config
         XML ocrXml = xml.getXML("ocr");
-        OCRConfig ocrCfg = parseHints.getOcrConfig();
-        ocrCfg.setPath(ocrXml.getString("@path"));
-        ocrCfg.setLanguages(ocrXml.getString("languages"));
-        ocrCfg.setContentTypes(ocrXml.getString("contentTypes"));
+        if (ocrXml != null) {
+            OCRConfig ocrCfg = parseHints.getOcrConfig();
+            ocrCfg.setPath(ocrXml.getString("@path"));
+            ocrCfg.setLanguages(ocrXml.getString("languages"));
+            ocrCfg.setContentTypes(ocrXml.getString("contentTypes"));
+        }
     }
 
 
