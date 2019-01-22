@@ -76,4 +76,28 @@ public final class CommonRestrictions {
                 "application/vnd\\.wap.xhtml\\+xml");
         return list;
     }
+
+    /**
+     * Content types of standard image format supported by all ImageIO
+     * implementations: JPEG, PNG, GIF, BMP, WBMP.
+     * The <code>document.contentType</code>
+     * field has to contain one of these for the restriction to apply:
+     * <pre>
+     * image/jpeg, image/png, image/vnd.wap.wbmp, image/bmp,
+     * image/x-windows-bmp, image/gif
+     * </pre>
+     * @return list of restrictions
+     * @since 3.0.0
+     */
+    public static PropertyMatchers imageIOStandardContentTypes() {
+        PropertyMatchers list = new PropertyMatchers();
+        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/bmp",
+                "image/vnd.wap.wbmp",
+                "image/x-windows-bmp");
+        return list;
+    }
 }

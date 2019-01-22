@@ -1,0 +1,251 @@
+/* Copyright 2019 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.norconex.importer.handler.transformer.impl;
+
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Objects;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+
+import com.norconex.commons.lang.convert.DimensionConverter;
+import com.norconex.commons.lang.img.MutableImage;
+import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.ExternalHandler;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
+import com.norconex.importer.parser.GenericDocumentParserFactory;
+
+/**
+ * <p>
+ * Transforms an image using common image operations.
+ * </p>
+ * <p>
+ * This class should only be used as a pre-parsing handler, on image files.
+ * It may also be appropriate to disable parsing of those images if you
+ * want to keep the transformed version intact. This can be done with
+ * {@link GenericDocumentParserFactory}.
+ * </p>
+ *
+ * <h3>Content-types</h3>
+ * <p>
+ * By default, this filter is restricted to (applies only to) documents matching
+ * the restrictions returned by
+ * {@link CommonRestrictions#imageIOStandardContentTypes()}.
+ * You can specify your own content types if you know they represent a supported
+ * image.
+ * </p>
+ *
+ * <h3>XML configuration usage:</h3>
+ * <pre>
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
+ *      targetFormat="(jpg, png, gif, bmp, wbmp, or other supported format)" &gt;
+ *
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *
+ *      &lt;scale
+ *          stretch="[false|true]"
+ *          factor="(decimal value ratio factor, default is 1)"
+ *          dimension="(target dimension, in pixels, format: [width]x[height])" /&gt;
+ *
+ *      &lt;rotate degrees="(-360 to 360)"/>
+ *
+ *      &lt;crop x="(top-left x-axis, default 0)"
+ *               y="(top-left y-axis, default 0)"
+ *               dimension="(crop dimension, in pixels, format: [width]x[height])"/>
+ *  &lt;/handler&gt;
+ * </pre>
+ *
+ *
+ * <h4>Image dimension format</h4>
+ * <p>
+ * For a list of supported image dimension formats, refer to
+ * {@link DimensionConverter}.
+ * </p>
+ *
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following example converts images to PNG while scaling it to a maximum
+ * dimension of 400 pixels wide and 250 pixel high.
+ * </p>
+ * <pre>
+ *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
+ *          targetFormat="png"&gt;
+ *      &lt;scale dimension="400x250" /&gt;
+ *  &lt;/handler&gt;
+ * </pre>
+ *
+ * @author Pascal Essiembre
+ * @see ExternalHandler
+ * @since 3.0.0
+ */
+public class ImageTransformer extends AbstractDocumentTransformer {
+
+    public static final String DEFAULT_TARGET_FORMAT = "png";
+
+    //TODO Maybe: default == null == keep same as source, derived from detected content-type
+    private String targetFormat = DEFAULT_TARGET_FORMAT;
+
+    private boolean scaleStretch;
+    private Double scaleFactor;
+    private Dimension scaleDimension;
+    private Double rotateDegrees;
+    private Rectangle cropRectangle;
+
+    public ImageTransformer() {
+        super();
+        addRestrictions(CommonRestrictions.imageIOStandardContentTypes());
+    }
+
+    public String getTargetFormat() {
+        return targetFormat;
+    }
+    public void setTargetFormat(String targetFormat) {
+        this.targetFormat = targetFormat;
+    }
+
+    public boolean isScaleStretch() {
+        return scaleStretch;
+    }
+    public void setScaleStretch(boolean scaleStretch) {
+        this.scaleStretch = scaleStretch;
+    }
+
+    public Double getScaleFactor() {
+        return scaleFactor;
+    }
+    public void setScaleFactor(Double scaleFactor) {
+        this.scaleFactor = scaleFactor;
+    }
+
+    public Dimension getScaleDimension() {
+        return scaleDimension;
+    }
+    public void setScaleDimension(Dimension scaleDimension) {
+        this.scaleDimension = scaleDimension;
+    }
+
+    public Double getRotateDegrees() {
+        return rotateDegrees;
+    }
+    public void setRotateDegrees(Double rotateDegrees) {
+        this.rotateDegrees = rotateDegrees;
+    }
+
+    public Rectangle getCropRectangle() {
+        return cropRectangle;
+    }
+    public void setCropRectangle(Rectangle cropRectangle) {
+        this.cropRectangle = cropRectangle;
+    }
+
+    @Override
+    protected void transformApplicableDocument(String reference,
+            InputStream input, OutputStream output, ImporterMetadata metadata,
+            boolean parsed) throws ImporterHandlerException {
+        Objects.requireNonNull("'targetFormat' must not be null");
+
+        try {
+            MutableImage img = new MutableImage(input);
+            // Scale
+            if (scaleFactor != null) {
+                img.scaleFactor(scaleFactor);
+            }
+            if (scaleDimension != null) {
+                if (scaleStretch) {
+                    img.stretch(scaleDimension);
+                } else {
+                    img.scale(scaleDimension);
+                }
+            }
+
+            // Rotate
+            if (rotateDegrees != null) {
+                img.rotate(rotateDegrees);
+            }
+
+            // Crop
+            if (cropRectangle != null) {
+                img.crop(cropRectangle);
+            }
+
+            // Save as
+            img.write(output, targetFormat);
+        } catch (IOException e) {
+            throw new ImporterHandlerException(
+                    "Could not transform image: " + reference, e);
+        }
+    }
+
+    @Override
+    protected void loadHandlerFromXML(XML xml) {
+        setTargetFormat(xml.getString("@targetFormat", targetFormat));
+        setScaleStretch(xml.getBoolean("scale/@stretch", scaleStretch));
+        setScaleFactor(xml.getDouble("scale/@factor", scaleFactor));
+        setScaleDimension(xml.getDimension("scale/@dimension", scaleDimension));
+        setRotateDegrees(xml.getDouble("rotate/@degrees", rotateDegrees));
+        setTargetFormat(xml.getString("@targetFormat", targetFormat));
+        if (xml.contains("crop/@dimension")) {
+            Dimension dim = xml.getDimension("crop/@dimension");
+            setCropRectangle(new Rectangle(
+                    xml.getInteger("crop/@x", 0), xml.getInteger("crop/@y", 0),
+                    dim.width, dim.height));
+        }
+    }
+
+    @Override
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("targetFormat", targetFormat);
+        xml.addElement("scale")
+                .setAttribute("stretch", scaleStretch)
+                .setAttribute("factor", scaleFactor)
+                .setAttribute("dimension", scaleDimension);
+        xml.addElement("rotate")
+                .setAttribute("degrees", rotateDegrees);
+        if (cropRectangle != null) {
+            xml.addElement("crop")
+                    .setAttribute("x", cropRectangle.x)
+                    .setAttribute("y", cropRectangle.y)
+                    .setAttribute("dimension",
+                            cropRectangle.width + "x" + cropRectangle.height);
+        }
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+}

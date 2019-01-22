@@ -1,6 +1,11 @@
 TODO:
 ==============
 
+- Have a ContentToFieldTagger to easily take the content and store it in a field
+
+- Add ability to convert binary content into hex/base64 into a text field, or 
+  to replace body.
+
 - Consider making the MS .docs memory fix permanent:
   https://github.com/Norconex/collector-filesystem/issues/39#issuecomment-419327401
 
@@ -130,6 +135,10 @@ TODO:
   already supports that.
 
 - MAYBE: Consider interactive shell script invoking the importer.
+
+- MABYE Have a base handler class that takes a functional interface for the 
+  different types?
+
 
 - MAYBE: Have <restrictTo> being optional wrapping tag that can group
   multiple other handlers, so the condition does not have to be repeated in 

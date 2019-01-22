@@ -9,6 +9,9 @@
 
     <release version="3.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
       <action dev="essiembre" type="add">
+        New ImageTransformer class.
+      </action>
+      <action dev="essiembre" type="add">
         New -f or "outputMetaFormat" command-line argument for saving
         exported metadata fields in alternate formats.
       </action>
