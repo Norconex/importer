@@ -11,6 +11,10 @@
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Commons Lang 1.15.1.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed ClassCastException when a IDocumentFilter does not implement
+        IOnMatchFilter.
+      </action>
       <action dev="rustyx" type="fix" issue="82">
         Fixed LanguageTagger choosing main language as the one with lowest
         probability.  
