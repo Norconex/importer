@@ -18,6 +18,9 @@
       <action dev="essiembre" type="add">
         New ExternalHandler class.
       </action>
+      <action dev="essiembre" type="add">
+        New ImporterDocument#getStreamFactory() method.
+      </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>

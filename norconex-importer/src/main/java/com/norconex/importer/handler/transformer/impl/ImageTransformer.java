@@ -171,33 +171,35 @@ public class ImageTransformer extends AbstractDocumentTransformer {
 
         try {
             MutableImage img = new MutableImage(input);
-            // Scale
-            if (scaleFactor != null) {
-                img.scaleFactor(scaleFactor);
-            }
-            if (scaleDimension != null) {
-                if (scaleStretch) {
-                    img.stretch(scaleDimension);
-                } else {
-                    img.scale(scaleDimension);
-                }
-            }
-
-            // Rotate
-            if (rotateDegrees != null) {
-                img.rotate(rotateDegrees);
-            }
-
-            // Crop
-            if (cropRectangle != null) {
-                img.crop(cropRectangle);
-            }
-
-            // Save as
+            transformImage(img);
             img.write(output, targetFormat);
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Could not transform image: " + reference, e);
+        }
+    }
+
+    public void transformImage(MutableImage image) {
+        // Scale
+        if (scaleFactor != null) {
+            image.scaleFactor(scaleFactor);
+        }
+        if (scaleDimension != null) {
+            if (scaleStretch) {
+                image.stretch(scaleDimension);
+            } else {
+                image.scale(scaleDimension);
+            }
+        }
+
+        // Rotate
+        if (rotateDegrees != null) {
+            image.rotate(rotateDegrees);
+        }
+
+        // Crop
+        if (cropRectangle != null) {
+            image.crop(cropRectangle);
         }
     }
 

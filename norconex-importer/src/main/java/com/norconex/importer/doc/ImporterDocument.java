@@ -155,6 +155,10 @@ public class ImporterDocument {
                     "Could set content input stream.", e);
         }
     }
+    //TODO Since 3.0.0
+    public CachedStreamFactory getStreamFactory() {
+        return content.getStreamFactory();
+    }
 
     public String getContentEncoding() {
         return contentEncoding;
