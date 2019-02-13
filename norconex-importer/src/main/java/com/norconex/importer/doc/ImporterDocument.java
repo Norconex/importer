@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,10 @@ public class ImporterDocument {
     private String contentEncoding;
 
     /**
-     *
-     * @param reference
-     * @param streamFactory
+     * Creates a blank importer document using the supplied stream factory
+     * to handle content.
+     * @param reference document reference
+     * @param streamFactory stream factory
      * @since 3.0.0
      */
     public ImporterDocument(
@@ -55,10 +56,11 @@ public class ImporterDocument {
     }
 
     /**
-     *
-     * @param reference
-     * @param streamFactory
-     * @param metadata importer metadata
+     * Creates a blank importer document using the supplied stream factory
+     * to handle content.
+     * @param reference document reference
+     * @param streamFactory stream factory
+     * @param metadata importer document metadata
      * @since 3.0.0
      */
     public ImporterDocument(String reference,
@@ -92,7 +94,7 @@ public class ImporterDocument {
     /**
      * Disposes of any resources associated with this document (like
      * disk or memory cache).
-     * @throws IOException
+     * @throws IOException could not dispose of document resources
      * @since 3.0.0
      */
     //TODO implement "closeable" instead?

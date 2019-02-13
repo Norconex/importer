@@ -72,11 +72,11 @@ import com.norconex.importer.parser.GenericDocumentParserFactory;
  *          factor="(decimal value ratio factor, default is 1)"
  *          dimension="(target dimension, in pixels, format: [width]x[height])" /&gt;
  *
- *      &lt;rotate degrees="(-360 to 360)"/>
+ *      &lt;rotate degrees="(-360 to 360)"/&gt;
  *
  *      &lt;crop x="(top-left x-axis, default 0)"
  *               y="(top-left y-axis, default 0)"
- *               dimension="(crop dimension, in pixels, format: [width]x[height])"/>
+ *               dimension="(crop dimension, in pixels, format: [width]x[height])"/&gt;
  *  &lt;/handler&gt;
  * </pre>
  *
