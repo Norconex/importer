@@ -30,16 +30,11 @@
   <properties>
     <tika.version>1.20</tika.version>
     <!-- TODO: make it use latest available instead (snapshot + minor)? -->
+    <!-- 
     <norconex-commons-lang.version>2.0.0-SNAPSHOT</norconex-commons-lang.version>
+     -->
   </properties>
   <inceptionYear>2009</inceptionYear>
-
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-    </license>
-  </licenses>
 
   <repositories>
     
@@ -89,12 +84,10 @@
     <dependency>
     	<groupId>com.norconex.commons</groupId>
     	<artifactId>norconex-commons-lang</artifactId>
-    	<version>${norconex-commons-lang.version}</version>
     </dependency>
     <dependency>
         <groupId>com.norconex.commons</groupId>
         <artifactId>norconex-commons-lang</artifactId>
-        <version>${norconex-commons-lang.version}</version>
         <classifier>resources</classifier>
         <type>zip</type>
         <scope>provided</scope>
@@ -223,7 +216,7 @@
   
   <build>
     <plugins>
-      <plugin>        
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
       </plugin>
