@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -147,64 +146,65 @@ public class CsvSplitter extends AbstractDocumentSplitter
         //TODO by default (or as an option), try to detect the format of the
         // file (read first few lines and count number of tabs vs coma,
         // quotes per line, etc.
-        CSVReader cvsreader = new CSVReader(doc.getReader(), separatorCharacter,
-                quoteCharacter, escapeCharacter, linesToSkip);
+        try (CSVReader cvsreader = new CSVReader(doc.getReader(), separatorCharacter,
+                quoteCharacter, escapeCharacter, linesToSkip)) {
 
-        String [] cols;
-        String[] colNames = null;
-        int count = 0;
-        StringBuilder contentStr = new StringBuilder();
-        while ((cols = cvsreader.readNext()) != null) {
-            count++;
-            ImporterMetadata childMeta = new ImporterMetadata();
-            childMeta.loadFromMap(doc.getMetadata());
-            String childEmbedRef = "row-" + count;
-            if (count == 1 && useFirstRowAsFields) {
-                colNames = cols;
-            } else {
-                for (int i = 0; i < cols.length; i++) {
-                    int colPos = i + 1;
-                    String colName = null;
-                    if (colNames == null || i >= colNames.length) {
-                        colName = "column" + colPos;
-                    } else {
-                        colName = colNames[i];
-                    }
-                    String colValue = cols[i];
-
-                    // If a reference column, set reference value
-                    if (isColumnMatching(
-                            colName, colPos, Arrays.asList(referenceColumn))) {
-                        childEmbedRef = colValue;
-                    }
-                    // If a content column, add it to content
-                    if (isColumnMatching(colName, colPos, contentColumns)) {
-                        if (contentStr.length() > 0) {
-                            contentStr.append(" ");
-                        }
-                        contentStr.append(colValue);
-                    }
-                    childMeta.set(colName, colValue);
-                }
-                String childDocRef = doc.getReference() + "!" + childEmbedRef;
-                CachedInputStream content = null;
-                if (contentStr.length() > 0) {
-                    content = streamFactory.newInputStream(
-                            contentStr.toString());
-                    contentStr.setLength(0);
+            String [] cols;
+            String[] colNames = null;
+            int count = 0;
+            StringBuilder contentStr = new StringBuilder();
+            while ((cols = cvsreader.readNext()) != null) {
+                count++;
+                ImporterMetadata childMeta = new ImporterMetadata();
+                childMeta.loadFromMap(doc.getMetadata());
+                String childEmbedRef = "row-" + count;
+                if (count == 1 && useFirstRowAsFields) {
+                    colNames = cols;
                 } else {
-                    content = streamFactory.newInputStream();
+                    for (int i = 0; i < cols.length; i++) {
+                        int colPos = i + 1;
+                        String colName = null;
+                        if (colNames == null || i >= colNames.length) {
+                            colName = "column" + colPos;
+                        } else {
+                            colName = colNames[i];
+                        }
+                        String colValue = cols[i];
+
+                        // If a reference column, set reference value
+                        if (isColumnMatching(colName, colPos,
+                                Arrays.asList(referenceColumn))) {
+                            childEmbedRef = colValue;
+                        }
+                        // If a content column, add it to content
+                        if (isColumnMatching(colName, colPos, contentColumns)) {
+                            if (contentStr.length() > 0) {
+                                contentStr.append(" ");
+                            }
+                            contentStr.append(colValue);
+                        }
+                        childMeta.set(colName, colValue);
+                    }
+                    String childDocRef =
+                            doc.getReference() + "!" + childEmbedRef;
+                    CachedInputStream content = null;
+                    if (contentStr.length() > 0) {
+                        content = streamFactory.newInputStream(
+                                contentStr.toString());
+                        contentStr.setLength(0);
+                    } else {
+                        content = streamFactory.newInputStream();
+                    }
+                    ImporterDocument childDoc = new ImporterDocument(
+                            childDocRef, content, childMeta);
+                    childMeta.setReference(childDocRef);
+                    childMeta.setEmbeddedReference(childEmbedRef);
+                    childMeta.setEmbeddedParentReference(doc.getReference());
+                    childMeta.setEmbeddedParentRootReference(doc.getReference());
+                    rows.add(childDoc);
                 }
-                ImporterDocument childDoc =
-                        new ImporterDocument(childDocRef, content, childMeta);
-                childMeta.setReference(childDocRef);
-                childMeta.setEmbeddedReference(childEmbedRef);
-                childMeta.setEmbeddedParentReference(doc.getReference());
-                childMeta.setEmbeddedParentRootReference(doc.getReference());
-                rows.add(childDoc);
             }
         }
-        IOUtils.closeQuietly(cvsreader);
         return rows;
     }
 

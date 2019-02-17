@@ -518,7 +518,7 @@ public class ExternalHandler {
                                 + command, e);
             }
         } finally {
-            IOUtils.closeQuietly(outputMetaReader);
+            try { outputMetaReader.close(); } catch (IOException ie) {/*NOOP*/}
             files.deleteAll();
         }
     }

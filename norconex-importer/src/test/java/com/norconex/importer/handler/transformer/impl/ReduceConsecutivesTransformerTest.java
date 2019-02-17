@@ -48,10 +48,9 @@ public class ReduceConsecutivesTransformerTest {
             t.loadFromXML(new XML(reader));
         }
 
-        InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-
-        try {
+        try (InputStream is = IOUtils.toInputStream(
+                text, StandardCharsets.UTF_8);
+                ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             t.transformDocument(
                     "dummyRef", is, os, new ImporterMetadata(), true);
             String response = os.toString();
@@ -59,9 +58,6 @@ public class ReduceConsecutivesTransformerTest {
             Assert.assertEquals(
                     "\tthis is the text i want to modify.\n\r too much space.",
                     response.toLowerCase());
-        } finally {
-            IOUtils.closeQuietly(is);
-            IOUtils.closeQuietly(os);
         }
     }
 

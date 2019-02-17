@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.After;
 import org.junit.Assert;
@@ -47,7 +46,7 @@ public class PDFPageSplitterTest {
     }
     @After
     public void tearDown() throws IOException {
-        IOUtils.closeQuietly(input);
+        input.close();
     }
 
     @Test

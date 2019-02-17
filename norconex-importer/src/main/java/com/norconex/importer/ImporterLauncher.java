@@ -179,8 +179,8 @@ public final class ImporterLauncher {
             FileOutputStream metaOut = null;
             try {
                 IOUtils.copy(docInStream, docOutStream);
-                IOUtils.closeQuietly(docOutStream);
-                IOUtils.closeQuietly(docInStream);
+                try { docOutStream.close(); } catch (IOException ie){ /*NOOP*/ }
+                try { docInStream.close(); } catch (IOException ie) { /*NOOP*/ }
 
                 // Write metadata file
                 if ("json".equalsIgnoreCase(outputFormat)) {
@@ -204,7 +204,7 @@ public final class ImporterLauncher {
                 System.err.println();
                 System.err.flush();
             } finally {
-                IOUtils.closeQuietly(metaOut);
+                try { metaOut.close(); } catch (IOException ie) { /*NOOP*/ }
             }
         }
 

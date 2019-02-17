@@ -114,11 +114,10 @@ public class XFDLParser implements IDocumentParser {
             byte[] compressedContent =
                     Base64.decodeBase64(IOUtils.toString(reader));
             // deal with compression
-            InputStream is = new GZIPInputStream(
-                    new ByteArrayInputStream(compressedContent));
-
-            dom = docBuilder.parse(is);
-            IOUtils.closeQuietly(is);
+            try (InputStream is = new GZIPInputStream(
+                    new ByteArrayInputStream(compressedContent))) {
+                dom = docBuilder.parse(is);
+            }
         } else {
             dom = docBuilder.parse(new InputSource(reader));
         }

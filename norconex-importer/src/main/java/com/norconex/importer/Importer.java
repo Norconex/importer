@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -435,7 +434,7 @@ public class Importer {
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
-            IOUtils.closeQuietly(out);
+            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             if (importerConfig.getParseErrorsSaveDir() != null) {
                 saveParseError(doc, e);
             }
@@ -447,7 +446,7 @@ public class Importer {
                 LOG.debug("Parser \"{}\" did not produce new content for: {}",
                         parser.getClass(), doc.getReference());
             }
-            IOUtils.closeQuietly(out);
+            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             doc.getInputStream().dispose();
             doc.setInputStream(streamFactory.newInputStream());
         } else {
@@ -456,7 +455,7 @@ public class Importer {
             try {
                 newInputStream = out.getInputStream();
             } finally {
-                IOUtils.closeQuietly(out);
+                try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             }
             doc.setInputStream(newInputStream);
         }
@@ -562,14 +561,14 @@ public class Importer {
                         + "\" did not return any content for: "
                         + doc.getReference());
             }
-            IOUtils.closeQuietly(out);
+            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             newInputStream = in;
         } else {
             in.dispose();
             try {
                 newInputStream = out.getInputStream();
             } finally {
-                IOUtils.closeQuietly(out);
+                try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             }
         }
         doc.setInputStream(newInputStream);
@@ -594,7 +593,7 @@ public class Importer {
                 in.dispose();
             }
         } finally {
-            IOUtils.closeQuietly(out);
+            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
         }
 
         if (childDocs == null) {

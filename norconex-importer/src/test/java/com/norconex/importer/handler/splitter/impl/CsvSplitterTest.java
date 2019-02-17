@@ -49,7 +49,7 @@ public class CsvSplitterTest {
 
     @After
     public void tearDown() throws IOException {
-        IOUtils.closeQuietly(input);
+        input.close();
     }
 
     @Test

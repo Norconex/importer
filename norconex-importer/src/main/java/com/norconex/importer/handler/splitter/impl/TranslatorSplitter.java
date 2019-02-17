@@ -14,6 +14,7 @@
  */
 package com.norconex.importer.handler.splitter.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -429,7 +430,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
                 childContent.write(txt.getBytes(StandardCharsets.UTF_8));
                 childContent.flush();
             }
-            IOUtils.closeQuietly(reader);
+            try { reader.close(); } catch (IOException ie) {/*NOOP*/}
             childInput = childContent.getInputStream();
         } else {
             childInput = streamFactory.newInputStream();

@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,15 +64,13 @@ public final class CharsetUtil {
     public static String convertCharset(
             String input, String inputCharset,
             String outputCharset) throws IOException {
-        ByteArrayInputStream is =
+        try (ByteArrayInputStream is =
                 new ByteArrayInputStream(input.getBytes(inputCharset));
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        convertCharset(is, inputCharset, os, outputCharset);
-        os.flush();
-        String output = os.toString(outputCharset);
-        IOUtils.closeQuietly(is);
-        IOUtils.closeQuietly(os);
-        return output;
+                ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            convertCharset(is, inputCharset, os, outputCharset);
+            os.flush();
+            return os.toString(outputCharset);
+        }
     }
 
     /**
@@ -134,9 +132,7 @@ public final class CharsetUtil {
         cd.setText(input.getBytes("UTF-8"));
         CharsetMatch match = cd.detect();
         charset = match.getName();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Detected encoding: " + charset);
-        }
+        LOG.debug("Detected encoding: {}", charset);
         return charset;
     }
 
@@ -186,9 +182,7 @@ public final class CharsetUtil {
         rewind(input);
         CharsetMatch match = cd.detect();
         charset = match.getName();
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Detected encoding: " + charset);
-        }
+        LOG.debug("Detected encoding: {}", charset);
         return charset;
     }
 
