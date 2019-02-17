@@ -477,7 +477,6 @@ public class ExternalHandler {
 
         //--- Resolve command tokens ---
         LOG.debug("Command before token replacement: {}", cmd);
-        Reader outputMetaReader = null;
         try {
             cmd = resolveInputToken(cmd, files, input);
             cmd = resolveInputMetaToken(cmd, files, input, metadata);
@@ -495,22 +494,22 @@ public class ExternalHandler {
                     output.flush();
                 }
                 if (files.hasOutputMetaFile()) {
-                    outputMetaReader = Files.newBufferedReader(
-                            files.outputMetaFile);
-//                    outputMetaReader = new FileReader(files.outputMetaFile);
-                    String format = getMetadataOutputFormat();
-                    ImporterMetadata metaOverwrite = new ImporterMetadata();
-                    if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
-                        metaOverwrite.loadFromProperties(outputMetaReader);
-                    } else if (META_FORMAT_XML.equals(format)) {
-                        metaOverwrite.loadFromXML(outputMetaReader);
-                    } else if (META_FORMAT_JSON.equals(format)) {
-                        metaOverwrite.loadFromJSON(outputMetaReader);
-                    } else {
-                        extractMetaFromFile(outputMetaReader, metaOverwrite);
+                    try (Reader outputMetaReader = Files.newBufferedReader(
+                            files.outputMetaFile)) {
+                        String format = getMetadataOutputFormat();
+                        ImporterMetadata metaOverwrite = new ImporterMetadata();
+                        if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
+                            metaOverwrite.loadFromProperties(outputMetaReader);
+                        } else if (META_FORMAT_XML.equals(format)) {
+                            metaOverwrite.loadFromXML(outputMetaReader);
+                        } else if (META_FORMAT_JSON.equals(format)) {
+                            metaOverwrite.loadFromJSON(outputMetaReader);
+                        } else {
+                            extractMetaFromFile(outputMetaReader, metaOverwrite);
+                        }
+                        metadata.keySet().removeAll(metaOverwrite.keySet());
+                        metadata.putAll(metaOverwrite);
                     }
-                    metadata.keySet().removeAll(metaOverwrite.keySet());
-                    metadata.putAll(metaOverwrite);
                 }
             } catch (IOException e) {
                 throw new ImporterHandlerException(
@@ -518,7 +517,6 @@ public class ExternalHandler {
                                 + command, e);
             }
         } finally {
-            try { outputMetaReader.close(); } catch (IOException ie) {/*NOOP*/}
             files.deleteAll();
         }
     }
