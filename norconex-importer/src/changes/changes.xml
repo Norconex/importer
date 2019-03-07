@@ -7,9 +7,20 @@
   </properties>
   <body>
 
-    <release version="2.9.1-SNAPSHOT" date="2018-??-??" description="Bugfix release">
+    <release version="2.9.1-SNAPSHOT" date="2019-??-??" description="Bugfix release">
+      <action dev="essiembre" type="add">
+        HierarchyTagger now as a boolean "regex" attribute to specify whether
+        the separator should match a regular expresion.
+      </action>
+      <action dev="essiembre" type="update">
+        HierarchyTagger no longer keep empty segments by default. A new 
+        "keepEmptySegments" attribute has been added for this.
+      </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: Norconex Commons Lang 1.15.1.
+      </action>
+      <action dev="essiembre" type="fix" issue="91">
+        Fixed HierarchyTagger not constructing paths properly.
       </action>
       <action dev="essiembre" type="fix">
         Fixed ClassCastException when a IDocumentFilter does not implement

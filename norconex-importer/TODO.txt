@@ -1,6 +1,16 @@
 TODO:
 ==============
 
+- Have a Prefix tagger to prefix all metadata with something.
+  Also modify the RenameTagger to do bulk renaming
+  https://github.com/Norconex/collector-http/issues/553
+
+- Have a generic construct for set/replace/append/prepend/insertat, for multivalue
+  maps (Properties) but also for attributes on taggers and such.
+
+- Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
+  WildCard matches/replacements.
+
 - Have a transformer that eliminates the content (and/or store into a field).
   https://github.com/Norconex/collector-filesystem/issues/30#issuecomment-384499927
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017 Norconex Inc.
+   Copyright 2017-2019 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@
       <xs:attribute name="fromSeparator" type="xs:string" use="required"/>
       <xs:attribute name="toSeparator" type="xs:string"/>
       <xs:attribute name="overwrite" type="xs:boolean"/>
+      <xs:attribute name="keepEmptySegments" type="xs:boolean"/>
+      <xs:attribute name="regex" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>
