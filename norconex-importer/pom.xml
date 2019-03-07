@@ -381,6 +381,9 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.10.4</version>
         <configuration>
+          <additionalJOptions>
+              <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+          </additionalJOptions>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <show>protected</show>
           <detectLinks>false</detectLinks>
@@ -549,6 +552,9 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9</version>
         <configuration>
+          <additionalJOptions>
+              <additionalJOption>&#45;&#45;allow-script-in-comments</additionalJOption>
+          </additionalJOptions>
           <overview>${basedir}/src/main/javadoc/overview.html</overview>
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
