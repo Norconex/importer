@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Add Tagger for creating document summary.
+
 - Have a Prefix tagger to prefix all metadata with something.
   Also modify the RenameTagger to do bulk renaming
   https://github.com/Norconex/collector-http/issues/553
