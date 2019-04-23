@@ -24,7 +24,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -88,7 +88,7 @@ public class TextPatternTaggerTest {
         TextPatternTagger tagger = new TextPatternTagger();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
-        tagger.addPattern(new KeyValueExtractor("blah")
+        tagger.addPattern(new RegexKeyValueExtractor("blah")
                 .setCaseSensitive(true)
                 .setKey("field3")
                 .setKeyGroup(3)

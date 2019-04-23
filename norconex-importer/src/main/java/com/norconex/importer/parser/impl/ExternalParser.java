@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.io.output.WriterOutputStream;
 
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
@@ -148,7 +148,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<KeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
         return h.getMetadataExtractionPatterns();
     }
 
@@ -180,7 +180,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param patterns extraction pattern
      * @since 2.8.0
      */
-    public void addMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         h.addMetadataExtractionPatterns(patterns);
     }
     /**
@@ -189,7 +189,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param patterns extraction pattern
      * @since 2.8.0
      */
-    public void setMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
     }
 

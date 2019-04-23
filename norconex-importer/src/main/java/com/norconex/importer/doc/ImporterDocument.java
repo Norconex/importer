@@ -126,6 +126,11 @@ public class ImporterDocument {
     public CachedInputStream getContent() {
         return getInputStream();
     }
+    /**
+     * Sets the document content.
+     * @param content cached input stream
+     * @deprecated Since 3.0.0, use {@link #setInputStream(InputStream)}
+     */
     @Deprecated
     public void setContent(CachedInputStream content) {
         setInputStream(content);

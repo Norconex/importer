@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
@@ -47,8 +47,8 @@ public class ExternalTransformerTest {
         t.setMetadataOutputFormat("xml");
 
         t.setMetadataExtractionPatterns(
-            new KeyValueExtractor("asdf.*", "blah"),
-            new KeyValueExtractor("qwer.*", "halb")
+            new RegexKeyValueExtractor("asdf.*", "blah"),
+            new RegexKeyValueExtractor("qwer.*", "halb")
         );
 
         Map<String, String> envs = new HashMap<>();
@@ -158,11 +158,11 @@ public class ExternalTransformerTest {
         t.setEnvironmentVariables(envs);
 
         t.setMetadataExtractionPatterns(
-            new KeyValueExtractor("^(f.*):(.*)", 1, 2),
-            new KeyValueExtractor("^<field2>(.*)</field2>", "field2", 1),
-            new KeyValueExtractor("^f.*StdErr.*", "field3", 1),
-            new KeyValueExtractor("^(S.*?):(.*)", 2, 1),
-            new KeyValueExtractor("^(reference)\\=(.*)", 1, 2)
+            new RegexKeyValueExtractor("^(f.*):(.*)", 1, 2),
+            new RegexKeyValueExtractor("^<field2>(.*)</field2>", "field2", 1),
+            new RegexKeyValueExtractor("^f.*StdErr.*", "field3", 1),
+            new RegexKeyValueExtractor("^(S.*?):(.*)", 2, 1),
+            new RegexKeyValueExtractor("^(reference)\\=(.*)", 1, 2)
         );
     }
 

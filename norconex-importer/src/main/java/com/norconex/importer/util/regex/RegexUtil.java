@@ -19,13 +19,13 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 
 /**
  * Utility methods for various regular expression usage.
  * @author Pascal Essiembre
  * @since 2.8.0
- * @deprecated Since 3.0.0, use {@link KeyValueExtractor} from
+ * @deprecated Since 3.0.0, use {@link RegexKeyValueExtractor} from
  *         Norconex Commons Lang
  */
 @Deprecated

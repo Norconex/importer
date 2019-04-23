@@ -47,7 +47,7 @@ import com.norconex.commons.lang.exec.SystemCommandException;
 import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
@@ -265,7 +265,7 @@ public class ExternalHandler {
     public static final String META_FORMAT_PROPERTIES = "properties";
 
     private String command;
-    private final List<KeyValueExtractor> patterns = new ArrayList<>();
+    private final List<RegexKeyValueExtractor> patterns = new ArrayList<>();
 
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
@@ -312,7 +312,7 @@ public class ExternalHandler {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<KeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
         return Collections.unmodifiableList(patterns);
     }
     /**
@@ -326,7 +326,7 @@ public class ExternalHandler {
             return;
         }
         addMetadataExtractionPatterns(
-                new KeyValueExtractor(pattern).setKey(field));
+                new RegexKeyValueExtractor(pattern).setKey(field));
     }
     /**
      * Adds a metadata extraction pattern, which will extract the value from
@@ -340,7 +340,7 @@ public class ExternalHandler {
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addMetadataExtractionPatterns(new KeyValueExtractor(
+        addMetadataExtractionPatterns(new RegexKeyValueExtractor(
                 pattern).setKey(field).setValueGroup(valueGroup));
     }
     /**
@@ -348,7 +348,7 @@ public class ExternalHandler {
      * names/values.
      * @param patterns extraction pattern
      */
-    public void addMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         if (ArrayUtils.isNotEmpty(patterns)) {
             this.patterns.addAll(Arrays.asList(patterns));
         }
@@ -358,7 +358,7 @@ public class ExternalHandler {
      * patterns.
      * @param patterns extraction pattern
      */
-    public void setMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         this.patterns.clear();
         addMetadataExtractionPatterns(patterns);
     }
@@ -587,8 +587,8 @@ public class ExternalHandler {
 
     private synchronized void extractMetaFromLine(
             String line, ImporterMetadata metadata) {
-        KeyValueExtractor.extractKeyValues(metadata, line,
-                patterns.toArray(KeyValueExtractor.EMPTY_ARRAY));
+        RegexKeyValueExtractor.extractKeyValues(metadata, line,
+                patterns.toArray(RegexKeyValueExtractor.EMPTY_ARRAY));
     }
 
     private Path createTempFile(
@@ -719,7 +719,7 @@ public class ExternalHandler {
             int valueGroup = node.getInteger("@group", -1);
             valueGroup = node.getInteger("@valueGroup", valueGroup);
             addMetadataExtractionPatterns(
-                new KeyValueExtractor(node.getString(".", null))
+                new RegexKeyValueExtractor(node.getString(".", null))
                    .setCaseSensitive(node.getBoolean("@caseSensitive", false))
                    .setKey(node.getString("@field", null))
                    .setKeyGroup(node.getInteger("@fieldGroup", -1))
@@ -743,7 +743,7 @@ public class ExternalHandler {
             XML metaXML = xml.addElement("metadata")
                     .setAttribute("inputFormat", metadataInputFormat)
                     .setAttribute("outputFormat", metadataOutputFormat);
-            for (KeyValueExtractor rfe : patterns) {
+            for (RegexKeyValueExtractor rfe : patterns) {
                 metaXML.addElement("pattern", rfe.getRegex())
                         .setAttribute("field", rfe.getKey())
                         .setAttribute("fieldGroup", rfe.getKeyGroup())

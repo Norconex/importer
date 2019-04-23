@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 
 /**
  * Simplify extraction of field names and values from any text,
@@ -35,7 +35,7 @@ import com.norconex.commons.lang.regex.KeyValueExtractor;
  * of the value is ignored.
  * @author Pascal Essiembre
  * @since 2.8.0
- * @deprecated Since 3.0.0, use {@link KeyValueExtractor} from
+ * @deprecated Since 3.0.0, use {@link RegexKeyValueExtractor} from
  *         Norconex Commons Lang
  */
 @Deprecated

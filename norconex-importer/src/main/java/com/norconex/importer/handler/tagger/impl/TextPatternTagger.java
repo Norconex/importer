@@ -27,7 +27,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -104,12 +104,12 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 public class TextPatternTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
-    private final List<KeyValueExtractor> patterns = new ArrayList<>();
+    private final List<RegexKeyValueExtractor> patterns = new ArrayList<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        KeyValueExtractor.extractKeyValues(metadata, content, patterns);
+        RegexKeyValueExtractor.extractKeyValues(metadata, content, patterns);
     }
 
     /**
@@ -122,7 +122,7 @@ public class TextPatternTagger
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addPattern(new KeyValueExtractor(pattern).setKey(field));
+        addPattern(new RegexKeyValueExtractor(pattern).setKey(field));
     }
     /**
      * Adds a new pattern, which will extract the value from the specified
@@ -135,14 +135,14 @@ public class TextPatternTagger
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addPattern(new KeyValueExtractor(
+        addPattern(new RegexKeyValueExtractor(
                 pattern).setKey(field).setValueGroup(valueGroup));
     }
     /**
      * Adds one or more pattern that will extract matching field names/values.
      * @param pattern field extractor pattern
      */
-    public void addPattern(KeyValueExtractor... pattern) {
+    public void addPattern(RegexKeyValueExtractor... pattern) {
         if (ArrayUtils.isNotEmpty(pattern)) {
             patterns.addAll(Arrays.asList(pattern));
         }
@@ -152,14 +152,14 @@ public class TextPatternTagger
      * Clears previously set pattterns.
      * @param patterns field extractor pattern
      */
-    public void setPattern(KeyValueExtractor... patterns) {
+    public void setPattern(RegexKeyValueExtractor... patterns) {
         CollectionUtil.setAll(this.patterns, patterns);
     }
     /**
      * Gets the patterns used to extract matching field names/values.
      * @return patterns
      */
-    public List<KeyValueExtractor> getPatterns() {
+    public List<RegexKeyValueExtractor> getPatterns() {
         return Collections.unmodifiableList(patterns);
     }
 
@@ -167,7 +167,7 @@ public class TextPatternTagger
     protected void loadStringTaggerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("pattern");
         for (XML node : nodes) {
-            addPattern(new KeyValueExtractor(node.getString(".", null))
+            addPattern(new RegexKeyValueExtractor(node.getString(".", null))
                    .setCaseSensitive(node.getBoolean("@caseSensitive", false))
                    .setKey(node.getString("@field", null))
                    .setKeyGroup(node.getInteger("@fieldGroup", -1))
@@ -177,7 +177,7 @@ public class TextPatternTagger
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
-        for (KeyValueExtractor rfe : patterns) {
+        for (RegexKeyValueExtractor rfe : patterns) {
             xml.addElement("pattern", rfe.getRegex())
                     .setAttribute("field", rfe.getKey())
                     .setAttribute("fieldGroup", rfe.getKeyGroup())

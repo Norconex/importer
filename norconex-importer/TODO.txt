@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Have a StripAccentsTagger and Transformer. See: StringUtils.stripAccents(str)
+
 - Have a ContentToFieldTagger to easily take the content and store it in a field
 
 - Add ability to convert binary content into hex/base64 into a text field, or 

@@ -24,7 +24,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.regex.KeyValueExtractor;
+import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
@@ -160,7 +160,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<KeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
         return h.getMetadataExtractionPatterns();
     }
     /**
@@ -188,7 +188,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * names/values.
      * @param patterns extraction pattern
      */
-    public void addMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         h.addMetadataExtractionPatterns(patterns);
     }
     /**
@@ -196,7 +196,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * patterns.
      * @param patterns extraction pattern
      */
-    public void setMetadataExtractionPatterns(KeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
     }
 
