@@ -744,7 +744,7 @@ public class ExternalHandler {
                     .setAttribute("inputFormat", metadataInputFormat)
                     .setAttribute("outputFormat", metadataOutputFormat);
             for (RegexKeyValueExtractor rfe : patterns) {
-                metaXML.addElement("pattern", rfe.getRegex())
+                metaXML.addElement("pattern", rfe.getPattern())
                         .setAttribute("field", rfe.getKey())
                         .setAttribute("fieldGroup", rfe.getKeyGroup())
                         .setAttribute("valueGroup", rfe.getValueGroup())

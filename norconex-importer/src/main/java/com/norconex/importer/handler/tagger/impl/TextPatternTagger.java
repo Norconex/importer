@@ -178,7 +178,7 @@ public class TextPatternTagger
     @Override
     protected void saveStringTaggerToXML(XML xml) {
         for (RegexKeyValueExtractor rfe : patterns) {
-            xml.addElement("pattern", rfe.getRegex())
+            xml.addElement("pattern", rfe.getPattern())
                     .setAttribute("field", rfe.getKey())
                     .setAttribute("fieldGroup", rfe.getKeyGroup())
                     .setAttribute("valueGroup", rfe.getValueGroup())
