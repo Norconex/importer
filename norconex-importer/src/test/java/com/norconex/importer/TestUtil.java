@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 
 public final class TestUtil {
@@ -54,12 +55,13 @@ public final class TestUtil {
     public static File getAliceTextFile() {
         return new File(BASE_PATH + ".txt");
     }
-    public static Importer getTestConfigImporter() {
-        InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");
-        Reader r = new InputStreamReader(is);
-        ImporterConfig config =
-                ImporterConfigLoader.loadImporterConfig(r, false);
-        IOUtils.closeQuietly(r);
+    public static Importer getTestConfigImporter() throws IOException {
+        ImporterConfig config = new ImporterConfig();
+        try (InputStream is =
+                TestUtil.class.getResourceAsStream("test-config.xml");
+                Reader r = new InputStreamReader(is)) {
+            new XML(r).populate(config);
+        }
         return new Importer(config);
     }
 }

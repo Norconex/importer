@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package com.norconex.importer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -28,6 +31,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.map.Properties;
@@ -64,29 +68,30 @@ public final class ImporterLauncher {
     public static void launch(String[] args) {
         CommandLine cmd = parseCommandLineArguments(args);
 
-        File varFile = null;
-        File configFile = null;
+        Path varFile = null;
+        Path configFile = null;
 
         // Validate arguments
         if (cmd.hasOption(ARG_VARIABLES)) {
-            varFile = new File(cmd.getOptionValue(ARG_VARIABLES));
-            if (!varFile.isFile()) {
+            varFile = Paths.get(cmd.getOptionValue(ARG_VARIABLES));
+
+            if (!Files.isRegularFile(varFile)) {
                 System.err.println("Invalid variable file path: "
-                        + varFile.getAbsolutePath());
+                        + varFile.toAbsolutePath());
                 System.exit(-1);
             }
         }
         if (cmd.hasOption(ARG_CONFIG)) {
-            configFile = new File(cmd.getOptionValue(ARG_CONFIG));
-            if (!configFile.isFile()) {
+            configFile = Paths.get(cmd.getOptionValue(ARG_CONFIG));
+            if (!Files.isRegularFile(configFile)) {
                 System.err.println("Invalid configuration file path: "
-                        + configFile.getAbsolutePath());
+                        + configFile.toAbsolutePath());
                 System.exit(-1);
             }
         }
 
         if (cmd.hasOption(ARG_CHECKCFG)) {
-            checkConfig(cmd, configFile, varFile);
+            checkConfig(configFile, varFile);
             return;
         }
 
@@ -119,15 +124,17 @@ public final class ImporterLauncher {
     }
 
     private static ImporterConfig loadCommandLineConfig(
-            CommandLine cmd, File configFile, File varFile) {
+            CommandLine cmd, Path configFile, Path varFile) {
         if (configFile == null) {
             return null;
         }
 
-        ImporterConfig config = null;
+        ImporterConfig config = new ImporterConfig();
         try {
-            config = ImporterConfigLoader.loadImporterConfig(
-                    configFile, varFile, cmd.hasOption(ARG_IGNOREERRORS));
+            new ConfigurationLoader()
+                .setIgnoreValidationErrors(cmd.hasOption(ARG_IGNOREERRORS))
+                .setVariablesFile(varFile)
+                .loadFromXML(configFile, config);
         } catch (Exception e) {
             System.err.println("A problem occured loading configuration.");
             e.printStackTrace(System.err);
@@ -136,10 +143,12 @@ public final class ImporterLauncher {
         return config;
     }
 
-    private static void checkConfig(
-            CommandLine cmd, File configFile, File varFile) {
+    private static void checkConfig(Path configFile, Path varFile) {
         try {
-            ImporterConfigLoader.loadImporterConfig(configFile, varFile, false);
+            new ConfigurationLoader()
+                    .setIgnoreValidationErrors(false)
+                    .setVariablesFile(varFile)
+                    .loadFromXML(configFile, ImporterConfig.class);
             System.out.println("No XML configuration errors.");
         } catch (XMLValidationException e) {
             System.err.println("There were " + e.getErrors().size()

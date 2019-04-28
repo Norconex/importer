@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.XMLValidationException;
+import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -148,10 +148,8 @@ public class ImporterTest {
                 "/validation/importer-full.xml");
 
         try (Reader r = new InputStreamReader(is)) {
-            ImporterConfigLoader.loadImporterConfig(r, false);
-        } catch (XMLValidationException e) {
-            Assert.fail(e.getErrors().size()
-                    + "Validation warnings/errors were found.");
+            Assert.assertEquals(0,
+                    new XML(r).validate(ImporterConfig.class).size());
         }
     }
 }
