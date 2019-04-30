@@ -26,7 +26,7 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.RecursiveParserWrapper;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BasicContentHandlerFactory;
-import org.apache.tika.sax.BodyContentHandler;
+import org.apache.tika.sax.RecursiveParserWrapperHandler;
 import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -52,10 +52,11 @@ public class PDFParserTest extends AbstractParserTest {
     @Test
     public void test_PDF_jbig2()
             throws IOException, ImporterException, SAXException, TikaException {
+        RecursiveParserWrapperHandler h = new RecursiveParserWrapperHandler(
+                new BasicContentHandlerFactory(BasicContentHandlerFactory
+                        .HANDLER_TYPE.IGNORE, -1));
 
-        RecursiveParserWrapper p = new RecursiveParserWrapper(
-                new AutoDetectParser(), new BasicContentHandlerFactory(
-                        BasicContentHandlerFactory.HANDLER_TYPE.IGNORE, -1));
+        RecursiveParserWrapper p = new RecursiveParserWrapper(new AutoDetectParser());
         ParseContext context = new ParseContext();
         PDFParserConfig config = new PDFParserConfig();
         config.setExtractInlineImages(true);
@@ -64,11 +65,9 @@ public class PDFParserTest extends AbstractParserTest {
         context.set(Parser.class, p);
 
         try (InputStream stream = getInputStream("/parser/pdf/jbig2.pdf")) {
-            p.parse(stream,
-                    new BodyContentHandler(-1), new Metadata(), context);
+            p.parse(stream, h, new Metadata(), context);
         }
-        List<Metadata> metadatas = p.getMetadata();
-
+        List<Metadata> metadatas = h.getMetadataList();
 
         Assert.assertNull("Exception found: " + metadatas.get(0).get(
                 "X-TIKA:EXCEPTION:warn"), metadatas.get(0).get(
