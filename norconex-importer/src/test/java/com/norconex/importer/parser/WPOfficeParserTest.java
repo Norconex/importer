@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,28 @@ package com.norconex.importer.parser;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.importer.ImporterException;
 
 
 public class WPOfficeParserTest extends AbstractParserTest {
 
-    //--- Quattro Pro ----------------------------------------------------------    
+    //--- Quattro Pro ----------------------------------------------------------
     @Test
-    public void test_WPOffice_QuattroPro_qpw() 
+    public void test_WPOffice_QuattroPro_qpw()
             throws IOException, ImporterException {
         testParsing("/parser/wordperfect/quattropro.qpw",
-                "application/x-quattro-pro; version=9", 
+                "application/x-quattro-pro; version=9",
                 "Misc\\. relative references", "qpw", "Spreadsheet");
     }
 
-    //--- Word Perfect ---------------------------------------------------------    
+    //--- Word Perfect ---------------------------------------------------------
     @Test
-    public void test_WPOffice_WordPerfect_wpd() 
+    public void test_WPOffice_WordPerfect_wpd()
             throws IOException, ImporterException {
         testParsing("/parser/wordperfect/wordperfect.wpd",
-                "application/vnd.wordperfect; version=6.x", 
+                "application/vnd.wordperfect; version=6.x",
                 "test test", "wpd", "Word Processor");
     }
 }

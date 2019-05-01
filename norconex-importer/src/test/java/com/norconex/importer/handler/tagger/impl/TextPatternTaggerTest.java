@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
@@ -54,15 +54,15 @@ public class TextPatternTaggerTest {
         List<String> headings = metadata.getStrings("headings");
         List<String> countries = metadata.getStrings("country");
 
-        Assert.assertEquals("Wrong <h2> count.", 2, headings.size());
-        Assert.assertEquals("Did not extract first heading",
-                "CHAPTER I", headings.get(0));
-        Assert.assertEquals("Did not extract second heading",
-                "Down the Rabbit-Hole", headings.get(1));
+        Assertions.assertEquals(2, headings.size(), "Wrong <h2> count.");
+        Assertions.assertEquals("CHAPTER I", headings.get(0),
+                "Did not extract first heading");
+        Assertions.assertEquals("Down the Rabbit-Hole", headings.get(1),
+                "Did not extract second heading");
 
-        Assert.assertEquals("Wrong country count.", 1, countries.size());
-        Assert.assertEquals("Did not extract country",
-                "New Zealand", countries.get(0));
+        Assertions.assertEquals(1, countries.size(), "Wrong country count.");
+        Assertions.assertEquals("New Zealand", countries.get(0),
+                "Did not extract country");
     }
 
     @Test
@@ -80,7 +80,7 @@ public class TextPatternTaggerTest {
         is.close();
 
         String myTitle = metadata.getString("mytitle");
-        Assert.assertEquals(100, myTitle.length());
+        Assertions.assertEquals(100, myTitle.length());
     }
 
     @Test

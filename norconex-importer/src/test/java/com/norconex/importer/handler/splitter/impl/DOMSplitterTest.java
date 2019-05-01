@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -46,9 +46,9 @@ public class DOMSplitterTest {
         splitter.setSelector("div.person");
         List<ImporterDocument> docs = split(html, splitter);
 
-        Assert.assertEquals(3, docs.size());
+        Assertions.assertEquals(3, docs.size());
         String content = TestUtil.getContentAsString(docs.get(2));
-        Assert.assertTrue(content.contains("Dalton"));
+        Assertions.assertTrue(content.contains("Dalton"));
     }
 
 
@@ -62,10 +62,10 @@ public class DOMSplitterTest {
         splitter.setSelector("person");
         List<ImporterDocument> docs = split(xml, splitter);
 
-        Assert.assertEquals(3, docs.size());
+        Assertions.assertEquals(3, docs.size());
 
         String content = TestUtil.getContentAsString(docs.get(2));
-        Assert.assertTrue(content.contains("Dalton"));
+        Assertions.assertTrue(content.contains("Dalton"));
     }
 
     private List<ImporterDocument> split(String text, DOMSplitter splitter)

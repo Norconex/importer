@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.Properties;
 
@@ -31,18 +31,18 @@ public class ImportHandlerTest {
     private Importer importer;
     private Properties metadata;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         importer = TestUtil.getTestConfigImporter();
         metadata = new Properties();
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         importer = null;
         metadata = null;
     }
-    
+
     @Test
     public void testHandlers() throws IOException, ImporterException {
         InputStream is = new BufferedInputStream(
@@ -51,6 +51,6 @@ public class ImportHandlerTest {
         is.close();
 
         // Test Constant
-        Assert.assertEquals("Lewis Carroll", metadata.getString("Author"));
+        Assertions.assertEquals("Lewis Carroll", metadata.getString("Author"));
     }
 }

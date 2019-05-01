@@ -1,4 +1,4 @@
-/* Copyright 2015-2017 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.importer.Importer;
@@ -41,12 +42,14 @@ public abstract class AbstractParserTest {
     public static final String DEFAULT_CONTENT_REGEX =
             "Hey Norconex, this is a test\\.";
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+    @TempDir
+    static Path folder;
 
     protected File getFile(String resourcePath) throws IOException {
-        File file = folder.newFile(
-                StringUtils.substringAfterLast(resourcePath, "/"));
+        File file = Files.createTempFile(folder, null,
+                StringUtils.substringAfterLast(resourcePath, "/")).toFile();
+//        File file = folder.newFile(
+//                StringUtils.substringAfterLast(resourcePath, "/"));
         FileUtils.copyInputStreamToFile(getInputStream(resourcePath), file);
         return file;
     }
@@ -111,27 +114,30 @@ public abstract class AbstractParserTest {
             String family) throws IOException {
         Pattern p = Pattern.compile(contentRegex, Pattern.DOTALL);
 
-        Assert.assertNotNull("Document is null", doc);
+        Assertions.assertNotNull(doc, "Document is null");
 
         String content =
                 IOUtils.toString(doc.getInputStream(), StandardCharsets.UTF_8);
-        Assert.assertEquals(testType + " content-type detection failed for \""
-                + resourcePath + "\".", ContentType.valueOf(contentType),
-                doc.getContentType());
+        Assertions.assertEquals(ContentType.valueOf(contentType),
+                doc.getContentType(),
+                testType + " content-type detection failed for \""
+                        + resourcePath + "\".");
 
-        Assert.assertTrue(testType + " content extraction failed for \""
-                + resourcePath + "\". Content:\n" + content,
-                p.matcher(content).find());
+        Assertions.assertTrue(p.matcher(content).find(),
+                testType + " content extraction failed for \""
+                        + resourcePath + "\". Content:\n" + content);
 
         String ext = doc.getContentType().getExtension();
-        Assert.assertEquals(testType + " extension detection failed for \""
-                + resourcePath + "\".", extension, ext);
+        Assertions.assertEquals(extension, ext,
+                testType + " extension detection failed for \""
+                        + resourcePath + "\".");
 
         String familyEnglish = doc.getContentType()
                 .getContentFamily().getDisplayName(Locale.ENGLISH);
 //        System.out.println("FAMILY: " + familyEnglish);
-        Assert.assertEquals(testType + " family detection failed for \""
-                + resourcePath + "\".", family, familyEnglish);
+        Assertions.assertEquals(family, familyEnglish,
+                testType + " family detection failed for \""
+                        + resourcePath + "\".");
 
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ import org.apache.tika.parser.RecursiveParserWrapper;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 import org.apache.tika.sax.BasicContentHandlerFactory;
 import org.apache.tika.sax.RecursiveParserWrapperHandler;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import com.norconex.importer.ImporterException;
@@ -69,13 +69,13 @@ public class PDFParserTest extends AbstractParserTest {
         }
         List<Metadata> metadatas = h.getMetadataList();
 
-        Assert.assertNull("Exception found: " + metadatas.get(0).get(
-                "X-TIKA:EXCEPTION:warn"), metadatas.get(0).get(
+        Assertions.assertNull(metadatas.get(0).get("X-TIKA:EXCEPTION:warn"),
+                "Exception found: " + metadatas.get(0).get(
                         "X-TIKA:EXCEPTION:warn"));
-        Assert.assertEquals(
-                "Invalid height.", "91", metadatas.get(1).get("height"));
-        Assert.assertEquals(
-                "Invalid width.", "352", metadatas.get(1).get("width"));
+        Assertions.assertEquals("91", metadatas.get(1).get("height"),
+                "Invalid height.");
+        Assertions.assertEquals("352", metadatas.get(1).get("width"),
+                "Invalid width.");
 
 //        System.out.println("OUTPUT:" + output);
 //        System.out.println("METADATA:" + metadatas.get(1));

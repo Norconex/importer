@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -73,10 +73,10 @@ public class DOMTaggerTest {
         String url = metadata.getString("TEST_URL");
         String desc = metadata.getString("TEST_DESC");
 
-        Assert.assertTrue(StringUtils.contains(whole, "</tr>"));
-        Assert.assertEquals("Sample Title", title);
-        Assert.assertEquals("http://example.org/doc.html", url);
-        Assert.assertEquals("This is a description.", desc);
+        Assertions.assertTrue(StringUtils.contains(whole, "</tr>"));
+        Assertions.assertEquals("Sample Title", title);
+        Assertions.assertEquals("http://example.org/doc.html", url);
+        Assertions.assertEquals("This is a description.", desc);
     }
 
     // This is a test for: https://github.com/Norconex/importer/issues/39
@@ -126,11 +126,11 @@ public class DOMTaggerTest {
         String[] blanksOFFDefault =
                 getSortedArray(metadata, "blanksOFFDefault");
 
-        Assert.assertArrayEquals(new String[]{"", "", "John"}, blanksON);
-        Assert.assertArrayEquals(new String[]{"John"}, blanksOFF);
+        Assertions.assertArrayEquals(new String[]{"", "", "John"}, blanksON);
+        Assertions.assertArrayEquals(new String[]{"John"}, blanksOFF);
 
-        Assert.assertArrayEquals(new String[]{"", "", "John"}, blanksONDefault);
-        Assert.assertArrayEquals(
+        Assertions.assertArrayEquals(new String[]{"", "", "John"}, blanksONDefault);
+        Assertions.assertArrayEquals(
                 new String[]{"Joe", "Joe", "John"}, blanksOFFDefault);
     }
 
@@ -168,9 +168,9 @@ public class DOMTaggerTest {
         String emptyDefault = metadata.getString("emptyDefault");
         String spaceDefault = metadata.getString("spaceDefault");
 
-        Assert.assertEquals(null, noDefault);
-        Assert.assertEquals("", emptyDefault);
-        Assert.assertEquals("   ", spaceDefault);
+        Assertions.assertEquals(null, noDefault);
+        Assertions.assertEquals("", emptyDefault);
+        Assertions.assertEquals("   ", spaceDefault);
     }
 
 
@@ -223,9 +223,9 @@ public class DOMTaggerTest {
         List<String> firstNames = metadata.getStrings("firstName");
         List<String> lastNames = metadata.getStrings("lastName");
 
-        Assert.assertEquals(Arrays.asList(
+        Assertions.assertEquals(Arrays.asList(
                 "JoeFirstOnly", "John", "NoFirstName"), firstNames);
-        Assert.assertEquals(Arrays.asList(
+        Assertions.assertEquals(Arrays.asList(
                 "NoLastName", "Smith", "JackLastOnly"), lastNames);
     }
 
@@ -255,9 +255,9 @@ public class DOMTaggerTest {
         String match2 = metadata.getString("match2");
         String match3 = metadata.getString("match3");
 
-        Assert.assertEquals("text1", match1);
-        Assert.assertEquals(null, match2);
-        Assert.assertEquals("text3", match3);
+        Assertions.assertEquals("text1", match1);
+        Assertions.assertEquals(null, match2);
+        Assertions.assertEquals("text3", match3);
     }
 
     @Test
@@ -280,12 +280,13 @@ public class DOMTaggerTest {
         List<String> headings = metadata.getStrings("headings");
         List<String> links = metadata.getStrings("links");
 
-        Assert.assertEquals("Wrong <h2> count.", 2, headings.size());
-        Assert.assertEquals("Wrong <img src=\"...\"> count.", 4, links.size());
-        Assert.assertEquals("Did not extract first heading",
-                "CHAPTER I", headings.get(0));
-        Assert.assertEquals("Did not extract second heading",
-                "Down the Rabbit-Hole", headings.get(1));
+        Assertions.assertEquals(2, headings.size(), "Wrong <h2> count.");
+        Assertions.assertEquals(4, links.size(),
+                "Wrong <img src=\"...\"> count.");
+        Assertions.assertEquals("CHAPTER I", headings.get(0),
+                "Did not extract first heading");
+        Assertions.assertEquals("Down the Rabbit-Hole", headings.get(1),
+                "Did not extract second heading");
     }
 
     @Test
@@ -313,10 +314,10 @@ public class DOMTaggerTest {
                 + "<title>" + expectedText + "</title>";
         String expectedOuter = "<head>" + expectedHtml + "</head>";
 
-        Assert.assertEquals(expectedText, metadata.getString("ftext"));
-        Assert.assertEquals(expectedHtml,
+        Assertions.assertEquals(expectedText, metadata.getString("ftext"));
+        Assertions.assertEquals(expectedHtml,
                 cleanHTML(metadata.getString("fhtml")));
-        Assert.assertEquals(expectedOuter,
+        Assertions.assertEquals(expectedOuter,
                 cleanHTML(metadata.getString("fouter")));
     }
 
@@ -396,19 +397,19 @@ public class DOMTaggerTest {
         String cssSelector = metadata.getString("cssSelector");
         String attr = metadata.getString("attr");
 
-        Assert.assertEquals("Parent text.Child text 1.Child text 2.", text);
-        Assert.assertEquals("Child text <b>1</b>.", html);
-        Assert.assertEquals(
+        Assertions.assertEquals("Parent text.Child text 1.Child text 2.", text);
+        Assertions.assertEquals("Child text <b>1</b>.", html);
+        Assertions.assertEquals(
                 "<span class=\"child1\">Child text <b>1</b>.</span>",
                 outerHtml);
-        Assert.assertEquals("This is data, not HTML.", data);
-        Assert.assertEquals("content", id);
-        Assert.assertEquals("Parent text.", ownText);
-        Assert.assertEquals("div", tagName);
-        Assert.assertEquals("textarea value.", val);
-        Assert.assertEquals("formElement", className);
-        Assert.assertEquals("#content > span.child2", cssSelector);
-        Assert.assertEquals("Some Title", attr);
+        Assertions.assertEquals("This is data, not HTML.", data);
+        Assertions.assertEquals("content", id);
+        Assertions.assertEquals("Parent text.", ownText);
+        Assertions.assertEquals("div", tagName);
+        Assertions.assertEquals("textarea value.", val);
+        Assertions.assertEquals("formElement", className);
+        Assertions.assertEquals("#content > span.child2", cssSelector);
+        Assertions.assertEquals("Some Title", attr);
     }
 
 

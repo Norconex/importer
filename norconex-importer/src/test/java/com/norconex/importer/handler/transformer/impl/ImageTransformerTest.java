@@ -18,7 +18,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 

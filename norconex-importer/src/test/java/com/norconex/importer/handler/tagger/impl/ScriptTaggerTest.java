@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -68,9 +68,9 @@ public class ScriptTaggerTest {
         String successField = metadata.getString("test");
         String storyField = metadata.getString("story");
 
-        Assert.assertEquals("success", successField);
-        Assert.assertEquals(0, StringUtils.countMatches(storyField, "Alice"));
-        Assert.assertEquals(34, StringUtils.countMatches(storyField, "Roger"));
+        Assertions.assertEquals("success", successField);
+        Assertions.assertEquals(0, StringUtils.countMatches(storyField, "Alice"));
+        Assertions.assertEquals(34, StringUtils.countMatches(storyField, "Roger"));
     }
 
     @Test

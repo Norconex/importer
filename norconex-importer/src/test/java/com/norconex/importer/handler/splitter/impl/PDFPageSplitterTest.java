@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.XML;
@@ -39,12 +39,12 @@ public class PDFPageSplitterTest {
 
     private InputStream input;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         input = PDFPageSplitterTest.class.getResourceAsStream(
                 PDFPageSplitterTest.class.getSimpleName() + ".pdf");
     }
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         input.close();
     }
@@ -54,10 +54,10 @@ public class PDFPageSplitterTest {
         PDFPageSplitter s = new PDFPageSplitter();
         List<ImporterDocument> pages = split(s);
 
-        Assert.assertEquals("Invalid number of pages.", 3, pages.size());
-        Assert.assertEquals(1, getPageNo(pages.get(0)));
-        Assert.assertEquals(2, getPageNo(pages.get(1)));
-        Assert.assertEquals(3, getPageNo(pages.get(2)));
+        Assertions.assertEquals(3, pages.size(), "Invalid number of pages.");
+        Assertions.assertEquals(1, getPageNo(pages.get(0)));
+        Assertions.assertEquals(2, getPageNo(pages.get(1)));
+        Assertions.assertEquals(3, getPageNo(pages.get(2)));
     }
 
     private int getPageNo(ImporterDocument doc) throws IOException {

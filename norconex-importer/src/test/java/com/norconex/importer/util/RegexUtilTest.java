@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.importer.util;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
@@ -59,26 +59,28 @@ public class RegexUtilTest {
         );
 
         //Test 1
-        Assert.assertEquals("Wrong test1 value count.", 4,
-                fields.getStrings("test1").size());
-        Assert.assertEquals("Wrong test1 value.",
+        Assertions.assertEquals(4, fields.getStrings("test1").size(),
+                "Wrong test1 value count.");
+        Assertions.assertEquals(
                 "<div class=\"value\">Suite 456</div>",
-                fields.getStrings("test1").get(3));
+                fields.getStrings("test1").get(3),
+                "Wrong test1 value.");
 
         //Test 2
-        Assert.assertEquals("Wrong test2 value count.", 4,
-                fields.getStrings("test2").size());
-        Assert.assertEquals("Wrong test2 value.", "Suite 456",
-                fields.getStrings("test2").get(3));
+        Assertions.assertEquals(4, fields.getStrings("test2").size(),
+                "Wrong test2 value count.");
+        Assertions.assertEquals(
+                "Suite 456", fields.getStrings("test2").get(3),
+                "Wrong test2 value.");
 
         //Test 3
-        Assert.assertEquals(1, fields.getStrings("First Name").size());
-        Assert.assertEquals("Joe", fields.getString("First Name"));
-        Assert.assertEquals(1, fields.getStrings("Last Name").size());
-        Assert.assertEquals("Dalton", fields.getString("Last Name"));
-        Assert.assertEquals(2, fields.getStrings("Street").size());
-        Assert.assertEquals("123 MultiValue St", fields.getString("Street"));
-        Assert.assertEquals("Suite 456", fields.getStrings("Street").get(1));
+        Assertions.assertEquals(1, fields.getStrings("First Name").size());
+        Assertions.assertEquals("Joe", fields.getString("First Name"));
+        Assertions.assertEquals(1, fields.getStrings("Last Name").size());
+        Assertions.assertEquals("Dalton", fields.getString("Last Name"));
+        Assertions.assertEquals(2, fields.getStrings("Street").size());
+        Assertions.assertEquals("123 MultiValue St", fields.getString("Street"));
+        Assertions.assertEquals("Suite 456", fields.getStrings("Street").get(1));
 
         //Test 4) No field group specified, using default field name
         fields = null;
@@ -89,10 +91,10 @@ public class RegexUtilTest {
                 .setField("test4")
                 .setValueGroup(2)
         );
-        Assert.assertEquals("Wrong test4 value count.", 4,
-                fields.getStrings("test4").size());
-        Assert.assertEquals("Wrong test4 value.", "Suite 456",
-                fields.getStrings("test4").get(3));
+        Assertions.assertEquals(4, fields.getStrings("test4").size(),
+                "Wrong test4 value count.");
+        Assertions.assertEquals("Suite 456", fields.getStrings("test4").get(3),
+                "Wrong test4 value.");
 
         //Test 5) No field group specified, no default field name
         try {
@@ -102,9 +104,9 @@ public class RegexUtilTest {
                         .setRegex("<div class=\"field\">(.*?)</div>.*?"
                                 + "<div class=\"value\">(.*?)</div>")
                         .setValueGroup(2));
-            Assert.fail("Should have thrown an exception.");
+            Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
-            Assert.assertNull("Test5 fields should be null.", fields);
+            Assertions.assertNull(fields, "Test5 fields should be null.");
         }
 
         //Test 6) No value group specified, with field group
@@ -115,11 +117,12 @@ public class RegexUtilTest {
                         + "<DIV class=\"value\">(.*?)</DIV>")
                 .setFieldGroup(1)
         );
-        Assert.assertEquals("Wrong test6 fields size.", 3, fields.size());
-        Assert.assertEquals("Wrong test6 value.",
+        Assertions.assertEquals(3, fields.size(), "Wrong test6 fields size.");
+        Assertions.assertEquals(
                 "<div class=\"field\">Last Name</div>\n  "
               + "<div class=\"value\">Dalton</div>",
-                fields.getString("Last Name"));
+                fields.getString("Last Name"),
+                "Wrong test6 value.");
 
         //Test 7) No value or field group
         try {
@@ -128,9 +131,9 @@ public class RegexUtilTest {
                 new RegexFieldExtractor()
                     .setRegex("<div class=\"field\">(.*?)</div>.*?"
                             + "<div class=\"value\">(.*?)</div>"));
-            Assert.fail("Should have thrown an exception.");
+            Assertions.fail("Should have thrown an exception.");
         } catch (IllegalArgumentException e) {
-            Assert.assertNull("Test7 fields should be null.", fields);
+            Assertions.assertNull(fields, "Test7 fields should be null.");
         }
 
         //Test 8) No value group specified, with field group, case sensitive
@@ -142,6 +145,7 @@ public class RegexUtilTest {
                 .setFieldGroup(1)
                 .setCaseSensitive(true)
         );
-        Assert.assertTrue("Test8 fields should be empty.", fields.isEmpty());
+        Assertions.assertTrue(
+                fields.isEmpty(), "Test8 fields should be empty.");
     }
 }

@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Remove PDFBox jbig2 SEVERE error (modifying class if required).
+
 - Have a StripAccentsTagger and Transformer. See: StringUtils.stripAccents(str)
 
 - Have a ContentToFieldTagger to easily take the content and store it in a field

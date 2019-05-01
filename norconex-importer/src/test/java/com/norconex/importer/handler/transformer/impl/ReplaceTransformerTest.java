@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -57,7 +57,7 @@ public class ReplaceTransformerTest {
                 + "</handler>";
         String response1 = transformTextDocument(
                 preserveTestConfig, "N/A", input);
-        Assert.assertEquals(expectedOutput, response1);
+        Assertions.assertEquals(expectedOutput, response1);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class ReplaceTransformerTest {
             throws IOException, ImporterHandlerException {
         String response = transformTextDocument(
                 restrictionTestConfig, "rejectme.html", restrictionTestContent);
-        Assert.assertEquals(StringUtils.EMPTY, response.toLowerCase());
+        Assertions.assertEquals(StringUtils.EMPTY, response.toLowerCase());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class ReplaceTransformerTest {
             throws IOException, ImporterHandlerException {
         String response = transformTextDocument(
                 restrictionTestConfig, "test.html", restrictionTestContent);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "i like to eat fruits and vegetables.",
                 response.toLowerCase());
     }

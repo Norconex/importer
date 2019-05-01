@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -48,7 +48,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
-        Assert.assertFalse(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertFalse(filter.acceptDocument("n/a", null, meta, false));
 
 
         filter = new DateMetadataFilter();
@@ -57,7 +57,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
-        Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
 
         filter = new DateMetadataFilter();
@@ -66,7 +66,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-22"));
-        Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
 
         Calendar now = Calendar.getInstance();
@@ -80,7 +80,7 @@ public class DateMetadataFilterTest {
                 Operator.GREATER_THAN, TimeUnit.MINUTE, -1, true);
         filter.addConditionFromNow(
                 Operator.LOWER_THAN, TimeUnit.MINUTE, +1, true);
-        Assert.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
 
     }
 

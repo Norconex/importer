@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -60,10 +60,10 @@ public class TruncateTaggerTest {
         t.setAppendHash(true);
         t.setSuffix("!");
         t.tagDocument("N/A", null, metadata, false);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Please truncate me before you start thi!0996700004",
                 metadata.getStrings("to").get(0));
-        Assert.assertNotEquals("Must have different hashes",
+        Assertions.assertNotEquals("Must have different hashes",
                 metadata.getStrings("to").get(1),
                 metadata.getStrings("to").get(2));
 
@@ -71,7 +71,7 @@ public class TruncateTaggerTest {
         t.setAppendHash(false);
         t.setSuffix("...");
         t.tagDocument("N/A", null, metadata, false);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Another long string to test similar with suffix...",
                 metadata.getStrings("to").get(1));
 
@@ -79,7 +79,7 @@ public class TruncateTaggerTest {
         t.setAppendHash(true);
         t.setSuffix(null);
         t.tagDocument("N/A", null, metadata, false);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Another long string to test similar with0939281732",
                 metadata.getStrings("to").get(2));
 
@@ -87,7 +87,7 @@ public class TruncateTaggerTest {
         t.setAppendHash(false);
         t.setSuffix(null);
         t.tagDocument("N/A", null, metadata, false);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "Another long string to test similar without suffix",
                 metadata.getStrings("to").get(3));
 
@@ -95,6 +95,6 @@ public class TruncateTaggerTest {
         t.setAppendHash(false);
         t.setSuffix(null);
         t.tagDocument("N/A", null, metadata, false);
-        Assert.assertEquals("A small one", metadata.getStrings("to").get(4));
+        Assertions.assertEquals("A small one", metadata.getStrings("to").get(4));
     }
 }

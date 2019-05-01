@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.xml.XML;
@@ -42,10 +42,11 @@ public class CharacterCaseTaggerTest {
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
-        Assert.assertEquals("DOIT ÊTRE UPPER",
-                meta.getStrings("field1").get(0));
-        Assert.assertEquals("MUST BE UPPER", meta.getStrings("field1").get(1));
-        Assert.assertEquals("doit être lower", meta.getString("field2"));
+        Assertions.assertEquals(
+                "DOIT ÊTRE UPPER", meta.getStrings("field1").get(0));
+        Assertions.assertEquals(
+                "MUST BE UPPER", meta.getStrings("field1").get(1));
+        Assertions.assertEquals("doit être lower", meta.getString("field2"));
     }
 
     @Test
@@ -65,7 +66,7 @@ public class CharacterCaseTaggerTest {
 
         String[] fields = meta.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
         for (String field : fields) {
-            Assert.assertTrue(EqualsUtil.equalsAny(
+            Assertions.assertTrue(EqualsUtil.equalsAny(
                     field, "FIELDMUSTBEUPPER", "fieldmustbelower",
                     "Fieldmustbecapitalized"));
         }
@@ -82,7 +83,7 @@ public class CharacterCaseTaggerTest {
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
-        Assert.assertEquals("vALuE sWAP. \n  ok.",
+        Assertions.assertEquals("vALuE sWAP. \n  ok.",
                 meta.getString("fieldMustBeSwapped"));
     }
 
@@ -101,10 +102,10 @@ public class CharacterCaseTaggerTest {
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 
-        Assert.assertEquals("Normal string.", meta.getString("string1"));
-        Assert.assertEquals(" String starting with a space.",
+        Assertions.assertEquals("Normal string.", meta.getString("string1"));
+        Assertions.assertEquals(" String starting with a space.",
                 meta.getString("string2"));
-        Assert.assertEquals("1 string starting with a number.",
+        Assertions.assertEquals("1 string starting with a number.",
                 meta.getString("string3"));
     }
 

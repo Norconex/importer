@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -35,11 +35,13 @@ public class RegexReferenceFilterTest {
         filter.setRegex(".*/login.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assert.assertFalse("URL not filtered properly.", filter.acceptDocument(
-                "http://www.example.com/login", null, meta, false));
+        Assertions.assertFalse(filter.acceptDocument(
+                "http://www.example.com/login", null, meta, false),
+                "URL not filtered properly.");
 
-        Assert.assertTrue("URL not filtered properly.", filter.acceptDocument(
-                "http://www.example.com/blah", null, meta, false));
+        Assertions.assertTrue(filter.acceptDocument(
+                "http://www.example.com/blah", null, meta, false),
+                "URL not filtered properly.");
     }
 
     @Test

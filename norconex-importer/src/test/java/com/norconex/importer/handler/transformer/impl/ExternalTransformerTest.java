@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
@@ -120,7 +120,7 @@ public class ExternalTransformerTest {
         content = content.replace("<field2>StdoutAfter</field2>", "");
         content = content.trim();
 
-        Assert.assertEquals(EXPECTED_OUTPUT, content);
+        Assertions.assertEquals(EXPECTED_OUTPUT, content);
         if (metaFiles) {
             assertMetadataFiles(metadata);
         } else {
@@ -129,22 +129,22 @@ public class ExternalTransformerTest {
     }
 
     private void assertMetadataFiles(ImporterMetadata meta) {
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "test first a is this", meta.getString("metaFileField1"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "value1 test second a is this",
                 meta.getStrings("metaFileField2").get(0));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "value2 test second a is this",
                 meta.getStrings("metaFileField2").get(1));
     }
     private void assertMetadata(ImporterMetadata meta, boolean testReference) {
-        Assert.assertEquals("StdoutBefore", meta.getString("field1"));
-        Assert.assertEquals("StdoutAfter", meta.getString("field2"));
-        Assert.assertEquals("field3 StdErrBefore", meta.getString("field3"));
-        Assert.assertEquals("StdErrAfter", meta.getString("field4"));
+        Assertions.assertEquals("StdoutBefore", meta.getString("field1"));
+        Assertions.assertEquals("StdoutAfter", meta.getString("field2"));
+        Assertions.assertEquals("field3 StdErrBefore", meta.getString("field3"));
+        Assertions.assertEquals("StdErrAfter", meta.getString("field4"));
         if (testReference) {
-            Assert.assertEquals("c:\\ref with spaces\\doc.txt",
+            Assertions.assertEquals("c:\\ref with spaces\\doc.txt",
                     meta.getString("reference"));
         }
     }

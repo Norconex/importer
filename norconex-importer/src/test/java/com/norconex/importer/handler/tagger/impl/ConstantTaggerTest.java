@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.IOException;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -56,21 +56,21 @@ public class ConstantTaggerTest {
         t.addConstant("test1", "3");
         t.addConstant("test1", "4");
         t.tagDocument("n/a", new NullInputStream(0), m, false);
-        Assert.assertArrayEquals(new String[]{
+        Assertions.assertArrayEquals(new String[]{
                 "1", "2", "3", "4"}, m.getStrings("test1").toArray());
         // REPLACE
         t.setOnConflict(OnConflict.REPLACE);
         t.addConstant("test2", "3");
         t.addConstant("test2", "4");
         t.tagDocument("n/a", new NullInputStream(0), m, false);
-        Assert.assertArrayEquals(new String[]{
+        Assertions.assertArrayEquals(new String[]{
                 "3", "4"}, m.getStrings("test2").toArray());
         // NOOP
         t.setOnConflict(OnConflict.NOOP);
         t.addConstant("test3", "3");
         t.addConstant("test3", "4");
         t.tagDocument("n/a", new NullInputStream(0), m, false);
-        Assert.assertArrayEquals(new String[]{
+        Assertions.assertArrayEquals(new String[]{
                 "1", "2"}, m.getStrings("test3").toArray());
     }
 }

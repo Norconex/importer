@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -63,8 +63,9 @@ public class ScriptFilterTest {
         metadata.set("fruit", "apple");
         metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
 
-        Assert.assertTrue("Filter returned false.",  f.acceptDocument(
-                htmlFile.getAbsolutePath(), is, metadata, false));
+        Assertions.assertTrue(f.acceptDocument(
+                htmlFile.getAbsolutePath(), is, metadata, false),
+                "Filter returned false.");
 
         is.close();
     }

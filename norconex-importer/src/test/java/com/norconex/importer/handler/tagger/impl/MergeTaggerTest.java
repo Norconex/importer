@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -93,9 +93,9 @@ public class MergeTaggerTest {
         Set<String> expected = new TreeSet<>(Arrays.asList(
                 "1.1", "1.2", "2", "3", "4", "6"));
 
-        Assert.assertEquals(expected,
+        Assertions.assertEquals(expected,
                 new TreeSet<>(meta.getStrings("toField")));
-        Assert.assertEquals(expected, new TreeSet<>(Arrays.asList(
+        Assertions.assertEquals(expected, new TreeSet<>(Arrays.asList(
                 meta.getString("fld4").split("-"))));
     }
 
@@ -115,7 +115,7 @@ public class MergeTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals("12", meta.getString("field"));
+        Assertions.assertEquals("12", meta.getString("field"));
     }
 
 }

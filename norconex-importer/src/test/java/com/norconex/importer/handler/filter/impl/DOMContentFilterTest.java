@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -45,19 +45,18 @@ public class DOMContentFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         filter.setSelector("div.disclaimer");
-        Assert.assertFalse("disclaimer should have been rejected.",
-                filter(filter, html, metadata));
+        Assertions.assertFalse(filter(filter, html, metadata),
+                "disclaimer should have been rejected.");
 
         filter.setSelector("div.disclaimer");
         filter.setRegex("\\bskip me\\b");
-        Assert.assertFalse("disclaimer skip me should have been rejected.",
-                filter(filter, html, metadata));
+        Assertions.assertFalse(filter(filter, html, metadata),
+                "disclaimer skip me should have been rejected.");
 
         filter.setSelector("div.disclaimer");
         filter.setRegex("\\bdo not skip me\\b");
-        Assert.assertTrue(
-                "disclaimer do not skip me should have been accepted.",
-                filter(filter, html, metadata));
+        Assertions.assertTrue(filter(filter, html, metadata),
+                "disclaimer do not skip me should have been accepted.");
     }
 
 
@@ -71,22 +70,22 @@ public class DOMContentFilterTest {
         filter.setOnMatch(OnMatch.INCLUDE);
 
         filter.setSelector("food > fruit[color=red]");
-        Assert.assertTrue("Red fruit should have been accepted.",
-                filter(filter, xml, metadata));
+        Assertions.assertTrue(filter(filter, xml, metadata),
+                "Red fruit should have been accepted.");
 
         filter.setSelector("food > fruit[color=green]");
-        Assert.assertFalse("Green fruit should have been rejected.",
-                filter(filter, xml, metadata));
+        Assertions.assertFalse(filter(filter, xml, metadata),
+                "Green fruit should have been rejected.");
 
         filter.setSelector("food > fruit");
         filter.setRegex("apple");
-        Assert.assertTrue("Apple should have been accepted.",
-                filter(filter, xml, metadata));
+        Assertions.assertTrue(filter(filter, xml, metadata),
+                "Apple should have been accepted.");
 
         filter.setSelector("food > fruit");
         filter.setRegex("carrot");
-        Assert.assertFalse("Carrot should have been rejected.",
-                filter(filter, xml, metadata));
+        Assertions.assertFalse(filter(filter, xml, metadata),
+                "Carrot should have been rejected.");
     }
 
     private boolean filter(DOMContentFilter filter,

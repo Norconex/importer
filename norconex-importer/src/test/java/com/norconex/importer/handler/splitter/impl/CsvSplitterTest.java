@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.XML;
@@ -41,13 +41,13 @@ public class CsvSplitterTest {
 
     private InputStream input;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         input = CsvSplitterTest.class.getResourceAsStream(
                  CsvSplitterTest.class.getSimpleName() + ".csv");
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws IOException {
         input.close();
     }
@@ -59,9 +59,9 @@ public class CsvSplitterTest {
         splitter.setUseFirstRowAsFields(true);
         splitter.setReferenceColumn("clientPhone");
         List<ImporterDocument> docs = split(splitter);
-        Assert.assertEquals(
-                "Could not find embedded William Dalton phone reference.",
-                "654-0987", docs.get(2).getMetadata().getEmbeddedReference());
+        Assertions.assertEquals(
+                "654-0987", docs.get(2).getMetadata().getEmbeddedReference(),
+                "Could not find embedded William Dalton phone reference.");
     }
 
     @Test
@@ -71,9 +71,9 @@ public class CsvSplitterTest {
         splitter.setUseFirstRowAsFields(false);
         splitter.setReferenceColumn("2");
         List<ImporterDocument> docs = split(splitter);
-        Assert.assertEquals("Could not find embedded William Dalton reference.",
-                "William Dalton",
-                docs.get(3).getMetadata().getEmbeddedReference());
+        Assertions.assertEquals("William Dalton",
+                docs.get(3).getMetadata().getEmbeddedReference(),
+                "Could not find embedded William Dalton reference.");
     }
 
 
@@ -85,7 +85,7 @@ public class CsvSplitterTest {
         splitter.setContentColumns("clientName", "3");
 
         List<ImporterDocument> docs = split(splitter);
-        Assert.assertEquals("William Dalton 654-0987",
+        Assertions.assertEquals("William Dalton 654-0987",
                 IOUtils.toString(docs.get(2).getInputStream(),
                         StandardCharsets.UTF_8));
     }
@@ -98,12 +98,12 @@ public class CsvSplitterTest {
         splitter.setUseFirstRowAsFields(true);
         List<ImporterDocument> docs = split(splitter);
 
-        Assert.assertEquals(
-                "Invalid number of docs returned.", 4, docs.size());
+        Assertions.assertEquals(4, docs.size(),
+                "Invalid number of docs returned.");
 
-        Assert.assertEquals("Could not find William Dalton by column name.",
-                "William Dalton",
-                docs.get(2).getMetadata().getString("clientName"));
+        Assertions.assertEquals("William Dalton",
+                docs.get(2).getMetadata().getString("clientName"),
+                "Could not find William Dalton by column name.");
     }
 
     private List<ImporterDocument> split(CsvSplitter splitter)

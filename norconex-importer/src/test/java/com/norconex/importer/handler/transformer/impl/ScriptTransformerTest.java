@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -72,11 +72,11 @@ public class ScriptTransformerTest {
 
         String successField = metadata.getString("test");
 
-        Assert.assertEquals("success", successField);
+        Assertions.assertEquals("success", successField);
         String content = new String(out.toString());
 
-        Assert.assertEquals(0, StringUtils.countMatches(content, "Alice"));
-        Assert.assertEquals(34, StringUtils.countMatches(content, "Roger"));
+        Assertions.assertEquals(0, StringUtils.countMatches(content, "Alice"));
+        Assertions.assertEquals(34, StringUtils.countMatches(content, "Roger"));
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.xml.XML;
@@ -80,8 +80,9 @@ public class GenericDocumentParserFactoryTest {
             String output = IOUtils.toString(
                     is, StandardCharsets.UTF_8).substring(0, 100);
             output = StringUtils.remove(output, '\n');
-            Assert.assertTrue("Non-parsed output expected to be binary.",
-                    !StringUtils.isAsciiPrintable(output));
+            Assertions.assertTrue(
+                    !StringUtils.isAsciiPrintable(output),
+                    "Non-parsed output expected to be binary.");
         }
     }
 }

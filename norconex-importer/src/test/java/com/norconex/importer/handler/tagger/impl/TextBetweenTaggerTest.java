@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -49,7 +49,7 @@ public class TextBetweenTaggerTest {
 
         String field = metadata.getString("field");
 
-        Assert.assertEquals("http://www.cs.cmu.edu/%7Ergs/alice02a.gif", field);
+        Assertions.assertEquals("http://www.cs.cmu.edu/%7Ergs/alice02a.gif", field);
     }
 
     @Test
@@ -74,12 +74,13 @@ public class TextBetweenTaggerTest {
         List<String> headings = metadata.getStrings("headings");
         List<String> strong = metadata.getStrings("strong");
 
-        Assert.assertTrue("Failed to return: <h2>Down the Rabbit-Hole</h2>",
-                headings.contains("<h2>Down the Rabbit-Hole</h2>"));
-        Assert.assertTrue("Failed to return: <h2>CHAPTER I</h2>",
-                headings.contains("<h2>CHAPTER I</h2>"));
-        Assert.assertTrue("Should have returned 17 <i> and <b> pairs",
-                strong.size() == 17);
+        Assertions.assertTrue(
+                headings.contains("<h2>Down the Rabbit-Hole</h2>"),
+                "Failed to return: <h2>Down the Rabbit-Hole</h2>");
+        Assertions.assertTrue(headings.contains("<h2>CHAPTER I</h2>"),
+                "Failed to return: <h2>CHAPTER I</h2>");
+        Assertions.assertTrue(strong.size() == 17,
+                "Should have returned 17 <i> and <b> pairs");
     }
 
     @Test
@@ -99,7 +100,7 @@ public class TextBetweenTaggerTest {
         is.close();
 
         String myTitle = metadata.getString("mytitle");
-        Assert.assertEquals(100, myTitle.length());
+        Assertions.assertEquals(100, myTitle.length());
     }
 
     @Test

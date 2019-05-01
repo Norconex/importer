@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  */
 package com.norconex.importer.parser;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.response.ImporterResponse;
@@ -39,13 +39,14 @@ public class ImageParserTest extends AbstractParserTest {
         // JPEG with XMP metadata.  Can be dealt with, with a tool such
         // as http://www.exiv2.org
         // Currently parsed by Tika using Jempbox
-        ImporterResponse[] responses = 
+        ImporterResponse[] responses =
                 testParsing("/parser/image/importer-xmp.jpg",
                         "image/jpeg", ".*", "jpg", "Image");
         ImporterMetadata meta = responses[0].getDocument().getMetadata();
-        Assert.assertEquals("Could not find XMP metadata dc:subject with "
-                + "expected value \"XML Parsing\".",
-                "XMP Parsing", meta.getString("dc:subject"));
+        Assertions.assertEquals(
+                "XMP Parsing", meta.getString("dc:subject"),
+                "Could not find XMP metadata dc:subject with "
+                        + "expected value \"XML Parsing\".");
     }
     @Test
     public void testPNG() throws Exception {
@@ -54,24 +55,26 @@ public class ImageParserTest extends AbstractParserTest {
     @Test
     public void testPSD() throws Exception {
         testParsing("/parser/image/importer.psd",
-                "image/vnd.adobe.photoshop", ".*", "psd", "Image");        
+                "image/vnd.adobe.photoshop", ".*", "psd", "Image");
     }
     @Test
     public void testTIF() throws Exception {
         testParsing("/parser/image/importer.tif",
-                "image/tiff", ".*", "tiff", "Image");        
+                "image/tiff", ".*", "tiff", "Image");
     }
 
     @Test
     public void testJBIG2() throws Exception {
         ImporterResponse[] responses = testParsing("/parser/image/importer.jb2",
-                "image/x-jbig2", ".*", "jb2", "Image");        
+                "image/x-jbig2", ".*", "jb2", "Image");
         ImporterMetadata meta = responses[0].getDocument().getMetadata();
-        
-        Assert.assertEquals("Image 'width' not extracted or invalid",
-                "125", meta.getString("width"));
-        Assert.assertEquals("Image 'height' not extracted or invalid",
-                "16", meta.getString("height"));
+
+        Assertions.assertEquals(
+                "125", meta.getString("width"),
+                "Image 'width' not extracted or invalid");
+        Assertions.assertEquals(
+                "16", meta.getString("height"),
+                "Image 'height' not extracted or invalid");
     }
 
     private void testParsing(String contentType, String extension)

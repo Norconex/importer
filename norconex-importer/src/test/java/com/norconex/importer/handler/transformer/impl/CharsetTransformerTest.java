@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -81,8 +81,8 @@ public class CharsetTransformerTest {
         os.close();
 
         byte[] targetStartWith = Arrays.copyOf(output, startWith.length);
-        Assert.assertArrayEquals(
-                "ISO-8859-1 > UTF-8", startWith, targetStartWith);
+        Assertions.assertArrayEquals(
+                startWith, targetStartWith, "ISO-8859-1 > UTF-8");
     }
 
     @Test
@@ -107,7 +107,7 @@ public class CharsetTransformerTest {
 
         byte[] targetStartWith = Arrays.copyOf(output, startWith.length);
         if (Arrays.equals(startWith, targetStartWith)) {
-            Assert.fail("Transformation with bad source must not be equal. "
+            Assertions.fail("Transformation with bad source must not be equal. "
                     + "KOI8-R > UTF-8");
         }
     }
@@ -143,11 +143,11 @@ public class CharsetTransformerTest {
 //        System.out.println(Arrays.toString(targetStartWith));
 
         if (fromCharset.equals(toCharset)) {
-            Assert.assertArrayEquals(fromCharset + " > " + toCharset,
-                    blankBytes, targetStartWith);
+            Assertions.assertArrayEquals(blankBytes, targetStartWith,
+                    fromCharset + " > " + toCharset);
         } else {
-            Assert.assertArrayEquals(fromCharset + " > " + toCharset,
-                    startWith, targetStartWith);
+            Assertions.assertArrayEquals(startWith, targetStartWith,
+                    fromCharset + " > " + toCharset);
         }
     }
 

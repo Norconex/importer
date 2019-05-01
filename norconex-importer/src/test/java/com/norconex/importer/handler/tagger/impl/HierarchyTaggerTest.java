@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.IOException;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -53,7 +53,7 @@ public class HierarchyTaggerTest {
                 "~~~vegetable~~~potato",
                 "~~~vegetable~~~potato~~~sweet"
         };
-        Assert.assertArrayEquals(expected,
+        Assertions.assertArrayEquals(expected,
                 meta.getStrings("tree").toArray());
     }
 }

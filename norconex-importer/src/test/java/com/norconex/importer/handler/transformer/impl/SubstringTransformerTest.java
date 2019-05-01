@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterException;
@@ -34,16 +34,16 @@ public class SubstringTransformerTest {
             throws IOException, ImporterHandlerException {
         String content = "1234567890";
 
-        Assert.assertEquals("", substring(0, 0, content));
-        Assert.assertEquals(content, substring(-1, -1, content));
-        Assert.assertEquals("123", substring(0, 3, content));
-        Assert.assertEquals("456", substring(3, 6, content));
-        Assert.assertEquals("890", substring(7, 42, content));
-        Assert.assertEquals("1234", substring(-1, 4, content));
-        Assert.assertEquals("7890", substring(6, -1, content));
+        Assertions.assertEquals("", substring(0, 0, content));
+        Assertions.assertEquals(content, substring(-1, -1, content));
+        Assertions.assertEquals("123", substring(0, 3, content));
+        Assertions.assertEquals("456", substring(3, 6, content));
+        Assertions.assertEquals("890", substring(7, 42, content));
+        Assertions.assertEquals("1234", substring(-1, 4, content));
+        Assertions.assertEquals("7890", substring(6, -1, content));
         try {
             substring(4, 1, content);
-            Assert.fail("Should have triggered an exception.");
+            Assertions.fail("Should have triggered an exception.");
         } catch (ImporterException e) {
         }
     }

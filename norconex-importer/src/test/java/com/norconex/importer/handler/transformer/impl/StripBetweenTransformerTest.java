@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
@@ -53,9 +53,8 @@ public class StripBetweenTransformerTest {
                 is, os, metadata, false);
 //        System.out.println(os.toString());
 
-        Assert.assertEquals(
-                "Length of doc content after transformation is incorrect.",
-                458, os.toString().length());
+        Assertions.assertEquals(458, os.toString().length(),
+                "Length of doc content after transformation is incorrect.");
 
         is.close();
         os.close();
@@ -90,7 +89,7 @@ public class StripBetweenTransformerTest {
         is.close();
         os.close();
         //System.out.println(output);
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "<html>extract me 1extract me 2</html>", output);
     }
 

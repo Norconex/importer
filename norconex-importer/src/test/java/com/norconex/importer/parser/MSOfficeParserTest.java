@@ -1,4 +1,4 @@
-/* Copyright 2015 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.parser;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 //TODO create a CSV file with all the test data?
 public class MSOfficeParserTest extends AbstractParserTest {
@@ -102,7 +102,7 @@ public class MSOfficeParserTest extends AbstractParserTest {
                         + ".presentationml.slideshow",
                 DEFAULT_CONTENT_REGEX, "ppsx", "Presentation");
     }
-    
+
     // OLE formats:
     @Test
     public void test_MSOffice_PowerPoint_ppt() throws Exception {
@@ -122,7 +122,7 @@ public class MSOfficeParserTest extends AbstractParserTest {
                 "application/vnd.ms-powerpoint",
                 DEFAULT_CONTENT_REGEX, "ppt", "Presentation");
     }
-    
+
     //--- Microsoft Excel ------------------------------------------------------
     // OOXML formats:
     @Test
@@ -157,7 +157,7 @@ public class MSOfficeParserTest extends AbstractParserTest {
                         + ".spreadsheetml.template",
                 DEFAULT_CONTENT_REGEX, "xltx", "Spreadsheet");
     }
-    
+
     // OLE formats:
     @Test
     public void test_MSOffice_Excel_xls() throws Exception {

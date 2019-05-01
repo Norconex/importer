@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -49,29 +49,29 @@ public class NumericMetadataFilterTest {
 
 
         filter.setField("lowerthan");
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setField("inrange");
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setField("greaterthan");
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setField("multivalInrange");
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setField("multivalOutrange");
-        Assert.assertFalse(
+        Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setConditions(new NumericMetadataFilter.Condition(
                 Operator.EQUALS, 6.5));
         filter.setField("equal");
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
     }
 

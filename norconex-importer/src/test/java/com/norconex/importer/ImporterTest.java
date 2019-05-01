@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
@@ -47,7 +47,7 @@ public class ImporterTest {
 
     private Importer importer;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
         config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (reference, input, output, metadata,
@@ -69,7 +69,7 @@ public class ImporterTest {
         importer = new Importer(config);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         importer = null;
     }
@@ -96,15 +96,15 @@ public class ImporterTest {
         writeToFile(importer.importDocument(
                 TestUtil.getAliceZipFile(), metaRtf).getDocument(), rtfOutput);
 
-        Assert.assertTrue("Converted file size is too small to be valid.",
-                pdfOutput.length() > 10);
+        Assertions.assertTrue(pdfOutput.length() > 10,
+                "Converted file size is too small to be valid.");
 
         double doc = docxOutput.length();
         double pdf = pdfOutput.length();
         double rtf = rtfOutput.length();
         if (Math.abs(pdf - doc) / 1024.0 > 0.03
                 || Math.abs(pdf - rtf) / 1024.0 > 0.03) {
-            Assert.fail("Content extracted from examples documents are too "
+            Assertions.fail("Content extracted from examples documents are too "
                     + "different from each other. They were not deleted to "
                     + "help you troubleshoot under: "
                     + FileUtils.getTempDirectoryPath() + "ImporterTest-*");
@@ -127,11 +127,11 @@ public class ImporterTest {
 
 //        System.out.println("Reject desc: "
 //                        + result.getImporterStatus().getDescription());
-        Assert.assertTrue("PDF should have been rejected with proper "
-                + "status description.",
-                result.getImporterStatus().isRejected()
+        Assertions.assertTrue(result.getImporterStatus().isRejected()
                 && result.getImporterStatus().getDescription().contains(
-                        "RegexMetadataFilter"));
+                        "RegexMetadataFilter"),
+                "PDF should have been rejected with proper "
+                        + "status description.");
     }
 
     private void writeToFile(ImporterDocument doc, File file)
@@ -148,7 +148,7 @@ public class ImporterTest {
                 "/validation/importer-full.xml");
 
         try (Reader r = new InputStreamReader(is)) {
-            Assert.assertEquals(0,
+            Assertions.assertEquals(0,
                     new XML(r).validate(ImporterConfig.class).size());
         }
     }

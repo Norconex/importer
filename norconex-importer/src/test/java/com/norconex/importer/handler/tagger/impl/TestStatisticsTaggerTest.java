@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -31,7 +31,6 @@ public class TestStatisticsTaggerTest {
     @Test
     public void testTagTextDocument()
             throws IOException, ImporterHandlerException {
-
 
         String txt =
             "White Rabbit checking watch"
@@ -59,25 +58,25 @@ public class TestStatisticsTaggerTest {
 
         is.close();
 
-        Assert.assertEquals(616,
+        Assertions.assertEquals(616,
                 (int) meta.getInteger("document.stat.characterCount"));
-        Assert.assertEquals(115,
+        Assertions.assertEquals(115,
                 (int) meta.getInteger("document.stat.wordCount"));
-        Assert.assertEquals(8,
+        Assertions.assertEquals(8,
                 (int) meta.getInteger("document.stat.sentenceCount"));
-        Assert.assertEquals(4,
+        Assertions.assertEquals(4,
                 (int) meta.getInteger("document.stat.paragraphCount"));
-        Assert.assertEquals("4.2",
+        Assertions.assertEquals("4.2",
                 meta.getString("document.stat.averageWordCharacterCount"));
-        Assert.assertEquals("77.0",
+        Assertions.assertEquals("77.0",
                 meta.getString("document.stat.averageSentenceCharacterCount"));
-        Assert.assertEquals("14.4",
+        Assertions.assertEquals("14.4",
                 meta.getString("document.stat.averageSentenceWordCount"));
-        Assert.assertEquals("154.0",
+        Assertions.assertEquals("154.0",
                 meta.getString("document.stat.averageParagraphCharacterCount"));
-        Assert.assertEquals("2.0",
+        Assertions.assertEquals("2.0",
                 meta.getString("document.stat.averageParagraphSentenceCount"));
-        Assert.assertEquals("28.8",
+        Assertions.assertEquals("28.8",
                 meta.getString("document.stat.averageParagraphWordCount"));
     }
 

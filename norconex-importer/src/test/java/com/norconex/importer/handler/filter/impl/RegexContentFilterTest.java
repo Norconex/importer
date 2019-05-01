@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
@@ -48,10 +48,10 @@ public class RegexContentFilterTest {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        Assert.assertFalse("Should have been rejected.",
-                filter.acceptDocument("n/a", IOUtils.toInputStream(
-                        "a string that matches", StandardCharsets.UTF_8),
-                        null, false));
+        Assertions.assertFalse(filter.acceptDocument("n/a",
+                IOUtils.toInputStream("a string that matches",
+                        StandardCharsets.UTF_8), null, false),
+                "Should have been rejected.");
     }
     @Test
     public void testMatchesInclude()
@@ -59,10 +59,11 @@ public class RegexContentFilterTest {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
-        Assert.assertTrue("Should have been accepted.",
+        Assertions.assertTrue(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a string that matches", StandardCharsets.UTF_8),
-                        null, false));
+                        null, false),
+                "Should have been accepted.");
     }
     @Test
     public void testNoMatchesExclude()
@@ -70,10 +71,11 @@ public class RegexContentFilterTest {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        Assert.assertTrue("Should have been accepted.",
+        Assertions.assertTrue(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
-                        null, false));
+                        null, false),
+                "Should have been accepted.");
     }
     @Test
     public void testNoMatchesUniqueInclude()
@@ -82,10 +84,11 @@ public class RegexContentFilterTest {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
-        Assert.assertFalse("Should have been rejected.",
+        Assertions.assertFalse(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
-                        null, false));
+                        null, false),
+                "Should have been rejected.");
     }
 
     @Test
@@ -111,8 +114,9 @@ public class RegexContentFilterTest {
                         new StringReader("a string that matches"),
                         StandardCharsets.UTF_8),
                 new ImporterMetadata(), "N/A");
-        Assert.assertEquals("Status should have been SUCCESS",
-                Status.SUCCESS, response.getImporterStatus().getStatus());
+        Assertions.assertEquals(
+                Status.SUCCESS, response.getImporterStatus().getStatus(),
+                "Status should have been SUCCESS");
     }
 
     @Test
@@ -137,8 +141,9 @@ public class RegexContentFilterTest {
                 new ReaderInputStream(
                         new StringReader("no matches"), StandardCharsets.UTF_8),
                 new ImporterMetadata(), "N/A");
-        Assert.assertEquals("Status should have been REJECTED",
-                Status.REJECTED, response.getImporterStatus().getStatus());
+        Assertions.assertEquals(
+                Status.REJECTED, response.getImporterStatus().getStatus(),
+                "Status should have been REJECTED");
     }
 
     @Test

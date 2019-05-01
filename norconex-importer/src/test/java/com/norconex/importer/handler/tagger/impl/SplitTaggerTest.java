@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -66,20 +66,20 @@ public class SplitTaggerTest {
         List<String> noSplitExpect = Arrays.asList(
                 "Joe Jack William Avrel");
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toSplitExpect, meta.getStrings("metaToSplitSameField"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 noSplitExpect, meta.getStrings("metaNoSplitSameField"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toSplitExpect, meta.getStrings("toSplitNewField"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 noSplitExpect, meta.getStrings("metaNoSplitNewField"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toSplitExpect, meta.getStrings("metaMultiSameField"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 toSplitExpect, meta.getStrings("multiNewField"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 noSplitExpect, meta.getStrings("metaNoSplitSameField"));
     }
 
@@ -95,10 +95,10 @@ public class SplitTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList("a", "path", "file.doc"),
                 meta.getStrings("path1"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 Arrays.asList("a", "b", "c", "d", "e", "f"),
                 meta.getStrings("file2"));
     }

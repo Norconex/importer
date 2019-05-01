@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +49,9 @@ public class TitleGeneratorTaggerTest {
         metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", null, metadata, true);
 
-        Assert.assertNull("Title should be null",
-                metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE));
+        Assertions.assertNull(
+                metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE),
+                "Title should be null");
     }
 
     @Test
@@ -72,9 +73,10 @@ public class TitleGeneratorTaggerTest {
         String title = metadata.getString("mytitle");
 
         LOG.debug("TITLE IS: " + title);
-        Assert.assertEquals("Wrong title.",
+        Assertions.assertEquals(
                 "that Alice had begun to think that very few things "
-              + "indeed were really impossible.",  title);
+              + "indeed were really impossible.",  title,
+              "Wrong title.");
     }
 
     @Test
@@ -96,7 +98,7 @@ public class TitleGeneratorTaggerTest {
         String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
 
         LOG.debug("TITLE IS: " + title);
-        Assert.assertEquals("Wrong title.", "Chapter I",  title);
+        Assertions.assertEquals("Chapter I",  title, "Wrong title.");
     }
 
     @Test
@@ -116,7 +118,8 @@ public class TitleGeneratorTaggerTest {
         String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
 
         LOG.debug("TITLE IS: {}", title);
-        Assert.assertEquals("Wrong title.", "This is the first line.",  title);
+        Assertions.assertEquals(
+                "This is the first line.",  title, "Wrong title.");
     }
 
 

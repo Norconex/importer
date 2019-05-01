@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -55,7 +55,7 @@ public class ReduceConsecutivesTransformerTest {
                     "dummyRef", is, os, new ImporterMetadata(), true);
             String response = os.toString();
 //            System.out.println(response);
-            Assert.assertEquals(
+            Assertions.assertEquals(
                     "\tthis is the text i want to modify.\n\r too much space.",
                     response.toLowerCase());
         }

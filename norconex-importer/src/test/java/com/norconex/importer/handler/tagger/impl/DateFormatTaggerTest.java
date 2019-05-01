@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.IOException;
 import java.util.Locale;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -52,7 +52,7 @@ public class DateFormatTaggerTest {
         t.setToFormat(dateEPOCHFormat);
         t.setFromFormats(dateHTTPFormat, dateEPOCHFormat, dateISOFormat);
         t.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals(dateEPOCH, meta.getString("date"));
+        Assertions.assertEquals(dateEPOCH, meta.getString("date"));
 
         // Test EPOCH to ISO
         meta.remove("date");
@@ -60,7 +60,7 @@ public class DateFormatTaggerTest {
         t.setToFormat(dateISOFormat);
         t.setFromFormats(dateHTTPFormat, dateISOFormat, dateEPOCHFormat);
         t.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals(dateISO, meta.getString("date"));
+        Assertions.assertEquals(dateISO, meta.getString("date"));
 
         // Test HTTP to ISO
         meta.remove("date");
@@ -68,7 +68,7 @@ public class DateFormatTaggerTest {
         t.setToFormat(dateISOFormat);
         t.setFromFormats(dateISOFormat, dateEPOCHFormat, dateHTTPFormat);
         t.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals(dateISO, meta.getString("date"));
+        Assertions.assertEquals(dateISO, meta.getString("date"));
 
         // Test No match
         meta.remove("date");
@@ -76,7 +76,7 @@ public class DateFormatTaggerTest {
         t.setToFormat(dateISOFormat);
         t.setFromFormats(dateISOFormat, dateEPOCHFormat);
         t.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals(null, meta.getString("date"));
+        Assertions.assertEquals(null, meta.getString("date"));
 
     }
 
@@ -94,7 +94,7 @@ public class DateFormatTaggerTest {
         tagger.setToField("tofield1");
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("1002727941000", meta.getString("tofield1"));
+        Assertions.assertEquals("1002727941000", meta.getString("tofield1"));
 
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
@@ -103,7 +103,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
         tagger.setToFormat("yyyy/MM/dd");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("2001/10/10", meta.getString("tofield2"));
+        Assertions.assertEquals("2001/10/10", meta.getString("tofield2"));
 
         tagger = new DateFormatTagger();
         tagger.setOverwrite(true);
@@ -112,7 +112,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats((String) null);
         tagger.setToFormat("yyyy/MM/dd");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("2001/10/10", meta.getString("tofield3"));
+        Assertions.assertEquals("2001/10/10", meta.getString("tofield3"));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
         tagger.setToFormat("EEE, dd MMM yyyy");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("Tue, 10 Apr 2001", meta.getString("targetField"));
+        Assertions.assertEquals("Tue, 10 Apr 2001", meta.getString("targetField"));
 
         meta = new ImporterMetadata();
         meta.add("sourceField", "2001-04-10T11:32:21");
@@ -141,7 +141,7 @@ public class DateFormatTaggerTest {
         tagger.setToFormat("EEE, dd MMM yyyy");
         tagger.setToLocale(Locale.CANADA_FRENCH);
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("mar., 10 avr. 2001", meta.getString("targetField"));
+        Assertions.assertEquals("mar., 10 avr. 2001", meta.getString("targetField"));
     }
 
     @Test
@@ -158,7 +158,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats("EEE, dd MMM yyyy");
         tagger.setToFormat("yyyy-MM-dd");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("2001-04-10", meta.getString("targetField"));
+        Assertions.assertEquals("2001-04-10", meta.getString("targetField"));
 
         meta = new ImporterMetadata();
         meta.add("sourceField", "mar., 10 avr. 2001");
@@ -170,7 +170,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats("EEE, dd MMM yyyy");
         tagger.setToFormat("yyyy-MM-dd");
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("2001-04-10", meta.getString("targetField"));
+        Assertions.assertEquals("2001-04-10", meta.getString("targetField"));
     }
     @Test
     public void testWriteRead() throws IOException {

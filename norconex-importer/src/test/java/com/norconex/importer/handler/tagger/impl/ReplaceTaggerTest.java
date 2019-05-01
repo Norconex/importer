@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -57,8 +57,8 @@ public class ReplaceTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals("ac", meta.getString("regex"));
-        Assert.assertEquals("a  c", meta.getString("normal"));
+        Assertions.assertEquals("ac", meta.getString("regex"));
+        Assertions.assertEquals("a  c", meta.getString("normal"));
 
         // XML
         String xml = "<tagger>"
@@ -75,8 +75,8 @@ public class ReplaceTaggerTest {
         r = new Replacement();
         tagger.addReplacement(r);
         tagger.tagDocument("n/a", null, meta, true);
-        Assert.assertEquals("ac", meta.getString("regexXML"));
-        Assert.assertEquals("a  c", meta.getString("normalXML"));
+        Assertions.assertEquals("ac", meta.getString("regexXML"));
+        Assertions.assertEquals("a  c", meta.getString("normalXML"));
     }
 
     //This is a test for https://github.com/Norconex/importer/issues/29
@@ -128,10 +128,10 @@ public class ReplaceTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME1"));
-        Assert.assertEquals("", meta.getString("EXP_COUNTRY1"));
-        Assert.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME2"));
-        Assert.assertEquals("US", meta.getString("EXP_COUNTRY2"));
+        Assertions.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME1"));
+        Assertions.assertEquals("", meta.getString("EXP_COUNTRY1"));
+        Assertions.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME2"));
+        Assertions.assertEquals("US", meta.getString("EXP_COUNTRY2"));
     }
 
     @Test
@@ -220,15 +220,15 @@ public class ReplaceTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals("replaced", meta.getString("fullMatchField"));
-        Assert.assertEquals(
+        Assertions.assertEquals("replaced", meta.getString("fullMatchField"));
+        Assertions.assertEquals(
                 "partial value nomatch", meta.getString("partialNoMatchField"));
-        Assert.assertEquals("replaced to new field",
+        Assertions.assertEquals("replaced to new field",
                 meta.getString("matchNewField"));
-        Assert.assertEquals("no match to new field",
+        Assertions.assertEquals("no match to new field",
                 meta.getString("nomatchOldField"));
-        Assert.assertNull(meta.getString("nomatchNewField"));
-        Assert.assertEquals("REPLACED", meta.getString("caseField"));
+        Assertions.assertNull(meta.getString("nomatchNewField"));
+        Assertions.assertEquals("REPLACED", meta.getString("caseField"));
     }
 
     @Test
@@ -266,11 +266,11 @@ public class ReplaceTaggerTest {
 
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertEquals("/this/is/a/path", meta.getString("path1"));
-        Assert.assertEquals("/that/is/a/path", meta.getString("folder"));
-        Assert.assertEquals(
+        Assertions.assertEquals("/this/is/a/path", meta.getString("path1"));
+        Assertions.assertEquals("/that/is/a/path", meta.getString("folder"));
+        Assertions.assertEquals(
                 "/that/is/a/path/file.doc", meta.getString("path2"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "/That/Is/A/Path/something.doc", meta.getString("path3"));
     }
 
@@ -448,42 +448,42 @@ public class ReplaceTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
 
         //--- Whole-match regular replace, case insensitive --------------------
-        Assert.assertNull(meta.getString("wholeNrmlInsensitiveUnchanged"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertNull(meta.getString("wholeNrmlInsensitiveUnchanged"));
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("wholeNrmlInsensitiveCats"));
 
         //--- Whole-match regular replace, case sensitive ----------------------
-        Assert.assertNull(meta.getString("wholeNrmlSensitiveUnchanged1"));
-        Assert.assertNull(meta.getString("wholeNrmlSensitiveUnchanged2"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertNull(meta.getString("wholeNrmlSensitiveUnchanged1"));
+        Assertions.assertNull(meta.getString("wholeNrmlSensitiveUnchanged2"));
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("wholeNrmlSensitiveCats"));
 
         //--- Whole-match regex replace, case insensitive ----------------------
-        Assert.assertNull(meta.getString("wholeRgxInsensitiveUnchanged"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertNull(meta.getString("wholeRgxInsensitiveUnchanged"));
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("wholeRgxInsensitiveCats"));
 
         //--- Whole-match regex replace, case sensitive ------------------------
-        Assert.assertNull(meta.getString("wholeRgxSensitiveUnchanged"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertNull(meta.getString("wholeRgxSensitiveUnchanged"));
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("wholeRgxSensitiveCats"));
 
         //--- Partial-match regular replace, case insensitive ------------------
-        Assert.assertEquals("One cat, two dogs, three dogs",
+        Assertions.assertEquals("One cat, two dogs, three dogs",
                 meta.getString("partNrmlInsensitive1Cat"));
 
         //--- Partial-match regular replace, case sensitive --------------------
-        Assert.assertNull(meta.getString("partNrmlSensitiveUnchanged"));
-        Assert.assertEquals("One cat, two dogs, three dogs",
+        Assertions.assertNull(meta.getString("partNrmlSensitiveUnchanged"));
+        Assertions.assertEquals("One cat, two dogs, three dogs",
                 meta.getString("partNrmlSensitive1Cat"));
 
         //--- Partial-match regex replace, case insensitive --------------------
-        Assert.assertEquals("One cat, two dogs, three dogs",
+        Assertions.assertEquals("One cat, two dogs, three dogs",
                 meta.getString("partRgxInsensitive1Cat"));
 
         //--- Partial-match regex replace, case sensitive ----------------------
-        Assert.assertNull(meta.getString("partRgxSensitiveUnchanged"));
-        Assert.assertEquals("One cat, two dogs, three dogs",
+        Assertions.assertNull(meta.getString("partRgxSensitiveUnchanged"));
+        Assertions.assertEquals("One cat, two dogs, three dogs",
                 meta.getString("partRgxSensitive1Cat"));
     }
 
@@ -546,11 +546,11 @@ public class ReplaceTaggerTest {
         //=== Asserts ==========================================================
         tagger.tagDocument("n/a", null, meta, true);
 
-        Assert.assertNull(meta.getString("wholeNrmlUnchanged"));
-        Assert.assertNull(meta.getString("wholeRegexUnchanged"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertNull(meta.getString("wholeNrmlUnchanged"));
+        Assertions.assertNull(meta.getString("wholeRegexUnchanged"));
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("partialNrmlCats"));
-        Assert.assertEquals("One cat, two cats, three cats",
+        Assertions.assertEquals("One cat, two cats, three cats",
                 meta.getString("partialRegexCats"));
     }
 

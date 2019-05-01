@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
@@ -87,12 +87,12 @@ public class ExternalTaggerTest {
     }
 
     private void assertMetadataFiles(ImporterMetadata meta) {
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "test first a is this", meta.getString("metaFileField1"));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "value1 test second a is this",
                 meta.getStrings("metaFileField2").get(0));
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "value2 test second a is this",
                 meta.getStrings("metaFileField2").get(1));
     }

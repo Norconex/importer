@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.input.NullInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -91,8 +91,8 @@ public class CharsetTaggerTest {
 //        System.out.println("   target bytes: " + Arrays.toString(targetBytes));
 //        System.out.println("converted bytes: " + Arrays.toString(convertedBytes));
 
-        Assert.assertArrayEquals(fromCharset + " > " + toCharset,
-                targetBytes, convertedBytes);
+        Assertions.assertArrayEquals(
+                targetBytes, convertedBytes, fromCharset + " > " + toCharset);
     }
 
     @Test
