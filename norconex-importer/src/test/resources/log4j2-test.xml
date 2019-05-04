@@ -7,7 +7,12 @@
     </Console>
   </Appenders>
   <Loggers>
-    <Logger name="com.norconex.importer" level="INFO" additivity="false">
+
+    <Root level="INFO">
+      <AppenderRef ref="Console"/>
+    </Root>
+
+    <Logger name="com.norconex.importer" level="DEBUG" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
     <Logger name="com.norconex.commons.lang" level="INFO" additivity="false">
@@ -16,8 +21,11 @@
     <Logger name="org.apache" level="WARN" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-    <Root level="INFO">
+
+    <!-- To get rid of useless errors from dependencies: -->
+    <Logger name="org.apache.pdfbox.jbig2.JBIG2Globals" level="OFF" additivity="false">
       <AppenderRef ref="Console"/>
-    </Root>
+    </Logger>
+
   </Loggers>
 </Configuration>

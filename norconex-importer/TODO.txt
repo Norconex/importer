@@ -1,7 +1,7 @@
 TODO:
 ==============
 
-- Remove PDFBox jbig2 SEVERE error (modifying class if required).
+- Package importer with a log4j file that exclude useless errors (e.g. jbig2)
 
 - Have a StripAccentsTagger and Transformer. See: StringUtils.stripAccents(str)
 
