@@ -1,6 +1,9 @@
 TODO:
 ==============
 
+- Have a .misc package for handlers for those not falling into any of the 4 
+  types (like DebugTagger and FieldReportTagger).
+
 - Add Tagger for creating document summary.
 
 - Have a Prefix tagger to prefix all metadata with something.

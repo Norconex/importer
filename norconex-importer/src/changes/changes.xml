@@ -9,6 +9,10 @@
 
     <release version="2.9.1-SNAPSHOT" date="2019-??-??" description="Bugfix release">
       <action dev="essiembre" type="add">
+        New FieldReportTagger for discovering fields being crawled to file
+        (with sample values).
+      </action>
+      <action dev="essiembre" type="add">
         HierarchyTagger now as a boolean "regex" attribute to specify whether
         the separator should match a regular expression.
       </action>
