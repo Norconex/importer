@@ -18,15 +18,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.collections4.SetValuedMap;
-import org.apache.commons.collections4.multimap.HashSetValuedHashMap;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.Transformer;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -65,6 +67,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
  *          maxSamples="(max number of sample values)"
+ *          withHeaders="[false|true]"
+ *          withOccurences="[false|true]"
+ *          truncateSamplesAt="(number of characters to truncate long samples)"
  *          file="(path to a local file)" &gt;
  *
  *      &lt;restrictTo caseSensitive="[false|true]"
@@ -92,10 +97,21 @@ public class FieldReportTagger extends AbstractDocumentTagger {
             LogManager.getLogger(FieldReportTagger.class);
 
     public static final int DEFAULT_MAX_SAMPLES = 3;
+
     private int maxSamples = DEFAULT_MAX_SAMPLES;
     private File file;
-    private final SetValuedMap<String, String> fields =
-            new HashSetValuedHashMap<>();
+    private boolean withHeaders;
+    private boolean withOccurences;
+    private int truncateSamplesAt = -1;
+
+    private final Map<String, FieldData> fields = MapUtils.lazyMap(
+            new TreeMap<String, FieldData>(),
+            new Transformer<String, FieldData>() {
+        @Override
+        public FieldData transform(String fieldName) {
+            return new FieldData(fieldName);
+        }
+    });
 
     public File getFile() {
         return file;
@@ -111,6 +127,27 @@ public class FieldReportTagger extends AbstractDocumentTagger {
         this.maxSamples = maxSamples;
     }
 
+    public boolean isWithHeaders() {
+        return withHeaders;
+    }
+    public void setWithHeaders(boolean withHeaders) {
+        this.withHeaders = withHeaders;
+    }
+
+    public boolean isWithOccurences() {
+        return withOccurences;
+    }
+    public void setWithOccurences(boolean withOccurences) {
+        this.withOccurences = withOccurences;
+    }
+
+    public int getTruncateSamplesAt() {
+        return truncateSamplesAt;
+    }
+    public void setTruncateSamplesAt(int truncateSamplesAt) {
+        this.truncateSamplesAt = truncateSamplesAt;
+    }
+
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
@@ -119,49 +156,53 @@ public class FieldReportTagger extends AbstractDocumentTagger {
     }
 
     private synchronized void reportFields(ImporterMetadata metadata) {
-            boolean dirty = false;
-            for (Entry<String, List<String>> en : metadata.entrySet()) {
-                if (reportField(en.getKey(), en.getValue())) {
-                    dirty = true;
-                }
+        boolean dirty = false;
+        for (Entry<String, List<String>> en : metadata.entrySet()) {
+            if (reportField(en.getKey(), en.getValue())) {
+                dirty = true;
             }
-            if (dirty) {
-                saveReport();
-            }
+        }
+        if (dirty) {
+            saveReport();
+        }
     }
 
-    private boolean reportField(String field, List<String> values) {
+    private boolean reportField(String field, List<String> samples) {
         boolean dirty = false;
         if (!fields.containsKey(field)) {
             dirty = true;
         }
-        Set<String> existingSamples = fields.get(field);
-        int beforeCount = existingSamples.size();
-        for (String value : values) {
-            if (existingSamples.size() < maxSamples
-                    && StringUtils.isNotBlank(value)) {
-                existingSamples.add(value);
-            } else {
-                break;
-            }
+        FieldData fieldData = fields.get(field);
+        if (fieldData.addSamples(samples, maxSamples, truncateSamplesAt)) {
+            dirty = true;
         }
-        return dirty || beforeCount != existingSamples.size();
+        return dirty;
     }
 
     private void saveReport() {
         try (CSVPrinter printer =
                 new CSVPrinter(new FileWriter(file), CSVFormat.DEFAULT)) {
-            for (Entry<String, Collection<String>> en :
-                    fields.asMap().entrySet()) {
-                String field = en.getKey();
-                Collection<String> values = en.getValue();
+            if (withHeaders) {
+                printer.print("Field Name");
+                if (withOccurences) {
+                    printer.print("Occurences");
+                }
+                for (int i = 1; i <= maxSamples; i++) {
+                    printer.print("Sample Value " + i);
+                }
+                printer.println();
+            }
 
-                printer.print(field);
-                for (String value : values) {
+            for (FieldData fieldData : fields.values()) {
+                printer.print(fieldData.name);
+                if (withOccurences) {
+                    printer.print(fieldData.occurences);
+                }
+                for (String value : fieldData.values) {
                     printer.print(value);
                 }
                 // fill the blanks
-                for (int i = 0; i < maxSamples - values.size(); i++) {
+                for (int i = 0; i < maxSamples - fieldData.values.size(); i++) {
                     printer.print("");
                 }
                 printer.println();
@@ -179,6 +220,10 @@ public class FieldReportTagger extends AbstractDocumentTagger {
         if (StringUtils.isNotBlank(f)) {
             setFile(new File(f));
         }
+        setWithHeaders(xml.getBoolean("[@withHeaders]", withHeaders));
+        setWithOccurences(xml.getBoolean("[@withOccurences]", withOccurences));
+        setTruncateSamplesAt(
+                xml.getInt("[@truncateSamplesAt]", truncateSamplesAt));
     }
 
     @Override
@@ -190,6 +235,9 @@ public class FieldReportTagger extends AbstractDocumentTagger {
         if (file != null) {
             writer.writeAttribute("file", file.toString());
         }
+        writer.writeAttributeBoolean("withHeaders", withHeaders);
+        writer.writeAttributeBoolean("withOccurences", withOccurences);
+        writer.writeAttributeInteger("truncateSamplesAt", truncateSamplesAt);
     }
 
     @Override
@@ -198,6 +246,9 @@ public class FieldReportTagger extends AbstractDocumentTagger {
                 .appendSuper(super.toString())
                 .append("maxSamples", maxSamples)
                 .append("file", file)
+                .append("withHeaders", withHeaders)
+                .append("withOccurences", withOccurences)
+                .append("truncateSamplesAt", truncateSamplesAt)
                 .toString();
     }
 
@@ -211,6 +262,9 @@ public class FieldReportTagger extends AbstractDocumentTagger {
                 .appendSuper(super.equals(other))
                 .append(maxSamples, castOther.maxSamples)
                 .append(file, castOther.file)
+                .append(withHeaders, castOther.withHeaders)
+                .append(withOccurences, castOther.withOccurences)
+                .append(truncateSamplesAt, castOther.truncateSamplesAt)
                 .isEquals();
     }
 
@@ -220,6 +274,64 @@ public class FieldReportTagger extends AbstractDocumentTagger {
                 .appendSuper(super.hashCode())
                 .append(maxSamples)
                 .append(file)
+                .append(withHeaders)
+                .append(withOccurences)
+                .append(truncateSamplesAt)
                 .toHashCode();
+    }
+
+    class FieldData {
+        private final String name;
+        private final Set<String> values = new HashSet<>();
+        private int occurences;
+        public FieldData(String name) {
+            super();
+            this.name = name;
+        }
+        // returns true if something changed
+        public boolean addSamples(
+                List<String> samples, int maxSamples, int truncateAt) {
+            occurences++;
+            if (samples == null) {
+                return false;
+            }
+            int beforeCount = values.size();
+            for (String sample : samples) {
+                if (values.size() < maxSamples
+                        && StringUtils.isNotBlank(sample)) {
+                    if (truncateAt > -1) {
+                        values.add(StringUtils.truncate(sample, truncateAt));
+                    } else {
+                        values.add(sample);
+                    }
+                } else {
+                    break;
+                }
+            }
+            return withOccurences || beforeCount != values.size();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder()
+                    .appendSuper(super.hashCode())
+                    .append(name)
+                    .append(values)
+                    .append(occurences)
+                    .toHashCode();
+        }
+        @Override
+        public boolean equals(final Object other) {
+            if (!(other instanceof FieldData)) {
+                return false;
+            }
+            FieldData castOther = (FieldData) other;
+            return new EqualsBuilder()
+                    .appendSuper(super.equals(other))
+                    .append(name, castOther.name)
+                    .append(values, castOther.values)
+                    .append(occurences, castOther.occurences)
+                    .isEquals();
+        }
     }
 }

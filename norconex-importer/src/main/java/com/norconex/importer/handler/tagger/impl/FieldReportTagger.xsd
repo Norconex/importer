@@ -24,6 +24,9 @@
         <xs:extension base="AbstractDocumentTagger"> 
           <xs:attribute name="maxSamples" type="xs:integer"/>
           <xs:attribute name="file" type="xs:string"/>
+          <xs:attribute name="withHeaders" type="xs:boolean"/>
+          <xs:attribute name="withOccurences" type="xs:boolean"/>
+          <xs:attribute name="truncateSamplesAt" type="xs:integer"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
