@@ -61,7 +61,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * (<code>fromSeparator</code> and <code>toSeparator</code>).
  * </p>
  * <p>
- * <b>Since 2.9.1</b>, you can "keepEmptySegments", as well as specify
+ * <b>Since 2.10.0</b>, you can "keepEmptySegments", as well as specify
  * whether the "fromSeparator" is a regular expression. When using regular
  * expression without a "toSeparator", the text matching the expression is
  * kept as is and thus can be different for each segment.
@@ -218,7 +218,7 @@ public class HierarchyTagger extends AbstractDocumentTagger {
      * @param toSeparator optional target separator
      * @param overwrite whether to overwrite target field if it exists
      * @deprecated
-     *    Since 2.9.1, use {@link #addHierarcyDetails(HierarchyDetails)}
+     *    Since 2.10.0, use {@link #addHierarcyDetails(HierarchyDetails)}
      *    instead.
      */
     @Deprecated

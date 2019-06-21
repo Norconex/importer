@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ import com.norconex.importer.response.ImporterResponse;
  *  &lt;documentParserFactory 
  *         class="com.norconex.importer.parser.GenericDocumentParserFactory"&gt;
  *          
- *      &lt;ocr path="(path to Tesseract OCR software install)"&gt;
+ *      &lt;ocr path="(path to Tesseract OCR software executable)"&gt;
  *          &lt;languages&gt;
  *              (optional coma-separated list of Tesseract languages)
  *          &lt;/languages&gt;
@@ -174,7 +174,7 @@ import com.norconex.importer.response.ImporterResponse;
  * </p>
  * <pre>
  *  &lt;documentParserFactory&gt;
- *      &lt;ocr path="/app/tesseract/"&gt;
+ *      &lt;ocr path="/app/ocr/tesseract.exe"&gt;
  *          &lt;languages&gt;en, fr&lt;/languages&gt;
  *          &lt;contentTypes&gt;application/pdf&lt;/contentTypes&gt;
  *      &lt;/ocr&gt;
@@ -336,10 +336,17 @@ public class GenericDocumentParserFactory
             LOG.debug("OCR parsing is disabled (no path provided).");
             return;
         }
-        String exePath = ocrConfig.getPath();
-        File exeFile = new File(exePath,
-                (System.getProperty("os.name").startsWith("Windows") 
-                                ? "tesseract.exe" : "tesseract"));
+        //String exePath = ocrConfig.getPath();
+        File exeFile = new File(ocrConfig.getPath());
+        if (exeFile.isDirectory()) {
+            exeFile = new File(exeFile,
+                    (System.getProperty("os.name").startsWith("Windows") 
+                                    ? "tesseract.exe" : "tesseract"));
+            LOG.warn("As of Norconex Importer 2.10.0, it is recommended to "
+                    + "specify the full path to Tesseract executable as "
+                    + "opposed to a folder. We will try to assume the "
+                    + "for now: " + exeFile.getAbsolutePath());
+        }
         if (!exeFile.exists()) {
             LOG.error("OCR path specified but the Tesseract executable "
                     + "was not found: " + exeFile.getAbsolutePath());

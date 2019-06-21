@@ -56,7 +56,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  *      &lt;rename regex="[false|true]" fromField="(from field)"
  *                 toField="(to field)" overwrite="[false|true]" /&gt;
- *      &lt;-- multiple rename tags allowed --&gt;
+ *      &lt;!-- multiple rename tags allowed --&gt;
  *
  *  &lt;/tagger&gt;
  * </pre>

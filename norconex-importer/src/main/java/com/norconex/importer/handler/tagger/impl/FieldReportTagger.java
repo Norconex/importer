@@ -89,7 +89,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *          maxSamples="1" file="C:\reports\field-report.csv" /&gt;
  * </pre>
  * @author Pascal Essiembre
- * @since 2.9.1
+ * @since 2.10.0
  */
 public class FieldReportTagger extends AbstractDocumentTagger {
 

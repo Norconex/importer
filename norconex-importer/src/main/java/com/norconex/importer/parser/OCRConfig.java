@@ -1,4 +1,4 @@
-/* Copyright 2015-2016 Norconex Inc.
+/* Copyright 2015-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,16 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * OCR configuration details.
+ * <p>
+ * OCR configuration details. OCR relies the open-source 
+ * <a href="https://github.com/tesseract-ocr/tesseract">Tesseract OCR</a>
+ * product to be already installed on your system.
+ * </p>
+ * <p>
+ * Since 2.10.0, it is recommended to specify the full path the
+ * Tesseract executable file (as opposed to its installation directory). 
+ * </p>
+ * 
  * @author Pascal Essiembre
  * @since 2.1.0
  */
@@ -39,14 +48,14 @@ public class OCRConfig {
     }
 
     /**
-     * Gets the installation path of OCR engine (i.e. Tesseract).
+     * Gets the Tesseract OCR engine executable file path.
      * @return path
      */
     public String getPath() {
         return path;
     }
     /**
-     * Sets the installation path of OCR engine (i.e. Tesseract).
+     * Sets the Tesseract OCR engine executable file path.
      * @param path installation path
      */
     public void setPath(String path) {
