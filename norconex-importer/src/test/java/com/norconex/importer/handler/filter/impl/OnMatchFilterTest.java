@@ -51,8 +51,7 @@ public class OnMatchFilterTest {
     }
 
     private void testFilter(IDocumentFilter f, Status expectedStatus) {
-        InputStream is = 
-                new CachedStreamFactory(10, 10).newInputStream("No content.");
+        InputStream is = new CachedStreamFactory(10, 10).newInputStream();
         Properties meta = new Properties();
         ImporterConfig cfg = new ImporterConfig();
         cfg.setPreParseHandlers(f);
