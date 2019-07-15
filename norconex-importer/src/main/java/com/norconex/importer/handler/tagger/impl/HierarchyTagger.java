@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +56,12 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * (<code>fromSeparator</code> and <code>toSeparator</code>).
  * </p>
  * <p>
+ * <b>Since 2.10.0</b>, you can "keepEmptySegments", as well as specify
+ * whether the "fromSeparator" is a regular expression. When using regular
+ * expression without a "toSeparator", the text matching the expression is
+ * kept as is and thus can be different for each segment.
+ * </p>
+ * <p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
  * <h3>XML configuration usage:</h3>
@@ -69,7 +78,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *              toField="(optional to field)"
  *              fromSeparator="(original separator)"
  *              toSeparator="(optional new separator)"
- *              overwrite="[false|true]" /&gt;
+ *              overwrite="[false|true]"
+ *              regex="[false|true]"
+ *              keepEmptySegments="[false|true]" /&gt;
  *      &lt;!-- multiple hierarchy tags allowed --&gt;
  *  &lt;/handler&gt;
  * </pre>
@@ -91,43 +102,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  */
 public class HierarchyTagger extends AbstractDocumentTagger {
 
-    private static class HierarchyDetails {
-        private final String fromField;
-        private final String toField;
-        private final String fromSeparator;
-        private final String toSeparator;
-        private final boolean overwrite;
-
-        HierarchyDetails(String from, String to,
-                String fromSeparator, String toSeparator, boolean overwrite) {
-            this.fromField = from;
-            this.toField = to;
-            this.fromSeparator = fromSeparator;
-            this.toSeparator = toSeparator;
-            this.overwrite = overwrite;
-        }
-
-        @Override
-        public boolean equals(final Object other) {
-            return EqualsBuilder.reflectionEquals(this, other);
-        }
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.reflectionHashCode(this);
-        }
-        @Override
-        public String toString() {
-            return new ReflectionToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-        }
-    }
-
     private final List<HierarchyDetails> list = new ArrayList<>();
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
+
         for (HierarchyDetails details : list) {
             breakSegments(metadata, details);
         }
@@ -135,33 +116,86 @@ public class HierarchyTagger extends AbstractDocumentTagger {
 
     private void breakSegments(
             ImporterMetadata metadata, HierarchyDetails details) {
-        List<String> nodes = new ArrayList<>();
-        String sep = details.fromSeparator;
-        if (StringUtils.isNotEmpty(details.toSeparator)) {
-            sep = details.toSeparator;
+
+        String toField = details.fromField;
+        if (StringUtils.isNotBlank(details.toField)) {
+            toField = details.toField;
         }
+
+        Pattern delim;
+        if (details.regex) {
+            delim = Pattern.compile(details.fromSeparator);
+        } else {
+            delim = Pattern.compile(Pattern.quote(details.fromSeparator));
+        }
+
+        List<String> paths = new ArrayList<>();
         for (String value : metadata.getStrings(details.fromField)) {
-            String[] segs = StringUtils.splitByWholeSeparatorPreserveAllTokens(
-                    value, details.fromSeparator);
+            if (value == null) {
+                continue;
+            }
+
+            List<Object> segments = new ArrayList<>();
+            int prevMatch = 0;
+            Matcher m = delim.matcher(value);
+            while (m.find()) {
+                int delimStart = m.start();
+                if (prevMatch != delimStart) {
+                    segments.add(value.substring(prevMatch, delimStart));
+                }
+                prevMatch = m.end();
+
+                String sep = m.group();
+                if (StringUtils.isNotEmpty(details.toSeparator)) {
+                    sep = details.toSeparator;
+                }
+                segments.add(new Separator(sep));
+            }
+            if (value.length() > prevMatch) {
+                segments.add(value.substring(prevMatch));
+            }
+
+            // if not keeping empty segments, keep last of a series
+            // (iterating in reverse to help do so)
+            boolean prevIsSep = false;
+            if (!details.keepEmptySegments) {
+                ListIterator<Object> iter =
+                        segments.listIterator(segments.size());
+                while(iter.hasPrevious()) {
+                    Object seg = iter.previous();
+                    if (seg instanceof Separator) {
+                        if (prevIsSep) {
+                            iter.remove();
+                        }
+                        prevIsSep = true;
+                    } else {
+                        prevIsSep = false;
+                    }
+                }
+            }
+
+            prevIsSep = false;
             StringBuilder b = new StringBuilder();
-            for (String seg : segs) {
-                if (seg.equals(details.fromSeparator)) {
-                    b.append(sep);
+            for (Object seg : segments) {
+                if (seg instanceof Separator) {
+                    if (prevIsSep) {
+                        paths.add(b.toString());
+                    }
+                    b.append(seg);
+                    prevIsSep = true;
                 } else {
                     b.append(seg);
+                    prevIsSep = false;
+                    paths.add(b.toString());
                 }
-                nodes.add(b.toString());
             }
         }
-        String field = details.fromField;
-        if (StringUtils.isNotBlank(details.toField)) {
-            field = details.toField;
-        }
-        String[] nodesArray = nodes.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
+
+        String[] nodesArray = paths.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
         if (details.overwrite) {
-            metadata.set(field, nodesArray);
+            metadata.set(toField, nodesArray);
         } else {
-            metadata.add(field, nodesArray);
+            metadata.add(toField, nodesArray);
         }
     }
 
@@ -172,39 +206,67 @@ public class HierarchyTagger extends AbstractDocumentTagger {
      * @param fromSeparator source separator
      * @param toSeparator optional target separator
      * @param overwrite whether to overwrite target field if it exists
+     * @deprecated
+     *    Since 2.10.0, use {@link #addHierarcyDetails(HierarchyDetails)}
+     *    instead.
      */
+    @Deprecated
     public void addHierarcyDetails(
             String fromField, String toField,
             String fromSeparator, String toSeparator, boolean overwrite) {
         if (StringUtils.isAnyBlank(fromField, fromSeparator)) {
             return;
         }
-        list.add(new HierarchyDetails(fromField, toField,
-                fromSeparator, toSeparator, overwrite));
+        HierarchyDetails hd = new HierarchyDetails(
+                fromField, toField, fromSeparator, toSeparator);
+        hd.setOverwrite(overwrite);
+        addHierarcyDetails(hd);
     }
+
+    /**
+     * Adds hierarchy instructions.
+     * @param details hierarchy details
+     */
+    public void addHierarcyDetails(HierarchyDetails details) {
+        if (details == null || StringUtils.isAnyBlank(
+                details.fromField, details.fromSeparator)) {
+            return;
+        }
+        list.add(details);
+    }
+
+    public List<HierarchyDetails> getHierarchyDetails() {
+        return list;
+    }
+
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        List<XML> nodes = xml.getXMLList("hierarchy");
-        for (XML node : nodes) {
-            addHierarcyDetails(
+        for (XML node : xml.getXMLList("hierarchy")) {
+            HierarchyDetails hd = new HierarchyDetails(
                     node.getString("@fromField", null),
                     node.getString("@toField", null),
                     node.getString("@fromSeparator", null),
-                    node.getString("@toSeparator", null),
-                    node.getBoolean("@overwrite", false));
+                    node.getString("@toSeparator", null));
+            hd.setOverwrite(xml.getBoolean("@overwrite", false));
+            hd.setKeepEmptySegments(
+                    node.getBoolean("@keepEmptySegments", false));
+            hd.setRegex(node.getBoolean("@regex", false));
+            addHierarcyDetails(hd);
         }
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        for (HierarchyDetails details : list) {
+        for (HierarchyDetails hd : list) {
             xml.addElement("hierarchy")
-                    .setAttribute("fromField", details.fromField)
-                    .setAttribute("toField", details.toField)
-                    .setAttribute("fromSeparator", details.fromSeparator)
-                    .setAttribute("toSeparator", details.toSeparator)
-                    .setAttribute("overwrite", details.overwrite);
+                    .setAttribute("fromField", hd.fromField)
+                    .setAttribute("toField", hd.toField)
+                    .setAttribute("fromSeparator", hd.fromSeparator)
+                    .setAttribute("toSeparator", hd.toSeparator)
+                    .setAttribute("overwrite", hd.overwrite)
+                    .setAttribute("keepEmptySegments", hd.keepEmptySegments)
+                    .setAttribute("regex", hd.regex);
         }
     }
 
@@ -221,4 +283,94 @@ public class HierarchyTagger extends AbstractDocumentTagger {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
+
+    private static class Separator {
+        private final String sep;
+        public Separator(String sep) {
+            super();
+            this.sep = sep;
+        }
+        @Override
+        public String toString() {
+            return sep;
+        }
+    }
+
+    public static class HierarchyDetails {
+        private String fromField;
+        private String toField;
+        private String fromSeparator;
+        private String toSeparator;
+        private boolean overwrite;
+        private boolean keepEmptySegments;
+        private boolean regex;
+
+        public HierarchyDetails() {
+            super();
+        }
+        public HierarchyDetails(String fromField, String toField,
+                String fromSeparator, String toSeparator) {
+            this.fromField = fromField;
+            this.toField = toField;
+            this.fromSeparator = fromSeparator;
+            this.toSeparator = toSeparator;
+        }
+
+        public String getFromField() {
+            return fromField;
+        }
+        public void setFromField(String fromField) {
+            this.fromField = fromField;
+        }
+        public String getToField() {
+            return toField;
+        }
+        public void setToField(String toField) {
+            this.toField = toField;
+        }
+        public String getFromSeparator() {
+            return fromSeparator;
+        }
+        public void setFromSeparator(String fromSeparator) {
+            this.fromSeparator = fromSeparator;
+        }
+        public String getToSeparator() {
+            return toSeparator;
+        }
+        public void setToSeparator(String toSeparator) {
+            this.toSeparator = toSeparator;
+        }
+        public boolean isOverwrite() {
+            return overwrite;
+        }
+        public void setOverwrite(boolean overwrite) {
+            this.overwrite = overwrite;
+        }
+        public boolean isKeepEmptySegments() {
+            return keepEmptySegments;
+        }
+        public void setKeepEmptySegments(boolean keepEmptySegments) {
+            this.keepEmptySegments = keepEmptySegments;
+        }
+        public boolean isRegex() {
+            return regex;
+        }
+        public void setRegex(boolean regex) {
+            this.regex = regex;
+        }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
+    }
+
 }

@@ -15,19 +15,27 @@
 package com.norconex.importer.handler.filter.impl;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.TestUtil;
+import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
+import com.norconex.importer.response.ImporterResponse;
+import com.norconex.importer.response.ImporterStatus.Status;
 
 public class ScriptFilterTest {
 
@@ -68,6 +76,23 @@ public class ScriptFilterTest {
                 "Filter returned false.");
 
         is.close();
+    }
+
+    // Relates to: https://github.com/Norconex/importer/issues/86
+    @Test
+    public void testPrePostScriptFilter() throws IOException {
+        try (Reader r = ResourceLoader.getXmlReader(getClass())) {
+            ImporterConfig cfg = new ImporterConfig();
+            cfg.loadFromXML(new XML(r));
+            Importer importer = new Importer(cfg);
+            ImporterResponse resp = importer.importDocument(
+                    new ByteArrayInputStream("test".getBytes()),
+                    new ImporterMetadata(), "N/A");
+            ImporterDocument doc = resp.getDocument();
+            Assertions.assertNotNull(doc, "Document must not be null");
+            Status status = resp.getImporterStatus().getStatus();
+            Assertions.assertEquals(Status.SUCCESS, status);
+        }
     }
 
     @Test

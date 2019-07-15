@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -216,7 +216,7 @@ public class LanguageTagger extends AbstractStringTagger
     private String fallbackLanguage;
 
     private final Comparator<LanguageResult> langResultComparator =
-            (o1, o2) -> Float.compare(o1.getRawScore(), o2.getRawScore());
+            (o1, o2) -> Float.compare(o2.getRawScore(), o1.getRawScore());
 
     @Override
     protected void tagStringContent(
@@ -295,8 +295,8 @@ public class LanguageTagger extends AbstractStringTagger
                     d.loadModels(new HashSet<>(languages));
                 }
             } catch (IOException e) {
-                LOG.error("Cannot initialize language detector.", e);
-                throw new ImporterHandlerException(e);
+                throw new ImporterHandlerException(
+                        "Cannot initialize language detector.", e);
             }
             detector = d;
         }

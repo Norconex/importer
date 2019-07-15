@@ -349,7 +349,7 @@ public class Importer {
             } else if (h instanceof IDocumentFilter) {
                 IDocumentFilter filter = (IDocumentFilter) h;
                 boolean accepted = acceptDocument(doc, filter, parsed);
-                if (isMatchIncludeFilter((IOnMatchFilter) h)) {
+                if (isMatchIncludeFilter(filter)) {
                     includeResolver.hasIncludes = true;
                     if (accepted) {
                         includeResolver.atLeastOneIncludeMatch = true;
@@ -382,8 +382,9 @@ public class Importer {
     }
 
 
-    private boolean isMatchIncludeFilter(IOnMatchFilter filter) {
-        return OnMatch.INCLUDE == filter.getOnMatch();
+    private boolean isMatchIncludeFilter(IDocumentFilter filter) {
+        return filter instanceof IOnMatchFilter
+                && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();
     }
 
     private void parseDocument(

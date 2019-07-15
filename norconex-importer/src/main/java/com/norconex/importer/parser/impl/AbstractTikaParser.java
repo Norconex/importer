@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
+import org.apache.tika.exception.ZeroByteFileException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.mime.MediaType;
@@ -122,12 +123,13 @@ public class AbstractTikaParser implements IHintsAwareParser {
         tikaMetadata.set(Metadata.CONTENT_LENGTH,
                 Long.toString(content.length()));
 
+        RecursiveParser recursiveParser = null;
         try {
             if (knownDetector != null) {
                 knownDetector.initCache(doc.getReference(), contentType);
             }
 
-            RecursiveParser recursiveParser = createRecursiveParser(
+            recursiveParser = createRecursiveParser(
                     doc.getReference(), contentType, output, doc.getMetadata(),
                     content.getStreamFactory());
             ParseContext context = new ParseContext();
@@ -150,10 +152,12 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
             recursiveParser.parse(content,
                     new BodyContentHandler(output),  tikaMetadata, context);
-            return recursiveParser.getEmbeddedDocuments();
+        } catch (ZeroByteFileException e) {
+            LOG.warn("Document has no content: " + doc.getReference());
         } catch (Exception e) {
             throw new DocumentParserException(e);
         }
+        return recursiveParser.getEmbeddedDocuments();
     }
 
     /**

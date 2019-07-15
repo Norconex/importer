@@ -194,6 +194,7 @@
   
   <build>
     <plugins>
+      <!-- Until ready: -Dassembly.skipAssembly=true -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -228,7 +229,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.0.0</version>
         <executions>
           <execution>
             <id>unpack-shared-resources</id>

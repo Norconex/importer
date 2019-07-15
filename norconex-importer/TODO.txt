@@ -1,5 +1,27 @@
+
+LAST MERGE FROM MASTER
+======================
+
+2019-07-14
+
+
 TODO:
 ==============
+
+- Have a .misc package for handlers for those not falling into any of the 4 
+  types (like DebugTagger and FieldReportTagger).
+
+- Add Tagger for creating document summary.
+
+- Have a Prefix tagger to prefix all metadata with something.
+  Also modify the RenameTagger to do bulk renaming
+  https://github.com/Norconex/collector-http/issues/553
+
+- Have a generic construct for set/replace/append/prepend/insertat, for multivalue
+  maps (Properties) but also for attributes on taggers and such.
+
+- Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
+  WildCard matches/replacements.
 
 - Package importer with a log4j file that exclude useless errors (e.g. jbig2)
 

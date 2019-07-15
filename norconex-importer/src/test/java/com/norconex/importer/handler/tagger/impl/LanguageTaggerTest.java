@@ -88,4 +88,29 @@ public class LanguageTaggerTest {
         tagger.setLanguages(Arrays.asList("it", "br", "en"));
         XML.assertWriteRead(tagger, "handler");
     }
+
+    @Test
+    public void testSortOrder() throws ImporterHandlerException {
+        CachedStreamFactory factory =
+                new CachedStreamFactory(10 * 1024, 10 * 1024);
+        LanguageTagger tagger = new LanguageTagger();
+        tagger.setKeepProbabilities(true);
+        tagger.setLanguages(Arrays.asList("en", "fr", "nl"));
+        ImporterDocument doc = new ImporterDocument(
+                "n/a", factory.newInputStream(
+            "Alice fing an sich zu langweilen; sie saß schon lange bei ihrer "
+          + "Schwester am Ufer und hatte nichts zu thun. Das Buch, das ihre "
+          + "Schwester las, gefiel ihr nicht; denn es waren weder Bilder noch "
+          + "[2] Gespräche darin. „Und was nützen Bücher,“ dachte Alice, „ohne "
+          + "Bilder und Gespräche?“\n\n"
+          + "Sie überlegte sich eben, (so gut es ging, denn sie war schläfrig "
+          + "und dumm von der Hitze,) ob es der Mühe werth sei aufzustehen und "
+          + "Gänseblümchen zu pflücken, um eine Kette damit zu machen, als "
+          + "plötzlich ein weißes Kaninchen mit rothen Augen dicht an ihr "
+          + "vorbeirannte.\n\n"
+          + "This last line is purposely in English."));
+        tagger.tagDocument(doc.getReference(),
+                doc.getInputStream(), doc.getMetadata(), true);
+        Assertions.assertEquals("nl", doc.getMetadata().getLanguage());
+    }
 }

@@ -1,0 +1,286 @@
+/* Copyright 2019 Norconex Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.norconex.importer.handler.tagger.impl;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.Transformer;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+
+/**
+ * <p>A utility tagger that reports in a CSV file the fields discovered
+ * in a crawl session, captured at the point of your choice in the
+ * importing process.
+ * If you use this class to report on all fields discovered, make sure you
+ * use it as a post-parse handler, before you are limiting which fields
+ * you want to keep.
+ * </p>
+ * <p>
+ * The report will list one field per row, along with a few sample values
+ * (3 by default).  The samples will be the first ones encountered.
+ * </p>
+ * <p>
+ * This handler does not impact the data being imported at all
+ * (it only reads it). It also do not store the "content" as a field.
+ * </p>
+ *
+ * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ * <h3>XML configuration usage:</h3>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ *          maxSamples="(max number of sample values)"
+ *          withHeaders="[false|true]"
+ *          withOccurences="[false|true]"
+ *          truncateSamplesAt="(number of characters to truncate long samples)"
+ *          file="(path to a local file)" &gt;
+ *
+ *      &lt;restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)"&gt;
+ *          (regular expression of value to match)
+ *      &lt;/restrictTo&gt;
+ *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  &lt;/tagger&gt;
+ * </pre>
+ * <h4>Usage example:</h4>
+ * <p>
+ * The following logs all discovered fields into a "field-report.csv" file,
+ * along with only 1 example value..
+ * </p>
+ * <pre>
+ *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ *          maxSamples="1" file="C:\reports\field-report.csv" /&gt;
+ * </pre>
+ * @author Pascal Essiembre
+ * @since 2.10.0
+ */
+public class FieldReportTagger extends AbstractDocumentTagger {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(FieldReportTagger.class);
+
+    public static final int DEFAULT_MAX_SAMPLES = 3;
+
+    private int maxSamples = DEFAULT_MAX_SAMPLES;
+    private Path file;
+    private boolean withHeaders;
+    private boolean withOccurences;
+    private int truncateSamplesAt = -1;
+
+    private final Map<String, FieldData> fields = MapUtils.lazyMap(
+            new TreeMap<String, FieldData>(),
+            (Transformer<String, FieldData>) fieldName -> new FieldData(fieldName));
+
+    public Path getFile() {
+        return file;
+    }
+    public void setFile(Path file) {
+        this.file = file;
+    }
+
+    public int getMaxSamples() {
+        return maxSamples;
+    }
+    public void setMaxSamples(int maxSamples) {
+        this.maxSamples = maxSamples;
+    }
+
+    public boolean isWithHeaders() {
+        return withHeaders;
+    }
+    public void setWithHeaders(boolean withHeaders) {
+        this.withHeaders = withHeaders;
+    }
+
+    public boolean isWithOccurences() {
+        return withOccurences;
+    }
+    public void setWithOccurences(boolean withOccurences) {
+        this.withOccurences = withOccurences;
+    }
+
+    public int getTruncateSamplesAt() {
+        return truncateSamplesAt;
+    }
+    public void setTruncateSamplesAt(int truncateSamplesAt) {
+        this.truncateSamplesAt = truncateSamplesAt;
+    }
+
+    @Override
+    public void tagApplicableDocument(String reference, InputStream document,
+            ImporterMetadata metadata, boolean parsed)
+                    throws ImporterHandlerException {
+        reportFields(metadata);
+    }
+
+    private synchronized void reportFields(ImporterMetadata metadata) {
+        boolean dirty = false;
+        for (Entry<String, List<String>> en : metadata.entrySet()) {
+            if (reportField(en.getKey(), en.getValue())) {
+                dirty = true;
+            }
+        }
+        if (dirty) {
+            saveReport();
+        }
+    }
+
+    private boolean reportField(String field, List<String> samples) {
+        boolean dirty = false;
+        if (!fields.containsKey(field)) {
+            dirty = true;
+        }
+        FieldData fieldData = fields.get(field);
+        if (fieldData.addSamples(samples, maxSamples, truncateSamplesAt)) {
+            dirty = true;
+        }
+        return dirty;
+    }
+
+    private void saveReport() {
+        try (CSVPrinter printer = new CSVPrinter(
+                new FileWriter(file.toFile()), CSVFormat.DEFAULT)) {
+            if (withHeaders) {
+                printer.print("Field Name");
+                if (withOccurences) {
+                    printer.print("Occurences");
+                }
+                for (int i = 1; i <= maxSamples; i++) {
+                    printer.print("Sample Value " + i);
+                }
+                printer.println();
+            }
+
+            for (FieldData fieldData : fields.values()) {
+                printer.print(fieldData.name);
+                if (withOccurences) {
+                    printer.print(fieldData.occurences);
+                }
+                for (String value : fieldData.values) {
+                    printer.print(value);
+                }
+                // fill the blanks
+                for (int i = 0; i < maxSamples - fieldData.values.size(); i++) {
+                    printer.print("");
+                }
+                printer.println();
+            }
+            printer.flush();
+        } catch (IOException e) {
+            LOG.error("Could not write field report to: " + file, e);
+        }
+    }
+
+    @Override
+    protected void loadHandlerFromXML(XML xml) {
+        setMaxSamples(xml.getInteger("@maxSamples", maxSamples));
+        setFile(xml.getPath("@file", file));
+        setWithHeaders(xml.getBoolean("@withHeaders", withHeaders));
+        setWithOccurences(xml.getBoolean("@withOccurences", withOccurences));
+        setTruncateSamplesAt(
+                xml.getInteger("@truncateSamplesAt", truncateSamplesAt));
+    }
+
+    @Override
+    protected void saveHandlerToXML(XML xml) {
+        xml.setAttribute("maxSamples", maxSamples);
+        xml.setAttribute("file", file);
+        xml.setAttribute("withHeaders", withHeaders);
+        xml.setAttribute("withOccurences", withOccurences);
+        xml.setAttribute("truncateSamplesAt", truncateSamplesAt);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+
+    class FieldData {
+        private final String name;
+        private final Set<String> values = new HashSet<>();
+        private int occurences;
+        public FieldData(String name) {
+            super();
+            this.name = name;
+        }
+        // returns true if something changed
+        public boolean addSamples(
+                List<String> samples, int maxSamples, int truncateAt) {
+            occurences++;
+            if (samples == null) {
+                return false;
+            }
+            int beforeCount = values.size();
+            for (String sample : samples) {
+                if (values.size() < maxSamples
+                        && StringUtils.isNotBlank(sample)) {
+                    if (truncateAt > -1) {
+                        values.add(StringUtils.truncate(sample, truncateAt));
+                    } else {
+                        values.add(sample);
+                    }
+                } else {
+                    break;
+                }
+            }
+            return withOccurences || beforeCount != values.size();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
+    }
+}
