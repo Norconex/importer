@@ -248,7 +248,7 @@ public class HierarchyTagger extends AbstractDocumentTagger {
                     node.getString("@toField", null),
                     node.getString("@fromSeparator", null),
                     node.getString("@toSeparator", null));
-            hd.setOverwrite(xml.getBoolean("@overwrite", false));
+            hd.setOverwrite(node.getBoolean("@overwrite", false));
             hd.setKeepEmptySegments(
                     node.getBoolean("@keepEmptySegments", false));
             hd.setRegex(node.getBoolean("@regex", false));
