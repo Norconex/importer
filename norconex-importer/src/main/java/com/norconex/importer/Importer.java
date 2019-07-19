@@ -71,8 +71,6 @@ public class Importer {
             new ImporterStatus();
 
 	private final ImporterConfig importerConfig;
-	private final ContentTypeDetector contentTypeDetector =
-	        new ContentTypeDetector();
 	private final CachedStreamFactory streamFactory;
 
     /**
@@ -225,7 +223,7 @@ public class Importer {
                 || StringUtils.isBlank(safeContentType.toString())) {
             try {
                 safeContentType =
-                        contentTypeDetector.detect(content, reference);
+                        ContentTypeDetector.detect(content, reference);
             } catch (IOException e) {
                 LOG.error("Could not detect content type. Defaulting to "
                         + "\"application/octet-stream\".", e);

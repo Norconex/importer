@@ -1,4 +1,4 @@
-/* Copyright 2014-2016 Norconex Inc.
+/* Copyright 2014-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
-import org.apache.tika.config.TikaConfig;
-import org.apache.tika.exception.TikaException;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
@@ -36,19 +34,19 @@ import com.norconex.commons.lang.file.ContentType;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class ContentTypeDetector {
+public final class ContentTypeDetector {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(ContentTypeDetector.class);
 
-    private final Pattern extPattern = Pattern.compile("^.*(\\.[A-z0-9]+).*");
-
-    private TikaConfig tikaConfig;
+    private static final Pattern EXTENSION_PATTERN =
+            Pattern.compile("^.*(\\.[A-z0-9]+).*");
+    private static final Tika TIKA = new Tika();
 
     /**
      * Constructor.
      */
-    public ContentTypeDetector() {
+    private ContentTypeDetector() {
         super();
     }
     /**
@@ -57,7 +55,7 @@ public class ContentTypeDetector {
      * @return the detected content type
      * @throws IOException problem detecting content type
      */
-    public ContentType detect(File file) throws IOException {
+    public static ContentType detect(File file) throws IOException {
         return detect(file, file.getName());
     }
     /**
@@ -67,7 +65,7 @@ public class ContentTypeDetector {
      * @return the detected content type
      * @throws IOException problem detecting content type
      */
-    public ContentType detect(
+    public static ContentType detect(
             File file, String fileName) throws IOException {
         String safeFileName = fileName;
         if (StringUtils.isBlank(safeFileName)) {
@@ -81,10 +79,9 @@ public class ContentTypeDetector {
      * @return the detected content type
      * @throws IOException problem detecting content type
      */
-    public ContentType detect(InputStream content)
+    public static ContentType detect(InputStream content)
             throws IOException {
-        Tika tika = new Tika();
-        String contentType = tika.detect(content);
+        String contentType = TIKA.detect(content);
         if (LOG.isDebugEnabled()) {
             LOG.debug("Detected \"" + contentType
                     + "\" content-type for input stream.");
@@ -98,43 +95,19 @@ public class ContentTypeDetector {
      * @return the detected content type
      * @throws IOException problem detecting content type
      */
-    public ContentType detect(InputStream content, String fileName)
+    public static ContentType detect(InputStream content, String fileName)
             throws IOException {
         return doDetect(content, fileName);
     }
 
-    private TikaConfig getTikaConfig() throws IOException {
-        if (tikaConfig == null) {
-            try {
-                initTikaConfig();
-                this.tikaConfig = new TikaConfig();
-            } catch (TikaException | IOException e) {
-                throw new IOException("Could not create Tika Configuration "
-                        + "for content type detector.", e);
-            }
-        }
-        return tikaConfig;
-    }
-    private synchronized void initTikaConfig() throws IOException {
-        if (tikaConfig != null) {
-            return;
-        }
-        try {
-            this.tikaConfig = new TikaConfig();
-        } catch (TikaException | IOException e) {
-            throw new IOException("Could not create Tika Configuration "
-                    + "for content type detector.", e);
-        }
-    }
-
-    private ContentType doDetect(
+    private static ContentType doDetect(
             InputStream is, String fileName) throws IOException {
         try (TikaInputStream tikaStream = TikaInputStream.get(is)) {
             Metadata meta = new Metadata();
-            String extension = extPattern.matcher(fileName).replaceFirst("$1");
+            String extension = EXTENSION_PATTERN.matcher(
+                    fileName).replaceFirst("$1");
             meta.set(Metadata.RESOURCE_NAME_KEY, "file:///detect" + extension);
-            MediaType media =
-                    getTikaConfig().getDetector().detect(tikaStream, meta);
+            MediaType media = TIKA.getDetector().detect(tikaStream, meta);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Detected \"" + media.toString()

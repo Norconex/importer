@@ -55,6 +55,9 @@
       <action dev="essiembre" type="update">
         List of PropertyMatcher replaced with PropertyMatchers. 
       </action>
+      <action dev="essiembre" type="update">
+        ContentTypeDetector methods are now static. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>
