@@ -58,6 +58,11 @@
       <action dev="essiembre" type="update">
         ContentTypeDetector methods are now static. 
       </action>
+      <action dev="essiembre" type="update">
+        Eliminated Apache Tika log warnings on startup when missing specific
+        optional libraries not package due to licensing
+        (e.g. JPEG 2000, jbig2). 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>

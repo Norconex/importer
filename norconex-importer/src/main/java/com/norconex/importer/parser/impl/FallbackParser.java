@@ -1,4 +1,4 @@
-/* Copyright 2010-2017 Norconex Inc.
+/* Copyright 2010-2019 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,19 @@
  */
 package com.norconex.importer.parser.impl;
 
+import java.io.IOException;
+
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.parser.AutoDetectParser;
+import org.xml.sax.SAXException;
+
+import com.norconex.importer.ImporterRuntimeException;
 
 
 /**
  * Parser using auto-detection of document content-type to figure out
- * which specific parser to invoke to best parse a document.  
+ * which specific parser to invoke to best parse a document.
  * @author Pascal Essiembre
  */
 public class FallbackParser extends AbstractTikaParser {
@@ -28,6 +35,16 @@ public class FallbackParser extends AbstractTikaParser {
      * Creates a new parser.
      */
     public FallbackParser() {
-        super(new AutoDetectParser());
+        super(new AutoDetectParser(tikaConfig()));
+    }
+
+    private static TikaConfig tikaConfig() {
+        try {
+            return new TikaConfig(
+                    FallbackParser.class.getResource("/tika-config.xml"));
+        } catch (TikaException | IOException | SAXException e) {
+            throw new ImporterRuntimeException(
+                    "Could not load tika configuration file.", e);
+        }
     }
 }

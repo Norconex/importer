@@ -132,7 +132,6 @@ public final class ImporterLauncher {
         ImporterConfig config = new ImporterConfig();
         try {
             new ConfigurationLoader()
-                .setIgnoreValidationErrors(cmd.hasOption(ARG_IGNOREERRORS))
                 .setVariablesFile(varFile)
                 .loadFromXML(configFile, config);
         } catch (Exception e) {
@@ -146,7 +145,6 @@ public final class ImporterLauncher {
     private static void checkConfig(Path configFile, Path varFile) {
         try {
             new ConfigurationLoader()
-                    .setIgnoreValidationErrors(false)
                     .setVariablesFile(varFile)
                     .loadFromXML(configFile, ImporterConfig.class);
             System.out.println("No XML configuration errors.");
