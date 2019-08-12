@@ -28,7 +28,7 @@
   <name>Norconex Importer</name>
   
   <properties>
-    <tika.version>1.20</tika.version>
+    <tika.version>1.22</tika.version>
   </properties>
   <inceptionYear>2009</inceptionYear>
 
@@ -70,6 +70,12 @@
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-parsers</artifactId>
       <version>${tika.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xerces</groupId>
+          <artifactId>xercesImpl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.tika</groupId>
