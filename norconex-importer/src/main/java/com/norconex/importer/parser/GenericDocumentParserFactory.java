@@ -356,12 +356,14 @@ public class GenericDocumentParserFactory
         loadParseHintsFromXML(xml);
 
         // Fallback parser
-        fallbackParser = xml.getObject("fallbackParser", fallbackParser);
+        fallbackParser = xml.getObjectImpl(IDocumentParser.class,
+                "fallbackParser", fallbackParser);
 
         // Parsers
         List<XML> nodes = xml.getXMLList("parsers/parser");
         for (XML node : nodes) {
-            IDocumentParser parser = node.getObject(".");
+            IDocumentParser parser = node.getObjectImpl(
+                    IDocumentParser.class, ".");
             String contentType = node.getString("@contentType");
             if (StringUtils.isBlank(contentType)) {
                 throw new ConfigurationException(

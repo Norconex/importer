@@ -138,13 +138,14 @@ public class ImporterConfig implements IXMLConfigurable {
                 xml.getInteger("maxFileCacheSize", maxFileCacheSize));
         setMaxFilePoolCacheSize(
                 xml.getInteger("maxFilePoolCacheSize", maxFilePoolCacheSize));
-        setPreParseHandlers(
-                xml.getObjectList("preParseHandlers/*", preParseHandlers));
-        setParserFactory(
-                xml.getObject("documentParserFactory", documentParserFactory));
-        setPostParseHandlers(
-                xml.getObjectList("postParseHandlers/*", postParseHandlers));
-        setResponseProcessors(xml.getObjectList(
+        setPreParseHandlers(xml.getObjectListImpl(
+                IImporterHandler.class, "preParseHandlers/*", preParseHandlers));
+        setParserFactory(xml.getObjectImpl(IDocumentParserFactory.class,
+                "documentParserFactory", documentParserFactory));
+        setPostParseHandlers(xml.getObjectListImpl(IImporterHandler.class,
+                "postParseHandlers/*", postParseHandlers));
+        setResponseProcessors(xml.getObjectListImpl(
+                IImporterResponseProcessor.class,
                 "responseProcessors/responseProcessor", responseProcessors));
     }
 
