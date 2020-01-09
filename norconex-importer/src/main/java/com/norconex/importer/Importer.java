@@ -14,6 +14,13 @@
  */
 package com.norconex.importer;
 
+import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_BEGIN;
+import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_END;
+import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_ERROR;
+import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_BEGIN;
+import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_END;
+import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_ERROR;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -33,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.event.EventManager;
 import com.norconex.commons.lang.file.ContentFamily;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -72,18 +80,29 @@ public class Importer {
 
 	private final ImporterConfig importerConfig;
 	private final CachedStreamFactory streamFactory;
+    private final EventManager eventManager;
+    private static final InheritableThreadLocal<Importer> INSTANCE =
+            new InheritableThreadLocal<>();
 
     /**
      * Creates a new importer with default configuration.
      */
     public Importer() {
-        this(new ImporterConfig());
+        this(null);
     }
     /**
      * Creates a new importer with the given configuration.
      * @param importerConfig Importer configuration
      */
     public Importer(ImporterConfig importerConfig) {
+        this(importerConfig, null);
+    }
+    /**
+     * Creates a new importer with the given configuration.
+     * @param importerConfig Importer configuration
+     * @param eventManager event manager
+     */
+    public Importer(ImporterConfig importerConfig, EventManager eventManager) {
         super();
         if (importerConfig != null) {
             this.importerConfig = importerConfig;
@@ -105,7 +124,16 @@ public class Importer {
                 this.importerConfig.getMaxFilePoolCacheSize(),
                 this.importerConfig.getMaxFileCacheSize(),
                 this.importerConfig.getTempDir()); // use workdir + /tmp?
+        this.eventManager = new EventManager(eventManager);
+
+        INSTANCE.set(this);
     }
+
+    public static Importer get() {
+        return INSTANCE.get();
+    }
+
+
 
     /**
      * Invokes the importer from the command line.
@@ -118,6 +146,24 @@ public class Importer {
 
     public CachedStreamFactory getStreamFactory() {
         return streamFactory;
+    }
+
+    /**
+     * Gets the importer configuration.
+     * @return importer configuration
+     * @since 3.0.0
+     */
+    public ImporterConfig getImporterConfig() {
+        return importerConfig;
+    }
+
+    /**
+     * Gets the event manager.
+     * @return event manager
+     * @since 3.0.0
+     */
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     /**
@@ -337,30 +383,40 @@ public class Importer {
 
         IncludeMatchResolver includeResolver = new IncludeMatchResolver();
         for (IImporterHandler h : handlers) {
-            if (h instanceof IDocumentTagger) {
-                tagDocument(doc, (IDocumentTagger) h, parsed);
-            } else if (h instanceof IDocumentTransformer) {
-                transformDocument(doc, (IDocumentTransformer) h, parsed);
-            } else if (h instanceof IDocumentSplitter) {
-                childDocsHolder.addAll(
-                        splitDocument(doc, (IDocumentSplitter) h, parsed));
-            } else if (h instanceof IDocumentFilter) {
-                IDocumentFilter filter = (IDocumentFilter) h;
-                boolean accepted = acceptDocument(doc, filter, parsed);
-                if (isMatchIncludeFilter(filter)) {
-                    includeResolver.hasIncludes = true;
-                    if (accepted) {
-                        includeResolver.atLeastOneIncludeMatch = true;
+            eventManager.fire(ImporterEvent.create(
+                    IMPORTER_HANDLER_BEGIN, doc, h, parsed));
+            try {
+                if (h instanceof IDocumentTagger) {
+                    tagDocument(doc, (IDocumentTagger) h, parsed);
+                } else if (h instanceof IDocumentTransformer) {
+                    transformDocument(doc, (IDocumentTransformer) h, parsed);
+                } else if (h instanceof IDocumentSplitter) {
+                    childDocsHolder.addAll(
+                            splitDocument(doc, (IDocumentSplitter) h, parsed));
+                } else if (h instanceof IDocumentFilter) {
+                    IDocumentFilter filter = (IDocumentFilter) h;
+                    boolean accepted = acceptDocument(doc, filter, parsed);
+                    if (isMatchIncludeFilter(filter)) {
+                        includeResolver.hasIncludes = true;
+                        if (accepted) {
+                            includeResolver.atLeastOneIncludeMatch = true;
+                        }
+                        continue;
                     }
-                    continue;
+                    // Deal with exclude and non-OnMatch filters
+                    if (!accepted){
+                        return new ImporterStatus(filter);
+                    }
+                } else {
+                    LOG.error("Unsupported Import Handler: {}", h);
                 }
-                // Deal with exclude and non-OnMatch filters
-                if (!accepted){
-                    return new ImporterStatus(filter);
-                }
-            } else {
-                LOG.error("Unsupported Import Handler: " + h);
+            } catch (IOException | ImporterException | RuntimeException e) {
+                eventManager.fire(ImporterEvent.create(
+                        IMPORTER_HANDLER_ERROR, doc, h, parsed, e));
+                throw e;
             }
+            eventManager.fire(ImporterEvent.create(
+                    IMPORTER_HANDLER_END, doc, h, parsed));
         }
 
         if (!includeResolver.passes()) {
@@ -405,6 +461,8 @@ public class Importer {
             return;
         }
 
+        eventManager.fire(ImporterEvent.create(
+                IMPORTER_PARSER_BEGIN, doc, parser, false));
         CachedOutputStream out = createOutputStream();
         OutputStreamWriter output = new OutputStreamWriter(
                 out, StandardCharsets.UTF_8);
@@ -433,12 +491,16 @@ public class Importer {
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
+            eventManager.fire(ImporterEvent.create(
+                    IMPORTER_PARSER_ERROR, doc, parser, false, e));
             try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             if (importerConfig.getParseErrorsSaveDir() != null) {
                 saveParseError(doc, e);
             }
             throw e;
         }
+        eventManager.fire(ImporterEvent.create(
+                IMPORTER_PARSER_END, doc, parser, true));
 
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {
@@ -535,9 +597,7 @@ public class Importer {
         //will do it?
         doc.getInputStream().rewind();
         if (!accepted) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Document import rejected. Filter=" + filter);
-            }
+            LOG.debug("Document import rejected. Filter: {}", filter);
             return false;
         }
         return true;
