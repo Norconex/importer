@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="3.0.0-SNAPSHOT" date="2018-??-??" description="Major release">
+    <release version="3.0.0-SNAPSHOT" date="2020-??-??" description="Major release">
       <action dev="essiembre" type="add">
         New ImageTransformer class.
       </action>
@@ -19,7 +19,21 @@
         New ExternalHandler class.
       </action>
       <action dev="essiembre" type="add">
+        Importer now uses an EventManager and triggers several events:
+        IMPORTER_HANDLER_BEGIN, IMPORTER_HANDLER_END, IMPORTER_HANDLER_ERROR,
+        IMPORTER_PARSER_BEGIN, IMPORTER_PARSER_END, IMPORTER_PARSER_ERROR  
+      </action>
+      <action dev="essiembre" type="add">
         New ImporterDocument#getStreamFactory() method.
+      </action>
+      <action dev="essiembre" type="add">
+        ReplaceTagger now has the option to discard values that are unchanged
+        after replacement.
+      </action>
+      <action dev="essiembre" type="add">
+        Most configurable classes adding/setting metadata values now have
+        an extra "onSet" option for dictating how values are set:
+        append, prepend, replace, optional.
       </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
@@ -47,6 +61,10 @@
         of Norconex Commons Lang KeyValueExtractor and Regex.
       </action>
       <action dev="essiembre" type="update">
+        TextBetweenTagger now has "inclusive" and "caseSensitive" options
+        configurable for each "between" details.  
+      </action>
+      <action dev="essiembre" type="update">
         Now using Path instead of File in many cases. 
       </action>
       <action dev="essiembre" type="update">
@@ -62,6 +80,11 @@
         Eliminated Apache Tika log warnings on startup when missing specific
         optional libraries not package due to licensing
         (e.g. JPEG 2000, jbig2). 
+      </action>
+      <action dev="essiembre" type="update">
+        Occurrences of accessors for overwrite="[false|true]" and 
+        onConflict="..." have been deprecated in favor of
+        new onSet="...". 
       </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.

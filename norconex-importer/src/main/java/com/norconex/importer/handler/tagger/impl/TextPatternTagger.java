@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -40,7 +41,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </p>
  *
  * <p>
- * <b>Since 2.8.0</b>, it is now possible to extract both the field names
+ * It is possible to extract both the field names
  * and their values with regular expression.  This is done by using
  * match groups in your regular expressions (parenthesis).  For each pattern
  * you define, you can specify which match group hold the field name and
@@ -50,10 +51,14 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * is expected.
  * </p>
  *
+ * <h3>Storing values in an existing field</h3>
  * <p>
- * <b>Since 2.8.0</b>, case-sensitivity for
- * regular expressions is now set on each patterns.
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
  * </p>
+ *
  * <p>
  * This class can be used as a pre-parsing handler on text documents only
  * or a post-parsing handler.
@@ -73,7 +78,8 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;pattern field="(target field name)"
  *              fieldGroup="(field name match group index)"
  *              valueGroup="(field value match group index)"
- *              caseSensitive="[false|true]"&gt;
+ *              caseSensitive="[false|true]"
+ *              onSet="[append|prepend|replace|optional]"&gt;
  *          (regular expression)
  *      &lt;/pattern&gt;
  *      &lt;!-- multiple pattern tags allowed --&gt;
@@ -171,18 +177,20 @@ public class TextPatternTagger
                    .setCaseSensitive(node.getBoolean("@caseSensitive", false))
                    .setKey(node.getString("@field", null))
                    .setKeyGroup(node.getInteger("@fieldGroup", -1))
-                   .setValueGroup(node.getInteger("@valueGroup", -1)));
+                   .setValueGroup(node.getInteger("@valueGroup", -1))
+                   .setOnSet(PropertySetter.fromXML(node, null)));
         }
     }
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
         for (RegexKeyValueExtractor rfe : patterns) {
-            xml.addElement("pattern", rfe.getPattern())
+            XML node = xml.addElement("pattern", rfe.getPattern())
                     .setAttribute("field", rfe.getKey())
                     .setAttribute("fieldGroup", rfe.getKeyGroup())
                     .setAttribute("valueGroup", rfe.getValueGroup())
                     .setAttribute("caseSensitive", rfe.isCaseSensitive());
+            PropertySetter.toXML(node, rfe.getOnSet());
         }
     }
 

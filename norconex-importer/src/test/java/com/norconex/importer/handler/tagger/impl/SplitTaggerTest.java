@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,22 +21,32 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.tagger.impl.SplitTagger.SplitDetails;
 
 public class SplitTaggerTest {
 
     @Test
     public void testWriteRead() throws IOException {
         SplitTagger tagger = new SplitTagger();
-        tagger.addSplit("fromName1", "toName1", "sep1", false);
-        tagger.addSplit("fromName2", "toName2", "sep2", true);
-        tagger.addSplit("fromName3", "sep3", true);
-        tagger.addSplit("fromName4", "sep4", false);
+        tagger.addSplitDetails(
+                new SplitDetails("fromName1", "toName1", "sep1", false));
+        tagger.addSplitDetails(
+                new SplitDetails("fromName2", "toName2", "sep2", true));
+        tagger.addSplitDetails(
+                new SplitDetails("fromName3", "sep3", true));
+        tagger.addSplitDetails(
+                new SplitDetails("fromName4", "sep4", false));
+        SplitDetails sp =
+                new SplitDetails("fromName5", "toName5", "sep5", true);
+        sp.setOnSet(PropertySetter.OPTIONAL);
+        tagger.addSplitDetails(sp);
+
         XML.assertWriteRead(tagger, "handler");
     }
-
 
     @Test
     public void testRegularSplit() throws ImporterHandlerException {
@@ -52,12 +62,18 @@ public class SplitTaggerTest {
 
 
         SplitTagger tagger = new SplitTagger();
-        tagger.addSplit("metaToSplitSameField", ", ", false);
-        tagger.addSplit("metaNoSplitSameField", ", ", false);
-        tagger.addSplit("metaToSplitNewField", "toSplitNewField", ", ", false);
-        tagger.addSplit("metaNoSplitNewField", "noSplitNewField", ", ", false);
-        tagger.addSplit("metaMultiSameField", ", ", false);
-        tagger.addSplit("metaMultiNewField", "multiNewField", ", ", false);
+        tagger.addSplitDetails(
+                new SplitDetails("metaToSplitSameField", ", ", false));
+        tagger.addSplitDetails(
+                new SplitDetails("metaNoSplitSameField", ", ", false));
+        tagger.addSplitDetails(new SplitDetails(
+                "metaToSplitNewField", "toSplitNewField", ", ", false));
+        tagger.addSplitDetails(new SplitDetails(
+                "metaNoSplitNewField", "noSplitNewField", ", ", false));
+        tagger.addSplitDetails(
+                new SplitDetails("metaMultiSameField", ", ", false));
+        tagger.addSplitDetails(new SplitDetails(
+                "metaMultiNewField", "multiNewField", ", ", false));
 
         tagger.tagDocument("n/a", null, meta, true);
 
@@ -90,8 +106,9 @@ public class SplitTaggerTest {
         meta.add("path2", "a, b,c d;e, f");
 
         SplitTagger tagger = new SplitTagger();
-        tagger.addSplit("path1", "/", true);
-        tagger.addSplit("path2", "file2", "[, ;]+", true);
+        tagger.addSplitDetails(new SplitDetails("path1", "/", true));
+        tagger.addSplitDetails(
+                new SplitDetails("path2", "file2", "[, ;]+", true));
 
         tagger.tagDocument("n/a", null, meta, true);
 

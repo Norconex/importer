@@ -1,12 +1,19 @@
-
-LAST MERGE FROM MASTER
-======================
-
-2019-07-14
-
-
 TODO:
 ==============
+
+- Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
+  WildCard matches/replacements.
+     - Write tests for it
+     - Do it also for "restrictTo".
+
+- Remove all the @since x.x.x referencing versions before 3.0.0 
+
+- In the JavaDoc, point to the Summary page with anchor or in appropriate class
+  description method for documentation instead of repreating it.
+  E.g. EncryptKey, restrictTo, "storing values in an existing field", etc.
+  Use -tag and -taglet?   Have tag(let) for thinks such as :
+  if it can be used as pre and/or post handlers, xml configuration usage,
+  sample usage, main doc, etc.
 
 - Have a .misc package for handlers for those not falling into any of the 4 
   types (like DebugTagger and FieldReportTagger).
@@ -17,11 +24,23 @@ TODO:
   Also modify the RenameTagger to do bulk renaming
   https://github.com/Norconex/collector-http/issues/553
 
-- Have a generic construct for set/replace/append/prepend/insertat, for multivalue
-  maps (Properties) but also for attributes on taggers and such.
+- Rename all "[xxx]Field" attributes to either sourceField or targetField.
 
-- Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
-  WildCard matches/replacements.
+- Add to website generic assumptions such as:
+  - how white spaces are handled in XML.
+  - how all booleans default to false
+  - how all PropertySetter default to APPEND
+  - etc.
+
+- CountValueTagger (one to count mattching patterns, one to count number of multi-value entries)
+- EmptyFilter
+- DOMTransformer, JSON*(handlers)
+- EmptyTagger or CompactTagger (eliminate empty list values and/or duplicate values.  
+
+- Move GenericParserFactory to .impl, or do not make it a factory?
+
+- Add "onSet" to parser so implementors can decide what to do with extracted
+  metadata.
 
 - Package importer with a log4j file that exclude useless errors (e.g. jbig2)
 

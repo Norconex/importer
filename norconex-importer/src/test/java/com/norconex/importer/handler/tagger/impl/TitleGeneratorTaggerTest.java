@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -128,7 +129,7 @@ public class TitleGeneratorTaggerTest {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setFromField("potato");
         t.setToField("banana");
-        t.setOverwrite(true);
+        t.setOnSet(PropertySetter.APPEND);
         t.setTitleMaxLength(300);
         t.setDetectHeading(true);
         t.setDetectHeadingMaxLength(200);

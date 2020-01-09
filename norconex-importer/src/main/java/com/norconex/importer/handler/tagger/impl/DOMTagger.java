@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -34,6 +33,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -43,9 +43,7 @@ import com.norconex.importer.util.DOMUtil;
 
 /**
  * <p>Extract the value of one or more elements or attributes into
- * a target field, from and HTML, XHTML, or XML document. If a target field
- * already exists, extracted values will be added to existing values,
- * unless "overwrite" is set to <code>true</code>.</p>
+ * a target field, from and HTML, XHTML, or XML document.</p>
  * <p>
  * This class constructs a DOM tree from the document content. That DOM tree
  * is loaded entirely into memory. Use this tagger with caution if you know
@@ -63,6 +61,14 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  * <p>Should be used as a pre-parse handler.</p>
  *
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
+ *
  * <h3>Content-types</h3>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
@@ -72,7 +78,7 @@ import com.norconex.importer.util.DOMUtil;
  * with HTML or XML-like markup tags.
  * </p>
  *
- * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * <p>When used as a pre-parse handler,
  * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
@@ -80,10 +86,9 @@ import com.norconex.importer.util.DOMUtil;
  * used as a post-parse handler.
  * </p>
  *
- * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted
+ * <p>It is possible to control what gets extracted
  * exactly thanks to the "extract" argument of the new method
- * {@link DOMExtractDetails#setExtract(String)}. Version 2.6.0
- * introduced several more extract options. Possible values are:</p>
+ * {@link DOMExtractDetails#setExtract(String)}. Possible values are:</p>
  * <ul>
  *   <li><b>text</b>: Default option when extract is blank. The text of
  *       the element, including combined children.</li>
@@ -109,22 +114,22 @@ import com.norconex.importer.util.DOMUtil;
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
  * </ul>
  *
- * <p><b>Since 2.6.0</b>, it is possible to specify a <code>fromField</code>
+ * <p>It is possible to specify a <code>fromField</code>
  * as the source of the HTML to parse instead of using the document content.
  * If multiple values are present for that source field, DOM extraction will be
  * applied to each value.
  * </p>
  *
- * <p><b>Since 2.6.0</b>, it is possible to specify a <code>defaultValue</code>
+ * <p>It is possible to specify a <code>defaultValue</code>
  * on each DOM extraction details. When no match occurred for a given selector,
  * the default value will be stored in the <code>toField</code> (as opposed
  * to not storing anything).  When matching blanks (see below) you will get
  * an empty string as opposed to the default value.
- * As of 2.6.1, empty strings and spaces are supported as default values
- * (the default value is now taken litterally).
+ * Empty strings and spaces are supported as default values
+ * (the default value is now taken literally).
  * </p>
  *
- * <p><b>Since 2.6.1</b>, you can set <code>matchBlanks</code> to
+ * <p>You can set <code>matchBlanks</code> to
  * <code>true</code> to match elements that are present
  * but have blank values. Blank values are empty values or values containing
  * white spaces only. Because white spaces are normalized by the DOM parser,
@@ -132,7 +137,7 @@ import com.norconex.importer.util.DOMUtil;
  * By default elements with blank values are not matched and are ignored.
  * </p>
  *
- * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
+ * <p>You can specify which parser to use when reading
  * documents. The default is "html" and will normalize the content
  * as HTML. This is generally a desired behavior, but this can sometimes
  * have your selector fail. If you encounter this
@@ -143,28 +148,28 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  *
  * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"
- *          fromField="(optional source field)"
- *          parser="[html|xml]"
- *          sourceCharset="(character encoding)"&gt;
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"
+ *         fromField="(optional source field)"
+ *         parser="[html|xml]"
+ *         sourceCharset="(character encoding)">
  *
- *      &lt;restrictTo
- *              caseSensitive="[false|true]"
- *              field="(name of metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *     <restrictTo
+ *             caseSensitive="[false|true]"
+ *             field="(name of metadata field name to match)">
+ *         (regular expression of value to match)
+ *     </restrictTo>
+ *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  *
- *      &lt;dom selector="(selector syntax)"
- *              toField="(target field)"
- *              overwrite="[false|true]"
- *              extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
- *              matchBlanks="[false|true]"
- *              defaultValue="(optional value to use when no match)" /&gt;
- *      &lt;!-- multiple "dom" tags allowed --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *     <dom selector="(selector syntax)"
+ *             toField="(target field)"
+ *             onSet="[append|prepend|replace|optional]"
+ *             extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+ *             matchBlanks="[false|true]"
+ *             defaultValue="(optional value to use when no match)" />
+ *     <!-- multiple "dom" tags allowed -->
+ * </handler>
+ * }</pre>
  *
  * <h4>Usage example:</h4>
  * <p>
@@ -301,13 +306,8 @@ public class DOMTagger extends AbstractDocumentTagger {
                 domExtractDoc(extractedValues, doc, details);
             }
             if (!extractedValues.isEmpty()) {
-                String[] vals = extractedValues.toArray(
-                        ArrayUtils.EMPTY_STRING_ARRAY);
-                if (details.overwrite) {
-                    metadata.set(details.toField, vals);
-                } else {
-                    metadata.add(details.toField, vals);
-                }
+                PropertySetter.orDefault(details.getOnSet()).apply(
+                        metadata, details.toField, extractedValues);
             }
         }
     }
@@ -388,10 +388,11 @@ public class DOMTagger extends AbstractDocumentTagger {
             extractions.clear();
         }
         for (XML node : nodes) {
+            node.checkDeprecated("@overwrite", "onSet", true);
             DOMExtractDetails details = new DOMExtractDetails(
                     node.getString("@selector", null),
                     node.getString("@toField", null),
-                    node.getBoolean("@overwrite", false),
+                    PropertySetter.fromXML(node, null),
                     node.getString("@extract", null));
             details.setMatchBlanks(node.getBoolean("@matchBlanks", false));
             details.setDefaultValue(node.getString("@defaultValue", null));
@@ -405,13 +406,13 @@ public class DOMTagger extends AbstractDocumentTagger {
         xml.setAttribute("fromField", fromField);
         xml.setAttribute("parser", parser);
         for (DOMExtractDetails details : extractions) {
-            xml.addElement("dom")
+            XML node = xml.addElement("dom")
                     .setAttribute("selector", details.getSelector())
                     .setAttribute("toField", details.getToField())
-                    .setAttribute("overwrite", details.isOverwrite())
                     .setAttribute("extract", details.getExtract())
                     .setAttribute("matchBlanks", details.isMatchBlanks())
                     .setAttribute("defaultValue", details.getDefaultValue());
+            PropertySetter.toXML(node, details.getOnSet());
         }
     }
 
@@ -437,7 +438,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     public static class DOMExtractDetails {
         private String selector;
         private String toField;
-        private boolean overwrite;
+        private PropertySetter onSet;
         private String extract;
         private boolean matchBlanks;
         private String defaultValue;
@@ -446,15 +447,27 @@ public class DOMTagger extends AbstractDocumentTagger {
             super();
         }
         public DOMExtractDetails(
+                String selector, String to, PropertySetter onSet) {
+            this(selector, to, onSet, null);
+        }
+        public DOMExtractDetails(String selector, String to,
+                PropertySetter onSet, String extract) {
+            this.selector = selector;
+            this.toField = to;
+            this.onSet = onSet;
+            this.extract = extract;
+        }
+        @Deprecated
+        public DOMExtractDetails(
                 String selector, String to, boolean overwrite) {
             this(selector, to, overwrite, null);
         }
+        @Deprecated
         public DOMExtractDetails(
                 String selector, String to, boolean overwrite, String extract) {
-            this.selector = selector;
-            this.toField = to;
-            this.overwrite = overwrite;
-            this.extract = extract;
+            this(selector, to,
+                    overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND,
+                    extract);
         }
 
         public String getSelector() {
@@ -469,11 +482,40 @@ public class DOMTagger extends AbstractDocumentTagger {
         public void setToField(String toField) {
             this.toField = toField;
         }
+        /**
+         * Gets whether existing value for the same field should be overwritten.
+         * @return <code>true</code> if overwriting existing value.
+         * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+         */
+        @Deprecated
         public boolean isOverwrite() {
-            return overwrite;
+            return PropertySetter.REPLACE == onSet;
         }
+        /**
+         * Sets whether existing value for the same field should be overwritten.
+         * @param overwrite <code>true</code> if overwriting existing value.
+         * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+         */
+        @Deprecated
         public void setOverwrite(boolean overwrite) {
-            this.overwrite = overwrite;
+            this.onSet = overwrite
+                    ? PropertySetter.REPLACE : PropertySetter.APPEND;
+        }
+        /**
+         * Gets the property setter to use when a value is set.
+         * @return property setter
+         * @since 3.0.0
+         */
+        public PropertySetter getOnSet() {
+            return onSet;
+        }
+        /**
+         * Sets the property setter to use when a value is set.
+         * @param onSet property setter
+         * @since 3.0.0
+         */
+        public void setOnSet(PropertySetter onSet) {
+            this.onSet = onSet;
         }
         public String getExtract() {
             return extract;
@@ -482,7 +524,7 @@ public class DOMTagger extends AbstractDocumentTagger {
             this.extract = extract;
         }
         /**
-         * Gets whether lements with blank values should be considered a
+         * Gets whether elements with blank values should be considered a
          * match and have an empty string returned as opposed to nothing at all.
          * Default is <code>false</code>;
          * @return <code>true</code> if elements with blank values are supported

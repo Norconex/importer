@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 package com.norconex.importer.handler.tagger.impl;
+
+import static com.norconex.commons.lang.map.PropertySetter.APPEND;
+import static com.norconex.commons.lang.map.PropertySetter.REPLACE;
 
 import java.io.IOException;
 
@@ -33,8 +36,8 @@ public class RenameTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         RenameTagger tagger = new RenameTagger();
-        tagger.addRename("from1", "to1", true, true);
-        tagger.addRename("from2", "to2", false, false);
+        tagger.addRename("from1", "to1", REPLACE, true);
+        tagger.addRename("from2", "to2", APPEND, false);
         LOG.debug("Writing/Reading this: " + tagger);
         XML.assertWriteRead(tagger, "handler");
     }
@@ -49,8 +52,8 @@ public class RenameTaggerTest {
 
 
         RenameTagger tagger = new RenameTagger();
-        tagger.addRename("regularFrom1", "regularTo1", false, false);
-        tagger.addRename(".*(From)(\\d+).*", "$1Regex$2", false, true);
+        tagger.addRename("regularFrom1", "regularTo1", APPEND, false);
+        tagger.addRename(".*(From)(\\d+).*", "$1Regex$2", APPEND, true);
 
         tagger.tagDocument("n/a", null, meta, true);
 

@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -45,43 +45,47 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * formatting options found on {@link SimpleDateFormat}.
  * </p>
  *
- * <p>If <code>field</code> already has one or more values,
- * the new date will be <i>added</i> to the list of
- * existing values, unless "overwrite" is set to <code>true</code>.</p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <p>Since 2.5.2, it is possible to specify a locale used for formatting
+ * <p>It is possible to specify a locale used for formatting
  * dates. The locale is the ISO two-letter language code,
  * with an optional ISO country code, separated with an underscore
  * (e.g., "fr" for French, "fr_CA" for Canadian French). When no locale is
  * specified, the default is "en_US" (US English).</p>
  *
  * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
- *      field="(target field)"
- *      format="(date format)"
- *      locale="(locale)"
- *      overwrite="[false|true]" &gt;
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *     field="(target field)"
+ *     format="(date format)"
+ *     locale="(locale)"
+ *     onSet="[append|prepend|replace|optional]" >
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *     <restrictTo caseSensitive="[false|true]"
+ *             field="(name of header/metadata field name to match)">
+ *         (regular expression of value to match)
+ *     </restrictTo>
+ *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ * </handler>
+ * }</pre>
  *
  * <h4>Usage example:</h4>
  * <p>
  * The following will store the current date along with hours and minutes
  * in a "crawl_date" field.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
- *      field="crawl_date" format="yyyy-MM-dd HH:mm" /&gt;
- * </pre>
+ * <pre>{@code
+ *  <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *      field="crawl_date" format="yyyy-MM-dd HH:mm" />
+ * }</pre>
  *
  * @author Pascal Essiembre
  * @since 2.2.0
@@ -94,7 +98,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     private String field = DEFAULT_FIELD;
     private String format;
     private Locale locale;
-    private boolean overwrite;
+    private PropertySetter onSet;
 
     /**
      * Constructor.
@@ -113,11 +117,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
-        if (overwrite) {
-            metadata.set(finalField, date);
-        } else {
-            metadata.add(finalField, date);
-        }
+        PropertySetter.orDefault(onSet).apply(metadata, finalField, date);
     }
 
     private String formatDate(long time) {
@@ -163,32 +163,57 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
         this.locale = locale;
     }
 
-    public boolean isOverwrite() {
-        return overwrite;
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
     }
-    public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
     }
 
+    /**
+     * Gets whether existing value for the same field should be overwritten.
+     * @return <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+     */
+    @Deprecated
+    public boolean isOverwrite() {
+        return PropertySetter.REPLACE == onSet;
+    }
+    /**
+     * Sets whether existing value for the same field should be overwritten.
+     * @param overwrite <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+     */
+    @Deprecated
+    public void setOverwrite(boolean overwrite) {
+        this.onSet = overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND;
+    }
+    
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        field = xml.getString("@field", field);
-        format = xml.getString("@format", format);
-        String localeStr = xml.getString("@locale", null);
-        if (StringUtils.isNotBlank(localeStr)) {
-            setLocale(LocaleUtils.toLocale(localeStr));
-        }
-        overwrite = xml.getBoolean("@overwrite", overwrite);
+        xml.checkDeprecated("@overwrite", "onSet", true);
+        setOnSet(PropertySetter.fromXML(xml, onSet));
+        setField(xml.getString("@field", field));
+        setFormat(xml.getString("@format", format));
+        setLocale(xml.getLocale("@locale", locale));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
+        PropertySetter.toXML(xml, getOnSet());
         xml.setAttribute("field", field);
         xml.setAttribute("format", format);
-        xml.setAttribute("overwrite", overwrite);
-        if (locale != null) {
-            xml.setAttribute("locale", locale.toString());
-        }
+        xml.setAttribute("locale",  locale);
     }
 
     @Override

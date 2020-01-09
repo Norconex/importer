@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -47,23 +47,26 @@ import com.norconex.importer.util.FormatUtil;
  * <p>When omitting the <code>toField</code>, the value will replace the one
  * in the same field.</p>
  *
- * <p>If the <code>toField</code> already
- * exists, the newly formatted date will be <i>added</i> to the list of
- * existing values, unless "overwrite" is set to <code>true</code>.</p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior
+ * with {@link #setOnSet(PropertySetter)}.
+ * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <p><b>Since 2.5.2</b>, it is possible to specify a locale used for parsing
- * and formatting dates.
+ * <p>It is possible to specify a locale used for parsing and formatting dates.
  * The locale is the ISO two-letter language code, with an optional
  * ISO country code, separated with an underscore (e.g., "fr" for French,
  * "fr_CA" for Canadian French). When no locale is specified, the default is
  * "en_US" (US English).</p>
  *
  * <p>
- * <b>Since 2.6.0</b>, it is possible to specify multiple
- * <code>fromFormat</code> values. Each formats will be tried in the order
- * provided and the first format that succeed in parsing a date will be used.
+ * Multiple <code>fromFormat</code> values can be specified. Each formats will
+ * be tried in the order provided and the first format that succeed in
+ * parsing a date will be used.
  * A date will be considered "bad" only if none of the formats could parse the
  * date.
  * </p>
@@ -75,7 +78,7 @@ import com.norconex.importer.util.FormatUtil;
  *          fromLocale="(locale)"    toLocale="(locale)"
  *          toFormat="(date format)"
  *          keepBadDates="(false|true)"
- *          overwrite="[false|true]" &gt;
+ *          onSet="[append|prepend|replace|optional]" &gt;
  *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -115,8 +118,8 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     private String toFormat;
     private Locale fromLocale;
     private Locale toLocale;
-    private boolean overwrite;
     private boolean keepBadDates;
+    private PropertySetter onSet;
 
     /**
      * Constructor.
@@ -142,15 +145,10 @@ public class DateFormatTagger extends AbstractDocumentTagger {
             }
         }
 
-        String finalToField = toField;
-        if (StringUtils.isBlank(finalToField)) {
-            finalToField = fromField;
-        }
-        if (overwrite) {
-            metadata.put(finalToField, toDates);
+        if (StringUtils.isBlank(toField)) {
+            PropertySetter.REPLACE.apply(metadata, fromField, toDates);
         } else {
-            metadata.add(finalToField,
-                    toDates.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+            PropertySetter.orDefault(onSet).apply(metadata, toField, toDates);
         }
     }
 
@@ -219,11 +217,21 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         this.toFormat = toFormat;
     }
 
-    public boolean isOverwrite() {
-        return overwrite;
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
     }
-    public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
     }
 
     public boolean isKeepBadDates() {
@@ -280,14 +288,15 @@ public class DateFormatTagger extends AbstractDocumentTagger {
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        xml.checkDeprecated("@overwrite", "onSet", true);
         fromField = xml.getString("@fromField", fromField);
         toField = xml.getString("@toField", toField);
         toFormat = xml.getString("@toFormat", toFormat);
-        overwrite = xml.getBoolean("@overwrite", overwrite);
         keepBadDates = xml.getBoolean("@keepBadDates", keepBadDates);
         fromLocale = xml.getLocale("@fromLocale", fromLocale);
         toLocale = xml.getLocale("@toLocale", toLocale);
         setFromFormats(xml.getStringList("fromFormat", fromFormats));
+        setOnSet(PropertySetter.fromXML(xml, null));
     }
 
     @Override
@@ -295,7 +304,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         xml.setAttribute("fromField", fromField);
         xml.setAttribute("toField", toField);
         xml.setAttribute("toFormat", toFormat);
-        xml.setAttribute("overwrite", overwrite);
+        PropertySetter.toXML(xml, getOnSet());
         xml.setAttribute("keepBadDates", keepBadDates);
         if (fromLocale != null) {
             xml.setAttribute("fromLocale", fromLocale);
@@ -307,53 +316,16 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("fromField", fromField)
-                .append("toField", toField)
-                .append("fromFormats", fromFormats)
-                .append("toFormat", toFormat)
-                .append("overwrite", overwrite)
-                .append("keepBadDates", keepBadDates)
-                .append("fromLocale", fromLocale)
-                .append("toLocale", toLocale)
-                .toString();
-    }
-
-    @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof DateFormatTagger)) {
-            return false;
-        }
-        DateFormatTagger castOther = (DateFormatTagger) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(other))
-                .append(fromField, castOther.fromField)
-                .append(toField, castOther.toField)
-                .append(fromFormats, castOther.fromFormats)
-                .append(toFormat, castOther.toFormat)
-                .append(overwrite, castOther.overwrite)
-                .append(keepBadDates, castOther.keepBadDates)
-                .append(fromLocale, castOther.fromLocale)
-                .append(toLocale, castOther.toLocale)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(fromField)
-                .append(toField)
-                .append(fromFormats)
-                .append(toFormat)
-                .append(overwrite)
-                .append(keepBadDates)
-                .append(fromLocale)
-                .append(toLocale)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
-
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
 }

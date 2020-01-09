@@ -175,8 +175,8 @@ public class ScriptRunner<T> {
                 b.append(langName);
                 b.append(" (" + langVersion + ")");
             }
-            LOG.error("Invalid Script Engine \"" + name
-                    + "\". Detected Script Engines are:\n" + b.toString());
+            LOG.error("Invalid Script Engine \"{}\". "
+                    + "Detected Script Engines are:\n{}", name, b.toString());
             throw new ImporterHandlerException(
                     "No Script Engine found in your JVM matching the name \""
                     + name + "\".");

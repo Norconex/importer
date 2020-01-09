@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -62,7 +63,7 @@ public class CurrentDateTaggerTest {
         meta = new ImporterMetadata();
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals(
@@ -75,7 +76,7 @@ public class CurrentDateTaggerTest {
         meta = new ImporterMetadata();
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
-        tagger.setOverwrite(false);
+        tagger.setOnSet(PropertySetter.APPEND);
         tagger.setField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals(
@@ -97,7 +98,7 @@ public class CurrentDateTaggerTest {
         CurrentDateTagger tagger = new CurrentDateTagger();
         tagger.setField("field1");
         tagger.setFormat("yyyy-MM-dd");
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         XML.assertWriteRead(tagger, "handler");
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 package com.norconex.importer.handler.tagger.impl;
+
+import static com.norconex.commons.lang.map.PropertySetter.APPEND;
+import static com.norconex.commons.lang.map.PropertySetter.REPLACE;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -51,13 +54,13 @@ public class DOMTaggerTest {
 
         t.setParser(DOMUtil.PARSER_XML);
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "tr ", "WHOLE", true, "outerHtml"));
+                "tr ", "WHOLE", REPLACE, "outerHtml"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "tr td:nth-of-type(1) a", "TEST_URL", true, "attr(href)"));
+                "tr td:nth-of-type(1) a", "TEST_URL", REPLACE, "attr(href)"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "tr td:nth-of-type(1) a", "TEST_TITLE", true, "ownText"));
+                "tr td:nth-of-type(1) a", "TEST_TITLE", REPLACE, "ownText"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "tr td:nth-of-type(2)", "TEST_DESC", true, "ownText"));
+                "tr td:nth-of-type(2)", "TEST_DESC", REPLACE, "ownText"));
 
         String xml = "<tr>"
                 + "<td><a href=\"http://example.org/doc.html\">"
@@ -87,20 +90,20 @@ public class DOMTaggerTest {
         DOMTagger t = new DOMTagger();
         DOMExtractDetails d = null;
 
-        d = new DOMExtractDetails("author name", "blanksON", false);
+        d = new DOMExtractDetails("author name", "blanksON", APPEND);
         d.setMatchBlanks(true);
         t.addDOMExtractDetails(d);
 
-        d = new DOMExtractDetails("author name", "blanksOFF", false);
+        d = new DOMExtractDetails("author name", "blanksOFF", APPEND);
         d.setMatchBlanks(false);
         t.addDOMExtractDetails(d);
 
-        d = new DOMExtractDetails("author name", "blanksONDefault", false);
+        d = new DOMExtractDetails("author name", "blanksONDefault", APPEND);
         d.setMatchBlanks(true);
         d.setDefaultValue("Joe");
         t.addDOMExtractDetails(d);
 
-        d = new DOMExtractDetails("author name", "blanksOFFDefault", false);
+        d = new DOMExtractDetails("author name", "blanksOFFDefault", APPEND);
         d.setMatchBlanks(false);
         d.setDefaultValue("Joe");
         t.addDOMExtractDetails(d);
@@ -201,19 +204,19 @@ public class DOMTaggerTest {
 
         DOMTagger parentTagger = new DOMTagger();
         parentTagger.addDOMExtractDetails(new DOMExtractDetails(
-                "div.contact", "htmlContacts", false, "html"));
+                "div.contact", "htmlContacts", APPEND, "html"));
         performTagging(metadata, parentTagger, html);
 
         DOMTagger childTagger = new DOMTagger();
         childTagger.setFromField("htmlContacts");
 
         DOMExtractDetails firstNameDetails = new DOMExtractDetails(
-                "div.firstName", "firstName", false);
+                "div.firstName", "firstName", APPEND);
         firstNameDetails.setDefaultValue("NoFirstName");
         childTagger.addDOMExtractDetails(firstNameDetails);
 
         DOMExtractDetails lastNameDetails = new DOMExtractDetails(
-                "div.lastName", "lastName", false, "html");
+                "div.lastName", "lastName", APPEND, "html");
         lastNameDetails.setDefaultValue("NoLastName");
         childTagger.addDOMExtractDetails(lastNameDetails);
 
@@ -236,11 +239,11 @@ public class DOMTaggerTest {
 
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.class1", "match1", false));
+                "div.class1", "match1", APPEND));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.classNoMatch", "match2", false));
+                "div.classNoMatch", "match2", APPEND));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.class3", "match3", false));
+                "div.class3", "match3", APPEND));
 
         String html = "<html><body>"
                 + "<div class=\"class1\">text1</div>"
@@ -265,9 +268,9 @@ public class DOMTaggerTest {
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "h2", "headings", false));
+                "h2", "headings", APPEND));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "a[href]", "links", true, "html"));
+                "a[href]", "links", REPLACE, "html"));
 
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
@@ -294,11 +297,11 @@ public class DOMTaggerTest {
             throws IOException, ImporterHandlerException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "head", "fhtml", false, "html"));
+                "head", "fhtml", APPEND, "html"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "head", "fouter", false, "outerhtml"));
+                "head", "fouter", APPEND, "outerhtml"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "head", "ftext", false, "text"));
+                "head", "ftext", APPEND, "text"));
 
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
@@ -347,27 +350,27 @@ public class DOMTaggerTest {
 
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.parent", "text", false, "text"));
+                "div.parent", "text", APPEND, "text"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "span.child1", "html", false, "html"));
+                "span.child1", "html", APPEND, "html"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "span.child1", "outerHtml", false, "outerHtml"));
+                "span.child1", "outerHtml", APPEND, "outerHtml"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "script", "data", false, "data"));
+                "script", "data", APPEND, "data"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.parent", "id", false, "id"));
+                "div.parent", "id", APPEND, "id"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.parent", "ownText", false, "ownText"));
+                "div.parent", "ownText", APPEND, "ownText"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "div.parent", "tagName", false, "tagName"));
+                "div.parent", "tagName", APPEND, "tagName"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                ".formElement", "val", false, "val"));
+                ".formElement", "val", APPEND, "val"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "textarea", "className", false, "className"));
+                "textarea", "className", APPEND, "className"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                ".child2", "cssSelector", false, "cssSelector"));
+                ".child2", "cssSelector", APPEND, "cssSelector"));
         t.addDOMExtractDetails(new DOMExtractDetails(
-                "textarea", "attr", false, "attr(title)"));
+                "textarea", "attr", APPEND, "attr(title)"));
 
         String content = "<html><body>"
                 + "<script>This is data, not HTML.</script>"
@@ -417,10 +420,10 @@ public class DOMTaggerTest {
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
         tagger.addDOMExtractDetails(new DOMExtractDetails(
-                "p.blah > a", "myField", true));
+                "p.blah > a", "myField", REPLACE));
 
         DOMExtractDetails details = new DOMExtractDetails(
-                "div.blah > a", "myOtherField", true, "html");
+                "div.blah > a", "myOtherField", REPLACE, "html");
         details.setDefaultValue("myDefaultValue");
         tagger.addDOMExtractDetails(details);
         tagger.addRestriction("afield", "aregex", true);

@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.norconex.commons.lang.exec.SystemCommandException;
 import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -196,6 +197,14 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * is expected.
  * </p>
  *
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
+ *
  * <h3>Environment variables:</h3>
  *
  * <p>
@@ -212,36 +221,37 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * <p>Consuming classes implementing {@link IXMLConfigurable} can use
  * the XML save/load methods of this class to inherit the following
  * (which they can support differently):</p>
- * <pre>
- *      &lt;command&gt;
- *          /Apps/myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *      &lt;/command&gt;
+ * <pre>{@code
+ * <command>
+ *     /Apps/myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ * </command>
  *
- *      &lt;metadata
- *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"&gt;
- *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)"
- *                  fieldGroup="(field name match group index)"
- *                  valueGroup="(field value match group index)"
- *                  caseSensitive="[false|true]"&gt;
- *              (regular expression)
- *          &lt;/pattern&gt;
- *          &lt;!-- repeat pattern tag as needed --&gt;
- *      &lt;/metadata&gt;
+ * <metadata
+ *         inputFormat="[json|xml|properties]"
+ *         outputFormat="[json|xml|properties]"
+ *         onSet="[append|prepend|replace|optional]" >
+ *     <!-- pattern only used when no output format is specified -->
+ *     <pattern field="(target field name)"
+ *             fieldGroup="(field name match group index)"
+ *             valueGroup="(field value match group index)"
+ *             caseSensitive="[false|true]">
+ *         (regular expression)
+ *     </pattern>
+ *     <!-- repeat pattern tag as needed -->
+ * </metadata>
  *
- *      &lt;environment&gt;
- *          &lt;variable name="(environment variable name)"&gt;
- *              (environment variable value)
- *          &lt;/variable&gt;
- *          &lt;!-- repeat variable tag as needed --&gt;
- *      &lt;/environment&gt;
+ * <environment>
+ *     <variable name="(environment variable name)">
+ *         (environment variable value)
+ *     </variable>
+ *     <!-- repeat variable tag as needed -->
+ * </environment>
  *
- *      &lt;tempDir&gt;
- *          (Optional directory where to store temporary files used
- *           by this class.)
- *      &lt;/tempDir&gt;
- * </pre>
+ * <tempDir>
+ *     (Optional directory where to store temporary files used
+ *      by this class.)
+ * </tempDir>
+ * }</pre>
  *
  * @author Pascal Essiembre
  * @see ExternalTagger
@@ -273,6 +283,7 @@ public class ExternalHandler {
     private String metadataInputFormat = META_FORMAT_JSON;
     private String metadataOutputFormat = META_FORMAT_JSON;
     private Path tempDir;
+    private PropertySetter onSet;
 
     /**
      * Gets the command to execute.
@@ -460,6 +471,23 @@ public class ExternalHandler {
     }
 
     /**
+     * Gets the property setter to use when a metadata value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a metadata value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
+    /**
      * Invoke the external application on a document.
      * @param reference document reference
      * @param input to be processed document input stream
@@ -474,6 +502,7 @@ public class ExternalHandler {
         validate();
         String cmd = command;
         final ArgFiles files = new ArgFiles();
+        ImporterMetadata externalMeta = new ImporterMetadata();
 
         //--- Resolve command tokens ---
         LOG.debug("Command before token replacement: {}", cmd);
@@ -487,7 +516,7 @@ public class ExternalHandler {
             LOG.debug("Command after token replacement: {}", cmd);
 
             //--- Execute Command ---
-            executeCommand(cmd, files, metadata, input, output);
+            executeCommand(cmd, files, externalMeta, input, output);
             try {
                 if (files.hasOutputFile() && output != null) {
                     FileUtils.copyFile(files.outputFile.toFile(), output);
@@ -497,18 +526,15 @@ public class ExternalHandler {
                     try (Reader outputMetaReader = Files.newBufferedReader(
                             files.outputMetaFile)) {
                         String format = getMetadataOutputFormat();
-                        ImporterMetadata metaOverwrite = new ImporterMetadata();
                         if (META_FORMAT_PROPERTIES.equalsIgnoreCase(format)) {
-                            metaOverwrite.loadFromProperties(outputMetaReader);
+                            externalMeta.loadFromProperties(outputMetaReader);
                         } else if (META_FORMAT_XML.equals(format)) {
-                            metaOverwrite.loadFromXML(outputMetaReader);
+                            externalMeta.loadFromXML(outputMetaReader);
                         } else if (META_FORMAT_JSON.equals(format)) {
-                            metaOverwrite.loadFromJSON(outputMetaReader);
+                            externalMeta.loadFromJSON(outputMetaReader);
                         } else {
-                            extractMetaFromFile(outputMetaReader, metaOverwrite);
+                            extractMetaFromFile(outputMetaReader, externalMeta);
                         }
-                        metadata.keySet().removeAll(metaOverwrite.keySet());
-                        metadata.putAll(metaOverwrite);
                     }
                 }
             } catch (IOException e) {
@@ -516,6 +542,10 @@ public class ExternalHandler {
                         "Could not read command output file. Command: "
                                 + command, e);
             }
+            // Set extracted metadata on actual metadata
+            externalMeta.forEach((k, v) -> {
+                PropertySetter.orDefault(onSet).apply(metadata, k, v);
+            });
         } finally {
             files.deleteAll();
         }
@@ -713,6 +743,7 @@ public class ExternalHandler {
                 "metadata/@inputFormat", metadataInputFormat));
         setMetadataOutputFormat(xml.getString(
                 "metadata/@outputFormat", metadataOutputFormat));
+        setOnSet(xml.getEnum("metadata/@onSet", PropertySetter.class, onSet));
 
         List<XML> nodes = xml.getXMLList("metadata/pattern");
         for (XML node : nodes) {
@@ -742,7 +773,9 @@ public class ExternalHandler {
         if (!getMetadataExtractionPatterns().isEmpty()) {
             XML metaXML = xml.addElement("metadata")
                     .setAttribute("inputFormat", metadataInputFormat)
-                    .setAttribute("outputFormat", metadataOutputFormat);
+                    .setAttribute("outputFormat", metadataOutputFormat)
+                    .setAttribute("onSet", onSet);
+
             for (RegexKeyValueExtractor rfe : patterns) {
                 metaXML.addElement("pattern", rfe.getPattern())
                         .setAttribute("field", rfe.getKey())

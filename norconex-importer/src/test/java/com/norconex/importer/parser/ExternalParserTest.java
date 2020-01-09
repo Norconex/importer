@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.XML;
@@ -112,6 +113,7 @@ public class ExternalParserTest {
         addPatternsAndEnvs(p);
         p.setMetadataInputFormat("properties");
         p.setMetadataOutputFormat("properties");
+        p.setOnSet(PropertySetter.REPLACE);
         p.parseDocument(doc, output);
 
         String content = output.toString();

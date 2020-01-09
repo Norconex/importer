@@ -21,7 +21,10 @@
     <Logger name="org.apache" level="WARN" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
-
+    <Logger name="ImporterEvent" level="WARN" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    
     <!-- To get rid of useless errors from dependencies: -->
     <Logger name="org.apache.pdfbox.jbig2.JBIG2Globals" level="OFF" additivity="false">
       <AppenderRef ref="Console"/>

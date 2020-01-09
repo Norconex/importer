@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -37,18 +37,22 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
  * <p>Replaces an existing metadata value with another one. The "toField"
- * argument is optional. The same field will be used for the replacement if no
- * "toField" is specified. If there are no matches and a "toField" is
- * specified, no value will be added to the "toField".  To have the original
- * value copied in the "toField" when there are no matches, first copy the
- * original value using {@link CopyTagger} to your target field then use this
- * class on that new field without a "toField".
+ * argument is optional.
  * </p>
+ * <p>It is possible to only keep values that changed from a replacement and
+ * discard others by setting "discardUnchanged" to <code>true</code>.
+ * </p>
+ * <h3>Storing values in an existing field</h3>
  * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
  * <p>
- * Since 2.6.1, you can specify whether matches should be made
+ * You can specify whether matches should be made
  * against the whole field value or not (default). You can also specify whether
  * replacement should be attempted on first match only (default) or all
  * occurrences. This last option is only applicable when whole value matching
@@ -64,24 +68,20 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
- *      &lt;replace fromField="sourceFieldName" toField="targetFieldName"
+ *      &lt;replace fromField="sourceFieldName"
+ *               toField="targetFieldName"
  *               caseSensitive="[false|true]"
  *               regex="[false|true]"
  *               wholeMatch="[false|true]"
- *               replaceAll="[false|true]"&gt;
+ *               replaceAll="[false|true]"
+ *               onSet="[append|prepend|replace|optional]"
+ *               discardUnchanged="[false|true]" &gt;
  *          &lt;fromValue&gt;Source Value&lt;/fromValue&gt;
  *          &lt;toValue&gt;Target Value&lt;/toValue&gt;
  *      &lt;/replace&gt;
  *      &lt;!-- multiple replace tags allowed --&gt;
  *
  *  &lt;/handler&gt;
- * </pre>
- * <p>
- * <b>Note:</b> To preserve white space add <code>xml:space="preserve"</code>
- * to the "toValue" tag, like this:
- * </p>
- * <pre>
- *   &lt;toValue xml:space="preserve"&gt; &lt;/toValue&gt;
  * </pre>
  *
  * <h4>Usage example:</h4>
@@ -114,26 +114,35 @@ public class ReplaceTagger extends AbstractDocumentTagger {
 
         for (Replacement repl : replacements) {
             if (metadata.containsKey(repl.getFromField())) {
-                String[] metaValues = metadata.getStrings(repl.getFromField())
-                        .toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-                for (int i = 0; i < metaValues.length; i++) {
-                    String metaValue = metaValues[i];
-                    String newValue = replace(metaValue, repl);
-                    if (newValue != null) {
-                        if (StringUtils.isNotBlank(repl.getToField())) {
-                            metadata.add(repl.getToField(), newValue);
-                        } else {
-                            metaValues[i] = newValue;
-                            metadata.set(repl.getFromField(), metaValues);
-                        }
-                    }
-                }
+                replaceMeta(metadata, repl);
             }
         }
     }
 
+    private void replaceMeta(ImporterMetadata metadata, Replacement repl) {
+        List<String> metaValues = metadata.getStrings(repl.getFromField());
+        List<String> newValues = new ArrayList<>(metaValues.size());
+
+        for (String metaValue : metaValues) {
+            String newValue = replaceValue(metaValue, repl);
+            if (newValue != null && (!repl.isDiscardUnchanged()
+                    || !Objects.equals(metaValue, newValue))) {
+                newValues.add(newValue);
+            }
+        }
+
+        if (StringUtils.isNotBlank(repl.toField)) {
+            // set on target field
+            PropertySetter.orDefault(repl.getOnSet()).apply(
+                    metadata, repl.toField, newValues);
+        } else {
+            // overwrite source field
+            PropertySetter.REPLACE.apply(metadata, repl.fromField, newValues);
+        }
+    }
+
     // if no matches, return null
-    private String replace(String metaValue, Replacement r) {
+    private String replaceValue(String metaValue, Replacement r) {
         String fromValue = r.getFromValue();
         if (!r.isRegex()) {
             fromValue = Pattern.quote(fromValue);
@@ -149,7 +158,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             }
             return m.replaceFirst(toValue);
         }
-        return null;
+        return metaValue;
     }
 
     public List<Replacement> getReplacements() {
@@ -189,6 +198,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         private boolean caseSensitive;
         private boolean wholeMatch;
         private boolean replaceAll;
+        private PropertySetter onSet;
+        private boolean discardUnchanged;
         public Replacement() {
             super();
         }
@@ -299,7 +310,41 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         public void setReplaceAll(boolean replaceAll) {
             this.replaceAll = replaceAll;
         }
-
+        /**
+         * Gets the property setter to use when a value is set.
+         * @return property setter
+         * @since 3.0.0
+         */
+        public PropertySetter getOnSet() {
+            return onSet;
+        }
+        /**
+         * Sets the property setter to use when a value is set.
+         * @param onSet property setter
+         * @since 3.0.0
+         */
+        public void setOnSet(PropertySetter onSet) {
+            this.onSet = onSet;
+        }
+        /**
+         * Gets whether to discard values that did not change as a result
+         * of the replacement attempt.
+         * @return <code>true</code> if discarding unchanged values
+         * @since 3.0.0
+         */
+        public boolean isDiscardUnchanged() {
+            return discardUnchanged;
+        }
+        /**
+         * Sets whether to discard values that did not change as a result
+         * of the replacement attempt.
+         * @param discardUnchanged <code>true</code> if discarding unchanged
+         *        values
+         * @since 3.0.0
+         */
+        public void setDiscardUnchanged(boolean discardUnchanged) {
+            this.discardUnchanged = discardUnchanged;
+        }
         @Override
         public boolean equals(final Object other) {
             return EqualsBuilder.reflectionEquals(this, other);
@@ -327,6 +372,8 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             r.setCaseSensitive(node.getBoolean("@caseSensitive", false));
             r.setWholeMatch(node.getBoolean("@wholeMatch", false));
             r.setReplaceAll(node.getBoolean("@replaceAll", false));
+            r.setOnSet(PropertySetter.fromXML(node, null));
+            r.setDiscardUnchanged(node.getBoolean("@discardUnchanged", false));
             addReplacement(r);
         }
     }
@@ -344,6 +391,9 @@ public class ReplaceTagger extends AbstractDocumentTagger {
                     .setAttribute("replaceAll", replacement.isReplaceAll());
             rxml.addElement("fromValue", replacement.getFromValue());
             rxml.addElement("toValue", replacement.getToValue());
+            PropertySetter.toXML(rxml, replacement.getOnSet());
+            rxml.setAttribute(
+                    "discardUnchanged", replacement.isDiscardUnchanged());
         }
     }
 

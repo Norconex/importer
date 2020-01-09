@@ -16,9 +16,11 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -43,6 +45,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setFromValue("\\s+b\\s+");
         r.setToValue("");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
         tagger.tagDocument("n/a", null, meta, true);
 
@@ -53,6 +56,7 @@ public class ReplaceTaggerTest {
         r.setRegex(false);
         r.setFromValue("b");
         r.setToValue("");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         tagger.tagDocument("n/a", null, meta, true);
@@ -99,6 +103,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
         r.setToValue("$1");
+        r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -107,6 +112,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
         r.setToValue("$3");
+        r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         // Author 2
@@ -116,6 +122,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
         r.setToValue("$1");
+        r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -124,6 +131,7 @@ public class ReplaceTaggerTest {
         r.setRegex(true);
         r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
         r.setToValue("$3");
+        r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         tagger.tagDocument("n/a", null, meta, true);
@@ -143,6 +151,8 @@ public class ReplaceTaggerTest {
         r.setFromValue("fromValue1");
         r.setToValue("toValue1");
         r.setFromField("fromName1");
+        r.setOnSet(PropertySetter.REPLACE);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -150,6 +160,8 @@ public class ReplaceTaggerTest {
         r.setToValue("toValue2");
         r.setFromField("fromName1");
         r.setRegex(true);
+        r.setOnSet(PropertySetter.PREPEND);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -158,6 +170,8 @@ public class ReplaceTaggerTest {
         r.setFromField("fromName2");
         r.setToField("toName2");
         r.setCaseSensitive(true);
+        r.setOnSet(PropertySetter.OPTIONAL);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -167,6 +181,7 @@ public class ReplaceTaggerTest {
         r.setToField("toName3");
         r.setRegex(true);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         XML.assertWriteRead(tagger, "handler");
@@ -189,12 +204,14 @@ public class ReplaceTaggerTest {
         r.setFromValue("full value match");
         r.setToValue("replaced");
         r.setFromField("fullMatchField");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
         r.setFromValue("bad if you see me");
         r.setToValue("not replaced");
         r.setFromField("partialNoMatchField");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -202,6 +219,7 @@ public class ReplaceTaggerTest {
         r.setToValue("replaced to new field");
         r.setFromField("matchOldField");
         r.setToField("matchNewField");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -209,6 +227,7 @@ public class ReplaceTaggerTest {
         r.setToValue("not replaced");
         r.setFromField("nomatchOldField");
         r.setToField("nomatchNewField");
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -216,13 +235,13 @@ public class ReplaceTaggerTest {
         r.setToValue("REPLACED");
         r.setFromField("caseField");
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         tagger.tagDocument("n/a", null, meta, true);
 
         Assertions.assertEquals("replaced", meta.getString("fullMatchField"));
-        Assertions.assertEquals(
-                "partial value nomatch", meta.getString("partialNoMatchField"));
+        Assertions.assertNull(meta.getString("partialNoMatchField"));
         Assertions.assertEquals("replaced to new field",
                 meta.getString("matchNewField"));
         Assertions.assertEquals("no match to new field",
@@ -246,6 +265,7 @@ public class ReplaceTaggerTest {
         r.setToValue("$1");
         r.setFromField("path1");
         r.setRegex(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -254,6 +274,7 @@ public class ReplaceTaggerTest {
         r.setFromField("path2");
         r.setToField("folder");
         r.setRegex(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -262,6 +283,7 @@ public class ReplaceTaggerTest {
         r.setFromField("path3");
         r.setRegex(true);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         tagger.tagDocument("n/a", null, meta, true);
@@ -295,6 +317,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -305,6 +328,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regular replace, case sensitive ----------------------
@@ -316,6 +340,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -326,6 +351,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -336,6 +362,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace, case insensitive ----------------------
@@ -347,6 +374,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(true);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -357,6 +385,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(true);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace, case sensitive ------------------------
@@ -368,6 +397,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(true);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -378,6 +408,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(true);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace, case insensitive ------------------
@@ -389,6 +420,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(false);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace, case sensitive --------------------
@@ -400,6 +432,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(false);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -410,6 +443,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(false);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace, case insensitive --------------------
@@ -421,6 +455,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(true);
         r.setCaseSensitive(false);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace, case sensitive ----------------------
@@ -432,6 +467,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(true);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
@@ -442,6 +478,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(true);
         r.setCaseSensitive(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
@@ -508,6 +545,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(false);
         r.setReplaceAll(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace all ------------------------------------
@@ -519,6 +557,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(true);
         r.setRegex(true);
         r.setReplaceAll(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace all --------------------------------
@@ -530,6 +569,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(false);
         r.setReplaceAll(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace all ----------------------------------
@@ -541,6 +581,7 @@ public class ReplaceTaggerTest {
         r.setWholeMatch(false);
         r.setRegex(true);
         r.setReplaceAll(true);
+        r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
@@ -554,4 +595,103 @@ public class ReplaceTaggerTest {
                 meta.getString("partialRegexCats"));
     }
 
+
+    @Test
+    public void testDiscardUnchanged()
+             throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.add("test1", "keep me");
+        meta.add("test2", "throw me");
+
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        r = new Replacement();
+        r.setFromValue("nomatch");
+        r.setToValue("isaidnomatch");
+        r.setFromField("test1");
+        r.setDiscardUnchanged(false);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromValue("nomatch");
+        r.setToValue("isaidnomatch");
+        r.setFromField("test2");
+        r.setDiscardUnchanged(true);
+        tagger.addReplacement(r);
+
+        //=== Asserts ==========================================================
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assertions.assertEquals("keep me", meta.getString("test1"));
+        Assertions.assertNull(meta.getString("test2"));
+    }
+
+    @Test
+    public void testOnSet()
+             throws IOException, ImporterHandlerException {
+
+        // Test what happens when target field already has a value
+
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.add("source1", "value 1");
+        meta.add("target1", "target value 1");
+        meta.add("source2", "value 2");
+        meta.add("target2", "target value 2");
+        meta.add("source3", "value 3");
+        meta.add("target3", "target value 3");
+        meta.add("source4", "value 4");
+        meta.add("target4", "target value 4");
+
+        Replacement r = null;
+        ReplaceTagger tagger = new ReplaceTagger();
+
+        r = new Replacement();
+        r.setFromField("source1");
+        r.setToField("target1");
+        r.setFromValue("value");
+        r.setToValue("source value");
+        r.setOnSet(PropertySetter.APPEND);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromField("source2");
+        r.setToField("target2");
+        r.setFromValue("value");
+        r.setToValue("source value");
+        r.setOnSet(PropertySetter.PREPEND);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromField("source3");
+        r.setToField("target3");
+        r.setFromValue("value");
+        r.setToValue("source value");
+        r.setOnSet(PropertySetter.REPLACE);
+        tagger.addReplacement(r);
+
+        r = new Replacement();
+        r.setFromField("source4");
+        r.setToField("target4");
+        r.setFromValue("value");
+        r.setToValue("source value");
+        r.setOnSet(PropertySetter.OPTIONAL);
+        tagger.addReplacement(r);
+
+        //=== Asserts ==========================================================
+        tagger.tagDocument("n/a", null, meta, true);
+
+        Assertions.assertEquals(
+                "target value 1, source value 1",
+                StringUtils.join(meta.getStrings("target1"), ", "));
+        Assertions.assertEquals(
+                "source value 2, target value 2",
+                StringUtils.join(meta.getStrings("target2"), ", "));
+        Assertions.assertEquals(
+                "source value 3",
+                StringUtils.join(meta.getStrings("target3"), ", "));
+        Assertions.assertEquals(
+                "target value 4",
+                StringUtils.join(meta.getStrings("target4"), ", "));
+    }
 }

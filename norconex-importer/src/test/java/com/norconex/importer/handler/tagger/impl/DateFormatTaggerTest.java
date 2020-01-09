@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -44,7 +45,7 @@ public class DateFormatTaggerTest {
 
         DateFormatTagger t = new DateFormatTagger();
         t.setToField("date");
-        t.setOverwrite(true);
+        t.setOnSet(PropertySetter.REPLACE);
         t.setKeepBadDates(false);
 
         // Test ISO to EPOCH
@@ -89,7 +90,7 @@ public class DateFormatTaggerTest {
         DateFormatTagger tagger;
 
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("datefield1");
         tagger.setToField("tofield1");
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
@@ -97,7 +98,7 @@ public class DateFormatTaggerTest {
         Assertions.assertEquals("1002727941000", meta.getString("tofield1"));
 
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("datefield1");
         tagger.setToField("tofield2");
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
@@ -106,7 +107,7 @@ public class DateFormatTaggerTest {
         Assertions.assertEquals("2001/10/10", meta.getString("tofield2"));
 
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("datefield2");
         tagger.setToField("tofield3");
         tagger.setFromFormats((String) null);
@@ -123,7 +124,7 @@ public class DateFormatTaggerTest {
         meta = new ImporterMetadata();
         meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("sourceField");
         tagger.setToField("targetField");
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
@@ -134,7 +135,7 @@ public class DateFormatTaggerTest {
         meta = new ImporterMetadata();
         meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("sourceField");
         tagger.setToField("targetField");
         tagger.setFromFormats("yyyy-MM-dd'T'HH:mm:ss");
@@ -152,7 +153,7 @@ public class DateFormatTaggerTest {
         meta = new ImporterMetadata();
         meta.add("sourceField", "Tue, 10 Apr 2001");
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("sourceField");
         tagger.setToField("targetField");
         tagger.setFromFormats("EEE, dd MMM yyyy");
@@ -163,7 +164,7 @@ public class DateFormatTaggerTest {
         meta = new ImporterMetadata();
         meta.add("sourceField", "mar., 10 avr. 2001");
         tagger = new DateFormatTagger();
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setFromField("sourceField");
         tagger.setFromLocale(Locale.CANADA_FRENCH);
         tagger.setToField("targetField");
@@ -180,7 +181,7 @@ public class DateFormatTaggerTest {
         tagger.setFromFormats("yyyy-MM-dd", "anotherOne", "aThirdOne");
         tagger.setToFormat("yyyy-MM");
         tagger.setKeepBadDates(true);
-        tagger.setOverwrite(true);
+        tagger.setOnSet(PropertySetter.REPLACE);
         XML.assertWriteRead(tagger, "handler");
     }
 }

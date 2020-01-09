@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -41,7 +41,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *   /vegetable/potato/sweet
  * </pre>
- * <p>We specify a slash (/) separator and it will produce the folowing entries
+ * <p>We specify a slash (/) separator and it will produce the following entries
  * in the specified document metadata field:</p>
  *
  * <pre>
@@ -56,10 +56,17 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * (<code>fromSeparator</code> and <code>toSeparator</code>).
  * </p>
  * <p>
- * <b>Since 2.10.0</b>, you can "keepEmptySegments", as well as specify
+ * You can "keepEmptySegments", as well as specify
  * whether the "fromSeparator" is a regular expression. When using regular
  * expression without a "toSeparator", the text matching the expression is
  * kept as is and thus can be different for each segment.
+ * </p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
  * </p>
  * <p>
  * Can be used both as a pre-parse or post-parse handler.
@@ -78,7 +85,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *              toField="(optional to field)"
  *              fromSeparator="(original separator)"
  *              toSeparator="(optional new separator)"
- *              overwrite="[false|true]"
+ *              onSet="[append|prepend|replace|optional]"
  *              regex="[false|true]"
  *              keepEmptySegments="[false|true]" /&gt;
  *      &lt;!-- multiple hierarchy tags allowed --&gt;
@@ -116,11 +123,6 @@ public class HierarchyTagger extends AbstractDocumentTagger {
 
     private void breakSegments(
             ImporterMetadata metadata, HierarchyDetails details) {
-
-        String toField = details.fromField;
-        if (StringUtils.isNotBlank(details.toField)) {
-            toField = details.toField;
-        }
 
         Pattern delim;
         if (details.regex) {
@@ -191,11 +193,13 @@ public class HierarchyTagger extends AbstractDocumentTagger {
             }
         }
 
-        String[] nodesArray = paths.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
-        if (details.overwrite) {
-            metadata.set(toField, nodesArray);
+        if (StringUtils.isNotBlank(details.toField)) {
+            // set on target field
+            PropertySetter.orDefault(details.onSet).apply(
+                    metadata, details.toField, paths);
         } else {
-            metadata.add(toField, nodesArray);
+            // overwrite source field
+            PropertySetter.REPLACE.apply(metadata, details.fromField, paths);
         }
     }
 
@@ -243,12 +247,13 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XML xml) {
         for (XML node : xml.getXMLList("hierarchy")) {
+            node.checkDeprecated("@overwrite", "onSet", true);
             HierarchyDetails hd = new HierarchyDetails(
                     node.getString("@fromField", null),
                     node.getString("@toField", null),
                     node.getString("@fromSeparator", null),
                     node.getString("@toSeparator", null));
-            hd.setOverwrite(node.getBoolean("@overwrite", false));
+            hd.setOnSet(PropertySetter.fromXML(node, null));
             hd.setKeepEmptySegments(
                     node.getBoolean("@keepEmptySegments", false));
             hd.setRegex(node.getBoolean("@regex", false));
@@ -259,14 +264,14 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     @Override
     protected void saveHandlerToXML(XML xml) {
         for (HierarchyDetails hd : list) {
-            xml.addElement("hierarchy")
+            XML node = xml.addElement("hierarchy")
                     .setAttribute("fromField", hd.fromField)
                     .setAttribute("toField", hd.toField)
                     .setAttribute("fromSeparator", hd.fromSeparator)
                     .setAttribute("toSeparator", hd.toSeparator)
-                    .setAttribute("overwrite", hd.overwrite)
                     .setAttribute("keepEmptySegments", hd.keepEmptySegments)
                     .setAttribute("regex", hd.regex);
+            PropertySetter.toXML(node, hd.getOnSet());
         }
     }
 
@@ -301,7 +306,7 @@ public class HierarchyTagger extends AbstractDocumentTagger {
         private String toField;
         private String fromSeparator;
         private String toSeparator;
-        private boolean overwrite;
+        private PropertySetter onSet;
         private boolean keepEmptySegments;
         private boolean regex;
 
@@ -340,11 +345,40 @@ public class HierarchyTagger extends AbstractDocumentTagger {
         public void setToSeparator(String toSeparator) {
             this.toSeparator = toSeparator;
         }
+        /**
+         * Gets whether existing value for the same field should be overwritten.
+         * @return <code>true</code> if overwriting existing value.
+         * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+         */
+        @Deprecated
         public boolean isOverwrite() {
-            return overwrite;
+            return PropertySetter.REPLACE == onSet;
         }
+        /**
+         * Sets whether existing value for the same field should be overwritten.
+         * @param overwrite <code>true</code> if overwriting existing value.
+         * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+         */
+        @Deprecated
         public void setOverwrite(boolean overwrite) {
-            this.overwrite = overwrite;
+            this.onSet = overwrite
+                    ? PropertySetter.REPLACE : PropertySetter.APPEND;
+        }
+        /**
+         * Gets the property setter to use when a value is set.
+         * @return property setter
+         * @since 3.0.0
+         */
+        public PropertySetter getOnSet() {
+            return onSet;
+        }
+        /**
+         * Sets the property setter to use when a value is set.
+         * @param onSet property setter
+         * @since 3.0.0
+         */
+        public void setOnSet(PropertySetter onSet) {
+            this.onSet = onSet;
         }
         public boolean isKeepEmptySegments() {
             return keepEmptySegments;

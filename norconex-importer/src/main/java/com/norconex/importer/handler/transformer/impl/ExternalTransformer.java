@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -62,7 +63,8 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *
  *      &lt;metadata
  *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"&gt;
+ *              outputFormat="[json|xml|properties]"
+ *              onSet="[append|prepend|replace|optional]"&gt;
  *          &lt;!-- pattern only used when no output format is specified --&gt;
  *          &lt;pattern field="(target field name)"
  *                  fieldGroup="(field name match group index)"
@@ -259,6 +261,23 @@ public class ExternalTransformer extends AbstractDocumentTransformer {
      */
     public void setMetadataOutputFormat(String metadataOutputFormat) {
         h.setMetadataOutputFormat(metadataOutputFormat);
+    }
+
+    /**
+     * Gets the property setter to use when a metadata value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return h.getOnSet();
+    }
+    /**
+     * Sets the property setter to use when a metadata value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        h.setOnSet(onSet);
     }
 
     /**

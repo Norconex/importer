@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,18 +44,17 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Changes the character case of field values according to one of the
  * following methods:</p>
  * <ul>
- *   <li>uppper: Changes all characters to upper case.</li>
+ *   <li>upper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
  *   <li>words: Converts the first letter of each words to upper case, and the
  *           rest to lower case.</li>
  *   <li>string: Converts the first letter of a string if not numeric, and
- *           leaves the character case of other characters unchanged
- *           (since 2.7.0).</li>
+ *           leaves the character case of other characters unchanged.</li>
  *   <li>swap: Converts all upper case characters to lower case, and all
- *           lower case to upper case (since 2.7.0).</li>
+ *           lower case to upper case.</li>
  *
  * </ul>
- * <p>Since 2.3.0, the change of character case can be applied to one of the
+ * <p>The change of character case can be applied to one of the
  * following (defaults to "value" when unspecified):</p>
  * <ul>
  *   <li>value: Applies to the field values.</li>
@@ -64,22 +63,24 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </ul>
  * <p>Field names are referenced in a case insensitive manner.</p>
  * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger">
  *
- *      &lt;characterCase fieldName="(field to change)"
- *                     type="[upper|lower|words|string|swap]"
- *                     applyTo="[value|field|both]" /&gt;
- *      &lt;!-- multiple characterCase tags allowed --&gt;
+ *     <restrictTo caseSensitive="[false|true]"
+ *             field="(name of header/metadata field name to match)">
+ *         (regular expression of value to match)
+ *     </restrictTo>
+ *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  *
- *  &lt;/handler&gt;
- * </pre>
+ *     <characterCase fieldName="(field to change)"
+ *             type="[upper|lower|words|string|swap]"
+ *             applyTo="[value|field|both]" />
+ *     <!-- multiple characterCase tags allowed -->
+ *
+ * </handler>
+ * }</pre>
+ *
  * <h4>Usage example:</h4>
  * <p>
  * Documents can use different character case for their title field names.

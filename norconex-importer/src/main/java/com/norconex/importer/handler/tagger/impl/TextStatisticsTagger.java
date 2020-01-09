@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,28 +181,22 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         }
 
         //--- Add fields ---
-        metadata.add("document.stat." + field + "characterCount", charCount);
-        metadata.add("document.stat." + field + "wordCount", wordCount);
-        metadata.add("document.stat." + field + "sentenceCount", sentenceCount);
-        metadata.add(
-                "document.stat." + field + "paragraphCount", paragraphCount);
-        metadata.add(
-                "document.stat." + field + "averageWordCharacterCount",
+        String prefix = "document.stat." + field;
+        metadata.add(prefix + "characterCount", charCount);
+        metadata.add(prefix + "wordCount", wordCount);
+        metadata.add(prefix + "sentenceCount", sentenceCount);
+        metadata.add(prefix + "paragraphCount", paragraphCount);
+        metadata.add(prefix + "averageWordCharacterCount",
                 divide(wordCharCount, wordCount));
-        metadata.add(
-                "document.stat." + field + "averageSentenceCharacterCount",
+        metadata.add(prefix + "averageSentenceCharacterCount",
                 divide(sentenceCharCount, sentenceCount));
-        metadata.add(
-                "document.stat." + field + "averageSentenceWordCount",
+        metadata.add(prefix + "averageSentenceWordCount",
                 divide(wordCount, sentenceCount));
-        metadata.add(
-                "document.stat." + field + "averageParagraphCharacterCount",
+        metadata.add(prefix + "averageParagraphCharacterCount",
                 divide(charCount, paragraphCount));
-        metadata.add(
-                "document.stat." + field + "averageParagraphSentenceCount",
+        metadata.add(prefix + "averageParagraphSentenceCount",
                 divide(sentenceCount, paragraphCount));
-        metadata.add(
-                "document.stat." + field + "averageParagraphWordCount",
+        metadata.add(prefix + "averageParagraphWordCount",
                 divide(wordCount, paragraphCount));
 
     }

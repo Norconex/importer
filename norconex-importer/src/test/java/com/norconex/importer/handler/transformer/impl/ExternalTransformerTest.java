@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -45,6 +46,7 @@ public class ExternalTransformerTest {
 
         t.setMetadataInputFormat("json");
         t.setMetadataOutputFormat("xml");
+        t.setOnSet(PropertySetter.PREPEND);
 
         t.setMetadataExtractionPatterns(
             new RegexKeyValueExtractor("asdf.*", "blah"),
@@ -110,6 +112,7 @@ public class ExternalTransformerTest {
         addPatternsAndEnvs(t);
         t.setMetadataInputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
         t.setMetadataOutputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
+        t.setOnSet(PropertySetter.REPLACE);
         t.transformDocument("c:\\ref with spaces\\doc.txt",
                 input, output, metadata, false);
 

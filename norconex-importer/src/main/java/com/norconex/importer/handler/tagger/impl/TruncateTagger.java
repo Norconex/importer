@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.StringUtil;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -38,10 +40,17 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * portion by a hash value to help ensure uniqueness (not 100% guaranteed to
  * be collision-free).  If the field to truncate has multiple values, all
  * values will be subject to truncation. You can store the value(s), truncated
- * or not, in another fromField.
+ * or not, in another target field.
+ * </p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
  * </p>
  * <p>
- * When storing the truncated values in a new fromField already having one or
+ * When storing the truncated values in a new field already having one or
  * more values, the truncated values will be <i>added</i> to the list of
  * existing values, unless "overwrite" is set to <code>true</code>.
  * </p>
@@ -59,7 +68,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *      fromField="(fromField holding one or more values to truncate)"
  *      maxLength="(maximum length)"
  *      toField="(optional fromField where to store the truncated value)"
- *      overwrite="[false|true]"
+ *      onSet="[append|prepend|replace|optional]"
  *      appendHash="[false|true]"
  *      suffix="(value to append after truncation. Goes before hash if one.)" &gt;
  *
@@ -102,7 +111,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
     private String fromField;
     private int maxLength;
     private String toField;
-    private boolean overwrite;
+    private PropertySetter onSet;
     private boolean appendHash;
     private String suffix;
 
@@ -120,12 +129,43 @@ public class TruncateTagger extends AbstractDocumentTagger {
     public void setToField(String keepToField) {
         this.toField = keepToField;
     }
+
+    /**
+     * Gets whether existing value for the same field should be overwritten.
+     * @return <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+     */
+    @Deprecated
     public boolean isOverwrite() {
-        return overwrite;
+        return PropertySetter.REPLACE == onSet;
     }
-    public void setOverwrite(boolean keepOverwrite) {
-        this.overwrite = keepOverwrite;
+    /**
+     * Sets whether existing value for the same field should be overwritten.
+     * @param overwrite <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+     */
+    @Deprecated
+    public void setOverwrite(boolean overwrite) {
+        this.onSet = overwrite
+                ? PropertySetter.REPLACE : PropertySetter.APPEND;
     }
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
     public boolean isAppendHash() {
         return appendHash;
     }
@@ -157,23 +197,24 @@ public class TruncateTagger extends AbstractDocumentTagger {
             throws ImporterHandlerException {
 
         List<String> values = metadata.getStrings(fromField);
-        String[] truncValues = new String[values.size()];
-        for (int i = 0; i < values.size(); i++) {
-            truncValues[i] = truncate(values.get(i));
+        List<String> truncValues = new ArrayList<>(values.size());
+        for (String value : values) {
+            String truncValue = truncate(value);
+            truncValues.add(truncValue);
             if (LOG.isDebugEnabled()
-                    && !Objects.equals(truncValues[i], values.get(i))) {
-                LOG.debug("\"" + fromField+ "\" value truncated to \""
-                        + truncValues[i] + "\".");
+                    && !Objects.equals(truncValue, value)) {
+                LOG.debug("\"{}\" value truncated to \"{}\".",
+                        fromField, truncValue);
             }
         }
+
         if (StringUtils.isNotBlank(getToField())) {
-            if (overwrite) {
-                metadata.set(getToField(), truncValues);
-            } else {
-                metadata.add(getToField(), truncValues);
-            }
+            // set on target field
+            PropertySetter.orDefault(onSet).apply(
+                    metadata, getToField(), truncValues);
         } else {
-            metadata.set(getFromField(), truncValues);
+            // overwrite source field
+            PropertySetter.REPLACE.apply(metadata, getFromField(), truncValues);
         }
     }
 
@@ -193,11 +234,12 @@ public class TruncateTagger extends AbstractDocumentTagger {
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        xml.checkDeprecated("@overwrite", "onSet", true);
         fromField = xml.getString("@fromField", fromField);
         appendHash = xml.getBoolean("@appendHash", appendHash);
         suffix = xml.getString("@suffix", suffix);
         toField = xml.getString("@toField", toField);
-        overwrite = xml.getBoolean("@overwrite", overwrite);
+        setOnSet(PropertySetter.fromXML(xml, onSet));
         maxLength = xml.getInteger("@maxLength", maxLength);
     }
     @Override
@@ -206,7 +248,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
         xml.setAttribute("appendHash", appendHash);
         xml.setAttribute("suffix", suffix);
         xml.setAttribute("toField", toField);
-        xml.setAttribute("overwrite", overwrite);
+        PropertySetter.toXML(xml, onSet);
         xml.setAttribute("maxLength", maxLength);
     }
 

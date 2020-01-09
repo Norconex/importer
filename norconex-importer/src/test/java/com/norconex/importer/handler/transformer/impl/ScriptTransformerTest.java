@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class ScriptTransformerTest {
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
         testScriptTagger("lua",
-                "metadata:addString('test', {'success'});"
+                "metadata:add('test', {'success'});"
               + "local text = content:gsub('Alice', 'Roger');"
               + "return text;"
         );
@@ -67,7 +67,6 @@ public class ScriptTransformerTest {
         metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(), is, out, metadata, false);
-
         is.close();
 
         String successField = metadata.getString("test");

@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,8 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
- * <p>Detects a document language based on Tika language detection capability.
+ * <p>Detects a document language based on Apache Tika language detection
+ * capability.
  * It adds the detected language to the
  * "<code>document.language</code>" metadata field.
  * Optionally adds all potential languages detected with their
@@ -154,12 +155,6 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *
  * <p>If you do not restrict the list of language candidates to detect,
  * the default behavior is to try match all languages currently supported.
- * </p>
- *
- * <p>
- * <b>Since 2.6.0</b>, this tagger uses Tika for language detection. As a
- * result, more languages are supported, at the expense of less accuracy with
- * short text.
  * </p>
  *
  * <h3>XML configuration usage:</h3>

@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ public class ScriptTaggerTest {
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
         testScriptTagger("lua",
-                "metadata:addString('test', {'success'});"
+                "metadata:add('test', {'success'});"
               + "local story = content:gsub('Alice', 'Roger');"
-              + "metadata:addString('story', {story});"
+              + "metadata:add('story', {story});"
         );
     }
 

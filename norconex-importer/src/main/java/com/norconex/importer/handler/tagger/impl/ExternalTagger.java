@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -57,50 +58,51 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@link ExternalTransformer} instead.
  * </p>
  * <p>
- * To parse/extract raw text from files, it is recommended to use a
+ * To parse/extract raw text from files, it is recommended to use
  * {@link ExternalParser} instead.
  * </p>
  * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger"&gt;
+ * <pre>{@code
+ *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
+ *      <restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)">
  *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      </restrictTo>
+ *      <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  *
- *      &lt;command inputDisabled="[false|true]"&gt;
+ *      <command inputDisabled="[false|true]">
  *          c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *      &lt;/command&gt;
+ *      </command>
  *
- *      &lt;metadata
+ *      <metadata
  *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"&gt;
- *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)"
+ *              outputFormat="[json|xml|properties]"
+ *              onSet="[append|prepend|replace|optional]">
+ *          <!-- pattern only used when no output format is specified -->
+ *          <pattern field="(target field name)"
  *                  fieldGroup="(field name match group index)"
  *                  valueGroup="(field value match group index)"
- *                  caseSensitive="[false|true]"&gt;
+ *                  caseSensitive="[false|true]">
  *              (regular expression)
- *          &lt;/pattern&gt;
- *          &lt;!-- repeat pattern tag as needed --&gt;
- *      &lt;/metadata&gt;
+ *          </pattern>
+ *          <!-- repeat pattern tag as needed -->
+ *      </metadata>
  *
- *      &lt;environment&gt;
- *          &lt;variable name="(environment variable name)"&gt;
+ *      <environment>
+ *          <variable name="(environment variable name)">
  *              (environment variable value)
- *          &lt;/variable&gt;
- *          &lt;!-- repeat variable tag as needed --&gt;
- *      &lt;/environment&gt;
+ *          </variable>
+ *          <!-- repeat variable tag as needed -->
+ *      </environment>
  *
- *      &lt;tempDir&gt;
+ *      <tempDir>
  *          (Optional directory where to store temporary files used
  *           for transformation.)
- *      &lt;/tempDir&gt;
+ *      </tempDir>
  *
- *  &lt;/handler&gt;
- * </pre>
+ *  </handler>
+ * }</pre>
  *
  * <h4>Usage example:</h4>
  * <p>
@@ -287,6 +289,23 @@ public class ExternalTagger extends AbstractDocumentTagger {
      */
     public void setMetadataOutputFormat(String metadataOutputFormat) {
         h.setMetadataOutputFormat(metadataOutputFormat);
+    }
+
+    /**
+     * Gets the property setter to use when a metadata value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return h.getOnSet();
+    }
+    /**
+     * Sets the property setter to use when a metadata value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        h.setOnSet(onSet);
     }
 
     /**

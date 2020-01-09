@@ -21,6 +21,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -39,7 +40,7 @@ public class HierarchyTaggerTest {
                 null, "toField3", null, "toSep3"));
         HierarchyDetails d = new HierarchyDetails(
                 "fromField4", "toField4", "fromSep4", "toSep4");
-        d.setOverwrite(true);
+        d.setOnSet(PropertySetter.REPLACE);
         tagger.addHierarcyDetails(d);
 
         XML.assertWriteRead(tagger, "handler");

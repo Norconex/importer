@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -40,14 +41,15 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
  * <p>Attempts to generate a title from the document content (default) or
- * a specified metadata field. It does not consider a document format
- * to give value to more terms than other. For instance, it would not
+ * a specified metadata field. It does not consider the document
+ * format/structure to consider some terms more than others.
+ * For instance, it would not
  * consider text found in &lt;H1&gt; tags more importantly than other
  * text in HTML documents.</p>
  *
  * <p>If {@link #isDetectHeading()} returns <code>true</code>, this handler
  * will check if the content starts with a stand-alone, single-sentence line
- * (which could be the actual title).
+ * (which is assumed to be the actual title).
  * That is, a line of text with only one sentence in it, followed by one or
  * more new line characters. To help
  * eliminate cases where such sentence are inappropriate, you can specify a
@@ -58,8 +60,14 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *
  * <p>Unless a target field name is provided, the default field name
  * where the title will be stored is <code>document.generatedTitle</code>.
- * Unless, {@link #setOverwrite(boolean)} is set to <code>true</code>,
- * no title will be generated if one already exists in the target field.</p>
+ *
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  *
  * <p>If it cannot generate a title, it will fall-back to retrieving the
  * first sentence from the text.</p>
@@ -67,19 +75,18 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <p>The generated title length is limited to 150 characters by default.
  * You can change that limit by using
  * {@link #setTitleMaxLength(int)}. Text larger than the max limit will be
- * truncated and three dots will be added in square brackets [...].
+ * truncated and three dots will be added in square brackets ([...]).
  * To remove the limit,
  * use -1 (or constant {@link #UNLIMITED_TITLE_LENGTH}).</p>
  *
  * <p>This class should be used as a post-parsing handler only
  * (or otherwise on unformatted text).</p>
  *
- * <p><b>Since 2.2.0</b>, the algorithm to detect titles has been much
- * simplified to eliminate extra dependencies that were otherwise not required.
+ * <p>The algorithm to detect titles is quite basic.
  * It uses a generic statistics-based approach to weight each sentences
- * up to a certain amount, and simply returns the sentence that the most
- * weight given a minimum threshold has been met.  You are strongly encouraged
- * to use a more sophisticated summarization engine if you want more
+ * up to a certain amount, and simply returns the sentence with the highest
+ * attributed weight given a minimum threshold has been met.  You are strongly
+ * encouraged to use a more sophisticated summarization engine if you want more
  * accurate titles generated.
  * </p>
  *
@@ -88,6 +95,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
  *          fromField="(field of text to use/default uses document content)"
  *          toField="(target field where to store generated title)"
+ *          onSet="[append|prepend|replace|optional]"
  *          overwrite="[false|true]"
  *          titleMaxLength="(max num of chars for generated title)"
  *          detectHeading="[false|true]"
@@ -142,12 +150,11 @@ public class TitleGeneratorTagger
 
     private String fromField;
     private String toField = DEFAULT_TO_FIELD;
-    private boolean overwrite;
     private int titleMaxLength = DEFAULT_TITLE_MAX_LENGTH;
     private boolean detectHeading;
     private int detectHeadingMinLength = DEFAULT_HEADING_MIN_LENGTH;
     private int detectHeadingMaxLength = DEFAULT_HEADING_MAX_LENGTH;
-
+    private PropertySetter onSet;
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
@@ -160,7 +167,7 @@ public class TitleGeneratorTagger
         }
 
         // If title already exists and not overwriting, leave now
-        if (overwrite && StringUtils.isNotBlank(
+        if (PropertySetter.OPTIONAL == onSet && StringUtils.isNotBlank(
                 metadata.getString(getTargetField()))) {
             return;
         }
@@ -196,7 +203,8 @@ public class TitleGeneratorTagger
                 title = StringUtils.substring(title, 0, titleMaxLength);
                 title += "[...]";
             }
-            metadata.set(getTargetField(), title);
+            PropertySetter.orDefault(onSet).apply(
+                    metadata, getTargetField(), title);
         }
     }
 
@@ -207,11 +215,24 @@ public class TitleGeneratorTagger
         this.toField = toField;
     }
 
+    /**
+     * Gets whether existing value for the same field should be overwritten.
+     * @return <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+     */
+    @Deprecated
     public boolean isOverwrite() {
-        return overwrite;
+        return PropertySetter.REPLACE == onSet;
     }
+    /**
+     * Sets whether existing value for the same field should be overwritten.
+     * @param overwrite <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+     */
+    @Deprecated
     public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
+        this.onSet = overwrite
+                ? PropertySetter.REPLACE : PropertySetter.APPEND;
     }
 
     public String getFromField() {
@@ -249,6 +270,23 @@ public class TitleGeneratorTagger
         this.detectHeadingMaxLength = detectHeadingMaxLength;
     }
 
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
     private String getTargetField() {
         if (StringUtils.isBlank(toField)) {
             return DEFAULT_TO_FIELD;
@@ -277,9 +315,6 @@ public class TitleGeneratorTagger
         }
         return firstLine;
     }
-
-
-    //***********************************************************
 
     private String summarize(String text) {
 
@@ -370,9 +405,10 @@ public class TitleGeneratorTagger
 
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
+        xml.checkDeprecated("@overwrite", "onSet", true);
         setFromField(xml.getString("@fromField", fromField));
         setToField(xml.getString("@toField", toField));
-        setOverwrite(xml.getBoolean("@overwrite", overwrite));
+        setOnSet(PropertySetter.fromXML(xml, onSet));
         setTitleMaxLength(xml.getInteger("@titleMaxLength", titleMaxLength));
         setDetectHeading(xml.getBoolean("@detectHeading", detectHeading));
         setDetectHeadingMinLength(xml.getInteger(
@@ -385,7 +421,7 @@ public class TitleGeneratorTagger
     protected void saveStringTaggerToXML(XML xml) {
         xml.setAttribute("fromField", fromField);
         xml.setAttribute("toField", toField);
-        xml.setAttribute("overwrite", overwrite);
+        PropertySetter.toXML(xml, onSet);
         xml.setAttribute("titleMaxLength", titleMaxLength);
         xml.setAttribute("detectHeading", detectHeading);
         xml.setAttribute("detectHeadingMinLength", detectHeadingMinLength);

@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -42,6 +43,14 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * The matching string end-points are defined in pairs and multiple ones
  * can be specified at once. The field specified for a pair of end-points
  * is considered a multi-value field.</p>
+ *
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  * <p>
  * This class can be used as a pre-parsing handler on text documents only
  * or a post-parsing handler.
@@ -49,8 +58,6 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <h3>XML configuration usage:</h3>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger"
- *          inclusive="[false|true]"
- *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)" &gt;
  *
@@ -60,7 +67,12 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
- *      &lt;textBetween name="targetFieldName"&gt;
+ *      &lt;textBetween
+ *              name="targetFieldName"
+ *              inclusive="[false|true]"
+ *              caseSensitive="[false|true]"
+ *              onSet="[append|prepend|replace|optional]"
+ *              &gt;
  *          &lt;start&gt;(regex)&lt;/start&gt;
  *          &lt;end&gt;(regex)&lt;/end&gt;
  *      &lt;/textBetween&gt;
@@ -82,39 +94,29 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;/textBetween&gt;
  *  &lt;/handler&gt;
  * </pre>
- * @author Khalid AlHomoud
  * @author Pascal Essiembre
  */
 public class TextBetweenTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
-    private final Set<TextBetween> betweens = new TreeSet<>();
-
-    private boolean inclusive;
-    private boolean caseSensitive;
+    private final Set<TextBetweenDetails> betweens = new TreeSet<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-
-        Regex regex = new Regex().dotAll().setCaseInsensitive(!caseSensitive);
-
-
-//        int flags = Pattern.DOTALL;
-//        if (!caseSensitive) {
-//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-//        }
-        for (TextBetween between : betweens) {
+        for (TextBetweenDetails between : betweens) {
             List<Pair<Integer, Integer>> matches = new ArrayList<>();
-                                //Pattern.compile(between.start, flags);
+            Regex regex = new Regex()
+                    .dotAll()
+                    .setCaseInsensitive(!between.caseSensitive);
+
             Pattern leftPattern = regex.compile(between.start);
             Matcher leftMatch = leftPattern.matcher(content);
             while (leftMatch.find()) {
-                                     //Pattern.compile(between.end, flags);
                 Pattern rightPattern = regex.compile(between.end);
                 Matcher rightMatch = rightPattern.matcher(content);
                 if (rightMatch.find(leftMatch.end())) {
-                    if (inclusive) {
+                    if (between.inclusive) {
                         matches.add(new ImmutablePair<>(
                                 leftMatch.start(), rightMatch.end()));
                     } else {
@@ -130,32 +132,52 @@ public class TextBetweenTagger
                 String value = content.substring(
                         matchPair.getLeft(), matchPair.getRight());
                 if (value != null) {
-                    metadata.add(between.name, value);
+                    PropertySetter.orDefault(
+                            between.onSet).apply(metadata, between.name, value);
                 }
             }
         }
     }
 
+    /**
+     * Gets whether start and end text pairs should be kept or
+     * not.
+     * @return always <code>false</code>
+     * @deprecated Since 3.0.0, use {@link TextBetweenDetails#isInclusive()}
+     */
+    @Deprecated
     public boolean isInclusive() {
-        return inclusive;
+        return false;
     }
     /**
      * Sets whether start and end text pairs should be kept or
-     * not.
+     * not. <b>Calling this method has no effect.</b>
      * @param inclusive <code>true</code> to keep matching start and end text
+     * @deprecated Since 3.0.0, use {@link TextBetweenDetails#setInclusive(boolean)}
      */
+    @Deprecated
     public void setInclusive(boolean inclusive) {
-        this.inclusive = inclusive;
+        //NOOP
     }
+    /**
+     * Gets whether to ignore case when matching start and end text.
+     * @return always <code>false</code>
+     * @deprecated Since 3.0.0, use {@link TextBetweenDetails#isCaseSensitive()}
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return false;
     }
     /**
      * Sets whether to ignore case when matching start and end text.
+     * <b>Calling this method has no effect.</b>
      * @param caseSensitive <code>true</code> to consider character case
+     * @deprecated Since 3.0.0,
+     *             use {@link TextBetweenDetails#setCaseSensitive(boolean)}
      */
+    @Deprecated
     public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+        //NOOP
     }
     /**
      * Adds a new pair of end points to match.
@@ -170,29 +192,42 @@ public class TextBetweenTagger
                 || StringUtils.isBlank(toText)) {
             return;
         }
-        betweens.add(new TextBetween(name, fromText, toText));
+        betweens.add(new TextBetweenDetails(name, fromText, toText));
+    }
+    /**
+     * Adds text between instructions.
+     * @param tbd "text between" details
+     */
+    public void addTextBetweenDetails(TextBetweenDetails tbd) {
+        betweens.add(tbd);
     }
 
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
-        setInclusive(xml.getBoolean("@inclusive", inclusive));
+        xml.checkDeprecated(
+                "@caseSensitive", "textBetween/caseSensitive", true);
+        xml.checkDeprecated("@inclusive", "textBetween/inclusive", true);
         List<XML> nodes = xml.getXMLList("textBetween");
         for (XML node : nodes) {
-            addTextEndpoints(
+            TextBetweenDetails tbd = new TextBetweenDetails(
                     node.getString("@name"),
                     node.getString("start", null),
                     node.getString("end", null));
+            tbd.setCaseSensitive(node.getBoolean("@caseSensitive", false));
+            tbd.setInclusive(node.getBoolean("@inclusive", false));
+            tbd.setOnSet(PropertySetter.fromXML(node, null));
+            addTextBetweenDetails(tbd);
         }
     }
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
-         xml.setAttribute("caseSensitive", caseSensitive);
-        xml.setAttribute("inclusive", inclusive);
-        for (TextBetween between : betweens) {
+        for (TextBetweenDetails between : betweens) {
             XML bxml = xml.addElement("textBetween")
-                    .setAttribute("name", between.name);
+                    .setAttribute("name", between.name)
+                    .setAttribute("caseSensitive", between.caseSensitive)
+                    .setAttribute("inclusive", between.inclusive);
+            PropertySetter.toXML(bxml, between.getOnSet());
             bxml.addElement("start", between.start);
             bxml.addElement("end", between.end);
         }
@@ -212,18 +247,61 @@ public class TextBetweenTagger
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
-    private static class TextBetween implements Comparable<TextBetween> {
+    public static class TextBetweenDetails
+            implements Comparable<TextBetweenDetails> {
         private final String name;
         private final String start;
         private final String end;
-        public TextBetween(String name, String start, String end) {
+        private boolean inclusive;
+        private boolean caseSensitive;
+        private PropertySetter onSet;
+        public TextBetweenDetails(String name, String start, String end) {
             super();
             this.name = name;
             this.start = start;
             this.end = end;
         }
+
+        public boolean isInclusive() {
+            return inclusive;
+        }
+        public void setInclusive(boolean inclusive) {
+            this.inclusive = inclusive;
+        }
+        public boolean isCaseSensitive() {
+            return caseSensitive;
+        }
+        public void setCaseSensitive(boolean caseSensitive) {
+            this.caseSensitive = caseSensitive;
+        }
+        /**
+         * Gets the property setter to use when a value is set.
+         * @return property setter
+         * @since 3.0.0
+         */
+        public PropertySetter getOnSet() {
+            return onSet;
+        }
+        /**
+         * Sets the property setter to use when a value is set.
+         * @param onSet property setter
+         * @since 3.0.0
+         */
+        public void setOnSet(PropertySetter onSet) {
+            this.onSet = onSet;
+        }
+        public String getName() {
+            return name;
+        }
+        public String getStart() {
+            return start;
+        }
+        public String getEnd() {
+            return end;
+        }
+
         @Override
-        public int compareTo(final TextBetween other) {
+        public int compareTo(final TextBetweenDetails other) {
             return CompareToBuilder.reflectionCompare(this, other);
         }
         @Override

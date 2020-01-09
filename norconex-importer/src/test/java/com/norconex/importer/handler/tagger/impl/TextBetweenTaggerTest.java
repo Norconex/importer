@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,12 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.tagger.impl.TextBetweenTagger.TextBetweenDetails;
 
 public class TextBetweenTaggerTest {
 
@@ -36,8 +38,9 @@ public class TextBetweenTaggerTest {
             throws IOException, ImporterHandlerException {
         // use it in a way that one of the end point is all we want to match
         TextBetweenTagger t = new TextBetweenTagger();
-        t.addTextEndpoints("field", "http://www\\..*?02a\\.gif", "\\b");
-        t.setInclusive(true);
+        addDetails(t, "field", "http://www\\..*?02a\\.gif", "\\b",
+                true, false, null);
+
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -56,12 +59,12 @@ public class TextBetweenTaggerTest {
     public void testTagTextDocument()
             throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();
-        t.addTextEndpoints("headings", "<h1>", "</H1>");
-        t.addTextEndpoints("headings", "<h2>", "</H2>");
-        t.addTextEndpoints("strong", "<b>", "</B>");
-        t.addTextEndpoints("strong", "<i>", "</I>");
-        t.setCaseSensitive(false);
-        t.setInclusive(true);
+
+        addDetails(t, "headings", "<h1>", "</H1>", true, false, null);
+        addDetails(t, "headings", "<h2>", "</H2>", true, false, null);
+        addDetails(t, "strong", "<b>", "</B>", true, false, null);
+        addDetails(t, "strong", "<i>", "</I>", true, false, null);
+
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -87,9 +90,8 @@ public class TextBetweenTaggerTest {
     public void testExtractFirst100ContentChars()
             throws IOException, ImporterHandlerException {
         TextBetweenTagger t = new TextBetweenTagger();
-        t.addTextEndpoints("mytitle", "^", ".{0,100}");
-        t.setCaseSensitive(false);
-        t.setInclusive(true);
+
+        addDetails(t, "mytitle", "^", ".{0,100}", true, false, null);
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
@@ -108,7 +110,19 @@ public class TextBetweenTaggerTest {
         TextBetweenTagger tagger = new TextBetweenTagger();
         tagger.addTextEndpoints("headings", "<h1>", "</h1>");
         tagger.addTextEndpoints("headings", "<h2>", "</h2>");
+        addDetails(tagger, "name", "start", "end", true,
+                true, PropertySetter.PREPEND);
         tagger.setMaxReadSize(512);
         XML.assertWriteRead(tagger, "handler");
+    }
+
+    private static void addDetails(
+            TextBetweenTagger t, String name, String start, String end,
+            boolean inclusive, boolean caseSensitive, PropertySetter onSet) {
+        TextBetweenDetails tbd = new TextBetweenDetails(name, start, end);
+        tbd.setInclusive(inclusive);
+        tbd.setCaseSensitive(caseSensitive);
+        tbd.setOnSet(onSet);
+        t.addTextBetweenDetails(tbd);
     }
 }

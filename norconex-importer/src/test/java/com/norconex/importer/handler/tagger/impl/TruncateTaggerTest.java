@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -31,7 +32,7 @@ public class TruncateTaggerTest {
         t.setAppendHash(true);
         t.setFromField("fromField");
         t.setMaxLength(100);
-        t.setOverwrite(true);
+        t.setOnSet(PropertySetter.REPLACE);
         t.setSuffix("suffix");
         t.setToField("toField");
         t.addRestriction("field", "regex", true);
@@ -54,7 +55,7 @@ public class TruncateTaggerTest {
         t.setFromField("from");
         t.setToField("to");
         t.setMaxLength(50);
-        t.setOverwrite(true);
+        t.setOnSet(PropertySetter.REPLACE);
 
         // hash + suffix
         t.setAppendHash(true);

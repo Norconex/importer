@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.io.output.WriterOutputStream;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexKeyValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -191,6 +192,23 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      */
     public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
+    }
+
+    /**
+     * Gets the property setter to use when a metadata value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return h.getOnSet();
+    }
+    /**
+     * Sets the property setter to use when a metadata value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        h.setOnSet(onSet);
     }
 
     /**

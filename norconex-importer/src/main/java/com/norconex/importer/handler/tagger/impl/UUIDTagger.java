@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -35,9 +36,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <code>document.uuid</code>.
  * </p>
  *
- * <p>If <code>field</code> already has one or more values,
- * the new UUID will be <i>added</i> to the list of
- * existing values, unless "overwrite" is set to <code>true</code>.</p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
@@ -45,7 +50,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
  *      field="(target field)"
- *      overwrite="[false|true]" &gt;
+ *      onSet="[append|prepend|replace|optional]" &gt;
  *
  *      &lt;restrictTo caseSensitive="[false|true]"
  *              field="(name of header/metadata field name to match)"&gt;
@@ -62,7 +67,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
- *      field="uuid" overwrite="true" /&gt;
+ *      field="uuid" onSet="replace" /&gt;
  * </pre>
  *
  * @author Pascal Essiembre
@@ -73,7 +78,7 @@ public class UUIDTagger extends AbstractDocumentTagger {
     public static final String DEFAULT_FIELD = "document.uuid";
 
     private String field = DEFAULT_FIELD;
-    private boolean overwrite;
+    private PropertySetter onSet;
 
     /**
      * Constructor.
@@ -93,11 +98,7 @@ public class UUIDTagger extends AbstractDocumentTagger {
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
-        if (overwrite) {
-            metadata.set(finalField, uuid);
-        } else {
-            metadata.add(finalField, uuid);
-        }
+        PropertySetter.orDefault(onSet).apply(metadata, finalField, uuid);
     }
 
     public String getField() {
@@ -107,23 +108,53 @@ public class UUIDTagger extends AbstractDocumentTagger {
         this.field = toField;
     }
 
+    /**
+     * Gets whether existing value for the same field should be overwritten.
+     * @return <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+     */
+    @Deprecated
     public boolean isOverwrite() {
-        return overwrite;
+        return PropertySetter.REPLACE == onSet;
     }
+    /**
+     * Sets whether existing value for the same field should be overwritten.
+     * @param overwrite <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+     */
+    @Deprecated
     public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
+        this.onSet = overwrite
+                ? PropertySetter.REPLACE : PropertySetter.APPEND;
+    }
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
     }
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        xml.checkDeprecated("@overwrite", "onSet", true);
         field = xml.getString("@field", field);
-        overwrite = xml.getBoolean("@overwrite", overwrite);
+        setOnSet(PropertySetter.fromXML(xml, onSet));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
         xml.setAttribute("field", field);
-        xml.setAttribute("overwrite", overwrite);
+        PropertySetter.toXML(xml, onSet);
     }
 
     @Override

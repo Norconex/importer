@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -42,40 +43,46 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * was made to it, use this tagger as one of the first
  * handler in your pre-parse handlers.</p>
  *
- * <p>If <code>field</code> already has one or more values,
- * the length will be <i>added</i> to the list of
- * existing values, unless "overwrite" is set to <code>true</code>.</p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * values will be added to the end of the existing value list.
+ * It is possible to change this default behavior by supplying a
+ * {@link PropertySetter}.
+ * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
  * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
- *      field="(mandatory target field)"
- *      overwrite="[false|true]" &gt;
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
+ *     field="(mandatory target field)"
+ *     onSet="[append|prepend|replace|optional]">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *     <restrictTo caseSensitive="[false|true]"
+ *             field="(name of header/metadata field name to match)">
+ *         (regular expression of value to match)
+ *     </restrictTo>
+ *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ * </handler>
+ * }</pre>
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The following stores the document lenght into a "docSize" field.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
- *      field="docSize" /&gt;
- * </pre>
+ *
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
+ *     field="docSize" />
+ * }</pre>
  * @author Pascal Essiembre
  * @since 2.2.0
  */
 public class DocumentLengthTagger extends AbstractDocumentTagger {
 
     private String field;
-    private boolean overwrite;
+    private PropertySetter onSet;
 
     @Override
     protected void tagApplicableDocument(String reference,
@@ -97,11 +104,8 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
             }
             length = is.getCount();
         }
-        if (overwrite) {
-            metadata.set(field, length);
-        } else {
-            metadata.add(field, length);
-        }
+
+        PropertySetter.orDefault(onSet).apply(metadata, field, length);
     }
 
     public String getField() {
@@ -111,23 +115,54 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
         this.field = field;
     }
 
+    /**
+     * Gets whether existing value for the same field should be overwritten.
+     * @return <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #getOnSet()}.
+     */
+    @Deprecated
     public boolean isOverwrite() {
-        return overwrite;
+        return PropertySetter.REPLACE == onSet;
     }
+    /**
+     * Sets whether existing value for the same field should be overwritten.
+     * @param overwrite <code>true</code> if overwriting existing value.
+     * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
+     */
+    @Deprecated
     public void setOverwrite(boolean overwrite) {
-        this.overwrite = overwrite;
+        this.onSet = overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND;
     }
+
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        xml.checkDeprecated("@overwrite", "onSet", true);
         field = xml.getString("@field", field);
-        overwrite = xml.getBoolean("@overwrite", overwrite);
+        setOnSet(PropertySetter.fromXML(xml, onSet));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
         xml.setAttribute("field", field);
-        xml.setAttribute("overwrite", overwrite);
+        PropertySetter.toXML(xml, getOnSet());
     }
 
     @Override
