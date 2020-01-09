@@ -49,6 +49,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * It is possible to change this default behavior by supplying a
  * {@link PropertySetter}.
  * </p>
+ * <p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
  * <p>
