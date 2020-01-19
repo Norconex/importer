@@ -47,68 +47,65 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@link ExternalParser} instead.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler@nx.xml.usage}
  *
- *      &lt;command&gt;
- *          c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *      &lt;/command&gt;
+ *     <command>
+ *         c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *     </command>
  *
- *      &lt;metadata
- *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"
- *              onSet="[append|prepend|replace|optional]"&gt;
- *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)"
- *                  fieldGroup="(field name match group index)"
- *                  valueGroup="(field value match group index)"
- *                  caseSensitive="[false|true]"&gt;
- *              (regular expression)
- *          &lt;/pattern&gt;
- *          &lt;!-- repeat pattern tag as needed --&gt;
- *      &lt;/metadata&gt;
+ *     <metadata
+ *             inputFormat="[json|xml|properties]"
+ *             outputFormat="[json|xml|properties]"
+ *             onSet="[append|prepend|replace|optional]">
+ *         <!-- pattern only used when no output format is specified -->
+ *         <pattern field="(target field name)"
+ *                 fieldGroup="(field name match group index)"
+ *                 valueGroup="(field value match group index)"
+ *                 ignoreCase="[false|true]"
+ *                 ignoreDiacritic="[false|true]">
+ *             (regular expression)
+ *         </pattern>
+ *         <!-- repeat pattern tag as needed -->
+ *     </metadata>
  *
- *      &lt;environment&gt;
- *          &lt;variable name="(environment variable name)"&gt;
- *              (environment variable value)
- *          &lt;/variable&gt;
- *          &lt;!-- repeat variable tag as needed --&gt;
- *      &lt;/environment&gt;
+ *     <environment>
+ *         <variable name="(environment variable name)">
+ *             (environment variable value)
+ *         </variable>
+ *         <!-- repeat variable tag as needed -->
+ *     </environment>
  *
- *      &lt;tempDir&gt;
- *          (Optional directory where to store temporary files used
- *           for transformation.)
- *      &lt;/tempDir&gt;
+ *     <tempDir>
+ *         (Optional directory where to store temporary files used
+ *          for transformation.)
+ *     </tempDir>
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
+ *     <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
+ *     <metadata>
+ *         <match field="docnumber" valueGroup="1">DocNo:(\d+)</match>
+ *     </metadata>
+ * </handler>
+ * }
  * <p>
- * The following example invokes an external application that accepts two
+ * The above example invokes an external application that accepts two
  * files as arguments: the first one being the file to transform, the second
  * one being holding the transformation result. It also extract a document
  * number from STDOUT, found as "DocNo:1234" and storing it as "docnumber".
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer"&gt;
- *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
- *      &lt;metadata&gt;
- *          &lt;match field="docnumber" valueGroup="1"&gt;DocNo:(\d+)&lt;/match&gt;
- *      &lt;/metadata&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @see ExternalHandler
  * @since 2.7.0
  */
+@SuppressWarnings("javadoc")
 public class ExternalTransformer extends AbstractDocumentTransformer {
 
     private final ExternalHandler h = new ExternalHandler();

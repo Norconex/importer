@@ -27,8 +27,22 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
-          <xs:attribute name="caseSensitive" type="xs:boolean"></xs:attribute>
           <xs:attribute name="field" type="xs:string"></xs:attribute>
+          <xs:attribute name="ignoreCase" type="xs:boolean"></xs:attribute>
+          <xs:attribute name="ignoreDiacritic" type="xs:boolean"></xs:attribute>
+          <xs:attribute name="matchWhole" type="xs:boolean"></xs:attribute>
+          <xs:attribute name="method">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="BASIC"/>
+                <xs:enumeration value="basic"/>
+                <xs:enumeration value="WILDCARD"/>
+                <xs:enumeration value="wildcard"/>
+                <xs:enumeration value="REGEX"/>
+                <xs:enumeration value="regex"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>

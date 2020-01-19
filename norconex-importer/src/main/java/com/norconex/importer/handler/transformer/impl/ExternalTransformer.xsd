@@ -43,7 +43,8 @@
                 <xs:attribute name="field" type="xs:string"/>
                 <xs:attribute name="fieldGroup" type="xs:int"/>
                 <xs:attribute name="valueGroup" type="xs:int"/>
-                <xs:attribute name="caseSensitive" type="xs:boolean"/>
+                <xs:attribute name="ignoreCase" type="xs:boolean"/>
+                <xs:attribute name="ignoreDiacritic" type="xs:boolean"/>
               </xs:extension>
             </xs:simpleContent>
           </xs:complexType>  

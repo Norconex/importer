@@ -217,11 +217,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@link com.norconex.importer.parser.impl.ExternalParser} instead.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <p>Consuming classes implementing {@link IXMLConfigurable} can use
- * the XML save/load methods of this class to inherit the following
- * (which they can support differently):</p>
- * <pre>{@code
+ * {@nx.xml.usage
  * <command>
  *     /Apps/myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
  * </command>
@@ -252,7 +248,10 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *     (Optional directory where to store temporary files used
  *      by this class.)
  * </tempDir>
- * }</pre>
+ * }
+ * <p>Consuming classes implementing {@link IXMLConfigurable} can use
+ * the XML save/load methods of this class to inherit the above
+ * (which they can support differently).</p>
  *
  * @author Pascal Essiembre
  * @see ExternalTagger
@@ -260,6 +259,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * @see ExternalParser
  * @since 3.0.0
  */
+@SuppressWarnings("javadoc")
 public class ExternalHandler {
 
     private static final Logger LOG =

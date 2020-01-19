@@ -248,7 +248,15 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         if (!nodes.isEmpty()) {
             restrictions.clear();
             for (XML node : nodes) {
-                restrictions.add(PropertyMatcher.loadFromXML(node));
+                TextMatcher tm = new TextMatcher();
+                tm.setMethod(node.getEnum("@method", Method.class, null));
+                tm.setIgnoreCase(node.getBoolean("@ignoreCase", false));
+                tm.setIgnoreDiacritic(
+                        node.getBoolean("@ignoreDiacritic", false));
+                tm.setMatchWhole(node.getBoolean("@matchWhole", false));
+                tm.setPattern(node.getString("pattern", null));
+                restrictions.add(
+                        new PropertyMatcher(node.getString("@field"), tm));
             }
         }
     }
@@ -260,9 +268,16 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
     @Override
     public void saveToXML(XML xml) {
-        restrictions.forEach(r ->
-                PropertyMatcher.saveToXML(xml.addElement("restrictTo"), r));
         saveHandlerToXML(xml);
+        restrictions.forEach(pm -> {
+            TextMatcher tm = pm.getTextMatcher();
+            xml.addElement("restrictTo", tm.getPattern())
+                .setAttribute("field", pm.getKey())
+                .setAttribute("method", tm.getMethod())
+                .setAttribute("ignoreCase", tm.isIgnoreCase())
+                .setAttribute("ignoreDiacritic", tm.isIgnoreDiacritic())
+                .setAttribute("matchWhole", tm.isMatchWhole());
+        });
     }
 
     /**
