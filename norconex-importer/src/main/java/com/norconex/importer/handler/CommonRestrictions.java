@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  */
 package com.norconex.importer.handler;
 
+import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.importer.doc.ImporterMetadata;
 
 /**
@@ -26,6 +29,10 @@ import com.norconex.importer.doc.ImporterMetadata;
  * @since 2.4.0
  */
 public final class CommonRestrictions {
+
+    private static final TextMatcher RX_NOCASE_PROTO =
+            new TextMatcher(Method.REGEX).setIgnoreCase(true);
+
 
     private CommonRestrictions() {
     }
@@ -42,8 +49,7 @@ public final class CommonRestrictions {
      * @return list of restrictions
      */
     public static PropertyMatchers domContentTypes() {
-        PropertyMatchers list = new PropertyMatchers();
-        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
+        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml",
@@ -55,7 +61,6 @@ public final class CommonRestrictions {
                 "image/svg\\+xml",
                 "application/mathml\\+xml",
                 "application/rss\\+xml");
-        return list;
     }
 
     /**
@@ -69,12 +74,10 @@ public final class CommonRestrictions {
      * @since 2.8.0
      */
     public static PropertyMatchers htmlContentTypes() {
-        PropertyMatchers list = new PropertyMatchers();
-        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
+        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml");
-        return list;
     }
 
     /**
@@ -90,14 +93,22 @@ public final class CommonRestrictions {
      * @since 3.0.0
      */
     public static PropertyMatchers imageIOStandardContentTypes() {
-        PropertyMatchers list = new PropertyMatchers();
-        list.add(ImporterMetadata.DOC_CONTENT_TYPE, false,
+        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
                 "image/jpeg",
                 "image/png",
                 "image/gif",
                 "image/bmp",
                 "image/vnd.wap.wbmp",
                 "image/x-windows-bmp");
-        return list;
+    }
+
+    private static PropertyMatchers regexesIgnoreCase(
+            String key, String... regexes) {
+        PropertyMatchers matchers = new PropertyMatchers();
+        for (String regex : regexes) {
+            matchers.add(new PropertyMatcher(
+                    key, RX_NOCASE_PROTO.withPattern(regex)));
+        }
+        return matchers;
     }
 }

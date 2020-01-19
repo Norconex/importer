@@ -125,7 +125,7 @@ public class CharsetTagger extends AbstractDocumentTagger
         String[] metaFields = metadata.keySet().toArray(
                 ArrayUtils.EMPTY_STRING_ARRAY);
         Pattern pattern = new Regex(
-                fieldsRegex).dotAll().caseInsensitive().compile();
+                fieldsRegex).dotAll().ignoreCase().compile();
         for (String metaField : metaFields) {
             if (pattern.matcher(metaField).matches()) {
                 if (LOG.isDebugEnabled()) {

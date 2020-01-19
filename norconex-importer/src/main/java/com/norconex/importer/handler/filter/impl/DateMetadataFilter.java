@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,67 +69,64 @@ import com.norconex.importer.util.FormatUtil;
  * it should be refreshed on every call to reflect system date time changes.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *          onMatch="[include|exclude]"
- *          field="(name of metadata field to match)"
- *          format="(date format)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ *         onMatch="[include|exclude]"
+ *         field="(name of metadata field to match)"
+ *         format="(date format)" >
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler@nx.xml.usage}
  *
- *      &lt;!-- Use one or two (for ranges) conditions where:
+ *     <!-- Use one or two (for ranges) conditions where:
  *
- *           Possible operators are:
+ *       Possible operators are:
  *
- *               gt -&gt; greater than
- *               ge -&gt; greater equal
- *               lt -&gt; lower than
- *               le -&gt; lowe equal
- *               eq -&gt; equals
+ *         gt -> greater than
+ *         ge -> greater equal
+ *         lt -> lower than
+ *         le -> lowe equal
+ *         eq -> equals
  *
- *           Condition date value format are either one of:
+ *       Condition date value format are either one of:
  *
- *               yyyy-MM-dd            -&gt; date (e.g. 2015-05-31)
- *               yyyy-MM-ddThh:mm:ss[.SSS]   -&gt; date and time with optional
- *                                              milliseconds (e.g. 2015-05-31T22:44:15)
- *               TODAY[-+]9[YMDhms][*] -&gt; the string "TODAY" (at 0:00:00) minus
- *                                        or plus a number of years, months, days,
- *                                        hours, minutes, or seconds
- *                                        (e.g. 1 week ago: TODAY-7d).
- *                                        * means TODAY can change from one invocation
- *                                        to another to adjust to a change of current day
- *               NOW[-+]9[YMDhms][*]  -&gt; the string "NOW" (at current time) minus
- *                                       or plus a number of years, months, days,
- *                                       hours, minutes, or seconds
- *                                       (e.g. 1 week ago: NOW-7d).
- *                                       * means NOW changes from one invocation
- *                                       to another to adjust to the current time.
+ *         yyyy-MM-dd                -> date (e.g. 2015-05-31)
+ *         yyyy-MM-ddThh:mm:ss[.SSS] -> date and time with optional
+ *                                      milliseconds (e.g. 2015-05-31T22:44:15)
+ *         TODAY[-+]9[YMDhms][*]     -> the string "TODAY" (at 0:00:00) minus
+ *                                      or plus a number of years, months, days,
+ *                                      hours, minutes, or seconds
+ *                                      (e.g. 1 week ago: TODAY-7d).
+ *                                      * means TODAY can change from one invocation
+ *                                      to another to adjust to a change of current day
+ *         NOW[-+]9[YMDhms][*]       -> the string "NOW" (at current time) minus
+ *                                      or plus a number of years, months, days,
+ *                                      hours, minutes, or seconds
+ *                                      (e.g. 1 week ago: NOW-7d).
+ *                                      * means NOW changes from one invocation
+ *                                      to another to adjust to the current time.
+ *    -->
  *
- *        --&gt;
+ *     <condition operator="[gt|ge|lt|le|eq]" date="(a date)" />
  *
- *      &lt;condition operator="[gt|ge|lt|le|eq]" date="(a date)" /&gt;
+ * </handler>
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
- * <p>For example, let's say you want to keep only documents from the last
- *    seven days, not including today. The following would achieve that:</p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *          onMatch="include" field="publish_date" &gt;
- *      &lt;condition operator="ge" date="TODAY-7" /&gt;
- *      &lt;condition operator="lt" date="TODAY" /&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ *     onMatch="include" field="publish_date" >
+ *   <condition operator="ge" date="TODAY-7" />
+ *   <condition operator="lt" date="TODAY" />
+ * </handler>
+ * }
+ * <p>
+ * The above example will only keep documents from the last
+ * seven days, not including today.
+ * </p>
  *
  * @author Pascal Essiembre
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class DateMetadataFilter extends AbstractDocumentFilter {
 
     private static final Logger LOG =

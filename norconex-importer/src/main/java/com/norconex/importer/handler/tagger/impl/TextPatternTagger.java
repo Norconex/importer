@@ -78,7 +78,8 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *      &lt;pattern field="(target field name)"
  *              fieldGroup="(field name match group index)"
  *              valueGroup="(field value match group index)"
- *              caseSensitive="[false|true]"
+ *              ignoreCase="[false|true]"
+ *              ignoreDiacritic="[false|true]"
  *              onSet="[append|prepend|replace|optional]"&gt;
  *          (regular expression)
  *      &lt;/pattern&gt;
@@ -173,23 +174,30 @@ public class TextPatternTagger
     protected void loadStringTaggerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("pattern");
         for (XML node : nodes) {
-            addPattern(new RegexKeyValueExtractor(node.getString(".", null))
-                   .setCaseSensitive(node.getBoolean("@caseSensitive", false))
-                   .setKey(node.getString("@field", null))
-                   .setKeyGroup(node.getInteger("@fieldGroup", -1))
-                   .setValueGroup(node.getInteger("@valueGroup", -1))
-                   .setOnSet(PropertySetter.fromXML(node, null)));
+            node.checkDeprecated("@caseSensitive", "ignoreCase", true);
+            RegexKeyValueExtractor ex = new RegexKeyValueExtractor(
+                    node.getString(".", null));
+            ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
+            ex.getRegex().setIgnoreDiacritic(
+                    node.getBoolean("@ignoreDiacritic", false));
+            ex.setKey(node.getString("@field", null));
+            ex.setKeyGroup(node.getInteger("@fieldGroup", -1));
+            ex.setValueGroup(node.getInteger("@valueGroup", -1));
+            ex.setOnSet(PropertySetter.fromXML(node, null));
+            addPattern(ex);
         }
     }
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
         for (RegexKeyValueExtractor rfe : patterns) {
-            XML node = xml.addElement("pattern", rfe.getPattern())
+            XML node = xml.addElement("pattern", rfe.getRegex().getPattern())
                     .setAttribute("field", rfe.getKey())
                     .setAttribute("fieldGroup", rfe.getKeyGroup())
                     .setAttribute("valueGroup", rfe.getValueGroup())
-                    .setAttribute("caseSensitive", rfe.isCaseSensitive());
+                    .setAttribute("ignoreCase", rfe.getRegex().isIgnoreCase())
+                    .setAttribute("ignoreDiacritic",
+                            rfe.getRegex().isIgnoreDiacritic());
             PropertySetter.toXML(node, rfe.getOnSet());
         }
     }

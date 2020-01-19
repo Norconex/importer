@@ -32,6 +32,8 @@ TODO:
   - how all PropertySetter default to APPEND
   - etc.
 
+- Maybe: have a @taglet for if it can be used as pre-post or both? 
+
 - CountValueTagger (one to count mattching patterns, one to count number of multi-value entries)
 - EmptyFilter
 - DOMTransformer, JSON*(handlers)

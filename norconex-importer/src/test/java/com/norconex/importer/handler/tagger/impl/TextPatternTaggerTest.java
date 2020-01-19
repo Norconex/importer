@@ -90,7 +90,6 @@ public class TextPatternTaggerTest {
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
         tagger.addPattern(new RegexKeyValueExtractor("blah")
-                .setCaseSensitive(true)
                 .setKey("field3")
                 .setKeyGroup(3)
                 .setValueGroup(6)

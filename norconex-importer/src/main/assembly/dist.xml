@@ -27,7 +27,7 @@
       <includes>
         <include>**</include>
       </includes>
-      <outputDirectory>/examples</outputDirectory>
+      <outputDirectory>./examples</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${basedir}/src/main/assembly/</directory>
@@ -40,7 +40,7 @@
         <include>*.txt</include>
         <include>importer.*</include>
       </includes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/site/apidocs</directory>
@@ -52,7 +52,7 @@
         <exclude>scripts/decrypt*</exclude>
         <exclude>scripts/encrypt*</exclude>
       </excludes>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${project.build.directory}/generated-resources</directory>
@@ -69,19 +69,15 @@
   <files>
     <file>
       <source>src/main/assembly/log4j.properties</source>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>./</outputDirectory>
     </file>
     <file>
       <source>src/main/assembly/CLASSES_README.txt</source>
-      <outputDirectory>/classes</outputDirectory>
+      <outputDirectory>./classes</outputDirectory>
     </file>
   </files>
   <dependencySets>
     <dependencySet>
-      <excludes>
-        <exclude>junit*</exclude>
-        <exclude>hamcrest-core*</exclude>
-      </excludes>
       <outputDirectory>lib</outputDirectory>
       <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>      
     </dependencySet>

@@ -108,7 +108,7 @@ public class TextBetweenTagger
             List<Pair<Integer, Integer>> matches = new ArrayList<>();
             Regex regex = new Regex()
                     .dotAll()
-                    .setCaseInsensitive(!between.caseSensitive);
+                    .setIgnoreCase(!between.caseSensitive);
 
             Pattern leftPattern = regex.compile(between.start);
             Matcher leftMatch = leftPattern.matcher(content);

@@ -86,6 +86,15 @@
         onConflict="..." have been deprecated in favor of
         new onSet="...". 
       </action>
+      <action dev="essiembre" type="update">
+        Most places where regular expressions could be used now also 
+        support "basic" matching and "wildcard" as well as being able to 
+        ignore diacritical marks (e.g., accents).
+      </action>      
+      <action dev="essiembre" type="update">
+        Most occurrences of "caseSensitive" or "caseInsensitive" configuration
+        options are now replaced with "ignoreCase".
+      </action>      
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>

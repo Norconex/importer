@@ -97,7 +97,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
             final boolean parsed,
             final int sectionIndex) {
 
-        Regex regex = new Regex().dotAll().setCaseInsensitive(!caseSensitive);
+        Regex regex = new Regex().dotAll().setIgnoreCase(!caseSensitive);
 //        int flags = Pattern.DOTALL;
 //        if (!caseSensitive) {
 //            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;

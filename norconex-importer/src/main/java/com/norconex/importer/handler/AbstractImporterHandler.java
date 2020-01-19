@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -43,19 +45,10 @@ import com.norconex.importer.util.CharsetUtil;
  * following:
  *
  * <pre>
- *   myHandler.setRestriction("document.contentType", "^text/.*$");
+ *   myHandler.setRestriction(new PropertyMatcher("document.contentType",
+ *          new TextMatcher(Method.REGEX).setPattern("^text/.*$")));
  * </pre>
  *
- * <h3>XML configuration usage:</h3>
- * Subclasses inherit this {@link IXMLConfigurable} configuration:
- *
- * <pre>
- *  &lt;restrictTo caseSensitive="[false|true]"
- *          field="(name of metadata field name to match)"&gt;
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
- *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
  * <p>
  * Subclasses <b>must</b> test if a document is accepted using the
  * {@link #isApplicable(String, ImporterMetadata, boolean)} method.
@@ -63,6 +56,34 @@ import com.norconex.importer.util.CharsetUtil;
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
  * </p>
+ *
+ * {@nx.xml.usage
+ * <restrictTo
+ *     field="(name of metadata field name to match)"
+ *     method="[basic|wildcard|regex]"
+ *     ignoreCase="[false|true]"
+ *     ignoreDiacritic="[false|true]"
+ *     matchWhole="[false|true]">
+ *       (expression of value to match)
+ *     </restrictTo>
+ * <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ * }
+ * <p>
+ * Subclasses inherit the above {@link IXMLConfigurable} configuration.
+ * </p>
+ *
+ * {@nx.xml.example
+ * <restrictTo
+ *     field="document.contentType"
+ *     method="wildcard"
+ *     matchWhole="true">
+ *     text/*
+ * </restrictTo>
+ * }
+ * <p>
+ * The above will apply to any content type starting with "text/".
+ * </p>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
@@ -82,10 +103,13 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param field metadata property/field
      * @param regex regular expression
      * @param caseSensitive whether regular expression should be case sensitive
+     * @deprecated Since 3.0.0, use {@link #addRestriction(PropertyMatcher...)}.
      */
+    @Deprecated
     public synchronized void addRestriction(
             String field, String regex, boolean caseSensitive) {
-        restrictions.add(field, caseSensitive, regex);
+        restrictions.add(new PropertyMatcher(field,
+                new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive)));
     }
 
     /**
@@ -237,7 +261,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     @Override
     public void saveToXML(XML xml) {
         restrictions.forEach(r ->
-                PropertyMatcher.saveToXML(r, xml.addElement("restrictTo")));
+                PropertyMatcher.saveToXML(xml.addElement("restrictTo"), r));
         saveHandlerToXML(xml);
     }
 
