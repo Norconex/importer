@@ -25,7 +25,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
@@ -65,41 +65,38 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * <pre>{@code
  *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
  *
- *      <restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)">
- *          (regular expression of value to match)
- *      </restrictTo>
- *      <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *    <restrictTo caseSensitive="[false|true]"
+ *        field="(name of header/metadata field name to match)">
+ *      (regular expression of value to match)
+ *    </restrictTo>
+ *    <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  *
- *      <command inputDisabled="[false|true]">
- *          c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *      </command>
+ *    <command inputDisabled="[false|true]">
+ *      c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *    </command>
  *
- *      <metadata
- *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"
- *              onSet="[append|prepend|replace|optional]">
- *          <!-- pattern only used when no output format is specified -->
- *          <pattern field="(target field name)"
- *                  fieldGroup="(field name match group index)"
- *                  valueGroup="(field value match group index)"
- *                  caseSensitive="[false|true]">
- *              (regular expression)
- *          </pattern>
- *          <!-- repeat pattern tag as needed -->
- *      </metadata>
+ *    <metadata
+ *        inputFormat="[json|xml|properties]"
+ *        outputFormat="[json|xml|properties]"
+ *        {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *      <!-- pattern only used when no output format is specified -->
+ *      <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *        (regular expression)
+ *      </pattern>
+ *      <!-- repeat pattern tag as needed -->
+ *    </metadata>
  *
- *      <environment>
- *          <variable name="(environment variable name)">
- *              (environment variable value)
- *          </variable>
- *          <!-- repeat variable tag as needed -->
- *      </environment>
+ *    <environment>
+ *      <variable name="(environment variable name)">
+ *          (environment variable value)
+ *      </variable>
+ *      <!-- repeat variable tag as needed -->
+ *    </environment>
  *
- *      <tempDir>
- *          (Optional directory where to store temporary files used
- *           for transformation.)
- *      </tempDir>
+ *    <tempDir>
+ *      (Optional directory where to store temporary files used
+ *       for transformation.)
+ *    </tempDir>
  *
  *  </handler>
  * }</pre>
@@ -162,7 +159,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexFieldValueExtractor> getMetadataExtractionPatterns() {
         return h.getMetadataExtractionPatterns();
     }
     /**
@@ -190,7 +187,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * names/values.
      * @param patterns extraction pattern
      */
-    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.addMetadataExtractionPatterns(patterns);
     }
     /**
@@ -198,7 +195,7 @@ public class ExternalTagger extends AbstractDocumentTagger {
      * patterns.
      * @param patterns extraction pattern
      */
-    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
     }
 

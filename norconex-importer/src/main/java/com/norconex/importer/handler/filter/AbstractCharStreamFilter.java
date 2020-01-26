@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * restricted to text documents only (see {@link AbstractImporterHandler}).
  * </p>
  *
- * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * <p>When used as a pre-parse handler,
  * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
@@ -44,24 +44,22 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * used as a post-parse handler.
  * </p>
  *
- * <p>
- * Subclasses inherit this {@link IXMLConfigurable} configuration:
- * </p>
- * <pre>
- *  &lt;!-- parent tag has these attribute:
+ * {@nx.xml.usage
+ *  <!-- parent tag has these attribute:
  *      sourceCharset="(character encoding)"
  *      onMatch="[include|exclude]"
- *    --&gt;
- *  &lt;restrictTo
- *          caseSensitive="[false|true]"
- *          field="(name of header/metadata field name to match)"&gt;
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
- *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
+ *    -->
+ *  {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * }
+ *
+ * <p>
+ * Subclasses inherit the above {@link IXMLConfigurable} configuration.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
 
     private String sourceCharset = null;

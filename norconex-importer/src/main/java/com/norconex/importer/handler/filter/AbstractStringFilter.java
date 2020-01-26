@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,23 +52,23 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Implementors should be conscious about memory when dealing with the string
  * builder.
  * </p>
- * <p>
- * Subclasses inherit this {@link IXMLConfigurable} configuration:
- * </p>
- * <pre>
- *  &lt;!-- parent tag has these attributes:
+ *
+ * {@nx.xml.usage
+ *  <!-- parent tag has these attributes:
  *      maxReadSize="(max characters to read at once)"
  *      sourceCharset="(character encoding)"
  *      onMatch="[include|exclude]"
- *    --&gt;
- *  &lt;restrictTo caseSensitive="[false|true]"
- *          field="(name of header/metadata field name to match)" &gt;
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
- *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
+ *    -->
+ *  {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * }
+ *
+ * <p>
+ * Subclasses inherit the above {@link IXMLConfigurable} configuration.
+ * </p>
+ *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractStringFilter
             extends AbstractCharStreamFilter {
 

@@ -75,7 +75,7 @@ import com.norconex.importer.util.FormatUtil;
  *         field="(name of metadata field to match)"
  *         format="(date format)" >
  *
- *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler@nx.xml.usage}
+ *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
  *     <!-- Use one or two (for ranges) conditions where:
  *

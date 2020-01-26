@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
@@ -45,8 +45,8 @@ public class ExternalParserTest {
         p.setCommand("my command");
 
         p.setMetadataExtractionPatterns(
-            new RegexKeyValueExtractor("asdf.*", "blah"),
-            new RegexKeyValueExtractor("qwer.*", "halb")
+            new RegexFieldValueExtractor("asdf.*", "blah"),
+            new RegexFieldValueExtractor("qwer.*", "halb")
         );
 
         Map<String, String> envs = new HashMap<>();
@@ -162,11 +162,11 @@ public class ExternalParserTest {
         p.setEnvironmentVariables(envs);
 
         p.setMetadataExtractionPatterns(
-            new RegexKeyValueExtractor("^(f.*):(.*)", 1, 2),
-            new RegexKeyValueExtractor("^<field2>(.*)</field2>", "field2", 1),
-            new RegexKeyValueExtractor("^f.*StdErr.*", "field3", 1),
-            new RegexKeyValueExtractor("^(S.*?):(.*)", 2, 1),
-            new RegexKeyValueExtractor("^(reference)\\=(.*)", 1, 2)
+            new RegexFieldValueExtractor("^(f.*):(.*)", 1, 2),
+            new RegexFieldValueExtractor("^<field2>(.*)</field2>", "field2", 1),
+            new RegexFieldValueExtractor("^f.*StdErr.*", "field3", 1),
+            new RegexFieldValueExtractor("^(S.*?):(.*)", 2, 1),
+            new RegexFieldValueExtractor("^(reference)\\=(.*)", 1, 2)
         );
     }
 

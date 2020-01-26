@@ -28,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -111,12 +111,12 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 public class TextPatternTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
-    private final List<RegexKeyValueExtractor> patterns = new ArrayList<>();
+    private final List<RegexFieldValueExtractor> patterns = new ArrayList<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        RegexKeyValueExtractor.extractKeyValues(metadata, content, patterns);
+        RegexFieldValueExtractor.extractFieldValues(metadata, content, patterns);
     }
 
     /**
@@ -129,7 +129,7 @@ public class TextPatternTagger
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addPattern(new RegexKeyValueExtractor(pattern).setKey(field));
+        addPattern(new RegexFieldValueExtractor(pattern).setField(field));
     }
     /**
      * Adds a new pattern, which will extract the value from the specified
@@ -142,14 +142,14 @@ public class TextPatternTagger
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addPattern(new RegexKeyValueExtractor(
-                pattern).setKey(field).setValueGroup(valueGroup));
+        addPattern(new RegexFieldValueExtractor(
+                pattern).setField(field).setValueGroup(valueGroup));
     }
     /**
      * Adds one or more pattern that will extract matching field names/values.
      * @param pattern field extractor pattern
      */
-    public void addPattern(RegexKeyValueExtractor... pattern) {
+    public void addPattern(RegexFieldValueExtractor... pattern) {
         if (ArrayUtils.isNotEmpty(pattern)) {
             patterns.addAll(Arrays.asList(pattern));
         }
@@ -159,14 +159,14 @@ public class TextPatternTagger
      * Clears previously set pattterns.
      * @param patterns field extractor pattern
      */
-    public void setPattern(RegexKeyValueExtractor... patterns) {
+    public void setPattern(RegexFieldValueExtractor... patterns) {
         CollectionUtil.setAll(this.patterns, patterns);
     }
     /**
      * Gets the patterns used to extract matching field names/values.
      * @return patterns
      */
-    public List<RegexKeyValueExtractor> getPatterns() {
+    public List<RegexFieldValueExtractor> getPatterns() {
         return Collections.unmodifiableList(patterns);
     }
 
@@ -175,13 +175,13 @@ public class TextPatternTagger
         List<XML> nodes = xml.getXMLList("pattern");
         for (XML node : nodes) {
             node.checkDeprecated("@caseSensitive", "ignoreCase", true);
-            RegexKeyValueExtractor ex = new RegexKeyValueExtractor(
+            RegexFieldValueExtractor ex = new RegexFieldValueExtractor(
                     node.getString(".", null));
             ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
             ex.getRegex().setIgnoreDiacritic(
                     node.getBoolean("@ignoreDiacritic", false));
-            ex.setKey(node.getString("@field", null));
-            ex.setKeyGroup(node.getInteger("@fieldGroup", -1));
+            ex.setField(node.getString("@field", null));
+            ex.setFieldGroup(node.getInteger("@fieldGroup", -1));
             ex.setValueGroup(node.getInteger("@valueGroup", -1));
             ex.setOnSet(PropertySetter.fromXML(node, null));
             addPattern(ex);
@@ -190,10 +190,10 @@ public class TextPatternTagger
 
     @Override
     protected void saveStringTaggerToXML(XML xml) {
-        for (RegexKeyValueExtractor rfe : patterns) {
+        for (RegexFieldValueExtractor rfe : patterns) {
             XML node = xml.addElement("pattern", rfe.getRegex().getPattern())
-                    .setAttribute("field", rfe.getKey())
-                    .setAttribute("fieldGroup", rfe.getKeyGroup())
+                    .setAttribute("field", rfe.getField())
+                    .setAttribute("fieldGroup", rfe.getFieldGroup())
                     .setAttribute("valueGroup", rfe.getValueGroup())
                     .setAttribute("ignoreCase", rfe.getRegex().isIgnoreCase())
                     .setAttribute("ignoreDiacritic",

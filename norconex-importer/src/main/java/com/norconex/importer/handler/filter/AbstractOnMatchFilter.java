@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.norconex.commons.lang.xml.XML;
  * Convenience base class for implementing filters offering the include/exclude
  * "onmatch" option.  Default behavior on match is to include.
  * @author Pascal Essiembre
- * @deprecated Use composition with OnMatch instead
+ * @deprecated Since 3.0.0, use composition with OnMatch instead
  */
 @Deprecated
 public abstract class AbstractOnMatchFilter implements IOnMatchFilter {

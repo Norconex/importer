@@ -26,7 +26,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
@@ -50,38 +50,34 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
  *
- *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler@nx.xml.usage}
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <command>
- *         c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *     </command>
+ *   <command>
+ *     c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *   </command>
  *
- *     <metadata
- *             inputFormat="[json|xml|properties]"
- *             outputFormat="[json|xml|properties]"
- *             onSet="[append|prepend|replace|optional]">
- *         <!-- pattern only used when no output format is specified -->
- *         <pattern field="(target field name)"
- *                 fieldGroup="(field name match group index)"
- *                 valueGroup="(field value match group index)"
- *                 ignoreCase="[false|true]"
- *                 ignoreDiacritic="[false|true]">
- *             (regular expression)
- *         </pattern>
- *         <!-- repeat pattern tag as needed -->
- *     </metadata>
+ *   <metadata
+ *       inputFormat="[json|xml|properties]"
+ *       outputFormat="[json|xml|properties]"
+ *       onSet="[append|prepend|replace|optional]">
+ *     <!-- pattern only used when no output format is specified -->
+ *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *       (regular expression)
+ *     </pattern>
+ *     <!-- repeat pattern tag as needed -->
+ *   </metadata>
  *
- *     <environment>
- *         <variable name="(environment variable name)">
- *             (environment variable value)
- *         </variable>
- *         <!-- repeat variable tag as needed -->
- *     </environment>
+ *   <environment>
+ *     <variable name="(environment variable name)">
+ *       (environment variable value)
+ *     </variable>
+ *     <!-- repeat variable tag as needed -->
+ *   </environment>
  *
- *     <tempDir>
- *         (Optional directory where to store temporary files used
- *          for transformation.)
- *     </tempDir>
+ *   <tempDir>
+ *     (Optional directory where to store temporary files used
+ *      for transformation.)
+ *   </tempDir>
  *
  * </handler>
  * }
@@ -90,7 +86,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
  *     <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
  *     <metadata>
- *         <match field="docnumber" valueGroup="1">DocNo:(\d+)</match>
+ *         <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</pattern>
  *     </metadata>
  * </handler>
  * }
@@ -131,7 +127,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexFieldValueExtractor> getMetadataExtractionPatterns() {
         return h.getMetadataExtractionPatterns();
     }
     /**
@@ -159,7 +155,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer {
      * names/values.
      * @param patterns extraction pattern
      */
-    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.addMetadataExtractionPatterns(patterns);
     }
     /**
@@ -167,7 +163,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer {
      * patterns.
      * @param patterns extraction pattern
      */
-    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
     }
 

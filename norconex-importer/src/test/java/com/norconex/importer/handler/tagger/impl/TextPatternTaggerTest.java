@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -89,9 +89,9 @@ public class TextPatternTaggerTest {
         TextPatternTagger tagger = new TextPatternTagger();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
-        tagger.addPattern(new RegexKeyValueExtractor("blah")
-                .setKey("field3")
-                .setKeyGroup(3)
+        tagger.addPattern(new RegexFieldValueExtractor("blah")
+                .setField("field3")
+                .setFieldGroup(3)
                 .setValueGroup(6)
                 .setOnSet(PropertySetter.PREPEND));
         tagger.setMaxReadSize(512);

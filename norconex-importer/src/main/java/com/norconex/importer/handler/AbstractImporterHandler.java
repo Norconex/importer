@@ -57,7 +57,7 @@ import com.norconex.importer.util.CharsetUtil;
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
  * </p>
  *
- * {@nx.xml.usage
+ * {@nx.xml.usage #restrictTo
  * <restrictTo
  *     field="(name of metadata field name to match)"
  *     method="[basic|wildcard|regex]"
@@ -254,7 +254,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
                 tm.setIgnoreDiacritic(
                         node.getBoolean("@ignoreDiacritic", false));
                 tm.setMatchWhole(node.getBoolean("@matchWhole", false));
-                tm.setPattern(node.getString("pattern", null));
+                tm.setPattern(node.getString(".", null));
                 restrictions.add(
                         new PropertyMatcher(node.getString("@field"), tm));
             }

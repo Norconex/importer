@@ -48,7 +48,7 @@ import com.norconex.commons.lang.io.ICachedStream;
 import com.norconex.commons.lang.io.InputStreamLineListener;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
@@ -219,34 +219,30 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *
  * {@nx.xml.usage
  * <command>
- *     /Apps/myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *   /Apps/myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
  * </command>
  *
  * <metadata
- *         inputFormat="[json|xml|properties]"
- *         outputFormat="[json|xml|properties]"
- *         onSet="[append|prepend|replace|optional]" >
- *     <!-- pattern only used when no output format is specified -->
- *     <pattern field="(target field name)"
- *             fieldGroup="(field name match group index)"
- *             valueGroup="(field value match group index)"
- *             ignoreCase="[false|true]"
- *             ignoreDiacritic="[false|true]">
- *         (regular expression)
- *     </pattern>
- *     <!-- repeat pattern tag as needed -->
+ *     inputFormat="[json|xml|properties]"
+ *     outputFormat="[json|xml|properties]"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *   <!-- Pattern only used when no output format is specified. -->
+ *   <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *     (regular expression)
+ *   </pattern>
+ *   <!-- repeat pattern tag as needed -->
  * </metadata>
  *
  * <environment>
- *     <variable name="(environment variable name)">
- *         (environment variable value)
- *     </variable>
- *     <!-- repeat variable tag as needed -->
+ *   <variable name="(environment variable name)">
+ *     (environment variable value)
+ *   </variable>
+ *   <!-- repeat variable tag as needed -->
  * </environment>
  *
  * <tempDir>
- *     (Optional directory where to store temporary files used
- *      by this class.)
+ *   (Optional directory where to store temporary files used
+ *    by this class.)
  * </tempDir>
  * }
  * <p>Consuming classes implementing {@link IXMLConfigurable} can use
@@ -276,7 +272,7 @@ public class ExternalHandler {
     public static final String META_FORMAT_PROPERTIES = "properties";
 
     private String command;
-    private final List<RegexKeyValueExtractor> patterns = new ArrayList<>();
+    private final List<RegexFieldValueExtractor> patterns = new ArrayList<>();
 
     // Null means inherit from those of java process
     private Map<String, String> environmentVariables = null;
@@ -324,7 +320,7 @@ public class ExternalHandler {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexFieldValueExtractor> getMetadataExtractionPatterns() {
         return Collections.unmodifiableList(patterns);
     }
     /**
@@ -338,7 +334,7 @@ public class ExternalHandler {
             return;
         }
         addMetadataExtractionPatterns(
-                new RegexKeyValueExtractor(pattern).setKey(field));
+                new RegexFieldValueExtractor(pattern).setField(field));
     }
     /**
      * Adds a metadata extraction pattern, which will extract the value from
@@ -352,8 +348,8 @@ public class ExternalHandler {
         if (StringUtils.isAnyBlank(pattern, field)) {
             return;
         }
-        addMetadataExtractionPatterns(new RegexKeyValueExtractor(
-                pattern).setKey(field).setValueGroup(valueGroup));
+        addMetadataExtractionPatterns(new RegexFieldValueExtractor(
+                pattern).setField(field).setValueGroup(valueGroup));
     }
     /**
      * Adds a metadata extraction pattern that will extract matching field
@@ -361,7 +357,7 @@ public class ExternalHandler {
      * @param patterns extraction pattern
      */
     public void addMetadataExtractionPatterns(
-            RegexKeyValueExtractor... patterns) {
+            RegexFieldValueExtractor... patterns) {
         if (ArrayUtils.isNotEmpty(patterns)) {
             this.patterns.addAll(Arrays.asList(patterns));
         }
@@ -371,7 +367,7 @@ public class ExternalHandler {
      * patterns.
      * @param patterns extraction pattern
      */
-    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         this.patterns.clear();
         addMetadataExtractionPatterns(patterns);
     }
@@ -619,8 +615,8 @@ public class ExternalHandler {
 
     private synchronized void extractMetaFromLine(
             String line, ImporterMetadata metadata) {
-        RegexKeyValueExtractor.extractKeyValues(metadata, line,
-                patterns.toArray(RegexKeyValueExtractor.EMPTY_ARRAY));
+        RegexFieldValueExtractor.extractFieldValues(metadata, line,
+                patterns.toArray(RegexFieldValueExtractor.EMPTY_ARRAY));
     }
 
     private Path createTempFile(
@@ -739,6 +735,7 @@ public class ExternalHandler {
 
 
     public void loadHandlerFromXML(XML xml) {
+
         setCommand(xml.getString("command", command));
         setTempDir(xml.getPath("tempDir", tempDir));
         setMetadataInputFormat(xml.getString(
@@ -749,17 +746,23 @@ public class ExternalHandler {
 
         List<XML> nodes = xml.getXMLList("metadata/pattern");
         for (XML node : nodes) {
-            node.checkDeprecated("@caseSensitive", "ignoreCase", true);
-            int valueGroup = node.getInteger("@group", -1);
-            valueGroup = node.getInteger("@valueGroup", valueGroup);
-            RegexKeyValueExtractor ex =
-                    new RegexKeyValueExtractor(node.getString(".", null));
-            ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
-            ex.getRegex().setIgnoreDiacritic(
-                    node.getBoolean("@gnoreDiacritic", false));
-            ex.setKey(node.getString("@field", null));
-            ex.setKeyGroup(node.getInteger("@fieldGroup", -1));
-            ex.setValueGroup(valueGroup);
+            RegexFieldValueExtractor ex = new RegexFieldValueExtractor();
+            ex.loadFromXML(node);
+
+//            node.checkDeprecated("@caseSensitive", "ignoreCase", true);
+//
+//            int valueGroup = node.getInteger("@group", -1);
+//            valueGroup = node.getInteger("@valueGroup", valueGroup);
+//
+//
+//            RegexFieldValueExtractor ex =
+//                    new RegexFieldValueExtractor(node.getString(".", null));
+//            ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
+//            ex.getRegex().setIgnoreDiacritic(
+//                    node.getBoolean("@ignoreDiacritic", false));
+//            ex.setField(node.getString("@field", null));
+//            ex.setFieldGroup(node.getInteger("@fieldGroup", -1));
+//            ex.setValueGroup(valueGroup);
             addMetadataExtractionPatterns(ex);
         }
 
@@ -782,15 +785,17 @@ public class ExternalHandler {
                     .setAttribute("outputFormat", metadataOutputFormat)
                     .setAttribute("onSet", onSet);
 
-            for (RegexKeyValueExtractor rfe : patterns) {
-                metaXML.addElement("pattern", rfe.getRegex().getPattern())
-                        .setAttribute("field", rfe.getKey())
-                        .setAttribute("fieldGroup", rfe.getKeyGroup())
-                        .setAttribute("valueGroup", rfe.getValueGroup())
-                        .setAttribute("ignoreCase",
-                                rfe.getRegex().isIgnoreCase())
-                        .setAttribute("ignoreDiacritic",
-                                rfe.getRegex().isIgnoreDiacritic());
+            for (RegexFieldValueExtractor rfe : patterns) {
+                rfe.saveToXML(metaXML.addElement("pattern"));
+
+//                metaXML.addElement("pattern", rfe.getRegex().getPattern())
+//                        .setAttribute("field", rfe.getField())
+//                        .setAttribute("fieldGroup", rfe.getFieldGroup())
+//                        .setAttribute("valueGroup", rfe.getValueGroup())
+//                        .setAttribute("ignoreCase",
+//                                rfe.getRegex().isIgnoreCase())
+//                        .setAttribute("ignoreDiacritic",
+//                                rfe.getRegex().isIgnoreDiacritic());
             }
         }
         if (getEnvironmentVariables() != null) {

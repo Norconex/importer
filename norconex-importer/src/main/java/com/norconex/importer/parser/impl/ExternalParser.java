@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.commons.io.output.WriterOutputStream;
 
 import com.norconex.commons.lang.map.PropertySetter;
-import com.norconex.commons.lang.text.RegexKeyValueExtractor;
+import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
@@ -52,64 +52,63 @@ import com.norconex.importer.parser.IDocumentParser;
  * already occurred, consider using {@link ExternalTransformer} instead.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;parser contentType="(content type this parser is associated to)"
- *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
+ * {@nx.xml.usage
+ * <parser contentType="(content type this parser is associated to)"
+ *     class="com.norconex.importer.parser.impl.ExternalParser" >
  *
- *      &lt;command&gt;
- *          c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *      &lt;/command&gt;
+ *   <command>
+ *     c:\Apps\myapp.exe ${INPUT} ${OUTPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *   </command>
  *
- *      &lt;metadata
- *              inputFormat="[json|xml|properties]"
- *              outputFormat="[json|xml|properties]"&gt;
- *          &lt;!-- pattern only used when no output format is specified --&gt;
- *          &lt;pattern field="(target field name)"
- *                  fieldGroup="(field name match group index)"
- *                  valueGroup="(field value match group index)"
- *                  caseSensitive="[false|true]"&gt;
- *              (regular expression)
- *          &lt;/pattern&gt;
- *          &lt;!-- repeat pattern tag as needed --&gt;
- *      &lt;/metadata&gt;
+ *   <metadata
+ *       inputFormat="[json|xml|properties]"
+ *       outputFormat="[json|xml|properties]"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *     <!-- pattern only used when no output format is specified -->
+ *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *       (regular expression)
+ *     </pattern>
+ *     <!-- repeat pattern tag as needed -->
+ *   </metadata>
  *
- *      &lt;environment&gt;
- *          &lt;variable name="(environment variable name)"&gt;
- *              (environment variable value)
- *          &lt;/variable&gt;
- *          &lt;!-- repeat variable tag as needed --&gt;
- *      &lt;/environment&gt;
+ *   <environment>
+ *     <variable name="(environment variable name)">
+ *       (environment variable value)
+ *     </variable>
+ *     <!-- repeat variable tag as needed -->
+ *   </environment>
  *
- *  &lt;/parser&gt;
- * </pre>
+ * </parser>
+ * }
  *
- * <h4>Usage example:</h4>
+ *
+ * {@nx.xml.sample
+ * <parser contentType="text/plain"
+ *     class="com.norconex.importer.parser.impl.ExternalParser" >
+ *   <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
+ *   <metadata>
+ *     <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</match>
+ *   </metadata>
+ * </parser>
+ * }
+ *
  * <p>
- * The following example invokes an external application processing for
+ * The above example invokes an external application processing for
  * simple text files that accepts two files as arguments:
  * the first one being the file to
  * transform, the second one being holding the transformation result.
  * It also extract a document number from STDOUT, found as "DocNo:1234"
  * and storing it as "docnumber".
  * </p>
- * <pre>
- *  &lt;parser contentType="text/plain"
- *          class="com.norconex.importer.parser.impl.ExternalParser" &gt;
- *      &lt;command&gt;/path/transform/app ${INPUT} ${OUTPUT}&lt;/command&gt;
- *      &lt;metadata&gt;
- *          &lt;pattern field="docnumber" valueGroup="1"&gt;DocNo:(\d+)&lt;/match&gt;
- *      &lt;/metadata&gt;
- *  &lt;/parser&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @see ExternalHandler
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class ExternalParser implements IDocumentParser, IXMLConfigurable {
 
     private final ExternalHandler h = new ExternalHandler();
-//    private String contentType;
 
     /**
      * Gets the command to execute.
@@ -149,7 +148,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * Gets metadata extraction patterns. See class documentation.
      * @return map of patterns and field names
      */
-    public List<RegexKeyValueExtractor> getMetadataExtractionPatterns() {
+    public List<RegexFieldValueExtractor> getMetadataExtractionPatterns() {
         return h.getMetadataExtractionPatterns();
     }
 
@@ -181,7 +180,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param patterns extraction pattern
      * @since 2.8.0
      */
-    public void addMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void addMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.addMetadataExtractionPatterns(patterns);
     }
     /**
@@ -190,7 +189,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
      * @param patterns extraction pattern
      * @since 2.8.0
      */
-    public void setMetadataExtractionPatterns(RegexKeyValueExtractor... patterns) {
+    public void setMetadataExtractionPatterns(RegexFieldValueExtractor... patterns) {
         h.setMetadataExtractionPatterns(patterns);
     }
 

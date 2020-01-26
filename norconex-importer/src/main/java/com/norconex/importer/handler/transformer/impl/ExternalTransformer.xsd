@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTransformer">
           <xs:all>
-            <xs:element name="command" type="nonEmptyValue" minOccurs="1" maxOccurs="1" />
+            <xs:element name="command" type="nonEmptyString" minOccurs="1" maxOccurs="1" />
             <xs:element name="tempDir" type="xs:string" minOccurs="0" maxOccurs="1" />
             <xs:element ref="metadata" minOccurs="0" maxOccurs="1" />
-            <xs:element ref="environment" minOccurs="0" maxOccurs="1" />
+            <xs:element name="environment" type="VariablesType" minOccurs="0" maxOccurs="1" />
           </xs:all>
         </xs:extension>
       </xs:complexContent>
@@ -36,67 +36,16 @@
   <xs:element name="metadata">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="pattern" minOccurs="1" maxOccurs="unbounded">
-          <xs:complexType>
-            <xs:simpleContent>
-              <xs:extension base="nonEmptyValue">
-                <xs:attribute name="field" type="xs:string"/>
-                <xs:attribute name="fieldGroup" type="xs:int"/>
-                <xs:attribute name="valueGroup" type="xs:int"/>
-                <xs:attribute name="ignoreCase" type="xs:boolean"/>
-                <xs:attribute name="ignoreDiacritic" type="xs:boolean"/>
-              </xs:extension>
-            </xs:simpleContent>
-          </xs:complexType>  
-        </xs:element>
+        <xs:element 
+            name="pattern" 
+            type="RegexKeyValueExtractorType" 
+            minOccurs="1" 
+            maxOccurs="unbounded"/>
       </xs:sequence>
-      <xs:attribute name="inputFormat" type="metaFileFormat"/>
-      <xs:attribute name="outputFormat" type="metaFileFormat"/>
-      <xs:attribute name="onSet">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="APPEND"/>
-            <xs:enumeration value="append"/>
-            <xs:enumeration value="PREPEND"/>
-            <xs:enumeration value="prepend"/>
-            <xs:enumeration value="REPLACE"/>
-            <xs:enumeration value="replace"/>
-            <xs:enumeration value="OPTIONAL"/>
-            <xs:enumeration value="optional"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
+      <xs:attribute name="inputFormat" type="MetadataFileFormatType"/>
+      <xs:attribute name="outputFormat" type="MetadataFileFormatType"/>
+      <xs:attribute name="onSet" type="PropertySetterMethodType"/>
     </xs:complexType>
   </xs:element>
-  
-  <xs:element name="environment">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="variable" minOccurs="1" maxOccurs="unbounded">
-          <xs:complexType>
-            <xs:simpleContent>
-              <xs:extension base="nonEmptyValue">
-                <xs:attribute name="name" type="xs:string" use="required"/>
-              </xs:extension>
-            </xs:simpleContent>
-          </xs:complexType>  
-        </xs:element>   
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:simpleType name="nonEmptyValue">
-    <xs:restriction base="xs:string">
-      <xs:minLength value="1"/>
-    </xs:restriction>
-  </xs:simpleType>
-
-  <xs:simpleType name="metaFileFormat">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="json"/>
-      <xs:enumeration value="xml"/>
-      <xs:enumeration value="properties"/>
-    </xs:restriction>
-  </xs:simpleType>
 
 </xs:schema>

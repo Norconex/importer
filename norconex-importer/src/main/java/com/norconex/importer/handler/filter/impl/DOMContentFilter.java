@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -28,7 +26,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.norconex.commons.lang.text.Regex;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -75,7 +74,7 @@ import com.norconex.importer.util.DOMUtil;
  * instead.
  * </p>
  *
- * <p><b>Since 2.5.0</b>, when used as a pre-parse handler,
+ * <p>When used as a pre-parse handler,
  * this class attempts to detect the content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
@@ -83,10 +82,9 @@ import com.norconex.importer.util.DOMUtil;
  * used as a post-parse handler.
  * </p>
  *
- * <p><b>Since 2.5.0</b>, it is possible to control what gets extracted
+ * <p>It is possible to control what gets extracted
  * exactly for matching purposes thanks to the "extract" argument of the
- * new method {@link #setExtract(String)}.  Version 2.6.0
- * introduced several more extract options. Possible values are:</p>
+ * new method {@link #setExtract(String)}. Possible values are:</p>
  * <ul>
  *   <li><b>text</b>: Default option when extract is blank. The text of
  *       the element, including combined children.</li>
@@ -112,7 +110,7 @@ import com.norconex.importer.util.DOMUtil;
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
  * </ul>
  *
- * <p><b>Since 2.8.0</b>, you can specify which parser to use when reading
+ * <p>You can specify which parser to use when reading
  * documents. The default is "html" and will normalize the content
  * as HTML. This is generally a desired behavior, but this can sometimes
  * have your selector fail. If you encounter this
@@ -122,84 +120,132 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ *
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          onMatch="[include|exclude]"
- *          caseSensitive="[false|true]"
  *          sourceCharset="(character encoding)"
  *          selector="(selector syntax)"
  *          parser="[html|xml]"
- *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]" &gt;
+ *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]">
  *
- *    &lt;restrictTo caseSensitive="[false|true]"
- *            field="(name of header/metadata field name to match)"&gt;
- *        (regular expression of value to match)
- *    &lt;/restrictTo&gt;
- *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *    &lt;regex&gt;(optional regular expression matching selector extracted value)&lt;/regex&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h3>Examples:</h3>
- * <p>To exclude an HTML page that has one or more GIF images in it:</p>
- * <pre>
- *  &lt;filter class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          selector="img[src$=.gif]" onMatch="exclude" /&gt;
- * </pre>
- * <p>To exclude an HTML page that has a paragraph tag with a class called
- * "disclaimer" and a value containing "skip me":</p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          selector="p.disclaimer" onMatch="exclude" &gt;
- *    &lt;regex&gt;\bskip me\b&lt;/regex&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   <textMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (optional expression matching selector extracted value)
+ *   </textMatcher>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <!-- Exclude an HTML page that has one or more GIF images in it: -->
+ * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ *          selector="img[src$=.gif]" onMatch="exclude" />
+ *
+ * <!-- Exclude an HTML page that has a paragraph tag with a class called
+ *      "disclaimer" and a value containing "skip me": -->
+ * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ *          selector="p.disclaimer" onMatch="exclude" >
+ *   <regex>\bskip me\b</regex>
+ * </handler>
+ * }
  *
  * @author Pascal Essiembre
  * @since 2.4.0
  */
+@SuppressWarnings("javadoc")
 public class DOMContentFilter extends AbstractDocumentFilter {
 
-    private boolean caseSensitive;
-    private String regex;
-    private Pattern cachedPattern;
+    private final TextMatcher textMatcher = new TextMatcher();
+
+//    private boolean caseSensitive;
+//    private String regex;
+//    private Pattern cachedPattern;
     private String selector;
     private String extract;
     private String sourceCharset = null;
     private String parser = DOMUtil.PARSER_HTML;
 
+
     public DOMContentFilter() {
-        this(null, OnMatch.INCLUDE);
+        setOnMatch(OnMatch.INCLUDE);
+        addRestrictions(CommonRestrictions.domContentTypes());
     }
+    /**
+     * Constructor.
+     * @param regex regular expression
+     * @deprecated Since 3.0.0
+     */
+    @Deprecated
     public DOMContentFilter(String regex) {
         this(regex, OnMatch.INCLUDE);
     }
+    /**
+     * Constructor.
+     * @param regex regular expression
+     * @param onMatch on match instruction
+     * @deprecated Since 3.0.0
+     */
+    @Deprecated
     public DOMContentFilter(String regex, OnMatch onMatch) {
         this(regex, onMatch, false);
     }
+    /**
+     * Constructor.
+     * @param regex regular expression
+     * @param onMatch on match instruction
+     * @param caseSensitive whether regular expression is case sensitive
+     * @deprecated Since 3.0.0
+     */
+    @Deprecated
     public DOMContentFilter(String regex,
             OnMatch onMatch, boolean caseSensitive) {
         super();
-        this.caseSensitive = caseSensitive;
+        textMatcher.setIgnoreCase(!caseSensitive);
         setOnMatch(onMatch);
         setRegex(regex);
         addRestrictions(CommonRestrictions.domContentTypes());
     }
 
+    /**
+     * Gets the expression matching text extracted by selector.
+     * @return expression
+     * @deprecated Since 3.0.0, use {@link #getTextMatcher()}
+     */
+    @Deprecated
     public String getRegex() {
-        return regex;
+        return textMatcher.getPattern();
     }
+    /**
+     * Sets the expression matching text extracted by selector.
+     * @param regex expression
+     * @deprecated Since 3.0.0, use {@link #getTextMatcher()}
+     */
+    @Deprecated
     public final void setRegex(String regex) {
-        this.regex = regex;
-        cachedPattern = null;
+        textMatcher.setPattern(regex);
+        textMatcher.setMethod(Method.REGEX);
     }
+
+    /**
+     * Gets whether expression matching text extracted by selector is case
+     * sensitive.
+     * @return <code>true</code> if case sensitive
+     * @deprecated Since 3.0.0, use {@link #getTextMatcher()}
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return !textMatcher.isIgnoreCase();
     }
+    /**
+     * Sets whether expression matching text extracted by selector is case
+     * sensitive.
+     * @param caseSensitive <code>true</code> if case sensitive
+     * @deprecated Since 3.0.0, use {@link #getTextMatcher()}
+     */
+    @Deprecated
     public void setCaseSensitive(boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
-        cachedPattern = null;
+        textMatcher.setIgnoreCase(!caseSensitive);
     }
     public String getSelector() {
         return selector;
@@ -208,6 +254,23 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         this.selector = selector;
     }
 
+
+    /**
+     * Gets this filter text matcher (copy).
+     * @return text matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getTextMatcher() {
+        return textMatcher;
+    }
+    /**
+     * Sets this filter text matcher (copy).
+     * @param textMatcher text matcher
+     * @since 3.0.0
+     */
+    public void setTextMatcher(TextMatcher textMatcher) {
+        this.textMatcher.copyFrom(textMatcher);
+    }
     /**
      * Gets what should be extracted for the value. One of
      * "text" (default), "html", or "outerHtml". <code>null</code> means
@@ -279,12 +342,12 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 return false;
             }
             // one or more elements matching
-            if (StringUtils.isBlank(regex)) {
+            if (!textMatcher.hasPattern()) {
                 return true;
             }
             for (Element elm : elms) {
                 String value = DOMUtil.getElementValue(elm, getExtract());
-                if (getCachedPattern().matcher(value).find()) {
+                if (textMatcher.matches(value)) {
                     return true;
                 }
             }
@@ -295,38 +358,23 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         }
     }
 
-    private synchronized Pattern getCachedPattern() {
-        if (cachedPattern != null) {
-            return cachedPattern;
-        }
-        Pattern p;
-        if (regex == null) {
-            p = Pattern.compile(".*");
-        } else {
-            p = Regex.compileDotAll(regex, !caseSensitive);
-        }
-        cachedPattern = p;
-        return p;
-    }
-
     @Override
     protected void saveFilterToXML(XML xml) {
-        xml.setAttribute("caseSensitive", caseSensitive);
         xml.setAttribute("selector", selector);
         xml.setAttribute("parser", parser);
         xml.setAttribute("sourceCharset", sourceCharset);
         xml.setAttribute("extract", extract);
-        xml.addElement("regex", regex);
+        textMatcher.saveToXML(xml.addElement("textMatcher"));
     }
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        xml.checkDeprecated("@caseSensitive", "textMatcher/ignoreCase", true);
+        xml.checkDeprecated("regex", "textMatcher", true);
         setSelector(xml.getString("@selector", selector));
         setParser(xml.getString("@parser", parser));
         setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         setSourceCharset(xml.getString("@extract", extract));
-        setRegex(xml.getString("regex", regex));
-        cachedPattern = null;
+        textMatcher.loadFromXML(xml.getXML("textMatcher"));
     }
 
     @Override
