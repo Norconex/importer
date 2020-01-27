@@ -44,16 +44,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * used as a post-parse handler.
  * </p>
  *
- * {@nx.xml.usage
- *  <!-- parent tag has these attribute:
- *      sourceCharset="(character encoding)"
- *      onMatch="[include|exclude]"
- *    -->
- *  {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.xml.usage #attributes
+ *  sourceCharset="(character encoding)"
+ *  {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
  * }
  *
  * <p>
- * Subclasses inherit the above {@link IXMLConfigurable} configuration.
+ * Subclasses inherit the above {@link IXMLConfigurable} attribute(s),
+ * in addition to <a href="../AbstractImporterHandler.html#nx-xml-restrictTo">
+ * &lt;restrictTo&gt;</a>.
  * </p>
  *
  * @author Pascal Essiembre

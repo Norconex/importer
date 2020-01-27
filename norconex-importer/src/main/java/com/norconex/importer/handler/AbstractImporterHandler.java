@@ -65,7 +65,7 @@ import com.norconex.importer.util.CharsetUtil;
  *     ignoreDiacritic="[false|true]"
  *     matchWhole="[false|true]">
  *       (expression of value to match)
- *     </restrictTo>
+ * </restrictTo>
  * <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  * }
  * <p>

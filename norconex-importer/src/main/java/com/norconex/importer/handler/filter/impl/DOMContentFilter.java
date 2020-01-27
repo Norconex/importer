@@ -123,13 +123,13 @@ import com.norconex.importer.util.DOMUtil;
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          onMatch="[include|exclude]"
- *          sourceCharset="(character encoding)"
- *          selector="(selector syntax)"
- *          parser="[html|xml]"
- *          extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]">
+ *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
+ *     sourceCharset="(character encoding)"
+ *     selector="(selector syntax)"
+ *     parser="[html|xml]"
+ *     extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]">
  *
- *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
  *   <textMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
  *     (optional expression matching selector extracted value)
@@ -157,15 +157,10 @@ import com.norconex.importer.util.DOMUtil;
 public class DOMContentFilter extends AbstractDocumentFilter {
 
     private final TextMatcher textMatcher = new TextMatcher();
-
-//    private boolean caseSensitive;
-//    private String regex;
-//    private Pattern cachedPattern;
     private String selector;
     private String extract;
     private String sourceCharset = null;
     private String parser = DOMUtil.PARSER_HTML;
-
 
     public DOMContentFilter() {
         setOnMatch(OnMatch.INCLUDE);

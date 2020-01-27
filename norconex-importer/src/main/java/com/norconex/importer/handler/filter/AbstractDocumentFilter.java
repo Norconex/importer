@@ -68,16 +68,19 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * not matter how many matching "include" were triggered.
  * </p>
  *
- * {@nx.xml.usage
- *  <!-- main tag supports onMatch="[include|exclude]" attribute -->
- *  {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.xml.usage #attributes
+ *  onMatch="[include|exclude]"
  * }
  *
- * <p>Subclasses inherit the above {@link IXMLConfigurable} configuration.</p>
+ * <p>
+ * Subclasses inherit the above {@link IXMLConfigurable} attribute(s),
+ * in addition to <a href="../AbstractImporterHandler.html#nx-xml-restrictTo">
+ * &lt;restrictTo&gt;</a>.
+ * </p>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-@SuppressWarnings("javadoc")
 public abstract class AbstractDocumentFilter extends AbstractImporterHandler
             implements IDocumentFilter, IOnMatchFilter {
 

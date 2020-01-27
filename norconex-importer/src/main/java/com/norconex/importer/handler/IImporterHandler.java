@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import com.norconex.importer.handler.transformer.IDocumentTransformer;
 /**
  * <p>Identifies a class as being an import handler.  Handlers performs specific
  * tasks on the importing content (other than parsing to extract raw content).
- * They can be invoked before or after a document is parsed.  There are 
- * three types of handlers currently supported:</p> 
+ * They can be invoked before or after a document is parsed.  There are
+ * four types of handlers currently supported:</p>
  * <ul>
  *   <li>{@link IDocumentFilter}: accepts or reject an incoming document.</li>
  *   <li>{@link IDocumentTagger}: modifies a document metadata.</li>
  *   <li>{@link IDocumentTransformer}: modifies a document content.</li>
- *   <li>{@link IDocumentSplitter}: slipts a document into multiple ones.</li>
+ *   <li>{@link IDocumentSplitter}: splits a document into multiple ones.</li>
  * </ul>
  * @author Pascal Essiembre
  */

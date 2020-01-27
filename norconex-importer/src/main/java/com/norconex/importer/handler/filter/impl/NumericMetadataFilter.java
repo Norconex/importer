@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,48 +45,45 @@ import com.norconex.importer.handler.filter.OnMatch;
  * To reject decimals or to deal with
  * non-numeric fields in your own way, you can use {@link RegexMetadataFilter}.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
- *          onMatch="[include|exclude]"
- *          field="(name of metadata field to match)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+ *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
+ *     field="(name of metadata field to match)">
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;!-- Use one or two (for ranges) conditions,
+ *      <!-- Use one or two (for ranges) conditions,
  *           where possible operators are:
  *
- *               gt -&gt; greater than
- *               ge -&gt; greater equal
- *               lt -&gt; lower than
- *               le -&gt; lowe equal
- *               eq -&gt; equals
- *        --&gt;
+ *               gt -> greater than
+ *               ge -> greater equal
+ *               lt -> lower than
+ *               le -> lowe equal
+ *               eq -> equals
+ *        -->
  *
- *      &lt;condition operator="[gt|ge|lt|le|eq]" number="(number)" /&gt;
+ *      <condition operator="[gt|ge|lt|le|eq]" number="(number)" />
+ * </handler>
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
- * <p>For example, let's say you are importing customer profile documents
- *    and you have a field called "age" and you need to only consider documents
- *    for customers in their twenties (greater or equal to
- *    20, but lower than 30). The following would achieve that</p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
- *          onMatch="include" field="age" &gt;
- *      &lt;condition operator="ge" number="20" /&gt;
- *      &lt;condition operator="lt" number="30" /&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
+ *     onMatch="include" field="age">
+ *   <condition operator="ge" number="20" />
+ *   <condition operator="lt" number="30" />
+ *  </handler>
+ * }
+ * <p>
+ * Let's say you are importing customer profile documents
+ * and you have a field called "age" and you need to only consider documents
+ * for customers in their twenties (greater or equal to
+ * 20, but lower than 30). The above example would achieve that.
+ * </p>
  *
  * @author Pascal Essiembre
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class NumericMetadataFilter extends AbstractDocumentFilter {
 
     private static final Logger LOG =

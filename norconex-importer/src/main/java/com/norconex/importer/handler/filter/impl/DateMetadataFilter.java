@@ -71,9 +71,9 @@ import com.norconex.importer.util.FormatUtil;
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *         onMatch="[include|exclude]"
- *         field="(name of metadata field to match)"
- *         format="(date format)" >
+ *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
+ *     field="(name of metadata field to match)"
+ *     format="(date format)">
  *
  *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *

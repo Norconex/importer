@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,31 +38,28 @@ import com.norconex.importer.handler.filter.OnMatch;
  * metadata fields are empty or not.  Any control characters (char &lt;= 32)
  * are removed before evaluating if a property is empty or not.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *          onMatch="[include|exclude]"
- *          fields="(coma separated list of fields to match)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
+ *     fields="(coma separated list of fields to match)">
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * </handler>
+ * }
  *
- *    &lt;restrictTo caseSensitive="[false|true]"
- *            field="(name of header/metadata field name to match)"&gt;
- *        (regular expression of value to match)
- *    &lt;/restrictTo&gt;
- *    &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *          onMatch="exclude" fields="title,dc:title" />
+ * }
  * <p>
- * To exclude documents without titles:
+ * The above example excludes documents without titles.
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *          onMatch="exclude" fields="title,dc:title" /&gt;
  * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.2
  */
+@SuppressWarnings("javadoc")
 public class EmptyMetadataFilter extends AbstractDocumentFilter {
 
     private final List<String> fields = new ArrayList<>();

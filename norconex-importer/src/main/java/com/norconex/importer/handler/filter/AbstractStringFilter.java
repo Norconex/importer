@@ -53,17 +53,15 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * builder.
  * </p>
  *
- * {@nx.xml.usage
- *  <!-- parent tag has these attributes:
- *      maxReadSize="(max characters to read at once)"
- *      sourceCharset="(character encoding)"
- *      onMatch="[include|exclude]"
- *    -->
- *  {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.xml.usage #attributes
+ *   maxReadSize="(max characters to read at once)"
+ *   {@nx.include com.norconex.importer.handler.filter.AbstractCharStreamFilter#attributes}
  * }
  *
  * <p>
- * Subclasses inherit the above {@link IXMLConfigurable} configuration.
+ * Subclasses inherit the above {@link IXMLConfigurable} attribute(s),
+ * in addition to <a href="../AbstractImporterHandler.html#nx-xml-restrictTo">
+ * &lt;restrictTo&gt;</a>.
  * </p>
  *
  * @author Pascal Essiembre
