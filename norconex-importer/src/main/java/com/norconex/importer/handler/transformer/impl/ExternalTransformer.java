@@ -59,9 +59,9 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *   <metadata
  *       inputFormat="[json|xml|properties]"
  *       outputFormat="[json|xml|properties]"
- *       onSet="[append|prepend|replace|optional]">
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *     <!-- pattern only used when no output format is specified -->
- *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
  *       (regular expression)
  *     </pattern>
  *     <!-- repeat pattern tag as needed -->
@@ -84,10 +84,10 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *
  * {@nx.xml.example
  * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
- *     <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
- *     <metadata>
- *         <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</pattern>
- *     </metadata>
+ *   <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
+ *   <metadata>
+ *     <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</pattern>
+ *   </metadata>
  * </handler>
  * }
  * <p>

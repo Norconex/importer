@@ -65,7 +65,7 @@ import com.norconex.importer.parser.IDocumentParser;
  *       outputFormat="[json|xml|properties]"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *     <!-- pattern only used when no output format is specified -->
- *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
  *       (regular expression)
  *     </pattern>
  *     <!-- repeat pattern tag as needed -->
@@ -82,12 +82,12 @@ import com.norconex.importer.parser.IDocumentParser;
  * }
  *
  *
- * {@nx.xml.sample
+ * {@nx.xml.example
  * <parser contentType="text/plain"
  *     class="com.norconex.importer.parser.impl.ExternalParser" >
  *   <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
  *   <metadata>
- *     <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</match>
+ *     <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</pattern>
  *   </metadata>
  * </parser>
  * }

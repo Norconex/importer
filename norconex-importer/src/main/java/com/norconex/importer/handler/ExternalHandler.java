@@ -122,13 +122,13 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * </p>
  *
  * <h4>JSON</h4>
- * <pre>
+ * <pre><code class="language-json">
  * {
  *   "field1" : [ "value1a", "value1b", "value1c" ],
  *   "field2" : [ "value2" ],
  *   "field3" : [ "value3a", "value3b" ]
  * }
- * </pre>
+ * </code></pre>
  *
  * <h4>XML</h4>
  * <p>Java Properties XML file format, with the exception that
@@ -136,7 +136,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * joined by the symbol for record separator (U+241E).
  * Example:
  * </p>
- * <pre>
+ * <pre><code class="language-xml">
  * &lt;?xml version="1.0" encoding="UTF-8"?&gt;
  * &lt;!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd"&gt;
  * &lt;properties&gt;
@@ -145,7 +145,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *   &lt;entry key="field2"&gt;value2&lt;/entry&gt;
  *   &lt;entry key="field3"&gt;value3a\u241Evalue3b&lt;/entry&gt;
  * &lt;/properties&gt;
- * </pre>
+ * </code></pre>
  *
  * <h4>Properties</h4>
  * <p>Java Properties standard file format, with the exception that
@@ -155,12 +155,12 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * general syntax information.
  * Example:
  * </p>
- * <pre>
+ * <pre><code class="language-properties">
  *   # My Comment
  *   field1 = value1a\u241Evalue1b\u241Evalue1c
  *   field2 = value2
  *   field3 = value3a\u241Evalue3b
- * </pre>
+ * </code></pre>
  *
  * <h3>Metadata extraction patterns:</h3>
  * <p>
@@ -227,7 +227,9 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *     outputFormat="[json|xml|properties]"
  *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *   <!-- Pattern only used when no output format is specified. -->
- *   <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *   <pattern
+ *   {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}
+ *   >
  *     (regular expression)
  *   </pattern>
  *   <!-- repeat pattern tag as needed -->

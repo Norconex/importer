@@ -61,8 +61,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * To parse/extract raw text from files, it is recommended to use
  * {@link ExternalParser} instead.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
  *
  *    <restrictTo caseSensitive="[false|true]"
@@ -80,7 +79,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *        outputFormat="[json|xml|properties]"
  *        {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *      <!-- pattern only used when no output format is specified -->
- *      <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes} >
+ *      <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
  *        (regular expression)
  *      </pattern>
  *      <!-- repeat pattern tag as needed -->
@@ -99,23 +98,25 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *    </tempDir>
  *
  *  </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+ *      <command>/path/tag/app ${INPUT} ${OUTPUT_META}</command>
+ *  </handler>
+ * }
+ *
  * <p>
- * The following example invokes an external application that accepts
+ * The above example invokes an external application that accepts
  * a document to transform and outputs a file containing the new metadata
  * information.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TaggerTransformer" &gt;
- *      &lt;command&gt;/path/tag/app ${INPUT} ${OUTPUT_META}&lt;/command&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @see ExternalHandler
  * @since 2.8.0
  */
+@SuppressWarnings("javadoc")
 public class ExternalTagger extends AbstractDocumentTagger {
 
     private final ExternalHandler h = new ExternalHandler();
