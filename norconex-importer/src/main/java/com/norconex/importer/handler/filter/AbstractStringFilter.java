@@ -22,6 +22,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.io.TextReader;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -46,6 +47,13 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <p>An attempt is made to break sections nicely after a paragraph, sentence,
  * or word.  When not possible, long text will be cut at a size equal
  * to the maximum read size.
+ * </p>
+ *
+ * <p>
+ * <b>Since 3.0.0</b> the
+ * {@link #isStringContentMatching(String, StringBuilder, ImporterMetadata, boolean, int)}
+ * method is invoked at least once, even if there is no content. This gives
+ * subclasses a chance to act on metadata even if there is no content.
  * </p>
  *
  * <p>
@@ -81,10 +89,10 @@ public abstract class AbstractStringFilter
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
         String text = null;
-        try (TextReader reader = new TextReader(input, maxReadSize)) {
+        try (TextReader reader = new TextReader(
+                IOUtil.toNonNullReader(input), maxReadSize)) {
             while ((text = reader.readText()) != null) {
                 b.append(text);
-
                 boolean matched = isStringContentMatching(
                         reference, b, metadata, parsed, sectionIndex);
                 sectionIndex++;
@@ -92,6 +100,11 @@ public abstract class AbstractStringFilter
                 if (matched) {
                     return true;
                 }
+            }
+            // should have been incremented at least once if there is content
+            if (sectionIndex == 0) {
+                return isStringContentMatching(
+                        reference, b, metadata, parsed, sectionIndex);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(

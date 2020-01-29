@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -49,12 +51,12 @@ public class DOMContentFilterTest {
                 "disclaimer should have been rejected.");
 
         filter.setSelector("div.disclaimer");
-        filter.setRegex("\\bskip me\\b");
+        filter.setTextMatcher(TextMatcher.regex("\\bskip me\\b"));
         Assertions.assertFalse(filter(filter, html, metadata),
                 "disclaimer skip me should have been rejected.");
 
         filter.setSelector("div.disclaimer");
-        filter.setRegex("\\bdo not skip me\\b");
+        filter.setTextMatcher(TextMatcher.regex("\\bdo not skip me\\b"));
         Assertions.assertTrue(filter(filter, html, metadata),
                 "disclaimer do not skip me should have been accepted.");
     }
@@ -78,12 +80,12 @@ public class DOMContentFilterTest {
                 "Green fruit should have been rejected.");
 
         filter.setSelector("food > fruit");
-        filter.setRegex("apple");
+        filter.setTextMatcher(TextMatcher.regex("apple"));
         Assertions.assertTrue(filter(filter, xml, metadata),
                 "Apple should have been accepted.");
 
         filter.setSelector("food > fruit");
-        filter.setRegex("carrot");
+        filter.setTextMatcher(TextMatcher.regex("carrot"));
         Assertions.assertFalse(filter(filter, xml, metadata),
                 "Carrot should have been rejected.");
     }
@@ -98,8 +100,9 @@ public class DOMContentFilterTest {
     @Test
     public void testWriteRead() throws IOException {
         DOMContentFilter filter = new DOMContentFilter();
-        filter.addRestriction("document.contentType", "text/html", false);
-        filter.setRegex("blah");
+        filter.addRestriction(new PropertyMatcher(
+                "document.contentType", TextMatcher.basic("text/html")));
+        filter.setTextMatcher(TextMatcher.regex("blah"));
         filter.setOnMatch(OnMatch.INCLUDE);
         filter.setSelector("selector");
         XML.assertWriteRead(filter, "handler");

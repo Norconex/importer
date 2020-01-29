@@ -37,9 +37,10 @@ public class ReplaceTransformerTest {
             + "<toValue>FRUITS</toValue></replace>"
             + "<replace><fromValue>candies</fromValue>"
             + "<toValue>vegetables</toValue></replace>"
-            + "<restrictTo caseSensitive=\"false\" "
-            + "field=\"document.reference\" "
-            + "method=\"regex\">.*test.*</restrictTo>"
+            + "<restrictTo><fieldMatcher ignoreCase=\"true\">"
+            + "document.reference</fieldMatcher>"
+            + "<valueMatcher method=\"regex\">.*test.*</valueMatcher>"
+            + "</restrictTo>"
             + "</handler>";
     private final String restrictionTestContent =
             "I like to eat cakes and candies.";

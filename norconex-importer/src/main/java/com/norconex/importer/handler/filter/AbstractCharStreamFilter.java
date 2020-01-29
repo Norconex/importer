@@ -24,6 +24,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -89,7 +90,8 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
         String inputCharset = detectCharsetIfBlank(
                 sourceCharset, reference, input, metadata, parsed);
         try {
-            InputStreamReader is = new InputStreamReader(input, inputCharset);
+            InputStreamReader is = new InputStreamReader(
+                    IOUtil.toNonNullInputStream(input), inputCharset);
             return isTextDocumentMatching(reference, is, metadata, parsed);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);

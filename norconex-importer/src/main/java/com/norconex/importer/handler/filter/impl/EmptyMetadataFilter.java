@@ -53,8 +53,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  * <p>
  * The above example excludes documents without titles.
  * </p>
- * <pre>
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.2

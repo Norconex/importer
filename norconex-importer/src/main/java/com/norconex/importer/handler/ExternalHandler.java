@@ -226,18 +226,18 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *     inputFormat="[json|xml|properties]"
  *     outputFormat="[json|xml|properties]"
  *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
- *   <!-- Pattern only used when no output format is specified. -->
+ *     <!-- Pattern only used when no output format is specified.
+ *          Repeat as needed. -->
  *   <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
  *     (regular expression)
  *   </pattern>
- *   <!-- repeat pattern tag as needed -->
  * </metadata>
  *
  * <environment>
+ *   <!-- repeat variable tag as needed -->
  *   <variable name="(environment variable name)">
  *     (environment variable value)
  *   </variable>
- *   <!-- repeat variable tag as needed -->
  * </environment>
  *
  * <tempDir>

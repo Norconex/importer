@@ -26,11 +26,12 @@
 
   <xs:element name="restrictTo">
     <xs:complexType>
-      <xs:complexContent> 
-        <xs:extension base="TextMatcherType"> 
-          <xs:attribute name="field" type="xs:string"></xs:attribute>
-        </xs:extension> 
-      </xs:complexContent>     
+      <xs:all>
+        <xs:element name="fieldMatcher" 
+            type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+        <xs:element name="valueMatcher" 
+            type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+      </xs:all>
     </xs:complexType>
   </xs:element>
   

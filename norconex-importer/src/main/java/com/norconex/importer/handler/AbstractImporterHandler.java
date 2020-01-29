@@ -58,15 +58,17 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  *
  * {@nx.xml.usage #restrictTo
- * <restrictTo
- *     field="(name of metadata field name to match)"
- *     method="[basic|wildcard|regex]"
- *     ignoreCase="[false|true]"
- *     ignoreDiacritic="[false|true]"
- *     matchWhole="[false|true]">
- *       (expression of value to match)
- * </restrictTo>
  * <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ * <restrictTo>
+ *   <fieldMatcher
+ *     {@nx.include com.norconex.commons.lang.text#matchAttributes}>
+ *       (field-matching expression)
+ *   </fieldMatcher>
+ *   <valueMatcher
+ *     {@nx.include com.norconex.commons.lang.text#matchAttributes}>
+ *       (value-matching expression)
+ *   </valueMatcher>
+ * </restrictTo>
  * }
  * <p>
  * Subclasses inherit the above {@link IXMLConfigurable} configuration.
@@ -87,6 +89,7 @@ import com.norconex.importer.util.CharsetUtil;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
 
     private static final Logger LOG =
@@ -248,15 +251,8 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         if (!nodes.isEmpty()) {
             restrictions.clear();
             for (XML node : nodes) {
-                TextMatcher tm = new TextMatcher();
-                tm.setMethod(node.getEnum("@method", Method.class, null));
-                tm.setIgnoreCase(node.getBoolean("@ignoreCase", false));
-                tm.setIgnoreDiacritic(
-                        node.getBoolean("@ignoreDiacritic", false));
-                tm.setMatchWhole(node.getBoolean("@matchWhole", false));
-                tm.setPattern(node.getString(".", null));
-                restrictions.add(
-                        new PropertyMatcher(node.getString("@field"), tm));
+                node.checkDeprecated("@field", "fieldMatcher", true);
+                restrictions.add(PropertyMatcher.loadFromXML(node));
             }
         }
     }
@@ -270,13 +266,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     public void saveToXML(XML xml) {
         saveHandlerToXML(xml);
         restrictions.forEach(pm -> {
-            TextMatcher tm = pm.getTextMatcher();
-            xml.addElement("restrictTo", tm.getPattern())
-                .setAttribute("field", pm.getKey())
-                .setAttribute("method", tm.getMethod())
-                .setAttribute("ignoreCase", tm.isIgnoreCase())
-                .setAttribute("ignoreDiacritic", tm.isIgnoreDiacritic())
-                .setAttribute("matchWhole", tm.isMatchWhole());
+            PropertyMatcher.saveToXML(xml.addElement("restrictTo"), pm);
         });
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,31 +24,25 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus.Status;
 
-/**
- * Part of the tests includes testing all use cases explained
- * in the {@link AbstractDocumentFilter} class.
- * @author Pascal Essiembre
- */
-public class RegexContentFilterTest {
+public class TextFilterTest {
 
     @Test
-    public void testMatchesExclude()
+    public void testRegexContentMatchesExclude()
             throws IOException, ImporterHandlerException {
-        RegexContentFilter filter = new RegexContentFilter();
-        filter.setRegex(".*string.*");
+        TextFilter filter = newRegexTextFilter();
+        filter.getValueMatcher().setPattern(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assertions.assertFalse(filter.acceptDocument("n/a",
                 IOUtils.toInputStream("a string that matches",
@@ -56,10 +50,10 @@ public class RegexContentFilterTest {
                 "Should have been rejected.");
     }
     @Test
-    public void testMatchesInclude()
+    public void testRegexContentMatchesInclude()
             throws IOException, ImporterHandlerException {
-        RegexContentFilter filter = new RegexContentFilter();
-        filter.setRegex(".*string.*");
+        TextFilter filter = newRegexTextFilter();
+        filter.getValueMatcher().setPattern(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assertions.assertTrue(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
@@ -68,10 +62,10 @@ public class RegexContentFilterTest {
                 "Should have been accepted.");
     }
     @Test
-    public void testNoMatchesExclude()
+    public void testRegexContentNoMatchesExclude()
             throws IOException, ImporterHandlerException {
-        RegexContentFilter filter = new RegexContentFilter();
-        filter.setRegex(".*string.*");
+        TextFilter filter = newRegexTextFilter();
+        filter.getValueMatcher().setPattern(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assertions.assertTrue(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
@@ -80,11 +74,11 @@ public class RegexContentFilterTest {
                 "Should have been accepted.");
     }
     @Test
-    public void testNoMatchesUniqueInclude()
+    public void testRegexContentNoMatchesUniqueInclude()
             throws IOException, ImporterHandlerException {
 
-        RegexContentFilter filter = new RegexContentFilter();
-        filter.setRegex(".*string.*");
+        TextFilter filter = newRegexTextFilter();
+        filter.getValueMatcher().setPattern(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", IOUtils.toInputStream(
@@ -94,18 +88,18 @@ public class RegexContentFilterTest {
     }
 
     @Test
-    public void testMatchesOneOfManyIncludes()
+    public void testRegexContentMatchesOneOfManyIncludes()
             throws IOException, ImporterException {
-        RegexContentFilter filter1 = new RegexContentFilter();
-        filter1.setRegex(".*string.*");
+        TextFilter filter1 = newRegexTextFilter();
+        filter1.getValueMatcher().setPattern(".*string.*");
         filter1.setOnMatch(OnMatch.INCLUDE);
 
-        RegexContentFilter filter2 = new RegexContentFilter();
-        filter2.setRegex(".*asdf.*");
+        TextFilter filter2 = newRegexTextFilter();
+        filter2.getValueMatcher().setPattern(".*asdf.*");
         filter2.setOnMatch(OnMatch.INCLUDE);
 
-        RegexContentFilter filter3 = new RegexContentFilter();
-        filter3.setRegex(".*qwer.*");
+        TextFilter filter3 = newRegexTextFilter();
+        filter3.getValueMatcher().setPattern(".*qwer.*");
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
@@ -122,18 +116,19 @@ public class RegexContentFilterTest {
     }
 
     @Test
-    public void testNoMatchesOfManyIncludes()
+    public void testRegexContentNoMatchesOfManyIncludes()
             throws IOException, ImporterException {
-        RegexContentFilter filter1 = new RegexContentFilter();
-        filter1.setRegex(".*zxcv.*");
+
+        TextFilter filter1 = newRegexTextFilter();
+        filter1.getValueMatcher().setPattern(".*zxcv.*");
         filter1.setOnMatch(OnMatch.INCLUDE);
 
-        RegexContentFilter filter2 = new RegexContentFilter();
-        filter2.setRegex(".*asdf.*");
+        TextFilter filter2 = newRegexTextFilter();
+        filter2.getValueMatcher().setPattern(".*asdf.*");
         filter2.setOnMatch(OnMatch.INCLUDE);
 
-        RegexContentFilter filter3 = new RegexContentFilter();
-        filter3.setRegex(".*qwer.*");
+        TextFilter filter3 = newRegexTextFilter();
+        filter3.getValueMatcher().setPattern(".*qwer.*");
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
@@ -149,13 +144,45 @@ public class RegexContentFilterTest {
     }
 
     @Test
+    public void testRegexFieldDocument()
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+        meta.add("field1", "a string to match");
+        meta.add("field2", "something we want");
+
+        TextFilter filter = newRegexTextFilter();
+
+        filter.getFieldMatcher().setPattern("field1");
+        filter.getValueMatcher().setPattern(".*string.*");
+        filter.setOnMatch(OnMatch.EXCLUDE);
+
+        Assertions.assertFalse(
+                filter.acceptDocument("n/a", null, meta, false),
+                "field1 not filtered properly.");
+
+        filter.getFieldMatcher().setPattern("field2");
+        Assertions.assertTrue(
+                filter.acceptDocument("n/a", null, meta, false),
+                "field2 not filtered properly.");
+    }
+
+    @Test
     public void testWriteRead() throws IOException {
-        RegexContentFilter filter = new RegexContentFilter();
-        filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
-        filter.setRegex("blah");
-        filter.setMaxReadSize(256);
-        filter.setOnMatch(OnMatch.INCLUDE);
+        TextFilter filter = new TextFilter();
+        filter.setFieldMatcher(new TextMatcher()
+                .setMethod(Method.REGEX)
+                .setMatchWhole(true));
+        filter.setValueMatcher(new TextMatcher()
+                .setMethod(Method.REGEX)
+                .setMatchWhole(true)
+                .setPattern("blah"));
         XML.assertWriteRead(filter, "handler");
+    }
+
+    private TextFilter newRegexTextFilter() {
+        return new TextFilter(newRegexMatcher(), newRegexMatcher());
+    }
+    private TextMatcher newRegexMatcher() {
+        return new TextMatcher().setMethod(Method.REGEX);
     }
 }

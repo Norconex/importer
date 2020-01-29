@@ -16,6 +16,9 @@
         exported metadata fields in alternate formats.
       </action>
       <action dev="essiembre" type="add">
+        New TextFilter class.
+      </action>
+      <action dev="essiembre" type="add">
         New ExternalHandler class.
       </action>
       <action dev="essiembre" type="add">
@@ -58,7 +61,11 @@
       </action>
       <action dev="essiembre" type="update">
         RegexFieldExtractor and RegexUtil have been deprecated in favor
-        of Norconex Commons Lang KeyValueExtractor and Regex.
+        of Norconex Commons Lang FieldValueExtractor and Regex.
+      </action>
+      <action dev="essiembre" type="update">
+        RegexContentFilter and RegexMetadataFilter have been deprecated in 
+        favor of the more flexible TextFilter.
       </action>
       <action dev="essiembre" type="update">
         TextBetweenTagger now has "inclusive" and "caseSensitive" options
@@ -90,11 +97,16 @@
         Most places where regular expressions could be used now also 
         support "basic" matching and "wildcard" as well as being able to 
         ignore diacritical marks (e.g., accents).
-      </action>      
+      </action>
       <action dev="essiembre" type="update">
         Most occurrences of "caseSensitive" or "caseInsensitive" configuration
         options are now replaced with "ignoreCase".
-      </action>      
+      </action>
+      <action dev="essiembre" type="update">
+        Filters implementing AbstractStringFilter will now have their 
+        isStringContentMatching(...) method invoked at least once, even 
+        if there is no document content. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
       </action>

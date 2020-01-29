@@ -72,7 +72,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  *
  * @author Pascal Essiembre
  * @since 2.0.0
+ * @deprecated Since 3.0.0, use {@link TextFilter} instead.
  */
+@Deprecated
 public class RegexContentFilter extends AbstractStringFilter {
 
     private boolean caseSensitive;
