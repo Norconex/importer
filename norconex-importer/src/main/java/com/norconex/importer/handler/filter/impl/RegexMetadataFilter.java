@@ -24,6 +24,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.XML;
@@ -68,6 +70,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 @Deprecated
 public class RegexMetadataFilter extends AbstractDocumentFilter {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(RegexMetadataFilter.class);
 
     private boolean caseSensitive;
     private String field;
@@ -148,6 +153,8 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
+        LOG.warn("RegexMetadataFilter has been deprecated "
+                + "in favor of TextFilter.");
         setField(xml.getString("@field", field));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
         setRegex(xml.getString("regex", regex));

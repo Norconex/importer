@@ -62,7 +62,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  *
  * @author Pascal Essiembre
  * @since 2.7.0
+ * @deprecated Since 3.0.0, use {@link ReferenceFilter} instead.
  */
+@Deprecated
 public class RegexReferenceFilter extends AbstractDocumentFilter {
 
     private boolean caseSensitive;

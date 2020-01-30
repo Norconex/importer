@@ -26,6 +26,10 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
+/**
+ * @deprecated
+ */
+@Deprecated
 public class RegexReferenceFilterTest {
 
     @Test

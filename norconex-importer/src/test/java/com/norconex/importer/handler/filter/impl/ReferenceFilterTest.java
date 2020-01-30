@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,43 +26,32 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
-/**
- * @deprecated
- */
-@Deprecated
-public class RegexMetadataFilterTest {
+public class ReferenceFilterTest {
 
     @Test
     public void testAcceptDocument()
             throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
-        meta.add("field1", "a string to match");
-        meta.add("field2", "something we want");
+        ReferenceFilter filter = new ReferenceFilter();
 
-        RegexMetadataFilter filter = new RegexMetadataFilter();
-
-        filter.setField("field1");
-        filter.setRegex(".*string.*");
+        filter.setValueMatcher(TextMatcher.regex(".*/login.*"));
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
-                "field1 not filtered properly.");
+        Assertions.assertFalse(filter.acceptDocument(
+                "http://www.example.com/login", null, meta, false),
+                "URL not filtered properly.");
 
-        filter.setField("field2");
-        Assertions.assertTrue(
-                filter.acceptDocument("n/a", null, meta, false),
-                "field2 not filtered properly.");
-
+        Assertions.assertTrue(filter.acceptDocument(
+                "http://www.example.com/blah", null, meta, false),
+                "URL not filtered properly.");
     }
 
     @Test
     public void testWriteRead() throws IOException {
-        RegexMetadataFilter filter = new RegexMetadataFilter();
+        ReferenceFilter filter = new ReferenceFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
-        filter.setField("field1");
-        filter.setRegex("blah");
+                "author", TextMatcher.regex("Pascal.*").setIgnoreCase(true)));
+        filter.setValueMatcher(TextMatcher.regex("blah"));
         filter.setOnMatch(OnMatch.INCLUDE);
         XML.assertWriteRead(filter, "handler");
     }

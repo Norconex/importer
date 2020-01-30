@@ -19,6 +19,9 @@
         New TextFilter class.
       </action>
       <action dev="essiembre" type="add">
+        New ReferenceFilter class.
+      </action>
+      <action dev="essiembre" type="add">
         New ExternalHandler class.
       </action>
       <action dev="essiembre" type="add">
@@ -65,7 +68,10 @@
       </action>
       <action dev="essiembre" type="update">
         RegexContentFilter and RegexMetadataFilter have been deprecated in 
-        favor of the more flexible TextFilter.
+        favor of TextFilter.
+      </action>
+      <action dev="essiembre" type="update">
+        RegexReferenceFilter has been deprecated in favor of ReferenceFilter. 
       </action>
       <action dev="essiembre" type="update">
         TextBetweenTagger now has "inclusive" and "caseSensitive" options

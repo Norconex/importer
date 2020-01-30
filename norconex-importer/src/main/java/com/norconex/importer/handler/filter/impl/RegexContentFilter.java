@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.XML;
@@ -76,6 +78,9 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 @Deprecated
 public class RegexContentFilter extends AbstractStringFilter {
+
+    private static final Logger LOG =
+            LoggerFactory.getLogger(RegexContentFilter.class);
 
     private boolean caseSensitive;
     private String regex;
@@ -145,6 +150,8 @@ public class RegexContentFilter extends AbstractStringFilter {
     }
     @Override
     protected void loadStringFilterFromXML(XML xml) {
+        LOG.warn("RegexContentFilter has been deprecated "
+                + "in favor of TextFilter.");
         setRegex(xml.getString("regex", regex));
         setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
     }

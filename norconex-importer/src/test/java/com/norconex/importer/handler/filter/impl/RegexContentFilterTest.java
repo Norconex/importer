@@ -41,7 +41,9 @@ import com.norconex.importer.response.ImporterStatus.Status;
  * Part of the tests includes testing all use cases explained
  * in the {@link AbstractDocumentFilter} class.
  * @author Pascal Essiembre
+ * @deprecated
  */
+@Deprecated
 public class RegexContentFilterTest {
 
     @Test
