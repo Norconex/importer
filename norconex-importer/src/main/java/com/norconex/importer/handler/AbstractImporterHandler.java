@@ -61,11 +61,11 @@ import com.norconex.importer.util.CharsetUtil;
  * <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  * <restrictTo>
  *   <fieldMatcher
- *     {@nx.include com.norconex.commons.lang.text#matchAttributes}>
+ *     {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (field-matching expression)
  *   </fieldMatcher>
  *   <valueMatcher
- *     {@nx.include com.norconex.commons.lang.text#matchAttributes}>
+ *     {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (value-matching expression)
  *   </valueMatcher>
  * </restrictTo>
