@@ -236,7 +236,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
      * @param field field to apply date filtering
      * @param onMatch include or exclude on match
      * @deprecated Since 3.0.0, use
-     *             {@link #DateMetadataFilter(TextMatcher, OnMatch))}
+     *             {@link #DateMetadataFilter(TextMatcher, OnMatch)}
      */
     @Deprecated
     public DateMetadataFilter(String field, OnMatch onMatch) {
