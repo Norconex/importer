@@ -25,6 +25,9 @@
         New ExternalHandler class.
       </action>
       <action dev="essiembre" type="add">
+        New DOMFilter class.
+      </action>
+      <action dev="essiembre" type="add">
         Importer now uses an EventManager and triggers several events:
         IMPORTER_HANDLER_BEGIN, IMPORTER_HANDLER_END, IMPORTER_HANDLER_ERROR,
         IMPORTER_PARSER_BEGIN, IMPORTER_PARSER_END, IMPORTER_PARSER_ERROR  
@@ -72,6 +75,9 @@
       </action>
       <action dev="essiembre" type="update">
         RegexReferenceFilter has been deprecated in favor of ReferenceFilter. 
+      </action>
+      <action dev="essiembre" type="update">
+        DOMContentFilter has been deprecated in favor of DOMFilter. 
       </action>
       <action dev="essiembre" type="update">
         TextBetweenTagger now has "inclusive" and "caseSensitive" options

@@ -23,14 +23,8 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentFilter"> 
           <xs:all>
-            <xs:element ref="textMatcher" minOccurs="0" maxOccurs="unbounded" />  
-          <!-- 
-            <xs:element name="regex" type="xs:string" minOccurs="0" maxOccurs="1" />
-           -->
+            <xs:element name="valueMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
           </xs:all>
-          <!-- 
-          <xs:attribute name="caseSensitive" type="xs:boolean"></xs:attribute>
-           -->
           <xs:attribute name="selector" type="xs:string" use="required"></xs:attribute>
           <xs:attribute name="parser">
             <xs:simpleType>

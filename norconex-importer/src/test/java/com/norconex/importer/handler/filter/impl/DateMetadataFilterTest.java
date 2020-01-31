@@ -23,6 +23,7 @@ import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -42,7 +43,7 @@ public class DateMetadataFilterTest {
         DateMetadataFilter filter = null;
 
         filter = new DateMetadataFilter();
-        filter.setField("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
         filter.addCondition(Operator.LOWER_EQUAL,
@@ -52,7 +53,7 @@ public class DateMetadataFilterTest {
 
 
         filter = new DateMetadataFilter();
-        filter.setField("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd");
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
@@ -61,7 +62,7 @@ public class DateMetadataFilterTest {
 
 
         filter = new DateMetadataFilter();
-        filter.setField("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
@@ -74,7 +75,7 @@ public class DateMetadataFilterTest {
                 DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(now));
 
         filter = new DateMetadataFilter();
-        filter.setField("field2");
+        filter.setFieldMatcher(TextMatcher.basic("field2"));
         filter.setFormat("yyyy-MM-dd'T'HH:mm:ss");
         filter.addConditionFromNow(
                 Operator.GREATER_THAN, TimeUnit.MINUTE, -1, true);
@@ -87,7 +88,7 @@ public class DateMetadataFilterTest {
     @Test
     public void testWriteRead() throws IOException {
         DateMetadataFilter filter = new DateMetadataFilter();
-        filter.setField("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd");
         filter.setOnMatch(OnMatch.EXCLUDE);
         filter.addCondition(Operator.GREATER_EQUAL, new Date());

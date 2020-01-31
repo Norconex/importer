@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
@@ -42,9 +41,13 @@ import com.norconex.importer.util.DOMUtil;
  * element/attribute or element/attribute value.
  * </p>
  * <p>
- * In order to construct a DOM tree, a document content is loaded entirely
- * into memory. Use this filter with caution if you know you'll need to parse
- * huge files. You can use {@link RegexContentFilter} instead if this is a
+ * In order to construct a DOM tree, text is loaded entirely
+ * into memory. It uses the document content by default, but it can also
+ * come from specified metadata fields. If multiple fields values are
+ * identified/matched as DOM sources, only one needs to match for the filter
+ * to be applied.
+ * Use this filter with caution if you know you'll need to parse
+ * huge files. You can use {@link TextFilter} instead if this is a
  * concern.
  * </p>
  * <p>
@@ -131,6 +134,9 @@ import com.norconex.importer.util.DOMUtil;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (optional expression matching fields where the DOM text is located)
+ *   </fieldMatcher>
  *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
  *     (optional expression matching selector extracted value)
  *   </valueMatcher>
@@ -146,104 +152,30 @@ import com.norconex.importer.util.DOMUtil;
  *      "disclaimer" and a value containing "skip me": -->
  * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
  *          selector="p.disclaimer" onMatch="exclude" >
- *   <regex>\bskip me\b</regex>
+ *   <valueMatcher method="regex">\bskip me\b</valueMatcher>
  * </handler>
  * }
  *
  * @author Pascal Essiembre
- * @since 2.4.0
- * @deprecated Since 3.0.0, use {@link DOMFilter}.
+ * @since 3.0.0
  */
-@Deprecated
 @SuppressWarnings("javadoc")
-public class DOMContentFilter extends AbstractDocumentFilter {
+public class DOMFilter extends AbstractDocumentFilter {
 
+    private final TextMatcher fieldMatcher = new TextMatcher();
     private final TextMatcher valueMatcher = new TextMatcher();
     private String selector;
     private String extract;
     private String sourceCharset = null;
     private String parser = DOMUtil.PARSER_HTML;
 
-    public DOMContentFilter() {
+    public DOMFilter() {
         setOnMatch(OnMatch.INCLUDE);
         addRestrictions(CommonRestrictions.domContentTypes());
     }
-    /**
-     * Constructor.
-     * @param regex regular expression
-     * @deprecated Since 3.0.0
-     */
-    @Deprecated
-    public DOMContentFilter(String regex) {
-        this(regex, OnMatch.INCLUDE);
-    }
-    /**
-     * Constructor.
-     * @param regex regular expression
-     * @param onMatch on match instruction
-     * @deprecated Since 3.0.0
-     */
-    @Deprecated
-    public DOMContentFilter(String regex, OnMatch onMatch) {
-        this(regex, onMatch, false);
-    }
-    /**
-     * Constructor.
-     * @param regex regular expression
-     * @param onMatch on match instruction
-     * @param caseSensitive whether regular expression is case sensitive
-     * @deprecated Since 3.0.0
-     */
-    @Deprecated
-    public DOMContentFilter(String regex,
-            OnMatch onMatch, boolean caseSensitive) {
-        super();
-        valueMatcher.setIgnoreCase(!caseSensitive);
-        setOnMatch(onMatch);
-        setRegex(regex);
-        addRestrictions(CommonRestrictions.domContentTypes());
-    }
 
-    /**
-     * Gets the expression matching text extracted by selector.
-     * @return expression
-     * @deprecated Since 3.0.0, use {@link #getValueMatcher()}
-     */
-    @Deprecated
-    public String getRegex() {
-        return valueMatcher.getPattern();
-    }
-    /**
-     * Sets the expression matching text extracted by selector.
-     * @param regex expression
-     * @deprecated Since 3.0.0, use {@link #getValueMatcher()}
-     */
-    @Deprecated
-    public final void setRegex(String regex) {
-        valueMatcher.setPattern(regex);
-        valueMatcher.setMethod(Method.REGEX);
-    }
 
-    /**
-     * Gets whether expression matching text extracted by selector is case
-     * sensitive.
-     * @return <code>true</code> if case sensitive
-     * @deprecated Since 3.0.0, use {@link #getValueMatcher()}
-     */
-    @Deprecated
-    public boolean isCaseSensitive() {
-        return !valueMatcher.isIgnoreCase();
-    }
-    /**
-     * Sets whether expression matching text extracted by selector is case
-     * sensitive.
-     * @param caseSensitive <code>true</code> if case sensitive
-     * @deprecated Since 3.0.0, use {@link #getValueMatcher()}
-     */
-    @Deprecated
-    public void setCaseSensitive(boolean caseSensitive) {
-        valueMatcher.setIgnoreCase(!caseSensitive);
-    }
+
     public String getSelector() {
         return selector;
     }
@@ -251,19 +183,31 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         this.selector = selector;
     }
 
+    /**
+     * Gets this filter field matcher (copy).
+     * @return field matcher
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets this filter field matcher (copy).
+     * @param fieldMatcher field matcher
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
 
     /**
-     * Gets this filter text matcher (copy).
-     * @return text matcher
-     * @since 3.0.0
+     * Gets this filter value matcher (copy).
+     * @return value matcher
      */
     public TextMatcher getValueMatcher() {
         return valueMatcher;
     }
     /**
-     * Sets this filter text matcher (copy).
-     * @param valueMatcher text matcher
-     * @since 3.0.0
+     * Sets this filter value matcher (copy).
+     * @param valueMatcher value matcher
      */
     public void setValueMatcher(TextMatcher valueMatcher) {
         this.valueMatcher.copyFrom(valueMatcher);
@@ -273,7 +217,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
      * "text" (default), "html", or "outerHtml". <code>null</code> means
      * this class will use the default ("text").
      * @return what should be extracted for the value
-     * @since 2.5.0
      */
     public String getExtract() {
         return extract;
@@ -283,7 +226,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
      * "text" (default), "html", or "outerHtml". <code>null</code> means
      * this class will use the default ("text").
      * @param extract what should be extracted for the value
-     * @since 2.5.0
      */
     public void setExtract(String extract) {
         this.extract = extract;
@@ -291,7 +233,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     /**
      * Gets the assumed source character encoding.
      * @return character encoding of the source to be transformed
-     * @since 2.5.0
      */
     public String getSourceCharset() {
         return sourceCharset;
@@ -299,7 +240,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     /**
      * Sets the assumed source character encoding.
      * @param sourceCharset character encoding of the source to be transformed
-     * @since 2.5.0
      */
     public void setSourceCharset(String sourceCharset) {
         this.sourceCharset = sourceCharset;
@@ -308,7 +248,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     /**
      * Gets the parser to use when creating the DOM-tree.
      * @return <code>html</code> (default) or <code>xml</code>.
-     * @since 2.8.0
      */
     public String getParser() {
         return parser;
@@ -316,7 +255,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     /**
      * Sets the parser to use when creating the DOM-tree.
      * @param parser <code>html</code> or <code>xml</code>.
-     * @since 2.8.0
      */
     public void setParser(String parser) {
         this.parser = parser;
@@ -327,32 +265,47 @@ public class DOMContentFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, input, metadata, parsed);
-
         try {
-            Document doc = Jsoup.parse(input, inputCharset,
-                    reference, DOMUtil.toJSoupParser(getParser()));
-            Elements elms = doc.select(selector);
-            // no elements matching
-            if (elms.isEmpty()) {
-                return false;
-            }
-            // one or more elements matching
-            if (!valueMatcher.hasPattern()) {
-                return true;
-            }
-            for (Element elm : elms) {
-                String value = DOMUtil.getElementValue(elm, getExtract());
-                if (valueMatcher.matches(value)) {
-                    return true;
+            if (fieldMatcher.hasPattern()) {
+                // Dealing with fields
+                for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+                    if (isDocumentMatched(Jsoup.parse(value, reference,
+                            DOMUtil.toJSoupParser(getParser())))) {
+                        return true;
+                    }
                 }
+                return false;
+            } else {
+                // Dealing with doc content
+                String inputCharset = detectCharsetIfBlank(
+                        sourceCharset, reference, input, metadata, parsed);
+                return isDocumentMatched(Jsoup.parse(input, inputCharset,
+                        reference, DOMUtil.toJSoupParser(getParser())));
             }
-            return false;
+
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot parse document into a DOM-tree.", e);
         }
+    }
+
+    private boolean isDocumentMatched(Document doc) {
+        Elements elms = doc.select(selector);
+        // no elements matching
+        if (elms.isEmpty()) {
+            return false;
+        }
+        // one or more elements matching
+        if (!valueMatcher.hasPattern()) {
+            return true;
+        }
+        for (Element elm : elms) {
+            String value = DOMUtil.getElementValue(elm, getExtract());
+            if (valueMatcher.matches(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -363,6 +316,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         setParser(xml.getString("@parser", parser));
         setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         setSourceCharset(xml.getString("@extract", extract));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
     }
     @Override
@@ -371,22 +325,21 @@ public class DOMContentFilter extends AbstractDocumentFilter {
         xml.setAttribute("parser", parser);
         xml.setAttribute("sourceCharset", sourceCharset);
         xml.setAttribute("extract", extract);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
         valueMatcher.saveToXML(xml.addElement("valueMatcher"));
     }
 
     @Override
     public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other, "cachedPattern");
+        return EqualsBuilder.reflectionEquals(this, other);
     }
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, "cachedPattern");
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .setExcludeFieldNames("cachedPattern")
-                .toString();
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

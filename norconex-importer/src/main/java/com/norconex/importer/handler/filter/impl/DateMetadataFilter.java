@@ -19,10 +19,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,6 +38,7 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -45,15 +46,16 @@ import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.util.FormatUtil;
 /**
- * <p>Accepts or rejects a document based on the date value(s) of a metadata
- * field, stored in a specified format. If multiple values are found for a
- * field, only one of them needs to match for this filter to take effect.
- * If the value cannot be parsed to a valid date, it is considered not to be
- * matching.
+ * <p>Accepts or rejects a document based on whether field values correspond
+ * to a valid date, based on date conditions and date format.
+ * If multiple values are
+ * found for a field, only one of them needs to match for this filter to
+ * take effect. If the value cannot be parsed to a valid date, it is
+ * considered not to be matching.
  * </p>
  *
  * <h3>Metadata date field format:</h3>
- * <p>To successfully parse a date, an optional date format can be specified,
+ * <p>To successfully parse a date, you can specify a date format,
  * as per the formatting options found on {@link SimpleDateFormat}.
  * The default format when not specified is EPOCH (the difference, measured in
  * milliseconds, between the date and midnight, January 1, 1970).</p>
@@ -72,10 +74,13 @@ import com.norconex.importer.util.FormatUtil;
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
  *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
- *     field="(name of metadata field to match)"
  *     format="(date format)">
  *
  *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *       (expression matching date fields to filter)
+ *     </fieldMatcher>
  *
  *     <!-- Use one or two (for ranges) conditions where:
  *
@@ -96,8 +101,9 @@ import com.norconex.importer.util.FormatUtil;
  *                                      or plus a number of years, months, days,
  *                                      hours, minutes, or seconds
  *                                      (e.g. 1 week ago: TODAY-7d).
- *                                      * means TODAY can change from one invocation
- *                                      to another to adjust to a change of current day
+ *                                      * means TODAY can change from one
+ *                                      invocation to another to adjust to a
+ *                                      change of current day
  *         NOW[-+]9[YMDhms][*]       -> the string "NOW" (at current time) minus
  *                                      or plus a number of years, months, days,
  *                                      hours, minutes, or seconds
@@ -113,7 +119,8 @@ import com.norconex.importer.util.FormatUtil;
  *
  * {@nx.xml.example
  * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *     onMatch="include" field="publish_date" >
+ *     onMatch="include">
+ *   <fieldMatcher>publish_date</fieldMatcher>
  *   <condition operator="ge" date="TODAY-7" />
  *   <condition operator="lt" date="TODAY" />
  * </handler>
@@ -128,7 +135,6 @@ import com.norconex.importer.util.FormatUtil;
  */
 @SuppressWarnings("javadoc")
 public class DateMetadataFilter extends AbstractDocumentFilter {
-
     private static final Logger LOG =
             LoggerFactory.getLogger(DateMetadataFilter.class);
 
@@ -209,28 +215,80 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
     }
 
-    private String field;
+    private TextMatcher fieldMatcher = new TextMatcher();
     private String format;
     private final List<Condition> conditions = new ArrayList<>(2);
 
     public DateMetadataFilter() {
-        this(null);
+        super();
     }
+    /**
+     * Constructor.
+     * @param field field to apply date filtering
+     * @deprecated Since 3.0.0, use {@link #DateMetadataFilter(TextMatcher)}
+     */
+    @Deprecated
     public DateMetadataFilter(String field) {
         this(field, OnMatch.INCLUDE);
     }
+    /**
+     * Constructor.
+     * @param field field to apply date filtering
+     * @param onMatch include or exclude on match
+     * @deprecated Since 3.0.0, use
+     *             {@link #DateMetadataFilter(TextMatcher, OnMatch))}
+     */
+    @Deprecated
     public DateMetadataFilter(String field, OnMatch onMatch) {
+        this(TextMatcher.basic(field), onMatch);
+    }
+
+    /**
+     * Constructor.
+     * @param fieldMatcher matcher for fields on which to apply date filtering
+     * @since 3.0.0
+     */
+    public DateMetadataFilter(TextMatcher fieldMatcher) {
+        this(fieldMatcher, OnMatch.INCLUDE);
+    }
+    /**
+     *
+     * @param fieldMatcher matcher for fields on which to apply date filtering
+     * @param onMatch include or exclude on match
+     * @since 3.0.0
+     */
+    public DateMetadataFilter(TextMatcher fieldMatcher, OnMatch onMatch) {
         super();
-        this.field = field;
+        this.fieldMatcher.copyFrom(fieldMatcher);
         setOnMatch(onMatch);
     }
 
+    /**
+     * Deprecated.
+     * @return field name
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
+     */
+    @Deprecated
     public String getField() {
-        return field;
+        return fieldMatcher.getPattern();
     }
-    public void setField(String property) {
-        this.field = property;
+    /**
+     * Deprecated.
+     * @param field field name
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+     */
+    @Deprecated
+    public void setField(String field) {
+        this.fieldMatcher.setPattern(field);
     }
+
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher = fieldMatcher;
+    }
+
     public String getFormat() {
         return format;
     }
@@ -262,21 +320,24 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (StringUtils.isBlank(field)) {
-            throw new IllegalArgumentException("\"field\" cannot be empty.");
+        if (fieldMatcher.hasPattern()) {
+            throw new IllegalArgumentException(
+                    "\"fieldMatcher\" cannot be empty.");
         }
-        Collection<String> values =  metadata.getStrings(field);
-        for (String value : values) {
-            if (meetsAllConditions(value)) {
-                return true;
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(fieldMatcher).entrySet()) {
+            for (String value : en.getValue()) {
+                if (meetsAllConditions(en.getKey(), value)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    private boolean meetsAllConditions(String fieldValue) {
-        String epochString =
-                FormatUtil.formatDateString(fieldValue, format, null, field);
+    private boolean meetsAllConditions(String fieldName, String fieldValue) {
+        String epochString = FormatUtil.formatDateString(
+                fieldValue, format, null, fieldName);
         if (StringUtils.isBlank(epochString)) {
             return false;
         }
@@ -292,7 +353,8 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setField(xml.getString("@field", field));
+        xml.checkDeprecated("@field", "fieldMatcher", true);
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         setFormat(xml.getString("@format", format));
         List<XML> nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
@@ -318,13 +380,13 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void saveFilterToXML(XML xml) {
-        xml.setAttribute("field", field);
         xml.setAttribute("format", format);
         for (Condition condition : conditions) {
             xml.addElement("condition")
                     .setAttribute("operator", condition.operator.abbr)
                     .setAttribute("date", condition.getDateString());
         }
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

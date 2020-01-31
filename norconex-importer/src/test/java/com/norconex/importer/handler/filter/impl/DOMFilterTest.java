@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
-@Deprecated
-public class DOMContentFilterTest {
+public class DOMFilterTest {
 
     private final String html = "<html><head><title>Test page</title></head>"
             + "<body>This is sample content.<p>"
@@ -41,7 +40,7 @@ public class DOMContentFilterTest {
     @Test
     public void testFilterHTML()
             throws IOException, ImporterHandlerException {
-        DOMContentFilter filter = new DOMContentFilter();
+        DOMFilter filter = new DOMFilter();
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.set(
                 ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
@@ -66,7 +65,7 @@ public class DOMContentFilterTest {
     @Test
     public void testFilterXML()
             throws IOException, ImporterHandlerException {
-        DOMContentFilter filter = new DOMContentFilter();
+        DOMFilter filter = new DOMFilter();
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.set(
                 ImporterMetadata.DOC_CONTENT_TYPE, "application/xml");
@@ -91,7 +90,37 @@ public class DOMContentFilterTest {
                 "Carrot should have been rejected.");
     }
 
-    private boolean filter(DOMContentFilter filter,
+    @Test
+    public void testFilterXMLFromField()
+            throws IOException, ImporterHandlerException {
+        DOMFilter filter = new DOMFilter();
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.set(
+                ImporterMetadata.DOC_CONTENT_TYPE, "application/xml");
+        metadata.set("field1", xml);
+        filter.setOnMatch(OnMatch.INCLUDE);
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
+
+        filter.setSelector("food > fruit[color=red]");
+        Assertions.assertTrue(filter(filter, "n/a", metadata),
+                "Red fruit should have been accepted.");
+
+        filter.setSelector("food > fruit[color=green]");
+        Assertions.assertFalse(filter(filter, "n/a", metadata),
+                "Green fruit should have been rejected.");
+
+        filter.setSelector("food > fruit");
+        filter.setValueMatcher(TextMatcher.regex("apple"));
+        Assertions.assertTrue(filter(filter, "n/a", metadata),
+                "Apple should have been accepted.");
+
+        filter.setSelector("food > fruit");
+        filter.setValueMatcher(TextMatcher.regex("carrot"));
+        Assertions.assertFalse(filter(filter, "n/a", metadata),
+                "Carrot should have been rejected.");
+    }
+
+    private boolean filter(DOMFilter filter,
             String content, ImporterMetadata metadata)
                     throws ImporterHandlerException, IOException {
         return filter.acceptDocument("n/a", IOUtils.toInputStream(
@@ -100,7 +129,7 @@ public class DOMContentFilterTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        DOMContentFilter filter = new DOMContentFilter();
+        DOMFilter filter = new DOMFilter();
         filter.addRestriction(new PropertyMatcher(
                 "document.contentType", TextMatcher.basic("text/html")));
         filter.setValueMatcher(TextMatcher.regex("blah"));
