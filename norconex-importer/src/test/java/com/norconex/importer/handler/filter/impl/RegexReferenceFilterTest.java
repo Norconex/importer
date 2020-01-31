@@ -54,7 +54,8 @@ public class RegexReferenceFilterTest {
     public void testWriteRead() throws IOException {
         RegexReferenceFilter filter = new RegexReferenceFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*").setIgnoreCase(true)));
+                TextMatcher.basic("author"),
+                TextMatcher.regex("Pascal.*").setIgnoreCase(true)));
         filter.setRegex("blah");
         filter.setOnMatch(OnMatch.INCLUDE);
         XML.assertWriteRead(filter, "handler");

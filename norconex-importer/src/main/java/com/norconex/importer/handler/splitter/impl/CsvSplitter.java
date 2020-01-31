@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,26 +51,29 @@ import au.com.bytecode.opencsv.CSVReader;
  * <p>Can be used both as a pre-parse (text documents) or post-parse handler
  * documents.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
  *          separatorCharacter=""
  *          quoteCharacter=""
  *          escapeCharacter=""
  *          useFirstRowAsFields="(false|true)"
  *          linesToSkip="(integer)"
  *          referenceColumn="(column name or position from 1)"
- *          contentColumns="(csv list of column/position to use as content)" &gt;
+ *          contentColumns="(csv list of column/position to use as content)" >
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * </handler>
+ * }
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ *     separatorCharacter=","
+ *     quoteCharacter="'"
+ *     escapeCharacter="\"
+ *     useFirstRowAsFields="true"
+ *     linesToSkip="0"
+ *     referenceColumn="clientId"
+ *     contentColumns="orgDesc" />
+ * }
  * <p>
  * Given this sample CSV file content...
  * </p>
@@ -80,22 +83,14 @@ import au.com.bytecode.opencsv.CSVReader;
  * '345','Avrel Dalton','Daisy Town','Another one'
  * </pre>
  * <p>
- * ... this example will split the file into two documents (one for each row
- * after the header row):
+ * ... the above example will split the file into two documents (one for each
+ * row after the header row):
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
- *          separatorCharacter=","
- *          quoteCharacter="'"
- *          escapeCharacter="\"
- *          useFirstRowAsFields="true"
- *          linesToSkip="0"
- *          referenceColumn="clientId"
- *          contentColumns="orgDesc" /&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class CsvSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 

@@ -60,7 +60,8 @@ public class RegexMetadataFilterTest {
     public void testWriteRead() throws IOException {
         RegexMetadataFilter filter = new RegexMetadataFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
+                TextMatcher.basic("author"),
+                TextMatcher.regex("Pascal.*")));
         filter.setField("field1");
         filter.setRegex("blah");
         filter.setOnMatch(OnMatch.INCLUDE);

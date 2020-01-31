@@ -58,7 +58,8 @@ public class EmptyMetadataFilterTest {
     public void testWriteRead() throws IOException {
         EmptyMetadataFilter filter = new EmptyMetadataFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
+                TextMatcher.basic("author"),
+                TextMatcher.regex("Pascal.*")));
         filter.setFields("field1", "field2", "field3");
         filter.setOnMatch(OnMatch.INCLUDE);
         XML.assertWriteRead(filter, "handler");

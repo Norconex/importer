@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -111,8 +110,9 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     @Deprecated
     public synchronized void addRestriction(
             String field, String regex, boolean caseSensitive) {
-        restrictions.add(new PropertyMatcher(field,
-                new TextMatcher(Method.REGEX).setIgnoreCase(!caseSensitive)));
+        restrictions.add(new PropertyMatcher(
+                TextMatcher.basic(field),
+                TextMatcher.regex(regex).setIgnoreCase(!caseSensitive)));
     }
 
     /**

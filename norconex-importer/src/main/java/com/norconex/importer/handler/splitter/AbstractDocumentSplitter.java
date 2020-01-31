@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,28 +25,25 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
  * <p>Base class for splitters.</p>
- * 
+ *
  * <p>Subclasses inherit this {@link IXMLConfigurable} configuration:</p>
- * <pre>
- *  &lt;restrictTo caseSensitive="[false|true]"
- *          field="(name of header/metadata field name to match)"&gt;
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
- *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
+ * {@nx.xml
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * }
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
             implements IDocumentSplitter {
 
     @Override
     public final List<ImporterDocument> splitDocument(
-            SplittableDocument doc, 
+            SplittableDocument doc,
             OutputStream docOutput,
-            CachedStreamFactory streamFactory, boolean parsed) 
+            CachedStreamFactory streamFactory, boolean parsed)
                     throws ImporterHandlerException {
-        
+
         if (!isApplicable(doc.getReference(), doc.getMetadata(), parsed)) {
             return null;
         }
@@ -55,7 +52,7 @@ public abstract class AbstractDocumentSplitter extends AbstractImporterHandler
     }
 
     protected abstract List<ImporterDocument> splitApplicableDocument(
-            SplittableDocument doc, OutputStream output, 
-            CachedStreamFactory streamFactory, boolean parsed) 
+            SplittableDocument doc, OutputStream output,
+            CachedStreamFactory streamFactory, boolean parsed)
                     throws ImporterHandlerException;
 }

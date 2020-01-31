@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,33 +84,29 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
- *          selector="(selector syntax)"
- *          parser="[html|xml]"
- *          sourceCharset="(character encoding)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+ *     selector="(selector syntax)"
+ *     parser="[html|xml]"
+ *     sourceCharset="(character encoding)" >
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * </handler>
+ * }
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
+ *     selector="div.contact" />
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
  * <p>
- * The following split contacts found in an HTML document, each one being
+ * The above example splits contacts found in an HTML document, each one being
  * stored within a div with a class named "contact".
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
- *          selector="div.contact" /&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.4.0
  */
+@SuppressWarnings("javadoc")
 public class DOMSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 

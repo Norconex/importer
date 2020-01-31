@@ -107,7 +107,8 @@ public final class CommonRestrictions {
         PropertyMatchers matchers = new PropertyMatchers();
         for (String regex : regexes) {
             matchers.add(new PropertyMatcher(
-                    key, RX_NOCASE_PROTO.withPattern(regex)));
+                    TextMatcher.basic(key),
+                    RX_NOCASE_PROTO.withPattern(regex)));
         }
         return matchers;
     }

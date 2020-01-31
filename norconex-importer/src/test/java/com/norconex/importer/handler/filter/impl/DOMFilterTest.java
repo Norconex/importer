@@ -131,7 +131,8 @@ public class DOMFilterTest {
     public void testWriteRead() throws IOException {
         DOMFilter filter = new DOMFilter();
         filter.addRestriction(new PropertyMatcher(
-                "document.contentType", TextMatcher.basic("text/html")));
+                TextMatcher.basic("document.contentType"),
+                TextMatcher.basic("text/html")));
         filter.setValueMatcher(TextMatcher.regex("blah"));
         filter.setOnMatch(OnMatch.INCLUDE);
         filter.setSelector("selector");

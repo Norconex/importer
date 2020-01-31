@@ -154,7 +154,8 @@ public class RegexContentFilterTest {
     public void testWriteRead() throws IOException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
+                TextMatcher.basic("author"),
+                TextMatcher.regex("Pascal.*")));
         filter.setRegex("blah");
         filter.setMaxReadSize(256);
         filter.setOnMatch(OnMatch.INCLUDE);

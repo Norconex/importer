@@ -1,4 +1,4 @@
-/* Copyright 2018 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
@@ -50,10 +52,12 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  * <code>document.pdf.numberOfPages</code>.  A filtering example:
  * </p>
  *
- * <pre>
- * &lt;filter class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *         onMatch="exclude" fields="document.pdf.pageNumber" /&gt;
- * </pre>
+ * {@nx.xml.example
+ * <filter class="com.norconex.importer.handler.filter.impl.EmptyFilter"
+ *         onMatch="exclude">
+ *   <fieldMatcher matchWhole="true">document.pdf.pageNumber</fieldMatcher>
+ * </filter>
+ * }
  *
  * <p>
  * By default this splitter restricts its use to
@@ -62,36 +66,30 @@ import com.norconex.importer.handler.splitter.SplittableDocument;
  *
  * <p>Should be used as a pre-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter">
+ *    {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+
+ *    <referencePagePrefix>
+ *      (String to put before the page number is appended to the document
+ *      reference. Default is "#".)
+ *    </referencePagePrefix>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (Regular expression of value to match. Default restricts on
- *           "document.contentType" being "application/pdf".)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *  </handler>
+ * }
  *
- *      &lt;referencePagePrefix&gt;
- *          (String to put before the page number is appended to the document
- *          reference. Default is "#".)
- *      &lt;/referencePagePrefix&gt;
- *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
- * <p>The following example will split PDFs and will append the page number
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter">
+ *   <referencePagePrefix>#page</referencePagePrefix>
+ * </handler>
+ * }
+ * <p>The above example will split PDFs and will append the page number
  * to the original PDF reference as "#page1", "#page2", etc.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter"&gt;
- *      &lt;referencePagePrefix&gt;#page&lt;/referencePagePrefix&gt;
- *  &lt;/handler&gt;
- * </pre>
  * @author Pascal Essiembre
  * @since 2.9.0
  */
+@SuppressWarnings("javadoc")
 public class PDFPageSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
@@ -105,8 +103,9 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
     public PDFPageSplitter() {
         super();
-        addRestriction(
-                ImporterMetadata.DOC_CONTENT_TYPE, "application/pdf", false);
+        addRestriction(new PropertyMatcher(
+                TextMatcher.basic(ImporterMetadata.DOC_CONTENT_TYPE),
+                TextMatcher.basic("application/pdf")));
     }
 
     public String getReferencePagePrefix() {

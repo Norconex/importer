@@ -76,7 +76,7 @@ public class EmptyFilterTest {
     public void testWriteRead() throws IOException {
         EmptyFilter filter = new EmptyFilter();
         filter.addRestriction(new PropertyMatcher(
-                "author", TextMatcher.regex("Pascal.*")));
+                TextMatcher.basic("author"), TextMatcher.regex("Pascal.*")));
         filter.setFieldMatcher(TextMatcher.regex("(field1|field2|field3)"));
         filter.setOnMatch(OnMatch.INCLUDE);
         XML.assertWriteRead(filter, "handler");
