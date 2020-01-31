@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,23 +58,14 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  * whether the document was matched or not.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
- *          engineName="(script engine name)"
- *          onMatch="[include|exclude]"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max content characters to read at once)" &gt;
- *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *
- *      &lt;script&gt;(your script)&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
+ *   {@nx.include com.norconex.importer.handler.filter.AbstractStringFilter#attributes}
+ *       engineName="(script engine name)">
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *   <script>(your script)</script>
+ * </handler>
+ * }
  *
  * <h4>Usage example:</h4>
  * <h5>JavaScript:</h5>
@@ -104,6 +95,7 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  * @since 2.4.0
  * @see ScriptRunner
  */
+@SuppressWarnings("javadoc")
 public class ScriptFilter extends AbstractStringFilter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptFilter.class);

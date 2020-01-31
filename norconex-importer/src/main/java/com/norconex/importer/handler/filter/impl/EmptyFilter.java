@@ -38,7 +38,7 @@ import com.norconex.importer.handler.filter.AbstractDocumentFilter;
  * control characters (char &lt;= 32) are removed before evaluating whether
  * their values are empty.</p>
  *
- * <h3>Filtering on multiple fields</h3>
+ * <h3>Filtering on multiple fields:</h3>
  * <p>
  * It is important to note that when your field matcher expression matches
  * more than one field, only one of the matched fields needs to be empty

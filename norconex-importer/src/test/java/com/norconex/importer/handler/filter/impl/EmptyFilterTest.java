@@ -16,6 +16,7 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.IOException;
 
+import org.apache.tika.io.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +30,7 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class EmptyFilterTest {
 
     @Test
-    public void testAcceptDocument() throws IOException, ImporterHandlerException {
+    public void testEmptyFields() throws IOException, ImporterHandlerException {
         ImporterMetadata meta = new ImporterMetadata();
         meta.add("field1", "a string to match");
         meta.add("field2", "");
@@ -51,6 +52,24 @@ public class EmptyFilterTest {
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false),
                 "field3 not filtered properly.");
+    }
+
+    @Test
+    public void testEmptyContent()
+            throws IOException, ImporterHandlerException {
+        ImporterMetadata meta = new ImporterMetadata();
+
+        EmptyFilter filter = new EmptyFilter();
+        filter.setOnMatch(OnMatch.EXCLUDE);
+
+        Assertions.assertTrue(filter.acceptDocument(
+                "n/a", new NullInputStream(5, true, false), meta, false),
+                "Non-empty stream should be accepted.");
+        Assertions.assertFalse(filter.acceptDocument(
+                "n/a", new NullInputStream(0, true, false), meta, false),
+                "Empty stream should be rejected.");
+        Assertions.assertFalse(filter.acceptDocument("n/a", null, meta, false),
+                "Null stream should be rejected.");
     }
 
     @Test

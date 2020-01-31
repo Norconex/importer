@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -47,30 +48,29 @@ public class NumericMetadataFilterTest {
         filter.addCondition(Operator.GREATER_EQUAL, 20);
         filter.addCondition(Operator.LOWER_THAN, 30);
 
-
-        filter.setField("lowerthan");
+        filter.setFieldMatcher(TextMatcher.basic("lowerthan"));
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
-        filter.setField("inrange");
+        filter.setFieldMatcher(TextMatcher.basic("inrange"));
         Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
 
-        filter.setField("greaterthan");
+        filter.setFieldMatcher(TextMatcher.basic("greaterthan"));
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
-        filter.setField("multivalInrange");
+        filter.setFieldMatcher(TextMatcher.basic("multivalInrange"));
         Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
 
-        filter.setField("multivalOutrange");
+        filter.setFieldMatcher(TextMatcher.basic("multivalOutrange"));
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false));
 
         filter.setConditions(new NumericMetadataFilter.Condition(
                 Operator.EQUALS, 6.5));
-        filter.setField("equal");
+        filter.setFieldMatcher(TextMatcher.basic("equal"));
         Assertions.assertTrue(
                 filter.acceptDocument("n/a", null, meta, false));
     }
@@ -78,7 +78,7 @@ public class NumericMetadataFilterTest {
     @Test
     public void testWriteRead() throws IOException {
         NumericMetadataFilter filter = new NumericMetadataFilter();
-        filter.setField("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setOnMatch(OnMatch.EXCLUDE);
         filter.addCondition(Operator.GREATER_EQUAL, 20);
         filter.addCondition(Operator.LOWER_THAN, 30);
