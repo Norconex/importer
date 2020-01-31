@@ -29,6 +29,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
+import com.norconex.importer.handler.filter.OnMatch;
 
 /**
  * <p>Filters a document based on a text pattern in a document content
@@ -81,12 +82,22 @@ public class TextFilter extends AbstractStringFilter {
     public TextFilter() {
         super();
     }
-    public TextFilter(TextMatcher textMatcher) {
-        setValueMatcher(textMatcher);
+    public TextFilter(TextMatcher valueMatcher) {
+        setValueMatcher(valueMatcher);
     }
-    public TextFilter(TextMatcher textMatcher, TextMatcher fieldMatcher) {
-        setValueMatcher(textMatcher);
+    public TextFilter(TextMatcher valueMatcher, OnMatch onMatch) {
+        setValueMatcher(valueMatcher);
+        setOnMatch(onMatch);
+    }
+    public TextFilter(TextMatcher fieldMatcher, TextMatcher valueMatcher) {
+        setValueMatcher(valueMatcher);
         setFieldMatcher(fieldMatcher);
+    }
+    public TextFilter(TextMatcher fieldMatcher, TextMatcher valueMatcher,
+            OnMatch onMatch) {
+        setValueMatcher(valueMatcher);
+        setFieldMatcher(fieldMatcher);
+        setOnMatch(onMatch);
     }
 
     /**

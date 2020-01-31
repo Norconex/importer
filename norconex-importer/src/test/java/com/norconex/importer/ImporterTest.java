@@ -34,12 +34,13 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
-import com.norconex.importer.handler.filter.impl.RegexMetadataFilter;
+import com.norconex.importer.handler.filter.impl.TextFilter;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -118,8 +119,10 @@ public class ImporterTest {
     @Test
     public void testImportRejected() throws IOException, ImporterException {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList(new RegexMetadataFilter(
-                "Content-Type", "application/pdf", OnMatch.EXCLUDE)));
+        config.setPostParseHandlers(Arrays.asList(new TextFilter(
+                TextMatcher.basic("Content-Type").setMatchWhole(true),
+                TextMatcher.basic("application/pdf").setMatchWhole(true),
+                OnMatch.EXCLUDE)));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null,
@@ -129,7 +132,7 @@ public class ImporterTest {
 //                        + result.getImporterStatus().getDescription());
         Assertions.assertTrue(result.getImporterStatus().isRejected()
                 && result.getImporterStatus().getDescription().contains(
-                        "RegexMetadataFilter"),
+                        "TextFilter"),
                 "PDF should have been rejected with proper "
                         + "status description.");
     }

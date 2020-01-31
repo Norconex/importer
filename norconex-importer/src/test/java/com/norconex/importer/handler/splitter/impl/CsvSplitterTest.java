@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterDocument;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -126,7 +128,9 @@ public class CsvSplitterTest {
         splitter.setEscapeCharacter('.');
         splitter.setLinesToSkip(10);
         splitter.setQuoteCharacter('!');
-        splitter.addRestriction("key", "value", true);
+        splitter.addRestriction(new PropertyMatcher(
+                TextMatcher.basic("key").matchWhole(),
+                TextMatcher.basic("value").matchWhole().ignoreCase()));
         splitter.setSeparatorCharacter('@');
         splitter.setUseFirstRowAsFields(true);
         XML.assertWriteRead(splitter, "handler");
