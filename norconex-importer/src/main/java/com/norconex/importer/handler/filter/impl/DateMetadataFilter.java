@@ -215,7 +215,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
     }
 
-    private TextMatcher fieldMatcher = new TextMatcher();
+    private final TextMatcher fieldMatcher = new TextMatcher();
     private String format;
     private final List<Condition> conditions = new ArrayList<>(2);
 
@@ -286,7 +286,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         return fieldMatcher;
     }
     public void setFieldMatcher(TextMatcher fieldMatcher) {
-        this.fieldMatcher = fieldMatcher;
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
     public String getFormat() {
@@ -320,7 +320,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (fieldMatcher.hasPattern()) {
+        if (!fieldMatcher.hasPattern()) {
             throw new IllegalArgumentException(
                     "\"fieldMatcher\" cannot be empty.");
         }

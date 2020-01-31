@@ -268,7 +268,8 @@ public class DOMFilter extends AbstractDocumentFilter {
         try {
             if (fieldMatcher.hasPattern()) {
                 // Dealing with fields
-                for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+                for (String value :
+                        metadata.matchKeys(fieldMatcher).valueList()) {
                     if (isDocumentMatched(Jsoup.parse(value, reference,
                             DOMUtil.toJSoupParser(getParser())))) {
                         return true;

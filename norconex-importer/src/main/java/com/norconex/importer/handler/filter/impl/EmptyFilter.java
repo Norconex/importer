@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,11 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -27,62 +26,63 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.io.IOUtil;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
-import com.norconex.importer.handler.filter.OnMatch;
 /**
- * <p>Accepts or rejects a document based on whether any of the specified
- * metadata fields are empty or not.  Any control characters (char &lt;= 32)
- * are removed before evaluating if a field is empty or not.</p>
+ * <p>Accepts or rejects a document based on whether its content (default) or
+ * any of the specified metadata fields are empty or not.  For metadata fields,
+ * control characters (char &lt;= 32) are removed before evaluating whether
+ * their values are empty.</p>
+ *
+ * <h3>Filtering on multiple fields</h3>
+ * <p>
+ * It is important to note that when your field matcher expression matches
+ * more than one field, only one of the matched fields needs to be empty
+ * to trigger a match. If no fields are match, it is also considered empty.
+ * If you expect some fields to be present and they are not, they will not
+ * be evaluated thus are not considered empty.  To make sure a multiple fields
+ * are tested properly, used multiple instances of {@link EmptyFilter}, with
+ * field matching matching only one field in each.
+ * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
- *     fields="(coma separated list of fields to match)">
+ *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}>
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (optional expression matching fields we want to test for emptiness)
+ *   </fieldMatcher>
  * </handler>
  * }
  *
  * {@nx.xml.example
  *  <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
- *          onMatch="exclude" fields="title,dc:title" />
+ *          onMatch="exclude">
+ *    <fieldMatcher method="regex">(title|dc:title)</fieldMatcher>
+ *  </handler>
  * }
  * <p>
  * The above example excludes documents without titles.
  * </p>
  *
  * @author Pascal Essiembre
- * @since 1.2
- * @deprecated Since 3.0.0, use {@link EmptyFilter}.
+ * @since 3.0.0
  */
-@Deprecated
 @SuppressWarnings("javadoc")
-public class EmptyMetadataFilter extends AbstractDocumentFilter {
+public class EmptyFilter extends AbstractDocumentFilter {
 
-    private final List<String> fields = new ArrayList<>();
+    private final TextMatcher fieldMatcher = new TextMatcher();
 
-
-    public EmptyMetadataFilter() {
-        this(OnMatch.INCLUDE, (String) null);
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
     }
-    public EmptyMetadataFilter(
-            OnMatch onMatch, String... fields) {
-        super();
-        this.fields.addAll(Arrays.asList(fields));
-        setOnMatch(onMatch);
-    }
-
-    public List<String> getFields() {
-        return Collections.unmodifiableList(fields);
-    }
-    public void setFields(String... fields) {
-        setFields(Arrays.asList(fields));
-    }
-    public void setFields(List<String> fields) {
-        CollectionUtil.setAll(this.fields, fields);
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
     @Override
@@ -90,14 +90,29 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (fields.isEmpty()) {
+        // do content
+        if (!fieldMatcher.hasPattern()) {
+            try {
+                return IOUtil.isEmpty(input);
+            } catch (IOException e) {
+                throw new ImporterHandlerException(
+                        "Cannot check if document is empty.", e);
+            }
+        }
+
+        // If no values returned, call it empty
+        Set<Entry<String, List<String>>> entrySet =
+                metadata.matchKeys(fieldMatcher).entrySet();
+        if (entrySet.isEmpty()) {
             return true;
         }
-        for (String prop : fields) {
-            Collection<String> values =  metadata.getStrings(prop);
 
+        // if fome fields are returned, check them all for emptiness
+        // one at a time
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(fieldMatcher).entrySet()) {
             boolean isPropEmpty = true;
-            for (String value : values) {
+            for (String value : en.getValue()) {
                 if (!StringUtils.isBlank(StringUtils.trim(value))) {
                     isPropEmpty = false;
                     break;
@@ -112,12 +127,13 @@ public class EmptyMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected void loadFilterFromXML(XML xml) {
-        setFields(xml.getDelimitedStringList("@fields", fields));
+        xml.checkDeprecated("@fields", "fieldMatcher", true);
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 
     @Override
     protected void saveFilterToXML(XML xml) {
-        xml.setDelimitedAttributeList("fields", fields);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

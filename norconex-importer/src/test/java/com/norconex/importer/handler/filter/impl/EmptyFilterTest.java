@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,7 @@ import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
-@Deprecated
-public class EmptyMetadataFilterTest {
+public class EmptyFilterTest {
 
     @Test
     public void testAcceptDocument() throws IOException, ImporterHandlerException {
@@ -35,20 +34,20 @@ public class EmptyMetadataFilterTest {
         meta.add("field1", "a string to match");
         meta.add("field2", "");
 
-        EmptyMetadataFilter filter = new EmptyMetadataFilter();
+        EmptyFilter filter = new EmptyFilter();
 
-        filter.setFields("field1");
+        filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false),
                 "field1 not filtered properly.");
 
-        filter.setFields("field2");
+        filter.setFieldMatcher(TextMatcher.basic("field2"));
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false),
                 "field2 not filtered properly.");
 
-        filter.setFields("field3");
+        filter.setFieldMatcher(TextMatcher.basic("field3"));
         Assertions.assertFalse(
                 filter.acceptDocument("n/a", null, meta, false),
                 "field3 not filtered properly.");
@@ -56,10 +55,10 @@ public class EmptyMetadataFilterTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        EmptyMetadataFilter filter = new EmptyMetadataFilter();
+        EmptyFilter filter = new EmptyFilter();
         filter.addRestriction(new PropertyMatcher(
                 "author", TextMatcher.regex("Pascal.*")));
-        filter.setFields("field1", "field2", "field3");
+        filter.setFieldMatcher(TextMatcher.regex("(field1|field2|field3)"));
         filter.setOnMatch(OnMatch.INCLUDE);
         XML.assertWriteRead(filter, "handler");
     }
