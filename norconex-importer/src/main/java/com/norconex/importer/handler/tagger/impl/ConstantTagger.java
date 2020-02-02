@@ -47,35 +47,31 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
- *         onSet="[append|prepend|replace|optional]" >
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *     <restrictTo caseSensitive="[false|true]"
- *             field="(name of header/metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <constant name="CONSTANT_NAME">Constant Value</constant>
- *     <!-- multiple constant tags allowed -->
+ *   <!-- multiple constant tags allowed -->
+ *   <constant name="CONSTANT_NAME">Constant Value</constant>
  *
  * </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
+ *    <constant name="source">web</constant>
+ *  </handler>
+ * }
  * <p>
- * Adds a constant to incoming documents to identify they were web documents.
+ * The above example adds a constant to incoming documents to identify they
+ * were web documents.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"&gt;
- *      &lt;constant name="source"&gt;web&lt;/constant&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class ConstantTagger extends AbstractDocumentTagger{
 
     @Deprecated

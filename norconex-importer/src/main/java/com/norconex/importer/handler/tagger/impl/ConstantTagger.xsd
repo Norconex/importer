@@ -25,20 +25,7 @@
           <xs:all>
             <xs:element ref="constant"  minOccurs="1" maxOccurs="unbounded"/>
           </xs:all>
-          <xs:attribute name="onSet">
-            <xs:simpleType>
-              <xs:restriction base="xs:string">
-                <xs:enumeration value="APPEND"/>
-                <xs:enumeration value="append"/>
-                <xs:enumeration value="PREPEND"/>
-                <xs:enumeration value="prepend"/>
-                <xs:enumeration value="REPLACE"/>
-                <xs:enumeration value="replace"/>
-                <xs:enumeration value="OPTIONAL"/>
-                <xs:enumeration value="optional"/>
-              </xs:restriction>
-            </xs:simpleType>
-          </xs:attribute>
+          <xs:attribute name="onSet" type="PropertySetterMethodType"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

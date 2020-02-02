@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map.Entry;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -31,7 +30,8 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.text.Regex;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -53,8 +53,8 @@ import com.norconex.importer.util.CharsetUtil;
  * <h3>Should I use this tagger?</h3>
  * <p>
  * Before using this tagger, you need to know the parsing of documents
- * by the importer using default document parser factory will try to convert
- * and return fields as UTF-8 (for most, if not all content-types).
+ * by the importer (using the default document parser factory) will try to
+ * convert and return fields as UTF-8 (for most, if not all content-types).
  * If UTF-8 is your desired target, it only make sense to use this tagger
  * as a pre-parsing handler (for text content-types only) when it is important
  * to work with a specific character encoding before parsing.
@@ -69,36 +69,33 @@ import com.norconex.importer.util.CharsetUtil;
  * documents sometime mix different encoding, there is no guarantee this
  * class will handle ALL character encoding conversions properly.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
  *          sourceCharset="(character encoding)"
- *          targetCharset="(character encoding)"&gt;
+ *          targetCharset="(character encoding)">
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   <fieldMatcher>(expression matching fields to be converted)</fieldMatcher>
  *
- *      &lt;fieldsRegex&gt;(regex matching fields to detect encoding)&lt;/fieldsRegex&gt;
+ *  </handler>
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ *          sourceCharset="ISO-8859-1" targetCharset="UTF-8">
+ *    <fieldMatcher>description</fieldMatcher>
+ *  </handler>
+ * }
  * <p>
- * Converts the characters of a "description" field from "ISO-8859-1"
- * to "UTF-8".
+ * The above example converts the characters of a "description" field from
+ * "ISO-8859-1" to "UTF-8".
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
- *          sourceCharset="ISO-8859-1" targetCharset="UTF-8"&gt;
- *      &lt;fieldsRegex&gt;description&lt;/fieldsRegex&gt;
- *  &lt;/handler&gt;
  * </pre>
  * @author Pascal Essiembre
  * @since 2.5.0
  */
+@SuppressWarnings("javadoc")
 public class CharsetTagger extends AbstractDocumentTagger
         implements IXMLConfigurable {
 
@@ -110,38 +107,59 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
-    private String fieldsRegex;
+    private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (StringUtils.isBlank(fieldsRegex)) {
+        if (fieldMatcher.getPattern() == null) {
             throw new ImporterHandlerException(
                     "\"fieldsRegex\" cannot be blank on CharsetTagger.");
         }
 
-        String[] metaFields = metadata.keySet().toArray(
-                ArrayUtils.EMPTY_STRING_ARRAY);
-        Pattern pattern = new Regex(
-                fieldsRegex).dotAll().ignoreCase().compile();
-        for (String metaField : metaFields) {
-            if (pattern.matcher(metaField).matches()) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Field to convert charset: {}", metaField);
-                }
-                convertCharset(reference, metadata, metaField);
-            }
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(fieldMatcher).entrySet()) {
+            LOG.debug("Field to convert charset: {}", en.getKey());
+            convertCharset(reference, metadata, en.getKey());
         }
     }
 
-
+    /**
+     * Gets field-matching expression.
+     * @return expression
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
+     */
+    @Deprecated
     public String getFieldsRegex() {
-        return fieldsRegex;
+        return fieldMatcher.getPattern();
     }
+    /**
+     * Sets field-matching regular expression.
+     * @param fieldsRegex regular expressiopm
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+     */
+    @Deprecated
     public void setFieldsRegex(String fieldsRegex) {
-        this.fieldsRegex = fieldsRegex;
+        this.fieldMatcher.setPattern(fieldsRegex).setMethod(Method.REGEX);
+    }
+
+    /**
+     * Gets field matcher.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Set field matcher (copy).
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
     private void convertCharset(
@@ -165,8 +183,7 @@ public class CharsetTagger extends AbstractDocumentTagger
             }
             newValues.add(newValue);
         }
-        metadata.set(metaField,
-                newValues.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+        metadata.setList(metaField, newValues);
     }
 
     private String convertCharset(
@@ -229,16 +246,18 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        xml.checkDeprecated("fieldsRegex", "fieldMatcher", true);
+
         setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         setTargetCharset(xml.getString("@targetCharset", targetCharset));
-        setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
         xml.setAttribute("sourceCharset", sourceCharset);
         xml.setAttribute("targetCharset", targetCharset);
-        xml.addElement("fieldsRegex", fieldsRegex);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

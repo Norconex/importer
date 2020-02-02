@@ -74,6 +74,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
  *     type="[upper|lower|words|wordsFully|sentences|sentencesFully|string|stringFully|swap]"
  *     applyTo="[value|field|both]">
+ *
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
  *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
  *     (expression to narrow by matching fields)
  *   </fieldMatcher>

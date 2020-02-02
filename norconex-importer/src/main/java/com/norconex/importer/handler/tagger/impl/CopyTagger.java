@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -44,37 +45,35 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
  *
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
  *
- *     <restrictTo caseSensitive="[false|true]"
- *             field="(name of header/metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <copy fromField="(from field)" toField="(to field)"
- *             onSet="[append|prepend|replace|optional]" />
- *     <-- multiple copy tags allowed -->
+ *   <-- multiple copy tags allowed -->
+ *   <copy toField="(to field)"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *     <fieldMatcher>(one or more matching fields to copy)</fieldMatcher>
+ *   </copy>
  * </handler>
- * }</pre>
- * <h4>Usage example:</h4>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
+ *   <copy toField="author" onSet="append">
+ *     <fieldMatcher method="regex">(creator|publisher)</fieldMatcher>
+ *   </copy>
+ * </handler>
+ * }
  * <p>
  * Copies the value of a "creator" and "publisher" fields into an "author"
  * field, adding to any existing values in the "author" field.
  * </p>
  *
- * <pre>{@code
- * <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
- *     <copy fromField="creator"   toField="author" onSet="replace" />
- *     <copy fromField="publisher" toField="author" onSet="replace" />
- * </handler>
- * }</pre>
- *
  * @author Pascal Essiembre
  * @since 1.3.0
  */
+@SuppressWarnings("javadoc")
 public class CopyTagger extends AbstractDocumentTagger {
 
     private final List<CopyDetails> copyDetailsList = new ArrayList<>();
@@ -84,8 +83,8 @@ public class CopyTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
         for (CopyDetails copy : copyDetailsList) {
-            PropertySetter.orDefault(copy.onSet).apply(metadata,
-                    copy.toField, metadata.getStrings(copy.fromField));
+            PropertySetter.orDefault(copy.onSet).apply(metadata, copy.toField,
+                    metadata.matchKeys(copy.fieldMatcher).valueList());
         }
     }
 
@@ -96,38 +95,39 @@ public class CopyTagger extends AbstractDocumentTagger {
      * @param toField target field name
      */
     public void addCopyDetails(String fromField, String toField) {
-        addCopyDetails(fromField, toField, null);
+        addCopyDetails(TextMatcher.basic(fromField), toField, null);
     }
     /**
      * Adds copy instructions.
-     * @param fromField source field name
+     * @param fieldMatcher source field(s)
      * @param toField target field name
      * @param onSet strategy to use when a value is copied over an existing one
+     * @since 3.0.0
      */
     public void addCopyDetails(
-            String fromField, String toField, PropertySetter onSet) {
-        if (StringUtils.isBlank(fromField)) {
+            TextMatcher fieldMatcher, String toField, PropertySetter onSet) {
+        if (fieldMatcher == null) {
             throw new IllegalArgumentException(
-                    "'fromField' argument cannot be blank.");
+                    "'fieldMatcher' argument cannot be null.");
         }
         if (StringUtils.isBlank(toField)) {
             throw new IllegalArgumentException(
                     "'toField' argument cannot be blank.");
         }
-        copyDetailsList.add(new CopyDetails(fromField, toField, onSet));
+        copyDetailsList.add(new CopyDetails(fieldMatcher, toField, onSet));
     }
     /**
      * Adds copy instructions.
      * @param fromField source field name
      * @param toField target field name
      * @param overwrite whether toField overwrite target field if it exists
-     * @deprecated Since 3.0.0, use 
-     *             {@link #addCopyDetails(String, String, PropertySetter)}.
+     * @deprecated Since 3.0.0, use
+     *             {@link #addCopyDetails(TextMatcher, String, PropertySetter)}.
      */
     @Deprecated
     public void addCopyDetails(
             String fromField, String toField, boolean overwrite) {
-        addCopyDetails(fromField, toField, overwrite 
+        addCopyDetails(TextMatcher.basic(fromField), toField, overwrite
                 ? PropertySetter.REPLACE : PropertySetter.APPEND);
     }
 
@@ -139,7 +139,10 @@ public class CopyTagger extends AbstractDocumentTagger {
         }
         for (XML node : nodes) {
             node.checkDeprecated("@overwrite", "onSet", true);
-            addCopyDetails(node.getString("@fromField", null),
+            node.checkDeprecated("@fromField", "textMatcher", true);
+            TextMatcher fieldMatcher = new TextMatcher();
+            fieldMatcher.loadFromXML(node.getXML("fieldMatcher"));
+            addCopyDetails(fieldMatcher,
                       node.getString("@toField", null),
                       PropertySetter.fromXML(node, null));
         }
@@ -149,9 +152,9 @@ public class CopyTagger extends AbstractDocumentTagger {
     protected void saveHandlerToXML(XML xml) {
         for (CopyDetails details : copyDetailsList) {
             XML node = xml.addElement("copy")
-                    .setAttribute("fromField", details.fromField)
                     .setAttribute("toField", details.toField);
             PropertySetter.toXML(node, details.onSet);
+            details.fieldMatcher.saveToXML(node.addElement("fieldMatcher"));
         }
     }
     @Override
@@ -169,12 +172,12 @@ public class CopyTagger extends AbstractDocumentTagger {
     }
 
     private static class CopyDetails {
-        private final String fromField;
+        private final TextMatcher fieldMatcher = new TextMatcher();
         private final String toField;
         private final PropertySetter onSet;
 
-        CopyDetails(String from, String to, PropertySetter onSet) {
-            this.fromField = from;
+        CopyDetails(TextMatcher fieldMatcher, String to, PropertySetter onSet) {
+            this.fieldMatcher.copyFrom(fieldMatcher);
             this.toField = to;
             this.onSet = onSet;
         }
