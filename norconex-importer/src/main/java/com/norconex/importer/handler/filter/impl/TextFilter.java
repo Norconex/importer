@@ -18,8 +18,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
@@ -69,8 +67,6 @@ import com.norconex.importer.handler.filter.OnMatch;
  */
 @SuppressWarnings("javadoc")
 public class TextFilter extends AbstractStringFilter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TextFilter.class);
 
     //TODO use @nx.block and @nx.include to insert inclusion logic for above
     // documentation? ( Refer to {@link AbstractDocumentFilter}
@@ -134,13 +130,8 @@ public class TextFilter extends AbstractStringFilter {
             StringBuilder content, ImporterMetadata metadata, boolean parsed,
             int sectionIndex) throws ImporterHandlerException {
 
-        if (!valueMatcher.hasPattern()) {
-            LOG.error("TextFilter pattern not set to match field value.");
-            return false;
-        }
-
         // content
-        if (!fieldMatcher.hasPattern()) {
+        if (fieldMatcher.getPattern() == null) {
             return valueMatcher.matches(content.toString());
         }
 

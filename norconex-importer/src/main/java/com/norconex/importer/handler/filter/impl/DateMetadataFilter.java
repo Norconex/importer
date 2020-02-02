@@ -320,9 +320,9 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (!fieldMatcher.hasPattern()) {
+        if (fieldMatcher.getPattern() == null) {
             throw new IllegalArgumentException(
-                    "\"fieldMatcher\" cannot be empty.");
+                    "\"fieldMatcher\" pattern cannot be empty.");
         }
         for (Entry<String, List<String>> en :
                 metadata.matchKeys(fieldMatcher).entrySet()) {

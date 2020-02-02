@@ -52,7 +52,7 @@ public class DOMContentFilterTest {
                 "disclaimer should have been rejected.");
 
         filter.setSelector("div.disclaimer");
-        filter.setValueMatcher(TextMatcher.regex("\\bskip me\\b"));
+        filter.setValueMatcher(TextMatcher.regex("\\bskip me\\b").partial());
         Assertions.assertFalse(filter(filter, html, metadata),
                 "disclaimer skip me should have been rejected.");
 
@@ -81,7 +81,7 @@ public class DOMContentFilterTest {
                 "Green fruit should have been rejected.");
 
         filter.setSelector("food > fruit");
-        filter.setValueMatcher(TextMatcher.regex("apple"));
+        filter.setValueMatcher(TextMatcher.regex("apple").partial());
         Assertions.assertTrue(filter(filter, xml, metadata),
                 "Apple should have been accepted.");
 

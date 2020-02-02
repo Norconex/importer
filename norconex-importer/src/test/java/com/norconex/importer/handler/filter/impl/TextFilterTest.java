@@ -171,10 +171,10 @@ public class TextFilterTest {
         TextFilter filter = new TextFilter();
         filter.setFieldMatcher(new TextMatcher()
                 .setMethod(Method.REGEX)
-                .setMatchWhole(true));
+                .setPartial(true));
         filter.setValueMatcher(new TextMatcher()
                 .setMethod(Method.REGEX)
-                .setMatchWhole(true)
+                .setPartial(true)
                 .setPattern("blah"));
         XML.assertWriteRead(filter, "handler");
     }

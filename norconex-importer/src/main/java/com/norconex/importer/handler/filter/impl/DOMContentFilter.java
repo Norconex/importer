@@ -339,9 +339,6 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 return false;
             }
             // one or more elements matching
-            if (!valueMatcher.hasPattern()) {
-                return true;
-            }
             for (Element elm : elms) {
                 String value = DOMUtil.getElementValue(elm, getExtract());
                 if (valueMatcher.matches(value)) {

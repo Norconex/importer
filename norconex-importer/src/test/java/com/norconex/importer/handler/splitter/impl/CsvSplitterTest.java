@@ -129,8 +129,8 @@ public class CsvSplitterTest {
         splitter.setLinesToSkip(10);
         splitter.setQuoteCharacter('!');
         splitter.addRestriction(new PropertyMatcher(
-                TextMatcher.basic("key").matchWhole(),
-                TextMatcher.basic("value").matchWhole().ignoreCase()));
+                TextMatcher.basic("key").partial(),
+                TextMatcher.basic("value").partial().ignoreCase()));
         splitter.setSeparatorCharacter('@');
         splitter.setUseFirstRowAsFields(true);
         XML.assertWriteRead(splitter, "handler");

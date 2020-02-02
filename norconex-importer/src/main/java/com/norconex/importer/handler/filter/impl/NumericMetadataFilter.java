@@ -225,9 +225,9 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        if (!fieldMatcher.hasPattern()) {
+        if (fieldMatcher.getPattern() == null) {
             throw new IllegalArgumentException(
-                    "\"fieldMatcher\" cannot be empty.");
+                    "\"fieldMatcher\" pattern cannot be empty.");
         }
         for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
             if (meetsAllConditions(value)) {

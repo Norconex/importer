@@ -120,8 +120,8 @@ public class ImporterTest {
     public void testImportRejected() throws IOException, ImporterException {
         ImporterConfig config = new ImporterConfig();
         config.setPostParseHandlers(Arrays.asList(new TextFilter(
-                TextMatcher.basic("Content-Type").setMatchWhole(true),
-                TextMatcher.basic("application/pdf").setMatchWhole(true),
+                TextMatcher.basic("Content-Type").setPartial(true),
+                TextMatcher.basic("application/pdf").setPartial(true),
                 OnMatch.EXCLUDE)));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(

@@ -91,7 +91,7 @@ public class EmptyFilter extends AbstractDocumentFilter {
             throws ImporterHandlerException {
 
         // do content
-        if (!fieldMatcher.hasPattern()) {
+        if (fieldMatcher.getPattern() == null) {
             try {
                 return IOUtil.isEmpty(input);
             } catch (IOException e) {

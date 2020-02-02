@@ -266,8 +266,8 @@ public class DOMFilter extends AbstractDocumentFilter {
             throws ImporterHandlerException {
 
         try {
-            if (fieldMatcher.hasPattern()) {
-                // Dealing with fields
+            if (fieldMatcher.getPattern() != null) {
+                // Dealing with field values
                 for (String value :
                         metadata.matchKeys(fieldMatcher).valueList()) {
                     if (isDocumentMatched(Jsoup.parse(value, reference,
@@ -297,12 +297,10 @@ public class DOMFilter extends AbstractDocumentFilter {
             return false;
         }
         // one or more elements matching
-        if (!valueMatcher.hasPattern()) {
-            return true;
-        }
         for (Element elm : elms) {
             String value = DOMUtil.getElementValue(elm, getExtract());
-            if (valueMatcher.matches(value)) {
+            if (valueMatcher.getPattern() == null
+                    || valueMatcher.matches(value)) {
                 return true;
             }
         }

@@ -86,9 +86,6 @@ public class ReferenceFilter extends AbstractDocumentFilter {
     protected boolean isDocumentMatched(String reference, InputStream input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        if (!valueMatcher.hasPattern()) {
-            return true;
-        }
         return valueMatcher.matches(reference);
     }
 

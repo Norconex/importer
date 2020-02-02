@@ -43,6 +43,10 @@
         after replacement.
       </action>
       <action dev="essiembre" type="add">
+        New options on CharacterCaseTagger: "wordsFully", "stringFully", 
+        "sentences", and "sentencesFully".
+      </action>
+      <action dev="essiembre" type="add">
         Most configurable classes adding/setting metadata values now have
         an extra "onSet" option for dictating how values are set:
         append, prepend, replace, optional.

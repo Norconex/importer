@@ -87,8 +87,8 @@ public class DOMSplitterTest {
         DOMSplitter splitter = new DOMSplitter();
         splitter.setSelector("blah");
         splitter.addRestriction(new PropertyMatcher(
-                TextMatcher.basic("key").matchWhole(),
-                TextMatcher.basic("value").matchWhole().ignoreCase()));
+                TextMatcher.basic("key").partial(),
+                TextMatcher.basic("value").partial().ignoreCase()));
         XML.assertWriteRead(splitter, "handler");
     }
 }

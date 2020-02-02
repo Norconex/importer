@@ -15,16 +15,15 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -35,24 +34,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
 /**
- * <p>Changes the character case of field values according to one of the
- * following methods:</p>
+ * <p>Changes the character case of matching fields and values according to
+ * one of the following methods:</p>
  * <ul>
  *   <li>upper: Changes all characters to upper case.</li>
  *   <li>lower: Changes all characters values to lower case.</li>
- *   <li>words: Converts the first letter of each words to upper case, and the
- *           rest to lower case.</li>
- *   <li>string: Converts the first letter of a string if not numeric, and
+ *   <li>words: Converts the first letter of each words to upper case,
+ *           and leaves the character case of other characters unchanged.</li>
+ *   <li>wordsFully: Converts the first letter of each words to upper case,
+ *           and the rest to lower case.</li>
+ *   <li>sentences: Converts the first letter of each sentence to upper case,
+ *           and leaves the character case of other characters unchanged.</li>
+ *   <li>sentencesFully: Converts the first letter of each sentence to upper
+ *           case, and converts other characters to lower case.</li>
+ *   <li>string: Converts the first letter of a string to upper case, and
  *           leaves the character case of other characters unchanged.</li>
+ *   <li>stringFully: Converts the first letter of a string to upper
+ *           case, and converts other characters to lower case.</li>
  *   <li>swap: Converts all upper case characters to lower case, and all
  *           lower case to upper case.</li>
- *
  * </ul>
  * <p>The change of character case can be applied to one of the
  * following (defaults to "value" when unspecified):</p>
@@ -62,57 +69,130 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <li>both: Applies to both the field name and its values.</li>
  * </ul>
  * <p>Field names are referenced in a case insensitive manner.</p>
- * <h3>XML configuration usage:</h3>
  *
- * <pre>{@code
- * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger">
- *
- *     <restrictTo caseSensitive="[false|true]"
- *             field="(name of header/metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
- *
- *     <characterCase fieldName="(field to change)"
- *             type="[upper|lower|words|string|swap]"
- *             applyTo="[value|field|both]" />
- *     <!-- multiple characterCase tags allowed -->
- *
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
+ *     type="[upper|lower|words|wordsFully|sentences|sentencesFully|string|stringFully|swap]"
+ *     applyTo="[value|field|both]">
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (expression to narrow by matching fields)
+ *   </fieldMatcher>
+ *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (expression to narrow by matching values)
+ *   </valueMatcher>
  * </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <!-- Converts title to lowercase -->
+ * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
+ *     type="lower" applyTo="field">
+ *   <fieldMatcher>title</fieldMatcher>
+ * </handler>
+ * <!-- Make first title character uppercase -->
+ * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
+ *     type="string" applyTo="value">
+ *   <fieldMatcher>title</fieldMatcher>
+ * </handler>
+ * }
  * <p>
- * Documents can use different character case for their title field names.
- * This example makes them all lower case. We also make sure the value
- * starts with an upper case.
+ * The above examples first convert a title to lower case except for the
+ * first character.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"&gt;
- *      &lt;characterCase fieldName="title" type="lower" applyTo="field" /&gt;
- *      &lt;characterCase fieldName="title" type="string" applyTo="value" /&gt;
- *  &lt;/handler&gt;
- * </pre>
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class CharacterCaseTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CharacterCaseTagger.class);
 
     public static final String CASE_WORDS = "words";
+    public static final String CASE_WORDS_FULLY = "wordsFully";
     public static final String CASE_UPPER = "upper";
     public static final String CASE_LOWER = "lower";
     public static final String CASE_SWAP = "swap";
+    public static final String CASE_SENTENCES = "sentences";
+    public static final String CASE_SENTENCES_FULLY = "sentencesFully";
     public static final String CASE_STRING = "string";
+    public static final String CASE_STRING_FULLY = "stringFully";
 
     public static final String APPLY_VALUE = "value";
     public static final String APPLY_FIELD = "field";
     public static final String APPLY_BOTH = "both";
 
-    private final Map<String, CaseChangeDetails> fieldCases = new HashMap<>();
+    private final TextMatcher fieldMatcher = new TextMatcher();
+    private final TextMatcher valueMatcher = new TextMatcher();
+    private String caseType;
+    private String applyTo;
 
+    /**
+     * Gets field matcher.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets field matcher.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
+    /**
+     * Gets value matcher.
+     * @return value matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getValueMatcher() {
+        return valueMatcher;
+    }
+    /**
+     * Sets value matcher.
+     * @param valueMatcher value matcher
+     * @since 3.0.0
+     */
+    public void setValueMatcher(TextMatcher valueMatcher) {
+        this.valueMatcher.copyFrom(valueMatcher);
+    }
+    /**
+     * Gets the type of character case transformation.
+     * @return type of case transformation
+     * @since 3.0.0
+     */
+    public String getCaseType() {
+        return caseType;
+    }
+    /**
+     * Sets the type of character case transformation.
+     * @param caseType type of case transformation
+     * @since 3.0.0
+     */
+    public void setCaseType(String caseType) {
+        this.caseType = caseType;
+    }
+    /**
+     * Gets whether to apply the case transformation to fields, values,
+     * or both.
+     * @return one of "field", "value", or "both"
+     * @since 3.0.0
+     */
+    public String getApplyTo() {
+        return applyTo;
+    }
+    /**
+     * Sets whether to apply the case transformation to fields, values,
+     * or both.
+     * @param applyTo one of "field", "value", or "both"
+     * @since 3.0.0
+     */
+    public void setApplyTo(String applyTo) {
+        this.applyTo = applyTo;
+    }
 
     @Override
     public void tagApplicableDocument(
@@ -120,52 +200,54 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
 
-        for (Entry<String, CaseChangeDetails>  entry : fieldCases.entrySet()) {
-            CaseChangeDetails d = entry.getValue();
-            boolean validApplyTo = false;
+        if (StringUtils.isNotBlank(applyTo)
+                &&  !StringUtils.equalsAnyIgnoreCase(
+                        applyTo, APPLY_FIELD, APPLY_VALUE, APPLY_BOTH)) {
+            LOG.warn("Unsupported \"applyTo\": {}", applyTo);
+            return;
+        }
 
-            String newField = entry.getKey();
+        for (Entry<String, List<String>> en :
+                metadata.match(fieldMatcher, valueMatcher).entrySet()) {
+
+            String field = en.getKey();
+            String newField = field;
 
             // Do field
-            if (EqualsUtil.equalsAny(d.applyTo, APPLY_FIELD, APPLY_BOTH)) {
-                newField = changeFieldCase(entry.getKey(), d, metadata);
-                validApplyTo = true;
+            if (EqualsUtil.equalsAny(applyTo, APPLY_FIELD, APPLY_BOTH)) {
+                newField = changeFieldCase(field, metadata);
             }
 
             // Do values
-            if (StringUtils.isBlank(d.applyTo) || EqualsUtil.equalsAny(
-                    d.applyTo, APPLY_VALUE, APPLY_BOTH)) {
-                changeValuesCase(newField, d, metadata);
-                validApplyTo = true;
-            }
-
-            if (!validApplyTo) {
-                LOG.warn("Unsupported \"applyTo\": {}", d.applyTo);
+            if (StringUtils.isBlank(applyTo) || EqualsUtil.equalsAny(
+                    applyTo, APPLY_VALUE, APPLY_BOTH)) {
+                changeValuesCase(newField, metadata);
             }
         }
     }
 
-    private String changeFieldCase(
-            String field, CaseChangeDetails d, ImporterMetadata metadata) {
+    private String changeFieldCase(String field, ImporterMetadata metadata) {
         List<String> values = metadata.getStrings(field);
-        String newField = changeCase(field, d.caseType);
+        String newField = changeCase(field, caseType);
         metadata.remove(field);
         if (values != null && !values.isEmpty()) {
-            metadata.set(
-                    newField, values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+            metadata.setList(newField, values);
         }
         return newField;
     }
     private void changeValuesCase(
-            String field, CaseChangeDetails d, ImporterMetadata metadata) {
+            String field, ImporterMetadata metadata) {
         List<String> values = metadata.getStrings(field);
         if (values != null) {
             for (int i = 0; i < values.size(); i++) {
                 String value = values.get(i);
-                values.set(i, changeCase(value, d.caseType));
+                // check for here to match PatternMatcher behavior
+                if (valueMatcher.getPattern() == null
+                        || valueMatcher.matches(value)) {
+                    values.set(i, changeCase(value, caseType));
+                }
             }
-            metadata.set(field,
-                    values.toArray(ArrayUtils.EMPTY_STRING_ARRAY));
+            metadata.setList(field, values);
         }
     }
 
@@ -175,18 +257,33 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         } else if (CASE_LOWER.equals(type)) {
             return StringUtils.lowerCase(value);
         } else if (CASE_WORDS.equals(type)) {
+            return WordUtils.capitalize(value);
+        } else if (CASE_WORDS_FULLY.equals(type)) {
             return WordUtils.capitalizeFully(value);
         } else if (CASE_SWAP.equals(type)) {
             return WordUtils.swapCase(value);
         } else if (CASE_STRING.equals(type)) {
             return capitalizeString(value);
+        } else if (CASE_STRING_FULLY.equals(type)) {
+            return capitalizeStringFully(value);
+        } else if (CASE_SENTENCES.equals(type)) {
+            return capitalizeSentences(value);
+        } else if (CASE_SENTENCES_FULLY.equals(type)) {
+            return capitalizeSentencesFully(value);
         } else {
             LOG.warn("Unsupported character case type: {}", type);
             return value;
         }
     }
 
-
+    /**
+     * Adds field case changing instructions.
+     * @param field the field to apply the case changing
+     * @param caseType the type of case change to apply
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)},
+     * {@link #setCaseType(String)}.
+     */
+    @Deprecated
     public void addFieldCase(String field, String caseType) {
         addFieldCase(field, caseType, null);
     }
@@ -196,57 +293,61 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
      * @param caseType the type of case change to apply
      * @param applyTo what to apply the case change to
      * @since 2.4.0
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)},
+     * {@link #setCaseType(String)}, and {@link #setApplyTo(String)}.
      */
+    @Deprecated
     public void addFieldCase(String field, String caseType, String applyTo) {
-        fieldCases.put(field, new CaseChangeDetails(caseType, applyTo));
-    }
-    public Set<String> getFieldNames() {
-        return fieldCases.keySet();
-    }
-    public String getCaseType(String fieldName) {
-        CaseChangeDetails d = fieldCases.get(fieldName);
-        if (d != null) {
-            return d.caseType;
-        }
-        return null;
+        setFieldMatcher(TextMatcher.basic(field));
+        setCaseType(caseType);
+        setApplyTo(applyTo);
     }
     /**
-     * Gets what the case changing instructions apply to.
-     * @param fieldName the field name
-     * @return what the case changing instructions apply to
-     * @since 2.4.0
+     * Gets the field matcher pattern.
+     * @return field matcher pattern
+     * @deprecated Since 3.0.0 use {@link #getFieldMatcher()}
      */
+    @Deprecated
+    public Set<String> getFieldNames() {
+        return new HashSet<>(Arrays.asList(fieldMatcher.getPattern()));
+    }
+    /**
+     * Get the case conversion type.
+     * @param fieldName field name
+     * @return case type
+     * @deprecated Since 3.0.0 use {@link #getCaseType()}
+     */
+    @Deprecated
+    public String getCaseType(String fieldName) {
+        return caseType;
+    }
+    /**
+     * Gets what if the case change applies to fields, values, or both.
+     * @param fieldName the field name
+     * @return "field", "value", or "both"
+     * @since 2.4.0
+     * @deprecated Since 3.0.0 use {@link #getApplyTo()}
+     */
+    @Deprecated
     public String getApplyTo(String fieldName) {
-        CaseChangeDetails d = fieldCases.get(fieldName);
-        if (d != null) {
-            return d.applyTo;
-        }
-        return null;
+        return applyTo;
     }
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        List<XML> nodes = xml.getXMLList("characterCase");
-        fieldCases.clear();
-        for (XML node : nodes) {
-            addFieldCase(
-                    node.getString("@fieldName"),
-                    node.getString("@type"),
-                    node.getString("@applyTo"));
-        }
+        xml.checkDeprecated("characterCase", "[see class documentation]", true);
+        setCaseType(xml.getString("@type"));
+        setApplyTo(xml.getString("@applyTo"));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
+        valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        for (Entry<String, CaseChangeDetails> entry : fieldCases.entrySet()) {
-            XML ccXML = xml.addElement("characterCase")
-                    .setAttribute("fieldName", entry.getKey());
-            CaseChangeDetails d = entry.getValue();
-            if (d != null) {
-                ccXML.setAttribute("type", d.caseType);
-                ccXML.setAttribute("applyTo", d.applyTo);
-            }
-        }
+        xml.setAttribute("type", caseType);
+        xml.setAttribute("applyTo", applyTo);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
+        valueMatcher.saveToXML(xml.addElement("valueMatcher"));
     }
 
     private String capitalizeString(String value) {
@@ -261,6 +362,28 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
         return value;
     }
+    private String capitalizeStringFully(String value) {
+        return capitalizeString(StringUtils.lowerCase(value));
+    }
+    private String capitalizeSentences(String value) {
+        if (StringUtils.isNotBlank(value)) {
+            StringBuffer b = new StringBuffer();
+            Pattern re = Pattern.compile(
+                    "[^.!?\\s][^.!?]*(?:[.!?](?!['\"]?\\s|$)[^.!?]*)*"
+                  + "[.!?]?['\"]?(?=\\s|$)",
+                    Pattern.MULTILINE);
+            Matcher m = re.matcher(value);
+            while (m.find()) {
+                m.appendReplacement(b, capitalizeString(m.group()));
+            }
+            m.appendTail(b);
+            return b.toString();
+        }
+        return value;
+    }
+    private String capitalizeSentencesFully(String value) {
+        return capitalizeSentences(StringUtils.lowerCase(value));
+    }
 
     @Override
     public boolean equals(final Object other) {
@@ -274,28 +397,5 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     public String toString() {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }
-
-    private class CaseChangeDetails {
-        private final String caseType;
-        private final String applyTo;
-        public CaseChangeDetails(String caseType, String applyTo) {
-            super();
-            this.caseType = caseType;
-            this.applyTo = applyTo;
-        }
-        @Override
-        public boolean equals(final Object other) {
-            return EqualsBuilder.reflectionEquals(this, other);
-        }
-        @Override
-        public int hashCode() {
-            return HashCodeBuilder.reflectionHashCode(this);
-        }
-        @Override
-        public String toString() {
-            return new ReflectionToStringBuilder(
-                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-        }
     }
 }

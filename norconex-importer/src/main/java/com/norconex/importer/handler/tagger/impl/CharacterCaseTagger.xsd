@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,32 +23,25 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
           <xs:all>
-            <xs:element ref="characterCase" minOccurs="1" maxOccurs="unbounded" />
+            <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
+            <xs:element name="valueMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
           </xs:all>
+          <xs:attribute name="type" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:pattern value="upper|lower|words|wordsFully|sentences|sentencesFully|string|stringFully|swap" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="applyTo" use="optional">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:pattern value="value|field|both" />
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
         </xs:extension>
       </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-  
-  <xs:element name="characterCase">
-    <xs:complexType>
-      <xs:attribute name="fieldName" type="xs:string" use="required"/>
-      <xs:attribute name="type" use="required">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:pattern value="upper|lower|words|string|swap" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="applyTo" use="optional">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:pattern value="value|field|both" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="matchBlanks" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="defaultValue" type="xs:string"></xs:attribute>
     </xs:complexType>
   </xs:element>
 
