@@ -61,41 +61,36 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * (e.g., "fr" for French, "fr_CA" for Canadian French). When no locale is
  * specified, the default is "en_US" (US English).</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
- *     field="(target field)"
+ *     toField="(target field)"
  *     format="(date format)"
  *     locale="(locale)"
- *     onSet="[append|prepend|replace|optional]" >
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *     <restrictTo caseSensitive="[false|true]"
- *             field="(name of header/metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  * </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ *      toField="crawl_date" format="yyyy-MM-dd HH:mm" />
+ * }
  * <p>
- * The following will store the current date along with hours and minutes
+ * The above will store the current date along with hours and minutes
  * in a "crawl_date" field.
  * </p>
- * <pre>{@code
- *  <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
- *      field="crawl_date" format="yyyy-MM-dd HH:mm" />
- * }</pre>
  *
  * @author Pascal Essiembre
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class CurrentDateTagger extends AbstractDocumentTagger {
 
     public static final String DEFAULT_FIELD =
             ImporterMetadata.DOC_IMPORTED_DATE;
 
-    private String field = DEFAULT_FIELD;
+    private String toField = DEFAULT_FIELD;
     private String format;
     private Locale locale;
     private PropertySetter onSet;
@@ -113,7 +108,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
             throws ImporterHandlerException {
 
         String date = formatDate(System.currentTimeMillis());
-        String finalField = field;
+        String finalField = toField;
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
@@ -132,11 +127,40 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
                 format, safeLocale).format(new Date(time));
     }
 
-    public String getField() {
-        return field;
+    /**
+     * Gets the target field.
+     * @return target field
+     * @since 3.0.0
+     */
+    public String getToField() {
+        return toField;
     }
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @since 3.0.0
+     */
+    public void setToField(String toField) {
+        this.toField = toField;
+    }
+
+    /**
+     * Gets the target field.
+     * @return target field
+     * @deprecated Since 3.0.0, use {@link #getToField()}
+     */
+    @Deprecated
+    public String getField() {
+        return getToField();
+    }
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @deprecated Since 3.0.0, use {@link #setToField(String)}
+     */
+    @Deprecated
     public void setField(String toField) {
-        this.field = toField;
+        setToField(toField);
     }
 
     public String getFormat() {
@@ -198,12 +222,13 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     public void setOverwrite(boolean overwrite) {
         this.onSet = overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND;
     }
-    
+
     @Override
     protected void loadHandlerFromXML(XML xml) {
         xml.checkDeprecated("@overwrite", "onSet", true);
+        xml.checkDeprecated("@field", "toField", true);
         setOnSet(PropertySetter.fromXML(xml, onSet));
-        setField(xml.getString("@field", field));
+        setField(xml.getString("@toField", toField));
         setFormat(xml.getString("@format", format));
         setLocale(xml.getLocale("@locale", locale));
     }
@@ -211,7 +236,7 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     @Override
     protected void saveHandlerToXML(XML xml) {
         PropertySetter.toXML(xml, getOnSet());
-        xml.setAttribute("field", field);
+        xml.setAttribute("toField", toField);
         xml.setAttribute("format", format);
         xml.setAttribute("locale",  locale);
     }

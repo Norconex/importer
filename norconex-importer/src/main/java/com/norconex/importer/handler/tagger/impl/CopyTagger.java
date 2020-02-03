@@ -50,7 +50,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <-- multiple copy tags allowed -->
+ *   <!-- multiple copy tags allowed -->
  *   <copy toField="(to field)"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *     <fieldMatcher>(one or more matching fields to copy)</fieldMatcher>
