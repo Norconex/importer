@@ -24,7 +24,6 @@
         <xs:extension base="AbstractDocumentTagger"> 
           <xs:all>
             <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
-            <xs:element name="valueMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
           </xs:all>
           <xs:attribute name="type" use="required">
             <xs:simpleType>

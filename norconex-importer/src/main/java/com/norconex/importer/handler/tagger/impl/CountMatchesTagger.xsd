@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,37 +16,22 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractStringTagger.xsd"></xs:include>
+  <xs:include schemaLocation="../AbstractCharStreamTagger.xsd"></xs:include>
   
   <xs:element name="handler">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractStringTagger"> 
+        <xs:extension base="AbstractCharStreamTagger"> 
           <xs:all>
-            <xs:element ref="countMatches"  minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
+            <xs:element name="countMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="unbounded" />  
           </xs:all>
+          <xs:attribute name="onSet" type="PropertySetterMethodType"/>
+          <xs:attribute name="toField" type="xs:string"/>
+          <xs:attribute name="maxReadSize" type="xs:int"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-
-  <xs:element name="countMatches">
-    <xs:complexType>
-      <xs:simpleContent>
-        <xs:extension base="nonEmptyValue">
-          <xs:attribute name="fromField" type="xs:string" />
-          <xs:attribute name="toField" type="xs:string" use="required" />
-          <xs:attribute name="caseSensitive" type="xs:boolean" />
-          <xs:attribute name="regex" type="xs:boolean" />
-        </xs:extension>
-      </xs:simpleContent>
-    </xs:complexType>  
-  </xs:element>          
-  
-  <xs:simpleType name="nonEmptyValue">
-    <xs:restriction base="xs:string">
-      <xs:minLength value="1"/>
-    </xs:restriction>
-  </xs:simpleType>
   
 </xs:schema>

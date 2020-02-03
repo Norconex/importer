@@ -1,4 +1,4 @@
-/* Copyright 2016-2019 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,41 +14,29 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.impl.CountMatchesTagger.MatchDetails;
 
 public class CountMatchesTaggerTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        MatchDetails m = null;
-
-        CountMatchesTagger tagger = new CountMatchesTagger();
-
-        m = new MatchDetails();
-        m.setFromField("fromFiel1");
-        m.setToField("toField1");
-        m.setValue("value1");
-        m.setCaseSensitive(true);
-        m.setRegex(true);
-        tagger.addMatchDetails(m);
-
-        m = new MatchDetails();
-        m.setToField("toField2");
-        m.setValue("value2");
-        tagger.addMatchDetails(m);
-
-        XML.assertWriteRead(tagger, "handler");
+        CountMatchesTagger t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("fromFiel1");
+        t.setToField("toField1");
+        t.getCountMatcher().setPattern("value1")
+                .setMethod(Method.REGEX).setIgnoreCase(true);
+        XML.assertWriteRead(t, "handler");
     }
 
     @Test
@@ -59,101 +47,88 @@ public class CountMatchesTaggerTest {
         meta.add("fruits", "grapefruit, apple, orange, APPLE");
         String content = "potato carrot Potato";
 
-        MatchDetails m = null;
-
-        CountMatchesTagger tagger = new CountMatchesTagger();
+        CountMatchesTagger t;
 
         // Count slashes with substrings (4)
-        m = new MatchDetails();
-        m.setFromField("url");
-        m.setToField("slashesCountNormal");
-        m.setValue("/");
-        tagger.addMatchDetails(m);
-        // Count slashes with regex (4)
-        m = new MatchDetails();
-        m.setFromField("url");
-        m.setToField("slashesCountRegex");
-        m.setValue("/");
-        m.setRegex(true);
-        tagger.addMatchDetails(m);
-        // Count URL segments (3)
-        m = new MatchDetails();
-        m.setFromField("url");
-        m.setToField("segmentCountRegex");
-        m.setValue("/[^/]+");
-        m.setRegex(true);
-        tagger.addMatchDetails(m);
-
-        // Count fruits with substrings case-sensitive (1)
-        m = new MatchDetails();
-        m.setFromField("fruits");
-        m.setToField("appleCountSensitiveNormal");
-        m.setValue("apple");
-        m.setCaseSensitive(true);
-        tagger.addMatchDetails(m);
-        // Count fruits with substrings case-insensitive (2)
-        m = new MatchDetails();
-        m.setFromField("fruits");
-        m.setToField("appleCountInsensitiveNormal");
-        m.setValue("apple");
-        tagger.addMatchDetails(m);
-        // Count fruits with regex case-sensitive (3)
-        m = new MatchDetails();
-        m.setFromField("fruits");
-        m.setToField("fruitsCountSensitiveRegex");
-        m.setValue("(apple|orange|grapefruit)");
-        m.setRegex(true);
-        m.setCaseSensitive(true);
-        tagger.addMatchDetails(m);
-        // Count fruits with regex case-insensitive (4)
-        m = new MatchDetails();
-        m.setFromField("fruits");
-        m.setToField("fruitsCountInsensitiveRegex");
-        m.setValue("(apple|orange|grapefruit)");
-        m.setRegex(true);
-        tagger.addMatchDetails(m);
-
-
-        // Count vegetables with substrings case-sensitive (1)
-        m = new MatchDetails();
-        m.setToField("potatoCountSensitiveNormal");
-        m.setValue("potato");
-        m.setCaseSensitive(true);
-        tagger.addMatchDetails(m);
-        // Count vegetables  with substrings case-insensitive (2)
-        m = new MatchDetails();
-        m.setToField("potatoCountInsensitiveNormal");
-        m.setValue("potato");
-        tagger.addMatchDetails(m);
-        // Count vegetables  with regex case-sensitive (2)
-        m = new MatchDetails();
-        m.setToField("vegetableCountSensitiveRegex");
-        m.setValue("(potato|carrot)");
-        m.setRegex(true);
-        m.setCaseSensitive(true);
-        tagger.addMatchDetails(m);
-        // Count vegetables  with regex case-insensitive (3)
-        m = new MatchDetails();
-        m.setToField("vegetableCountInsensitiveRegex");
-        m.setValue("(potato|carrot)");
-        m.setRegex(true);
-        tagger.addMatchDetails(m);
-
-        tagger.tagDocument("n/a", IOUtils.toInputStream(
-                content, StandardCharsets.UTF_8), meta, true);
-
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("url");
+        t.setToField("slashesCountNormal");
+        t.getCountMatcher().setPattern("/").setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(4, (int) meta.getInteger("slashesCountNormal"));
+        // Count slashes with regex (4)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("url");
+        t.setToField("slashesCountRegex");
+        t.getCountMatcher().setPattern("/")
+                .setMethod(Method.REGEX).setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(4, (int) meta.getInteger("slashesCountRegex"));
+        // Count URL segments (3)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("url");
+        t.setToField("segmentCountRegex");
+        t.getCountMatcher().setPattern("/[^/]+")
+                .setMethod(Method.REGEX).setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(3, (int) meta.getInteger("segmentCountRegex"));
 
+        // Count fruits with substrings case-sensitive (1)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("fruits");
+        t.setToField("appleCountSensitiveNormal");
+        t.getCountMatcher().setPattern("apple");
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(1, (int) meta.getInteger("appleCountSensitiveNormal"));
+        // Count fruits with substrings case-insensitive (2)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("fruits");
+        t.setToField("appleCountInsensitiveNormal");
+        t.getCountMatcher().setPattern("apple").setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(2, (int) meta.getInteger("appleCountInsensitiveNormal"));
+        // Count fruits with regex case-sensitive (3)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("fruits");
+        t.setToField("fruitsCountSensitiveRegex");
+        t.getCountMatcher().setPattern("(apple|orange|grapefruit)")
+                .setMethod(Method.REGEX);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(3, (int) meta.getInteger("fruitsCountSensitiveRegex"));
+        // Count fruits with regex case-insensitive (4)
+        t = new CountMatchesTagger();
+        t.getFieldMatcher().setPattern("fruits");
+        t.setToField("fruitsCountInsensitiveRegex");
+        t.getCountMatcher().setPattern("(apple|orange|grapefruit)")
+                .setMethod(Method.REGEX).setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(4, (int) meta.getInteger("fruitsCountInsensitiveRegex"));
 
+        // Count vegetables with substrings case-sensitive (1)
+        t = new CountMatchesTagger();
+        t.setToField("potatoCountSensitiveNormal");
+        t.getCountMatcher().setPattern("potato");
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(1, (int) meta.getInteger("potatoCountSensitiveNormal"));
+        // Count vegetables  with substrings case-insensitive (2)
+        t = new CountMatchesTagger();
+        t.setToField("potatoCountInsensitiveNormal");
+        t.getCountMatcher().setPattern("potato").setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(2, (int) meta.getInteger("potatoCountInsensitiveNormal"));
+        // Count vegetables  with regex case-sensitive (2)
+        t = new CountMatchesTagger();
+        t.setToField("vegetableCountSensitiveRegex");
+        t.getCountMatcher().setPattern("(potato|carrot)")
+                .setMethod(Method.REGEX);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(2, (int) meta.getInteger("vegetableCountSensitiveRegex"));
+        // Count vegetables  with regex case-insensitive (3)
+        t = new CountMatchesTagger();
+        t.setToField("vegetableCountInsensitiveRegex");
+        t.getCountMatcher().setPattern("(potato|carrot)")
+                .setMethod(Method.REGEX).setIgnoreCase(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(3,
                 (int) meta.getInteger("vegetableCountInsensitiveRegex"));
     }
@@ -166,26 +141,22 @@ public class CountMatchesTaggerTest {
         String content = "potato whatever whatever whatever whatever"
                 + "potato whatever whatever whatever whatever";
 
-        CountMatchesTagger tagger = new CountMatchesTagger();
-        tagger.setMaxReadSize(20);
 
-        MatchDetails m = null;
+        CountMatchesTagger t = null;
 
-        m = new MatchDetails();
-        m.setToField("potatoCount");
-        m.setValue("potato");
-        tagger.addMatchDetails(m);
-
-        m = new MatchDetails();
-        m.setFromField("fruits");
-        m.setToField("orangeCount");
-        m.setValue("orange");
-        tagger.addMatchDetails(m);
-
-        tagger.tagDocument("n/a", IOUtils.toInputStream(
-                content, StandardCharsets.UTF_8), meta, true);
-
+        t = new CountMatchesTagger();
+        t.setMaxReadSize(20);
+        t.setToField("potatoCount");
+        t.getCountMatcher().setPattern("potato").setPartial(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(2, (int) meta.getInteger("potatoCount"));
+
+        t = new CountMatchesTagger();
+        t.setMaxReadSize(20);
+        t.getFieldMatcher().setPattern("fruits");
+        t.setToField("orangeCount");
+        t.getCountMatcher().setPattern("orange").setPartial(true);
+        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
         assertEquals(2, (int) meta.getInteger("orangeCount"));
     }
 
@@ -197,33 +168,25 @@ public class CountMatchesTaggerTest {
         meta.add("apple", "apple apple apple");
         meta.add("potato", "carrot");
 
-        CountMatchesTagger tagger = new CountMatchesTagger();
-        tagger.setMaxReadSize(20);
+        CountMatchesTagger t = null;
 
-        MatchDetails m = null;
-
-        m = new MatchDetails();
-        m.setFromField("orange");
-        m.setToField("fruitCount");
-        m.setValue("orange");
-        tagger.addMatchDetails(m);
-
-        m = new MatchDetails();
-        m.setFromField("apple");
-        m.setToField("fruitCount");
-        m.setValue("apple");
-        tagger.addMatchDetails(m);
-
-        m = new MatchDetails();
-        m.setFromField("potato");
-        m.setToField("potatoCount");
-        m.setValue("potato");
-        tagger.addMatchDetails(m);
-
-        tagger.tagDocument("n/a", null, meta, true);
-
+        t = new CountMatchesTagger();
+        t.setMaxReadSize(20);
+        t.getFieldMatcher().setPattern("(orange|apple)")
+                .setMethod(Method.REGEX);
+        t.setToField("fruitCount");
+        t.getCountMatcher().setPattern("(orange|apple)")
+                .setMethod(Method.REGEX).setPartial(true);
+        t.tagDocument("n/a", null, meta, true);
         // we should get the sum of both oranges and apples
         assertEquals(5, (int) meta.getInteger("fruitCount"));
+
+        t = new CountMatchesTagger();
+        t.setMaxReadSize(20);
+        t.getFieldMatcher().setPattern("potato");
+        t.setToField("potatoCount");
+        t.getCountMatcher().setPattern("potato").setPartial(true);
+        t.tagDocument("n/a", null, meta, true);
         // we should get zero (use string to make sure).
         assertEquals("0", meta.getString("potatoCount"));
     }

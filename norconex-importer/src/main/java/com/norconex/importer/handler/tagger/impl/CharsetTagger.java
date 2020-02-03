@@ -90,8 +90,7 @@ import com.norconex.importer.util.CharsetUtil;
  * The above example converts the characters of a "description" field from
  * "ISO-8859-1" to "UTF-8".
  * </p>
- * <pre>
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.5.0
  */

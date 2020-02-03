@@ -19,7 +19,7 @@ import java.io.Reader;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.TextReader;
@@ -150,38 +150,16 @@ public abstract class AbstractStringTagger
     protected abstract void loadStringTaggerFromXML(XML xml);
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof AbstractStringTagger)) {
-            return false;
-        }
-        AbstractStringTagger other = (AbstractStringTagger) obj;
-        return new EqualsBuilder()
-            .appendSuper(super.equals(obj))
-            .append(maxReadSize, other.maxReadSize)
-            .isEquals();
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-            .appendSuper(super.hashCode())
-            .append(maxReadSize)
-            .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-            .appendSuper(super.toString())
-            .append("maxReadSize", maxReadSize)
-            .toString();
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
-
-
 }

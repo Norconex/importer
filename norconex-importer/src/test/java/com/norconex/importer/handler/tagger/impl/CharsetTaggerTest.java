@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -67,7 +68,7 @@ public class CharsetTaggerTest {
         CharsetTagger t = new CharsetTagger();
         //t.setSourceCharset(fromCharset);
         t.setTargetCharset(toCharset);
-        t.setFieldsRegex("field1");
+        t.setFieldMatcher(TextMatcher.basic("field1"));
 
         ImporterMetadata metadata = new ImporterMetadata();
         metadata.set("field1", new String(sourceBytes, fromCharset));
@@ -99,7 +100,7 @@ public class CharsetTaggerTest {
     public void testWriteRead() throws IOException {
         CharsetTagger t = new CharsetTagger();
         t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
-        t.setFieldsRegex(".*");
+        t.setFieldMatcher(TextMatcher.regex(".*"));
         XML.assertWriteRead(t, "handler");
     }
 }

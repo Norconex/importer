@@ -80,9 +80,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
  *     (expression to narrow by matching fields)
  *   </fieldMatcher>
- *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
- *     (expression to narrow by matching values)
- *   </valueMatcher>
  * </handler>
  * }
  *
@@ -126,7 +123,6 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     public static final String APPLY_BOTH = "both";
 
     private final TextMatcher fieldMatcher = new TextMatcher();
-    private final TextMatcher valueMatcher = new TextMatcher();
     private String caseType;
     private String applyTo;
 
@@ -145,22 +141,6 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
      */
     public void setFieldMatcher(TextMatcher fieldMatcher) {
         this.fieldMatcher.copyFrom(fieldMatcher);
-    }
-    /**
-     * Gets value matcher.
-     * @return value matcher
-     * @since 3.0.0
-     */
-    public TextMatcher getValueMatcher() {
-        return valueMatcher;
-    }
-    /**
-     * Sets value matcher.
-     * @param valueMatcher value matcher
-     * @since 3.0.0
-     */
-    public void setValueMatcher(TextMatcher valueMatcher) {
-        this.valueMatcher.copyFrom(valueMatcher);
     }
     /**
      * Gets the type of character case transformation.
@@ -211,7 +191,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
 
         for (Entry<String, List<String>> en :
-                metadata.match(fieldMatcher, valueMatcher).entrySet()) {
+                metadata.matchKeys(fieldMatcher).entrySet()) {
 
             String field = en.getKey();
             String newField = field;
@@ -243,12 +223,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         List<String> values = metadata.getStrings(field);
         if (values != null) {
             for (int i = 0; i < values.size(); i++) {
-                String value = values.get(i);
-                // check for here to match PatternMatcher behavior
-                if (valueMatcher.getPattern() == null
-                        || valueMatcher.matches(value)) {
-                    values.set(i, changeCase(value, caseType));
-                }
+                values.set(i, changeCase(values.get(i), caseType));
             }
             metadata.setList(field, values);
         }
@@ -342,7 +317,6 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         setCaseType(xml.getString("@type"));
         setApplyTo(xml.getString("@applyTo"));
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
-        valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
     }
 
     @Override
@@ -350,7 +324,6 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         xml.setAttribute("type", caseType);
         xml.setAttribute("applyTo", applyTo);
         fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
-        valueMatcher.saveToXML(xml.addElement("valueMatcher"));
     }
 
     private String capitalizeString(String value) {

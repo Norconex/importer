@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,9 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -25,14 +27,15 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.text.Regex;
+import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 
 /**
  * <p>
@@ -40,165 +43,244 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * store the resulting value in a field in the specified "toField".
  * </p>
  * <p>
- * If no "fromField" is specified, the document content will be used.
- * If the "toField" already exists before counting begins, it will be
- * overwritten with the result of the match count.
- * If within this tagger the "toField" is repeated,
- * the sum of all count will be added.
- * If the fromField has multiple values, the total count of all matches
- * will be stored as a single value.
+ * If no "fieldMatcher" expression is specified, the document content will be
+ * used.  If the "fieldMatcher" matches more than one field, the sum of all
+ * matches will be stored as a single value. More often than not,
+ * you probably want to set your "countMatcher" to "partial".
  * </p>
+ * <h3>Storing values in an existing field</h3>
+ * <p>
+ * If a target field with the same name already exists for a document,
+ * the count value will be added to the end of the existing value list.
+ * It is possible to change this default behavior
+ * with {@link #setOnSet(PropertySetter)}.
+ * </p>
+ *
  * <p>Can be used as a pre-parse tagger on text document only when matching
  * strings on document content, or both as a pre-parse or post-parse handler
- * when the "fromField" is used.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
+ * when the "fieldMatcher" is used.</p>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+ *      toField="(target field)"
+ *      maxReadSize="(max characters to read at once)"
+ *      {@nx.include com.norconex.importer.handler.tagger.AbstractCharStreamTagger#attributes}>
  *
- *      &lt;countMatches
- *              fromField="(optional source field)"
- *              toField="(target field)"
- *              caseSensitive="[false|true]"
- *              regex="[false|true]"&gt;
- *          (text to match or regular expression)
- *      &lt;/countMatches&gt;
- *      &lt;!-- multiple countMatches tags allowed --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (optional expression for fields used to count matches)
+ *   </fieldMatcher>
  *
- * <h4>Usage example:</h4>
+ *   <countMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (expression used to count matches)
+ *   </countMatcher>
+ *
+ *  </handler>
+ * }
+ *
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+ *      toField="urlSegmentCount">
+ *    <fieldMatcher>document.reference</fieldMatcher>
+ *    <countMatcher method="regex">/[^/]+</countMatcher>
+ *  </handler>
+ * }
  * <p>
- * The following will count the number of segments in a URL:
+ * The above will count the number of segments in a URL.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"&gt;
- *      &lt;countMatches
- *              fromField="document.reference"
- *              toField="urlSegmentCount"
- *              regex="true"&gt;
- *          /[^/]+
- *      &lt;/countMatches&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @see Pattern
  * @since 2.6.0
  */
-public class CountMatchesTagger extends AbstractStringTagger {
+@SuppressWarnings("javadoc")
+public class CountMatchesTagger extends AbstractCharStreamTagger {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(CountMatchesTagger.class);
-
-    private final List<MatchDetails> matchesDetails = new ArrayList<>();
+    private TextMatcher fieldMatcher = new TextMatcher();
+    private TextMatcher countMatcher = new TextMatcher();
+    private String toField;
+    private PropertySetter onSet;
+    private int maxReadSize = TextReader.DEFAULT_MAX_READ_SIZE;
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex)
+    protected void tagTextDocument(String reference, Reader input,
+            ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
-        // initialize all toFields to 0 so values can then be added
-        // without concerns with previous data
-        if (sectionIndex == 0) {
-            for (MatchDetails md : matchesDetails) {
-                if (StringUtils.isNotBlank(md.getToField())) {
-                    metadata.set(md.getToField(), 0);;
-                }
-            }
+
+        // "toField" and value must be present.
+        if (StringUtils.isBlank(getToField())) {
+            throw new IllegalArgumentException("'toField' cannot be blank.");
+        }
+        if (countMatcher.getPattern() == null) {
+            throw new IllegalArgumentException(
+                    "'countMatcher' pattern cannot be null.");
         }
 
-        // perform the match counts
-        for (MatchDetails md : matchesDetails) {
-            // "toField" and value must be present.
-            if (StringUtils.isBlank(md.getToField())) {
-                LOG.debug("No \"toField\" specified: "
-                        + "no match will be attempted.");
-                continue;
-            }
-            if (StringUtils.isBlank(md.getValue())) {
-                LOG.debug("No value to match specified: "
-                        + "no match will be attempted.");
-                continue;
-            }
-
-            boolean isFieldUsed = StringUtils.isNotBlank(md.getFromField());
-            // if we have done the field matching already in the first section,
-            // move on
-            if (isFieldUsed && sectionIndex > 0) {
-                continue;
-            }
-
-            List<String> sourceValues = null;
-            if (isFieldUsed) {
-                sourceValues = metadata.getStrings(md.getFromField());
-            } else if (content != null) {
-                sourceValues = new ArrayList<>(1);
-                sourceValues.add(content.toString());
-            }
-            // if no content to perform matches on, so move on
-            if (sourceValues.isEmpty()) {
-                continue;
-            }
-
-            // perform the count
-            for (String sourceValue : sourceValues) {
-                int count = 0;
-                if (md.isRegex()) {
-                    count = countRegexMatches(
-                            sourceValue, md.getValue(), md.isCaseSensitive());
-                } else {
-                    count = countSubstringMatches(
-                            sourceValue, md.getValue(), md.isCaseSensitive());
-                }
-
-                int newCount = count + metadata.getInteger(md.getToField());
-                metadata.set(md.getToField(), newCount);
-            }
+        int count = 0;
+        if (fieldMatcher.getPattern() == null) {
+            count = countContentMatches(input);
+        } else {
+            count = countFieldMatches(metadata);
         }
+
+        PropertySetter.orDefault(onSet).apply(metadata, getToField(), count);
     }
 
-
-    private int countRegexMatches(
-            String haystack, String needle, boolean caseSensitive) {
-        Pattern p = Regex.compileDotAll(needle, !caseSensitive);
-        Matcher m = p.matcher(haystack);
+    private int countFieldMatches(ImporterMetadata metadata) {
         int count = 0;
-        while (m.find()) {
-            count++;
+        for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+            Matcher m = countMatcher.toMatcher(value);
+            while (m.find()) {
+                count++;
+            }
         }
         return count;
     }
-    private int countSubstringMatches(
-            String haystack, String needle, boolean caseSensitive) {
-        return countRegexMatches(
-                haystack, Pattern.quote(needle), caseSensitive);
-    }
-
-    public List<MatchDetails> getMatchesDetails() {
-        return Collections.unmodifiableList(matchesDetails);
-    }
-
-    public void removeMatchDetails(MatchDetails matchDetails) {
-        matchesDetails.remove(matchDetails);
+    private int countContentMatches(Reader reader)
+            throws ImporterHandlerException {
+        int count = 0;
+        String text = null;
+        try (TextReader tr = new TextReader(reader, maxReadSize)) {
+            while ((text = tr.readText()) != null) {
+                Matcher m = countMatcher.toMatcher(text);
+                while (m.find()) {
+                    count++;
+                }
+            }
+        } catch (IOException e) {
+            throw new ImporterHandlerException("Cannot tag text document.", e);
+        }
+        return count;
     }
 
     /**
-     * Adds a match details.
-     * @param matchDetails the match details
+     * Gets the maximum number of characters to read from content for tagging
+     * at once. Default is {@link TextReader#DEFAULT_MAX_READ_SIZE}.
+     * @return maximum read size
      */
-    public void addMatchDetails(MatchDetails matchDetails) {
-        matchesDetails.add(matchDetails);
+    public int getMaxReadSize() {
+        return maxReadSize;
+    }
+    /**
+     * Sets the maximum number of characters to read from content for tagging
+     * at once.
+     * @param maxReadSize maximum read size
+     */
+    public void setMaxReadSize(int maxReadSize) {
+        this.maxReadSize = maxReadSize;
     }
 
+    /**
+     * Gets the field matcher.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets the field matcher.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher = fieldMatcher;
+    }
 
+    /**
+     * Gets the count matcher.
+     * @return count matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getCountMatcher() {
+        return countMatcher;
+    }
+    /**
+     * Sets the count matcher.
+     * @param countMatcher count matcher
+     * @since 3.0.0
+     */
+    public void setCountMatcher(TextMatcher countMatcher) {
+        this.countMatcher = countMatcher;
+    }
+
+    /**
+     * Sets the target field.
+     * @return target field
+     * @since 3.0.0
+     */
+    public String getToField() {
+        return toField;
+    }
+    /**
+     * Gets the target field.
+     * @param toField target field
+     * @since 3.0.0
+     */
+    public void setToField(String toField) {
+        this.toField = toField;
+    }
+
+    /**
+     * Gets the property setter to use when a value is set.
+     * @return property setter
+     * @since 3.0.0
+     */
+    public PropertySetter getOnSet() {
+        return onSet;
+    }
+    /**
+     * Sets the property setter to use when a value is set.
+     * @param onSet property setter
+     * @since 3.0.0
+     */
+    public void setOnSet(PropertySetter onSet) {
+        this.onSet = onSet;
+    }
+
+    /**
+     * Gets matches details.
+     * @return matches details
+     * @deprecated Since 3.0.0, use {@link #getToField()},
+     *             {@link #getFieldMatcher()}, and {@link #getCountMatcher()}.
+     */
+    @Deprecated
+    public List<MatchDetails> getMatchesDetails() {
+        MatchDetails md = new MatchDetails(
+                fieldMatcher.getPattern(),
+                getToField(),
+                getCountMatcher().getPattern());
+        md.setCaseSensitive(!countMatcher.isIgnoreCase());
+        md.setRegex(Method.REGEX == countMatcher.getMethod());
+        return Collections.unmodifiableList(Arrays.asList(md));
+    }
+    /**
+     * Removes match details.
+     * @param matchDetails match details
+     * @deprecated Since 3.0.0, this method does nothing.
+     */
+    @Deprecated
+    public void removeMatchDetails(MatchDetails matchDetails) {
+        //NOOP
+    }
+    /**
+     * Adds a match details.
+     * @param matchDetails the match details
+     * @deprecated Since 3.0.0, use {@link #setToField(String)},
+     *             {@link #setFieldMatcher(TextMatcher)},
+     *             and {@link #setCountMatcher(TextMatcher)}.
+     */
+    @Deprecated
+    public void addMatchDetails(MatchDetails matchDetails) {
+        setToField(matchDetails.getToField());
+        countMatcher.setMethod(
+                matchDetails.isRegex() ? Method.REGEX : Method.BASIC);
+        countMatcher.setIgnoreCase(!matchDetails.isCaseSensitive());
+        fieldMatcher.setPattern(matchDetails.getFromField());
+    }
+
+    @Deprecated
     public static class MatchDetails {
         private String fromField;
         private String toField;
@@ -288,29 +370,25 @@ public class CountMatchesTagger extends AbstractStringTagger {
         }
     }
 
-    @Override
-    protected void loadStringTaggerFromXML(XML xml) {
-        List<XML> nodes = xml.getXMLList("countMatches");
-        for (XML node : nodes) {
-            MatchDetails m = new MatchDetails();
-            m.setFromField(node.getString("@fromField"));
-            m.setToField(node.getString("@toField", null));
-            m.setRegex(node.getBoolean("@regex", false));
-            m.setCaseSensitive(node.getBoolean("@caseSensitive", false));
-            m.setValue(node.getString("."));
-            addMatchDetails(m);
-        }
-    }
+
 
     @Override
-    protected void saveStringTaggerToXML(XML xml) {
-        for (MatchDetails match : matchesDetails) {
-            xml.addElement("countMatches", match.getValue())
-                    .setAttribute("fromField", match.getFromField())
-                    .setAttribute("toField", match.getToField())
-                    .setAttribute("regex", match.isRegex())
-                    .setAttribute("caseSensitive", match.isCaseSensitive());
-        }
+    protected void loadCharStreamTaggerFromXML(XML xml) {
+        xml.checkDeprecated(
+                "countMatches", "fieldMatcher and countMatcher", true);
+        setOnSet(PropertySetter.fromXML(xml, onSet));
+        setToField(xml.getString("@toField", toField));
+        setMaxReadSize(xml.getInteger("@maxReadSize", maxReadSize));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
+        countMatcher.loadFromXML(xml.getXML("countMatcher"));
+    }
+    @Override
+    protected void saveCharStreamTaggerToXML(XML xml) {
+        PropertySetter.toXML(xml, getOnSet());
+        xml.setAttribute("toField", toField);
+        xml.setAttribute("maxReadSize", maxReadSize);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
+        countMatcher.saveToXML(xml.addElement("countMatcher"));
     }
 
     @Override
