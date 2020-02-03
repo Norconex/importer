@@ -32,6 +32,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertyMatcher;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -347,7 +349,6 @@ public class DOMTaggerTest {
     public void testAllExtractionTypes()
             throws IOException, ImporterHandlerException {
 
-
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "div.parent", "text", APPEND, "text"));
@@ -415,7 +416,6 @@ public class DOMTaggerTest {
         Assertions.assertEquals("Some Title", attr);
     }
 
-
     @Test
     public void testWriteRead() throws IOException {
         DOMTagger tagger = new DOMTagger();
@@ -426,7 +426,9 @@ public class DOMTaggerTest {
                 "div.blah > a", "myOtherField", REPLACE, "html");
         details.setDefaultValue("myDefaultValue");
         tagger.addDOMExtractDetails(details);
-        tagger.addRestriction("afield", "aregex", true);
+        tagger.addRestriction(new PropertyMatcher(
+                TextMatcher.basic("afield"),
+                TextMatcher.basic("aregex")));
         tagger.setFromField("myfromfield");
         XML.assertWriteRead(tagger, "handler");
     }
