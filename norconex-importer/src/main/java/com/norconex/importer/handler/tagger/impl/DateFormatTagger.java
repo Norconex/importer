@@ -71,45 +71,40 @@ import com.norconex.importer.util.FormatUtil;
  * date.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
- *          fromField="(from field)" toField="(to field)"
- *          fromLocale="(locale)"    toLocale="(locale)"
- *          toFormat="(date format)"
- *          keepBadDates="(false|true)"
- *          onSet="[append|prepend|replace|optional]" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+ *     fromField="(from field)" toField="(to field)"
+ *     fromLocale="(locale)"    toLocale="(locale)"
+ *     toFormat="(date format)"
+ *     keepBadDates="(false|true)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;fromFormat&gt;(date format)&lt;/fromFormat&gt;
- *      &lt;!-- multiple "fromFormat" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   <!-- multiple "fromFormat" tags allowed (only one needs to match) -->
+ *   <fromFormat>(date format)</fromFormat>
+ * </handler>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+ *          fromField="Last-Modified"
+ *          toField="solr_date"
+ *          toFormat="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" >
+ *      <fromFormat>EEE, dd MMM yyyy HH:mm:ss zzz</fromFormat>
+ *      <fromFormat>EPOCH</fromFormat>
+ *  </handler>
+ * }
  * <p>
  * The following converts a date that is sometimes obtained from the
  * HTTP header "Last-Modified" and sometimes is an EPOCH date,
  * into an Apache Solr date format:
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
- *          fromField="Last-Modified"
- *          toField="solr_date"
- *          toFormat="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" &gt;
- *      &lt;fromFormat&gt;EEE, dd MMM yyyy HH:mm:ss zzz&lt;/fromFormat&gt;
- *      &lt;fromFormat&gt;EPOCH&lt;/fromFormat&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class DateFormatTagger extends AbstractDocumentTagger {
 
     private String fromField;

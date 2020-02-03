@@ -44,7 +44,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
  *
@@ -53,7 +52,9 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <!-- multiple copy tags allowed -->
  *   <copy toField="(to field)"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
- *     <fieldMatcher>(one or more matching fields to copy)</fieldMatcher>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *       (one or more matching fields to copy)
+ *     </fieldMatcher>
  *   </copy>
  * </handler>
  * }

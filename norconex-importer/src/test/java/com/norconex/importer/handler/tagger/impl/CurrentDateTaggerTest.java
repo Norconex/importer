@@ -64,7 +64,7 @@ public class CurrentDateTaggerTest {
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
-        tagger.setField("existingField");
+        tagger.setToField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals(
                 1, meta.getLongs("existingField").size(),
@@ -77,7 +77,7 @@ public class CurrentDateTaggerTest {
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.APPEND);
-        tagger.setField("existingField");
+        tagger.setToField("existingField");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals(
                 2, meta.getLongs("existingField").size(),
@@ -96,7 +96,7 @@ public class CurrentDateTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         CurrentDateTagger tagger = new CurrentDateTagger();
-        tagger.setField("field1");
+        tagger.setToField("field1");
         tagger.setFormat("yyyy-MM-dd");
         tagger.setOnSet(PropertySetter.REPLACE);
         XML.assertWriteRead(tagger, "handler");

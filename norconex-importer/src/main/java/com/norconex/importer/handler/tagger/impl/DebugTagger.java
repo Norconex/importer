@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,32 +55,30 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * content can result in memory exceptions.</p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
- *          logFields="(CSV list of fields to log)"
- *          logContent="(false|true)"
- *          logLevel="(FATAL|ERROR|WARN|INFO|DEBUG|TRACE)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
+ *          logFields="(CSV list of fields to log)"
+ *          logContent="[false|true]"
+ *          logLevel="[FATAL|ERROR|WARN|INFO|DEBUG|TRACE]" >
+ *
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
+ *  </handler>
+ * }
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
+ *          logFields="title,author" logLevel="INFO" />
+ * }
  * <p>
- * The following logs the value of any "title" and "author" document metadata
+ * The above logs the value of any "title" and "author" document metadata
  * fields.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
- *          logFields="title,author" logLevel="INFO" /&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class DebugTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =

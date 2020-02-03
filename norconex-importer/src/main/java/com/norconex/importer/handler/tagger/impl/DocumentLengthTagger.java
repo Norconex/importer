@@ -53,43 +53,40 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
- *     field="(mandatory target field)"
- *     onSet="[append|prepend|replace|optional]">
+ *     toField="(mandatory target field)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *     <restrictTo caseSensitive="[false|true]"
- *             field="(name of header/metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
  * </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
+ *     toField="docSize" />
+ * }
+ *
  * <p>
  * The following stores the document lenght into a "docSize" field.
  * </p>
  *
- * <pre>{@code
- * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
- *     field="docSize" />
- * }</pre>
  * @author Pascal Essiembre
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class DocumentLengthTagger extends AbstractDocumentTagger {
 
-    private String field;
+    private String toField;
     private PropertySetter onSet;
 
     @Override
     protected void tagApplicableDocument(String reference,
             InputStream document, ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
-        if (StringUtils.isBlank(field)) {
-            throw new IllegalArgumentException("\"field\" cannot be empty.");
+                    throws ImporterHandlerException {
+        if (StringUtils.isBlank(toField)) {
+            throw new IllegalArgumentException("\"toField\" cannot be empty.");
         }
 
         int length = -1;
@@ -105,14 +102,43 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
             length = is.getCount();
         }
 
-        PropertySetter.orDefault(onSet).apply(metadata, field, length);
+        PropertySetter.orDefault(onSet).apply(metadata, toField, length);
     }
 
-    public String getField() {
-        return field;
+    /**
+     * Gets the target field.
+     * @return target field
+     * @since 3.0.0
+     */
+    public String getToField() {
+        return toField;
     }
-    public void setField(String field) {
-        this.field = field;
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @since 3.0.0
+     */
+    public void setToField(String toField) {
+        this.toField = toField;
+    }
+
+    /**
+     * Gets the target field.
+     * @return target field
+     * @deprecated Since 3.0.0, use {@link #getToField()}
+     */
+    @Deprecated
+    public String getField() {
+        return getToField();
+    }
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @deprecated Since 3.0.0, use {@link #setToField(String)}
+     */
+    @Deprecated
+    public void setField(String toField) {
+        setToField(toField);
     }
 
     /**
@@ -151,17 +177,17 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
         this.onSet = onSet;
     }
 
-
     @Override
     protected void loadHandlerFromXML(XML xml) {
         xml.checkDeprecated("@overwrite", "onSet", true);
-        field = xml.getString("@field", field);
+        xml.checkDeprecated("@field", "toField", true);
+        toField = xml.getString("@toField", toField);
         setOnSet(PropertySetter.fromXML(xml, onSet));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("field", field);
+        xml.setAttribute("toField", toField);
         PropertySetter.toXML(xml, getOnSet());
     }
 
