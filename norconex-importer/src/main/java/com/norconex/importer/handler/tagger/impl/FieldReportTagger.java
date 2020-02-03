@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,21 +60,19 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
- *          maxSamples="(max number of sample values)"
- *          withHeaders="[false|true]"
- *          withOccurences="[false|true]"
- *          truncateSamplesAt="(number of characters to truncate long samples)"
- *          file="(path to a local file)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/tagger&gt;
+ * {@nx.xml.usage
+ * <tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ *     maxSamples="(max number of sample values)"
+ *     withHeaders="[false|true]"
+ *     withOccurences="[false|true]"
+ *     truncateSamplesAt="(number of characters to truncate long samples)"
+ *     file="(path to a local file)" >
+ *
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
+ * </tagger>
+ * }
  * </pre>
  * <h4>Usage example:</h4>
  * <p>
@@ -82,12 +80,13 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * along with only 1 example value..
  * </p>
  * <pre>
- *  &lt;tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
- *          maxSamples="1" file="C:\reports\field-report.csv" /&gt;
+ *  <tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ *          maxSamples="1" file="C:\reports\field-report.csv" />
  * </pre>
  * @author Pascal Essiembre
  * @since 2.10.0
  */
+@SuppressWarnings("javadoc")
 public class FieldReportTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =

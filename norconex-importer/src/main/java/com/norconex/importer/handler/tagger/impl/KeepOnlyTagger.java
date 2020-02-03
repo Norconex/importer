@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -29,7 +27,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -49,43 +48,37 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;fields&gt;(coma-separated list of fields to keep)&lt;/fields&gt;
- *      &lt;fieldsRegex&gt;(regular expression matching fields to keep)&lt;/fieldsRegex&gt;
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     (one or more matching fields to keep)
+ *   </fieldMatcher>
+ *  </handler>
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger">
+ *   <fieldMatcher method="regex">(title|description)</fieldMatcher>
+ * </handler>
+ * }
  * <p>
- * The following keeps only the title and description fields from all
+ * The above example keeps only the title and description fields from all
  * extracted fields.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger"&gt;
- *      &lt;fields&gt;title, description&lt;/fields&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @see Pattern
  */
+@SuppressWarnings("javadoc")
 public class KeepOnlyTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(KeepOnlyTagger.class);
 
-    private final List<String> fields = new ArrayList<>();
-    private String fieldsRegex;
+    private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
     public void tagApplicableDocument(
@@ -93,81 +86,86 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        // If fields is empty, it means we should keep nothing
-        if (fields.isEmpty() && StringUtils.isBlank(fieldsRegex)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Clear all metadata from: {}", reference);
-            }
-            metadata.clear();
-        } else {
-            // Remove metadata not in fields
-            Iterator<String> iter = metadata.keySet().iterator();
-            List<String> removeList = new ArrayList<>();
-            while (iter.hasNext()) {
-                String name = iter.next();
-                if (!mustKeep(name)) {
-                    removeList.add(name);
-                }
-            }
-            for (String key : removeList) {
-                metadata.remove(key);
-            }
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Removed metadata fields \""
-                        + StringUtils.join(removeList, ",")
-                        + "\" from " + reference);
+        for (String field : new HashSet<>(metadata.keySet())) {
+            if (!fieldMatcher.matches(field)) {
+                metadata.remove(field);
+                LOG.debug("Not kept: {}", field);
             }
         }
     }
 
-    private boolean mustKeep(String fieldToMatch) {
-        // Check with exact field names
-        for (String field : fields) {
-            if (field.trim().equalsIgnoreCase(fieldToMatch.trim())) {
-                return true;
-            }
-        }
-
-        // Check with regex
-        return StringUtils.isNotBlank(fieldsRegex)
-                && Pattern.matches(fieldsRegex, fieldToMatch);
-    }
-
-    public List<String> getFields() {
-        return Collections.unmodifiableList(fields);
-    }
     /**
-     * Sets the fields to keep.
-     * @param fields fields to keep
+     * Gets field matcher.
+     * @return field matcher
      * @since 3.0.0
      */
-    public void setFields(List<String> fields) {
-        CollectionUtil.setAll(this.fields, fields);
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
     }
-    public void addField(String field) {
-        fields.add(field);
-    }
-    public void removeField(String field) {
-        fields.remove(field);
+    /**
+     * Sets field matcher.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
-    public String getFieldsRegex() {
-        return fieldsRegex;
+    /**
+     * Gets the pattern for fields to delete as first element.
+     * @return fields to delete
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}
+     */
+    @Deprecated
+    public List<String> getFields() {
+        return Arrays.asList(fieldMatcher.getPattern());
     }
+    /**
+     * Adds the pattern for fields to delete.
+     * @param field fields to add
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+     */
+    @Deprecated
+    public void addField(String field) {
+        fieldMatcher.setPattern(field);
+    }
+    /**
+     * Does nothing.
+     * @param field field to remove
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+     */
+    @Deprecated
+    public void removeField(String field) {
+        //NOOP
+    }
+    /**
+     * Gets field matcher pattern.
+     * @return field matcher pattern
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}
+     */
+    @Deprecated
+    public String getFieldsRegex() {
+        return fieldMatcher.getPattern();
+    }
+    /**
+     * Sets field matcher pattern.
+     * @param fieldsRegex field matcher pattern.
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+     */
+    @Deprecated
     public void setFieldsRegex(String fieldsRegex) {
-        this.fieldsRegex = fieldsRegex;
+        this.fieldMatcher.setPattern(fieldsRegex).setMethod(Method.REGEX);
     }
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setFields(xml.getDelimitedStringList("fields", fields));
-        setFieldsRegex(xml.getString("fieldsRegex", fieldsRegex));
+        xml.checkDeprecated("fields", "fieldMatcher", true);
+        xml.checkDeprecated("fieldsRegex", "fieldMatcher", true);
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.addDelimitedElementList("fields", fields);
-        xml.addElement("fieldsRegex", fieldsRegex);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

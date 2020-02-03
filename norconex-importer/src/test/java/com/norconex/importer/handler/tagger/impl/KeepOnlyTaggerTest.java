@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -32,9 +33,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         KeepOnlyTagger tagger = new KeepOnlyTagger();
-        tagger.addField("field1");
-        tagger.addField("field2");
-        tagger.addField("field3");
+        tagger.getFieldMatcher().setPattern("field1|field2|field3");
         XML.assertWriteRead(tagger, "handler");
     }
 
@@ -46,11 +45,10 @@ public class KeepOnlyTaggerTest {
         metadata.add("key2", "value2");
         metadata.add("key3", "value3");
 
-        // Should only keep all keys
+        // Should keep all keys
         KeepOnlyTagger tagger = new KeepOnlyTagger();
-        tagger.addField("key1");
-        tagger.addField("key2");
-        tagger.addField("key3");
+        tagger.getFieldMatcher()
+                .setPattern("(key1|key2|key3)").setMethod(Method.REGEX);
         tagger.tagDocument("reference", null, metadata, true);
 
         assertEquals(3, metadata.size());
@@ -66,7 +64,7 @@ public class KeepOnlyTaggerTest {
 
         // Should only keep key1
         KeepOnlyTagger tagger = new KeepOnlyTagger();
-        tagger.addField("key1");
+        tagger.getFieldMatcher().setPattern("key1");
         tagger.tagDocument("reference", null, metadata, true);
 
         assertEquals(1, metadata.size());
@@ -84,6 +82,7 @@ public class KeepOnlyTaggerTest {
         // Because we are not adding any field to keep, all metadata should be
         // deleted
         KeepOnlyTagger tagger = new KeepOnlyTagger();
+        tagger.getFieldMatcher().setPattern("IAmNotThere");
         tagger.tagDocument("reference", null, metadata, true);
 
         assertTrue(metadata.isEmpty());
@@ -104,10 +103,9 @@ public class KeepOnlyTaggerTest {
 
         KeepOnlyTagger tagger = new KeepOnlyTagger();
 
-//        Reader r = new StringReader(
-//                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>");
         tagger.loadFromXML(new XML(
-                "<tagger><fieldsRegex>[Xx]-.*</fieldsRegex></tagger>"));
+                "<tagger><fieldMatcher method=\"regex\">"
+              + "[Xx]-.*</fieldMatcher></tagger>"));
 
         tagger.tagDocument("blah", new NullInputStream(0), meta, false);
 

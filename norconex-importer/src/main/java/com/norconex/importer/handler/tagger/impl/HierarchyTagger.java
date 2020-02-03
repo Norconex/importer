@@ -71,42 +71,37 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;hierarchy fromField="(from field)"
- *              toField="(optional to field)"
- *              fromSeparator="(original separator)"
- *              toSeparator="(optional new separator)"
- *              onSet="[append|prepend|replace|optional]"
- *              regex="[false|true]"
- *              keepEmptySegments="[false|true]" /&gt;
- *      &lt;!-- multiple hierarchy tags allowed --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   <!-- multiple hierarchy tags allowed -->
+ *   <hierarchy fromField="(from field)"
+ *       toField="(optional to field)"
+ *       fromSeparator="(original separator)"
+ *       toSeparator="(optional new separator)"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
+ *       regex="[false|true]"
+ *       keepEmptySegments="[false|true]" />
+ * </handler>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ *  <handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger">
+ *      <hierarchy fromField="vegetable" toField="vegetableHierarchy"
+ *                 fromSeparator="/"/>
+ *  </handler>
+ * }
  * <p>
- * The following will expand a slash-separated vegetable hierarchy found in a
+ * The above will expand a slash-separated vegetable hierarchy found in a
  * "vegetable" field into a "vegetableHierarchy" field.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger"&gt;
- *      &lt;hierarchy fromField="vegetable" toField="vegetableHierarchy"
- *                 fromSeparator="/"/&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.3.0
  */
+@SuppressWarnings("javadoc")
 public class HierarchyTagger extends AbstractDocumentTagger {
 
     private final List<HierarchyDetails> list = new ArrayList<>();

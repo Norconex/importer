@@ -147,31 +147,31 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>{@code
+ * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"
  *         fromField="(optional source field)"
  *         parser="[html|xml]"
  *         sourceCharset="(character encoding)">
  *
- *     <restrictTo
- *             caseSensitive="[false|true]"
- *             field="(name of metadata field name to match)">
- *         (regular expression of value to match)
- *     </restrictTo>
- *     <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <dom selector="(selector syntax)"
- *             toField="(target field)"
- *             onSet="[append|prepend|replace|optional]"
- *             extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
- *             matchBlanks="[false|true]"
- *             defaultValue="(optional value to use when no match)" />
- *     <!-- multiple "dom" tags allowed -->
+ *   <!-- multiple "dom" tags allowed -->
+ *   <dom selector="(selector syntax)"
+ *       toField="(target field)"
+ *       extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+ *       matchBlanks="[false|true]"
+ *       defaultValue="(optional value to use when no match)"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}/>
+ *
  * </handler>
- * }</pre>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger">
+ *   <dom selector="div.firstName" toField="firstName" />
+ *   <dom selector="div.lastName"  toField="lastName" />
+ * </handler>
+ * }
  * <p>
  * Given this HTML snippet...
  * </p>
@@ -180,18 +180,13 @@ import com.norconex.importer.util.DOMUtil;
  * &lt;div class="lastName"&gt;Dalton&lt;/div&gt;
  * </pre>
  * <p>
- * ... the following will store "Joe" in a "firstName" field and "Dalton"
+ * ... the above example will store "Joe" in a "firstName" field and "Dalton"
  * in a "lastName" field.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"&gt;
- *      &lt;dom selector="div.firstName" toField="firstName" /&gt;
- *      &lt;dom selector="div.lastName"  toField="lastName" /&gt;
- *  &lt;/handler&gt;
- * </pre>
  * @author Pascal Essiembre
  * @since 2.4.0
  */
+@SuppressWarnings("javadoc")
 public class DOMTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG = LoggerFactory.getLogger(DOMTagger.class);

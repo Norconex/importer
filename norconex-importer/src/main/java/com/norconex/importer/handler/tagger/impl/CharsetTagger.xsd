@@ -23,7 +23,7 @@
       <xs:complexContent> 
         <xs:extension base="AbstractDocumentTagger"> 
           <xs:all>
-            <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />  
+            <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="1" />  
           </xs:all>
           <xs:attribute name="sourceCharset" type="xs:string"/>
           <xs:attribute name="targetCharset" type="xs:string"/>

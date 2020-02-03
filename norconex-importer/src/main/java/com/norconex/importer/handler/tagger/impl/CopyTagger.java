@@ -140,7 +140,7 @@ public class CopyTagger extends AbstractDocumentTagger {
         }
         for (XML node : nodes) {
             node.checkDeprecated("@overwrite", "onSet", true);
-            node.checkDeprecated("@fromField", "textMatcher", true);
+            node.checkDeprecated("@fromField", "fieldMatcher", true);
             TextMatcher fieldMatcher = new TextMatcher();
             fieldMatcher.loadFromXML(node.getXML("fieldMatcher"));
             addCopyDetails(fieldMatcher,

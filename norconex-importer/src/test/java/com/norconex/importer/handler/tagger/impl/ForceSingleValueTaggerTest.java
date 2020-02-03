@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@ public class ForceSingleValueTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         ForceSingleValueTagger tagger = new ForceSingleValueTagger();
-        tagger.addSingleValueField("field1", "keepFirst");
-        tagger.addSingleValueField("field2", "keepFirst");
-        tagger.addSingleValueField("field3", "keepFirst");
+        tagger.setAction("keepFirst");
+        tagger.getFieldMatcher().setPattern("field1|field2|field3");
         XML.assertWriteRead(tagger, "handler");
     }
 }

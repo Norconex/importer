@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -47,38 +47,37 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * If you do not specify any action, the default behavior is to merge all
  * occurrences, joining values with a comma.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"
+ *     action="[keepFirst|keepLast|mergeWith:<separator>]">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;singleValue field="FIELD_NAME" action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]"/&gt;
- *      &lt;!-- multiple single value fields allowed --&gt;
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *       (one or more matching fields to force having a single value)
+ *   </fieldMatcher>
  *
- *  &lt;/handler&gt;
- * </pre>
+ * </handler>
+ * }
  *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"
+ *     action="keepFirst">
+ *   <fieldMatcher>title</fieldMatcher>
+ * </handler>
+ * }
  * <p>
- * For documents where multiple title fields are found, the following only
+ * For documents where multiple title fields are found, the above only
  * keeps the first title value captured.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"&gt;
- *      &lt;singleValue field="title" action="keepFirst"/&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class ForceSingleValueTagger extends AbstractDocumentTagger {
 
-    private final Map<String, String> singleFields =
-            new HashMap<>();
+    private final TextMatcher fieldMatcher = new TextMatcher();
+    private String action;
 
     @Override
     public void tagApplicableDocument(
@@ -86,10 +85,10 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
-        for (Entry<String, String> entry: singleFields.entrySet()) {
-            String name = entry.getKey();
-            String action = entry.getValue();
-            List<String> values = metadata.getStrings(name);
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(fieldMatcher).entrySet()) {
+            String field = en.getKey();
+            List<String> values = en.getValue();
             if (values != null && !values.isEmpty()
                     && StringUtils.isNotBlank(action)) {
                 String singleValue = null;
@@ -104,45 +103,88 @@ public class ForceSingleValueTagger extends AbstractDocumentTagger {
                 } else {
                     singleValue = StringUtils.join(values, ",");
                 }
-                metadata.set(name, singleValue);
+                metadata.set(field, singleValue);
             }
         }
     }
 
-    public Map<String, String> getSingleValueFields() {
-        return Collections.unmodifiableMap(singleFields);
+    /**
+     * Gets field matcher.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets field matcher.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
+    /**
+     * Gets action.
+     * @return action action to be performed
+     * @since 3.0.0
+     */
+    public String getAction() {
+        return action;
+    }
+    /**
+     * Sets the action. One of: keepFirst, keepLast, or mergeWith:&lt;sep&gt;.
+     * @param action action to be performed
+     * @since 3.0.0
+     */
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    /**
+     * Deprecated.
+     * @return empty map
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
+     */
+    @Deprecated
+    public Map<String, String> getSingleValueFields() {
+        return new HashMap<>();
+    }
+    /**
+     * Add a field to be made single value.
+     * @param field field
+     * @param action action
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)} and
+     *             {@link #setAction(String)}.
+     */
+    @Deprecated
     public void addSingleValueField(String field, String action) {
-        if (field != null && action != null) {
-            singleFields.put(field, action);
-        }
+        fieldMatcher.setPattern(field);
+        setAction(action);
     }
+    /**
+     * Does nothing.
+     * @param name field name
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}.
+     */
+    @Deprecated
     public void removeSingleValueField(String name) {
-        singleFields.remove(name);
+        //NOOP
     }
+
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        List<XML> nodes = xml.getXMLList("singleValue");
-        for (XML node : nodes) {
-            String name = node.getString("@field");
-            String action = node.getString("@action");
-            addSingleValueField(name, action);
-        }
+        xml.checkDeprecated("singleValue", "fieldMatcher", true);
+        setAction(xml.getString("@action", action));
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        for (Entry<String, String> entry: singleFields.entrySet()) {
-            String name = entry.getKey();
-            String action = entry.getValue();
-            if (action != null) {
-                xml.addElement("singleValue")
-                        .setAttribute("field", name)
-                        .setAttribute("action", action);
-            }
-        }
+        xml.setAttribute("action", action);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override

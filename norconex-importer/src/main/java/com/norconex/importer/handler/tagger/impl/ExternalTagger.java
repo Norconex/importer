@@ -62,48 +62,43 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@link ExternalParser} instead.
  * </p>
  * {@nx.xml.usage
- *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+ * <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
  *
- *    <restrictTo caseSensitive="[false|true]"
- *        field="(name of header/metadata field name to match)">
- *      (regular expression of value to match)
- *    </restrictTo>
- *    <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *    <command inputDisabled="[false|true]">
- *      c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
- *    </command>
+ *   <command inputDisabled="[false|true]">
+ *     c:\Apps\myapp.exe ${INPUT} ${INPUT_META} ${OUTPUT_META} ${REFERENCE}
+ *   </command>
  *
- *    <metadata
- *        inputFormat="[json|xml|properties]"
- *        outputFormat="[json|xml|properties]"
- *        {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
- *      <!-- pattern only used when no output format is specified -->
- *      <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
- *        (regular expression)
- *      </pattern>
- *      <!-- repeat pattern tag as needed -->
- *    </metadata>
+ *   <metadata
+ *       inputFormat="[json|xml|properties]"
+ *       outputFormat="[json|xml|properties]"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *     <!-- Pattern only used when no output format is specified. Repeat as needed. -->
+ *     <pattern {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
+ *       (regular expression)
+ *     </pattern>
+ *   </metadata>
  *
- *    <environment>
- *      <variable name="(environment variable name)">
- *          (environment variable value)
- *      </variable>
- *      <!-- repeat variable tag as needed -->
- *    </environment>
+ *   <environment>
+ *     <!-- repeat variable tag as needed -->
+ *     <variable name="(environment variable name)">
+ *         (environment variable value)
+ *     </variable>
+ *   </environment>
  *
- *    <tempDir>
- *      (Optional directory where to store temporary files used
- *       for transformation.)
- *    </tempDir>
+ *   <tempDir>
+ *     (Optional directory where to store temporary files used
+ *      for transformation.)
+ *   </tempDir>
  *
- *  </handler>
+ * </handler>
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
- *      <command>/path/tag/app ${INPUT} ${OUTPUT_META}</command>
- *  </handler>
+ * <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+ *   <command>/path/tag/app ${INPUT} ${OUTPUT_META}</command>
+ * </handler>
  * }
  *
  * <p>
