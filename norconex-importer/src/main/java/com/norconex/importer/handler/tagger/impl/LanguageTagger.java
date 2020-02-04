@@ -160,11 +160,10 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
- *          keepProbabilities="(false|true)"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)"
- *          toField="(custom target field to store the language)"
- *          fallbackLanguage="(default language when detection failed)" >
+ *     keepProbabilities="(false|true)"
+ *     toField="(custom target field to store the language)"
+ *     fallbackLanguage="(default language when detection failed)"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *

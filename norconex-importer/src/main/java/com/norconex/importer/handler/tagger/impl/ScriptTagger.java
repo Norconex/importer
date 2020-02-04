@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,49 +56,44 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * one has no effect.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
  *          engineName="(script engine name)"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max content characters to read at once)" &gt;
+ *          {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;script&gt;(your script)&lt;/script&gt;
+ *   <script>(your script)</script>
  *
- *  &lt;/handler&gt;
- * </pre>
+ *  </handler>
+ * }
  *
  * <h4>Usage example:</h4>
- * <p>The following example simply adds new metadata field indicating which
+ * <p>The following examples add new metadata field indicating which
  * fruit is a document about.</p>
  * <h5>JavaScript:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *        metadata.add('fruit', 'apple');
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger">
+ *   <script><![CDATA[
+ *       metadata.add('fruit', 'apple');
+ *   ]]></script>
+ * </handler>
+ * }</pre>
  * <h5>Lua:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
- *      engineName="lua"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *        metadata:addString('fruit', {'apple'});
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * <pre>{@code
+ * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ *     engineName="lua">
+ *   <script><![CDATA[
+ *       metadata:addString('fruit', {'apple'});
+ *   ]]></script>
+ * </handler>
+ * }</pre>
  *
  * @author Pascal Essiembre
  * @since 2.4.0
  * @see ScriptRunner
  */
+@SuppressWarnings("javadoc")
 public class ScriptTagger extends AbstractStringTagger {
 
     private final ScriptRunner<Void> scriptRunner = new ScriptRunner<>();

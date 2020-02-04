@@ -71,6 +71,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <handler class="com.norconex.importer.handler.tagger.impl.RenameTagger">
  *   <rename toField="title" onSet="replace">
  *     <fieldMatcher>dc.title</fieldMatcher>
+ *   </rename>
  * </handler>
  * }
  * <p>

@@ -99,6 +99,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </handler>
  * }
  *
+ * <p>
  * The following merges several title fields into one, joining multiple
  * occurrences with a coma, and deleting original fields.
  * </p>

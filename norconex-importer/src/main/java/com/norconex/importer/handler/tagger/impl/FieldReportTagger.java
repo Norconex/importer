@@ -62,7 +62,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
  * {@nx.xml.usage
- * <tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ * <handler class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
  *     maxSamples="(max number of sample values)"
  *     withHeaders="[false|true]"
  *     withOccurences="[false|true]"
@@ -71,17 +71,18 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- * </tagger>
+ * </handler>
  * }
- * <h4>Usage example:</h4>
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ *     maxSamples="1" file="C:\reports\field-report.csv" />
+ * }
  * <p>
- * The following logs all discovered fields into a "field-report.csv" file,
+ * The above example logs all discovered fields into a "field-report.csv" file,
  * along with only 1 example value..
  * </p>
- * <pre>
- *  <tagger class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
- *          maxSamples="1" file="C:\reports\field-report.csv" />
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.10.0
  */
