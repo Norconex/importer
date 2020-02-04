@@ -49,7 +49,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * </p>
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"
- *     action="[keepFirst|keepLast|mergeWith:&lt;separator&gt;]">
+ *     action="[keepFirst|keepLast|mergeWith:separator]">
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
