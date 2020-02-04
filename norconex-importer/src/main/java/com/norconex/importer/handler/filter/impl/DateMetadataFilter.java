@@ -78,7 +78,7 @@ import com.norconex.importer.util.FormatUtil;
  *
  *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (expression matching date fields to filter)
  *     </fieldMatcher>
  *

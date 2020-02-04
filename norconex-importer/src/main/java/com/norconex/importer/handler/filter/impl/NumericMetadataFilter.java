@@ -51,7 +51,7 @@ import com.norconex.importer.handler.filter.OnMatch;
  *   {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}>
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (expression matching numeric fields to filter)
  *   </fieldMatcher>
  *

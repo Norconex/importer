@@ -134,10 +134,10 @@ import com.norconex.importer.util.DOMUtil;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (optional expression matching fields where the DOM text is located)
  *   </fieldMatcher>
- *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (optional expression matching selector extracted value)
  *   </valueMatcher>
  * </handler>

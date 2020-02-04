@@ -131,7 +131,7 @@ import com.norconex.importer.util.DOMUtil;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (optional expression matching selector extracted value)
  *   </valueMatcher>
  * </handler>

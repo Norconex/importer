@@ -15,20 +15,19 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map.Entry;
+import java.util.Objects;
 
-import org.apache.commons.collections4.map.ListOrderedMap;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -44,88 +43,69 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * It is possible to change this default behavior by supplying a
  * {@link PropertySetter}.
  * </p>
+ * <p>
+ * When using regular expressions, "toField" can also hold replacement patterns
+ * (e.g. $1, $2, etc).
+ * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.RenameTagger">
  *
- *      &lt;rename regex="[false|true]"
- *              fromField="(from field)"
- *              toField="(to field)"
- *              onSet="[append|prepend|replace|optional]" /&gt;
- *      &lt;!-- multiple rename tags allowed --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <!-- multiple rename tags allowed -->
+ *   <rename
+ *       toField="(to field)"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *       (one or more matching fields to rename)
+ *     </fieldMatcher>
+ *   </rename>
+ *
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.RenameTagger">
+ *   <rename toField="title" onSet="replace">
+ *     <fieldMatcher>dc.title</fieldMatcher>
+ * </handler>
+ * }
  * <p>
- * The following example renames a "dc.title" field to "title", overwriting
+ * The above example renames a "dc.title" field to "title", overwriting
  * any existing values in "title".
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.RenameTagger"&gt;
- *      &lt;rename fromField="dc.title" toField="title" onSet="replace" /&gt;
- *  &lt;/handler&gt;
- * </pre>
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class RenameTagger extends AbstractDocumentTagger {
 
-    private final Map<String, RenameDetails> renames = new ListOrderedMap<>();
+    private final List<RenameDetails> renames = new ArrayList<>();
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
                     throws ImporterHandlerException {
-        for (RenameDetails details : renames.values()) {
-            if (details.regex) {
-                doRegexRename(details, metadata);
-            } else {
-                doRegularRename(details, metadata);
+        for (RenameDetails ren : renames) {
+            for (Entry<String, List<String>> en :
+                    metadata.matchKeys(ren.fieldMatcher).entrySet()) {
+                String field = en.getKey();
+                List<String> values = en.getValue();
+                String newField = ren.fieldMatcher.replace(field, ren.toField);
+                if (!Objects.equals(field, newField)) {
+                    metadata.remove(field);
+                    PropertySetter.orDefault(
+                            ren.onSet).apply(metadata, newField, values);
+                }
             }
-        }
-    }
-
-    private void doRegularRename(RenameDetails details, ImporterMetadata metadata) {
-        PropertySetter.orDefault(details.onSet).apply(
-                metadata, details.toField, metadata.get(details.fromField));
-        metadata.remove(details.fromField);
-    }
-
-    private void doRegexRename(RenameDetails details, ImporterMetadata metadata) {
-        Pattern p = Pattern.compile(details.fromField);
-        String[] keys = metadata.keySet().toArray(
-                ArrayUtils.EMPTY_STRING_ARRAY);
-        for (String key : keys) {
-            Matcher m = p.matcher(key);
-            if (!m.matches()) {
-                continue;
-            }
-            String fromField = key;
-            String toField = m.replaceFirst(details.toField);
-            doRegularRename(new RenameDetails(
-                    fromField, toField, details.onSet), metadata);
         }
     }
 
     public void addRename(
-            String fromField, String toField, PropertySetter onSet) {
-        addRename(fromField, toField, onSet, false);
-    }
-    public void addRename(String fromField, String toField,
-            PropertySetter onSet, boolean regex) {
-        if (StringUtils.isNotBlank(fromField)
-                && StringUtils.isNotBlank(toField)) {
-            renames.put(fromField,
-                    new RenameDetails(fromField, toField, onSet, regex));
-        }
+            TextMatcher fieldMatcher, String toField, PropertySetter onSet) {
+        renames.add(new RenameDetails(fieldMatcher, toField, onSet));
     }
     @Deprecated
     public void addRename(String fromField, String toField, boolean overwrite) {
@@ -134,9 +114,10 @@ public class RenameTagger extends AbstractDocumentTagger {
     @Deprecated
     public void addRename(String fromField, String toField,
             boolean overwrite, boolean regex) {
-        addRename(fromField, toField,
-                overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND,
-                regex);
+        addRename(new TextMatcher(
+                fromField).setMethod(regex ? Method.REGEX : Method.BASIC),
+                toField,
+                overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND);
     }
 
     @Override
@@ -144,40 +125,35 @@ public class RenameTagger extends AbstractDocumentTagger {
         List<XML> nodes = xml.getXMLList("rename");
         for (XML node : nodes) {
             node.checkDeprecated("@overwrite", "onSet", true);
-            addRename(node.getString("@fromField", null),
+            node.checkDeprecated("@fromField", "fieldMatcher", true);
+            TextMatcher fieldMatcher = new TextMatcher();
+            fieldMatcher.loadFromXML(node.getXML("fieldMatcher"));
+            addRename(fieldMatcher,
                       node.getString("@toField", null),
-                      PropertySetter.fromXML(node, null),
-                      node.getBoolean("@regex", false));
+                      PropertySetter.fromXML(node, null));
         }
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        for (RenameDetails details : renames.values()) {
+        for (RenameDetails details : renames) {
             XML node = xml.addElement("rename")
-                    .setAttribute("fromField", details.fromField)
-                    .setAttribute("toField", details.toField)
-                    .setAttribute("regex", details.regex);
+                    .setAttribute("toField", details.toField);
             PropertySetter.toXML(node, details.onSet);
+            details.fieldMatcher.saveToXML(node.addElement("fieldMatcher"));
         }
     }
 
     public static class RenameDetails {
-        private final String fromField;
+        private final TextMatcher fieldMatcher = new TextMatcher();
         private final String toField;
         private PropertySetter onSet;
-        private final boolean regex;
-        public RenameDetails(
-                String fromField, String toField, PropertySetter onSet) {
-            this(fromField, toField, onSet, false);
-        }
-        public RenameDetails(String fromField, String toField,
-                PropertySetter onSet, boolean regex) {
+        public RenameDetails(TextMatcher fieldMatcher, String toField,
+                PropertySetter onSet) {
             super();
-            this.fromField = fromField;
+            this.fieldMatcher.copyFrom(fieldMatcher);
             this.toField = toField;
             this.onSet = onSet;
-            this.regex = regex;
         }
         @Deprecated
         public RenameDetails(
@@ -187,9 +163,10 @@ public class RenameTagger extends AbstractDocumentTagger {
         @Deprecated
         public RenameDetails(String fromField, String toField,
                 boolean overwrite, boolean regex) {
-            this(fromField, toField,
-                    overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND,
-                    regex);
+            this(new TextMatcher(
+                    fromField).setMethod(regex ? Method.REGEX : Method.BASIC),
+                    toField,
+                    overwrite ? PropertySetter.REPLACE : PropertySetter.APPEND);
         }
         @Override
         public boolean equals(final Object other) {

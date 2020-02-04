@@ -54,7 +54,7 @@ import com.norconex.importer.handler.filter.AbstractDocumentFilter;
  *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}>
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (optional expression matching fields we want to test for emptiness)
  *   </fieldMatcher>
  * </handler>

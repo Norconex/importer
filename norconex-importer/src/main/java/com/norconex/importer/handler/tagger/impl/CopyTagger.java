@@ -52,7 +52,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <!-- multiple copy tags allowed -->
  *   <copy toField="(to field)"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
- *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (one or more matching fields to copy)
  *     </fieldMatcher>
  *   </copy>

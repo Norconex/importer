@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -36,8 +37,8 @@ public class RenameTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         RenameTagger tagger = new RenameTagger();
-        tagger.addRename("from1", "to1", REPLACE, true);
-        tagger.addRename("from2", "to2", APPEND, false);
+        tagger.addRename(TextMatcher.basic("from1"), "to1", REPLACE);
+        tagger.addRename(TextMatcher.basic("from2"), "to2", APPEND);
         LOG.debug("Writing/Reading this: " + tagger);
         XML.assertWriteRead(tagger, "handler");
     }
@@ -52,8 +53,10 @@ public class RenameTaggerTest {
 
 
         RenameTagger tagger = new RenameTagger();
-        tagger.addRename("regularFrom1", "regularTo1", APPEND, false);
-        tagger.addRename(".*(From)(\\d+).*", "$1Regex$2", APPEND, true);
+        tagger.addRename(
+                TextMatcher.basic("regularFrom1"), "regularTo1", APPEND);
+        tagger.addRename(
+                TextMatcher.regex(".*(From)(\\d+).*"), "$1Regex$2", APPEND);
 
         tagger.tagDocument("n/a", null, meta, true);
 

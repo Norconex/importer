@@ -45,7 +45,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (one or more matching fields to delete)
  *     </fieldMatcher>
  * </handler>

@@ -75,7 +75,7 @@ import com.norconex.importer.util.CharsetUtil;
  *          targetCharset="(character encoding)">
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (expression matching fields to be converted)
  *   </fieldMatcher>
  *

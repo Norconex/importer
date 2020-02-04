@@ -83,7 +83,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *       deleteFromFields="[false|true]"
  *       singleValue="[false|true]"
  *       singleValueSeparator="(text joining multiple-values)">
- *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *       (one or more matching fields to merge)
  *     </fieldMatcher>
  *   </merge>

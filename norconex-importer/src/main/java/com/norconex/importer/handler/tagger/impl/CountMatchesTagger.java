@@ -68,11 +68,11 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (optional expression for fields used to count matches)
  *   </fieldMatcher>
  *
- *   <countMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *   <countMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (expression used to count matches)
  *   </countMatcher>
  *
