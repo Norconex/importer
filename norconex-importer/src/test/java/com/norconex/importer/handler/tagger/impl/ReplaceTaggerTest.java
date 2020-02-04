@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -40,10 +41,10 @@ public class ReplaceTaggerTest {
 
         // regex
         r = new Replacement();
-        r.setFromField("test");
+        r.setFieldMatcher(TextMatcher.basic("test"));
         r.setToField("regex");
-        r.setRegex(true);
-        r.setFromValue("\\s+b\\s+");
+        r.setValueMatcher(TextMatcher.regex("\\s+b\\s+"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("");
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
@@ -51,10 +52,10 @@ public class ReplaceTaggerTest {
 
         // normal
         r = new Replacement();
-        r.setFromField("test");
+        r.setFieldMatcher(TextMatcher.basic("test"));
         r.setToField("normal");
-        r.setRegex(false);
-        r.setFromValue("b");
+        r.setValueMatcher(TextMatcher.basic("b"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("");
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
@@ -66,12 +67,15 @@ public class ReplaceTaggerTest {
 
         // XML
         String xml = "<tagger>"
-                + "<replace fromField=\"test\" toField=\"regexXML\" "
-                + "regex=\"true\">"
-                + "  <fromValue>(.{0,0})\\s+b\\s+</fromValue>"
+                + "<replace toField=\"regexXML\">"
+                + "  <fieldMatcher method=\"regex\">test</fieldMatcher>"
+                + "  <valueMatcher method=\"regex\" replaceAll=\"true\" "
+                + "partial=\"true\">"
+                + "(.{0,0})\\s+b\\s+</valueMatcher>"
                 + "</replace>"
-                + "<replace fromField=\"test\" toField=\"normalXML\">"
-                + "  <fromValue>b</fromValue>"
+                + "<replace toField=\"normalXML\">"
+                + "  <fieldMatcher>test</fieldMatcher>"
+                + "  <valueMatcher partial=\"true\">b</valueMatcher>"
                 + "</replace>"
                 + "</tagger>";
         tagger = new ReplaceTagger();
@@ -98,38 +102,34 @@ public class ReplaceTaggerTest {
 
         // Author 1
         r = new Replacement();
-        r.setFromField("EXP_NAME+COUNTRY1");
+        r.setFieldMatcher(TextMatcher.basic("EXP_NAME+COUNTRY1"));
         r.setToField("EXP_NAME1");
-        r.setRegex(true);
-        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setValueMatcher(TextMatcher.regex("^(.+?)(.?\\[([A-Z]+)\\])?$"));
         r.setToValue("$1");
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromField("EXP_NAME+COUNTRY1");
+        r.setFieldMatcher(TextMatcher.basic("EXP_NAME+COUNTRY1"));
         r.setToField("EXP_COUNTRY1");
-        r.setRegex(true);
-        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setValueMatcher(TextMatcher.regex("^(.+?)(.?\\[([A-Z]+)\\])?$"));
         r.setToValue("$3");
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         // Author 2
         r = new Replacement();
-        r.setFromField("EXP_NAME+COUNTRY2");
+        r.setFieldMatcher(TextMatcher.basic("EXP_NAME+COUNTRY2"));
         r.setToField("EXP_NAME2");
-        r.setRegex(true);
-        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setValueMatcher(TextMatcher.regex("^(.+?)(.?\\[([A-Z]+)\\])?$"));
         r.setToValue("$1");
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromField("EXP_NAME+COUNTRY2");
+        r.setFieldMatcher(TextMatcher.basic("EXP_NAME+COUNTRY2"));
         r.setToField("EXP_COUNTRY2");
-        r.setRegex(true);
-        r.setFromValue("^(.+?)(.?\\[([A-Z]+)\\])?$");
+        r.setValueMatcher(TextMatcher.regex("^(.+?)(.?\\[([A-Z]+)\\])?$"));
         r.setToValue("$3");
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
@@ -148,39 +148,37 @@ public class ReplaceTaggerTest {
         ReplaceTagger tagger = new ReplaceTagger();
 
         r = new Replacement();
-        r.setFromValue("fromValue1");
+        r.setValueMatcher(TextMatcher.regex("fromValue1"));
         r.setToValue("toValue1");
-        r.setFromField("fromName1");
+        r.setFieldMatcher(TextMatcher.basic("fromName1"));
         r.setOnSet(PropertySetter.REPLACE);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("fromValue2");
+        r.setValueMatcher(TextMatcher.regex("fromValue2"));
         r.setToValue("toValue2");
-        r.setFromField("fromName1");
-        r.setRegex(true);
+        r.setFieldMatcher(TextMatcher.basic("fromName1"));
         r.setOnSet(PropertySetter.PREPEND);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("fromValue1");
+        r.setValueMatcher(TextMatcher.basic("fromValue1"));
         r.setToValue("toValue1");
-        r.setFromField("fromName2");
+        r.setFieldMatcher(TextMatcher.basic("fromName2"));
         r.setToField("toName2");
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setOnSet(PropertySetter.OPTIONAL);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("fromValue3");
+        r.setValueMatcher(TextMatcher.regex("fromValue3"));
         r.setToValue("toValue3");
-        r.setFromField("fromName3");
+        r.setFieldMatcher(TextMatcher.basic("fromName3"));
         r.setToField("toName3");
-        r.setRegex(true);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -201,40 +199,40 @@ public class ReplaceTaggerTest {
         ReplaceTagger tagger = new ReplaceTagger();
 
         r = new Replacement();
-        r.setFromValue("full value match");
+        r.setValueMatcher(TextMatcher.basic("full value match"));
         r.setToValue("replaced");
-        r.setFromField("fullMatchField");
+        r.setFieldMatcher(TextMatcher.basic("fullMatchField"));
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("bad if you see me");
+        r.setValueMatcher(TextMatcher.basic("bad if you see me"));
         r.setToValue("not replaced");
-        r.setFromField("partialNoMatchField");
+        r.setFieldMatcher(TextMatcher.basic("partialNoMatchField"));
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("match to new field");
+        r.setValueMatcher(TextMatcher.basic("match to new field"));
         r.setToValue("replaced to new field");
-        r.setFromField("matchOldField");
+        r.setFieldMatcher(TextMatcher.basic("matchOldField"));
         r.setToField("matchNewField");
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("bad if you see me");
+        r.setValueMatcher(TextMatcher.basic("bad if you see me"));
         r.setToValue("not replaced");
-        r.setFromField("nomatchOldField");
+        r.setFieldMatcher(TextMatcher.basic("nomatchOldField"));
         r.setToField("nomatchNewField");
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("value Of mixed case");
+        r.setValueMatcher(TextMatcher.basic("value Of mixed case"));
         r.setToValue("REPLACED");
-        r.setFromField("caseField");
-        r.setCaseSensitive(false);
+        r.setFieldMatcher(TextMatcher.basic("caseField"));
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -261,28 +259,28 @@ public class ReplaceTaggerTest {
         ReplaceTagger tagger = new ReplaceTagger();
 
         r = new Replacement();
-        r.setFromValue("(.*)/.*");
+        r.setValueMatcher(TextMatcher.regex("(.*)/.*"));
         r.setToValue("$1");
-        r.setFromField("path1");
-        r.setRegex(true);
+        r.setFieldMatcher(TextMatcher.basic("path1"));
+        r.getValueMatcher().setPartial(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("(.*)/.*");
+        r.setValueMatcher(TextMatcher.regex("(.*)/.*"));
         r.setToValue("$1");
-        r.setFromField("path2");
+        r.setFieldMatcher(TextMatcher.basic("path2"));
         r.setToField("folder");
-        r.setRegex(true);
+        r.getValueMatcher().setPartial(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("file");
+        r.setValueMatcher(TextMatcher.regex("file"));
         r.setToValue("something");
-        r.setFromField("path3");
-        r.setRegex(true);
-        r.setCaseSensitive(false);
+        r.setFieldMatcher(TextMatcher.basic("path3"));
+        r.getValueMatcher().setIgnoreCase(true);
+        r.getValueMatcher().setPartial(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -310,174 +308,158 @@ public class ReplaceTaggerTest {
 
         //--- Whole-match regular replace, case insensitive --------------------
         r = new Replacement();
-        r.setFromValue("One dog");
+        r.setValueMatcher(TextMatcher.basic("One dog"));
         r.setToValue("One cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlInsensitiveUnchanged");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("One DOG, two DOGS, three DOGS");
+        r.setValueMatcher(TextMatcher.basic("One DOG, two DOGS, three DOGS"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlInsensitiveCats");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regular replace, case sensitive ----------------------
         r = new Replacement();
-        r.setFromValue("One dog");
+        r.setValueMatcher(TextMatcher.basic("One dog"));
         r.setToValue("One cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlSensitiveUnchanged1");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("One DOG, two DOGS, three DOGS");
+        r.setValueMatcher(TextMatcher.basic("One DOG, two DOGS, three DOGS"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlSensitiveUnchanged2");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("One dog, two dogs, three dogs");
+        r.setValueMatcher(TextMatcher.basic("One dog, two dogs, three dogs"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlSensitiveCats");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace, case insensitive ----------------------
         r = new Replacement();
-        r.setFromValue("One dog");
+        r.setValueMatcher(TextMatcher.regex("One dog"));
         r.setToValue("One cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeRgxInsensitiveUnchanged");
-        r.setWholeMatch(true);
-        r.setRegex(true);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("One DOG.*");
+        r.setValueMatcher(TextMatcher.regex("One DOG.*"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeRgxInsensitiveCats");
-        r.setWholeMatch(true);
-        r.setRegex(true);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace, case sensitive ------------------------
         r = new Replacement();
-        r.setFromValue("One DOG.*");
+        r.setValueMatcher(TextMatcher.regex("One DOG.*"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeRgxSensitiveUnchanged");
-        r.setWholeMatch(true);
-        r.setRegex(true);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("One dog.*");
+        r.setValueMatcher(TextMatcher.regex("One dog.*"));
         r.setToValue("One cat, two cats, three cats");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeRgxSensitiveCats");
-        r.setWholeMatch(true);
-        r.setRegex(true);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace, case insensitive ------------------
         r = new Replacement();
-        r.setFromValue("DOG");
+        r.setValueMatcher(TextMatcher.basic("DOG"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partNrmlInsensitive1Cat");
-        r.setWholeMatch(false);
-        r.setRegex(false);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace, case sensitive --------------------
         r = new Replacement();
-        r.setFromValue("DOG");
+        r.setValueMatcher(TextMatcher.basic("DOG"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partNrmlSensitiveUnchanged");
-        r.setWholeMatch(false);
-        r.setRegex(false);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("dog");
+        r.setValueMatcher(TextMatcher.basic("dog"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partNrmlSensitive1Cat");
-        r.setWholeMatch(false);
-        r.setRegex(false);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace, case insensitive --------------------
         r = new Replacement();
-        r.setFromValue("DOG");
+        r.setValueMatcher(TextMatcher.regex("DOG"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partRgxInsensitive1Cat");
-        r.setWholeMatch(false);
-        r.setRegex(true);
-        r.setCaseSensitive(false);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace, case sensitive ----------------------
         r = new Replacement();
-        r.setFromValue("DOG");
+        r.setValueMatcher(TextMatcher.regex("DOG"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partRgxSensitiveUnchanged");
-        r.setWholeMatch(false);
-        r.setRegex(true);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("dog");
+        r.setValueMatcher(TextMatcher.regex("dog"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partRgxSensitive1Cat");
-        r.setWholeMatch(false);
-        r.setRegex(true);
-        r.setCaseSensitive(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setIgnoreCase(false);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -538,49 +520,49 @@ public class ReplaceTaggerTest {
 
         //--- Whole-match regular replace all ----------------------------------
         r = new Replacement();
-        r.setFromValue("dog");
+        r.setValueMatcher(TextMatcher.basic("dog"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeNrmlUnchanged");
-        r.setWholeMatch(true);
-        r.setRegex(false);
-        r.setReplaceAll(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setReplaceAll(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Whole-match regex replace all ------------------------------------
         r = new Replacement();
-        r.setFromValue("dog");
+        r.setValueMatcher(TextMatcher.regex("dog"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("wholeRegexUnchanged");
-        r.setWholeMatch(true);
-        r.setRegex(true);
-        r.setReplaceAll(true);
+        r.getValueMatcher().setPartial(false);
+        r.getValueMatcher().setReplaceAll(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regular replace all --------------------------------
         r = new Replacement();
-        r.setFromValue("DOG");
+        r.setValueMatcher(TextMatcher.basic("DOG"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partialNrmlCats");
-        r.setWholeMatch(false);
-        r.setRegex(false);
-        r.setReplaceAll(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setReplaceAll(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
         //--- Partial-match regex replace all ----------------------------------
         r = new Replacement();
-        r.setFromValue("D.G");
+        r.setValueMatcher(TextMatcher.regex("D.G"));
         r.setToValue("cat");
-        r.setFromField("field");
+        r.setFieldMatcher(TextMatcher.basic("field"));
         r.setToField("partialRegexCats");
-        r.setWholeMatch(false);
-        r.setRegex(true);
-        r.setReplaceAll(true);
+        r.getValueMatcher().setPartial(true);
+        r.getValueMatcher().setReplaceAll(true);
+        r.getValueMatcher().setIgnoreCase(true);
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -607,16 +589,16 @@ public class ReplaceTaggerTest {
         ReplaceTagger tagger = new ReplaceTagger();
 
         r = new Replacement();
-        r.setFromValue("nomatch");
+        r.setValueMatcher(TextMatcher.regex("nomatch"));
         r.setToValue("isaidnomatch");
-        r.setFromField("test1");
+        r.setFieldMatcher(TextMatcher.basic("test1"));
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromValue("nomatch");
+        r.setValueMatcher(TextMatcher.regex("nomatch"));
         r.setToValue("isaidnomatch");
-        r.setFromField("test2");
+        r.setFieldMatcher(TextMatcher.basic("test2"));
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
@@ -647,33 +629,37 @@ public class ReplaceTaggerTest {
         ReplaceTagger tagger = new ReplaceTagger();
 
         r = new Replacement();
-        r.setFromField("source1");
+        r.setFieldMatcher(TextMatcher.basic("source1"));
         r.setToField("target1");
-        r.setFromValue("value");
+        r.setValueMatcher(TextMatcher.regex("value"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("source value");
         r.setOnSet(PropertySetter.APPEND);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromField("source2");
+        r.setFieldMatcher(TextMatcher.basic("source2"));
         r.setToField("target2");
-        r.setFromValue("value");
+        r.setValueMatcher(TextMatcher.regex("value"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("source value");
         r.setOnSet(PropertySetter.PREPEND);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromField("source3");
+        r.setFieldMatcher(TextMatcher.basic("source3"));
         r.setToField("target3");
-        r.setFromValue("value");
+        r.setValueMatcher(TextMatcher.regex("value"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("source value");
         r.setOnSet(PropertySetter.REPLACE);
         tagger.addReplacement(r);
 
         r = new Replacement();
-        r.setFromField("source4");
+        r.setFieldMatcher(TextMatcher.basic("source4"));
         r.setToField("target4");
-        r.setFromValue("value");
+        r.setValueMatcher(TextMatcher.regex("value"));
+        r.getValueMatcher().setPartial(true);
         r.setToValue("source value");
         r.setOnSet(PropertySetter.OPTIONAL);
         tagger.addReplacement(r);

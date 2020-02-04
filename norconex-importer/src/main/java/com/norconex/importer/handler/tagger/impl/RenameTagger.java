@@ -59,7 +59,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *   <rename
  *       toField="(to field)"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
- *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
  *       (one or more matching fields to rename)
  *     </fieldMatcher>
  *   </rename>

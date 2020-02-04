@@ -33,35 +33,12 @@
   <xs:element name="replace">
     <xs:complexType>
       <xs:all>
-        <xs:element name="fromValue" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>
-        </xs:element>
+        <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />  
+        <xs:element name="valueMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />  
         <xs:element name="toValue" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:all>
-      <xs:attribute name="fromField" type="xs:string" use="required"/>
       <xs:attribute name="toField" type="xs:string"/>
-      <xs:attribute name="caseSensitive" type="xs:boolean"/>
-      <xs:attribute name="regex" type="xs:boolean"/>
-      <xs:attribute name="wholeMatch" type="xs:boolean"/>
-      <xs:attribute name="replaceAll" type="xs:boolean"/>
-      <xs:attribute name="onSet">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="APPEND"/>
-            <xs:enumeration value="append"/>
-            <xs:enumeration value="PREPEND"/>
-            <xs:enumeration value="prepend"/>
-            <xs:enumeration value="REPLACE"/>
-            <xs:enumeration value="replace"/>
-            <xs:enumeration value="OPTIONAL"/>
-            <xs:enumeration value="optional"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
+      <xs:attribute name="onSet" type="PropertySetterMethodType"/>
       <xs:attribute name="discardUnchanged" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
