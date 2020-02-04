@@ -112,8 +112,8 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     }
 
     /**
-     * Gets the pattern for fields to delete as first element.
-     * @return fields to delete
+     * Gets the pattern for fields to keep as first element.
+     * @return fields to keep
      * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}
      */
     @Deprecated
@@ -121,7 +121,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
         return Arrays.asList(fieldMatcher.getPattern());
     }
     /**
-     * Adds the pattern for fields to delete.
+     * Adds the pattern for fields to keep.
      * @param field fields to add
      * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
      */
@@ -131,7 +131,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     }
     /**
      * Does nothing.
-     * @param field field to remove
+     * @param field field to keep
      * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
      */
     @Deprecated

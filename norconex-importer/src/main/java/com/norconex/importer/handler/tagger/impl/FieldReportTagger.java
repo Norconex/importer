@@ -73,7 +73,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * </tagger>
  * }
- * </pre>
  * <h4>Usage example:</h4>
  * <p>
  * The following logs all discovered fields into a "field-report.csv" file,

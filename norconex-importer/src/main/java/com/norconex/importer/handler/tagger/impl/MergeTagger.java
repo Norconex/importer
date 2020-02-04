@@ -1,4 +1,4 @@
-/* Copyright 2016-2018 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@ package com.norconex.importer.handler.tagger.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -29,7 +27,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -74,44 +73,40 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.MergeTagger"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.MergeTagger">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;merge toField="(name of target field for merged values)"
- *             deleteFromFields="[false|true]"
- *             singleValue="[false|true]"
- *             singleValueSeparator="(text joining multiple-values)" &gt;
- *        &lt;fromFields&gt;(coma-separated list of fields to merge)&lt;/fromFields&gt;
- *        &lt;fromFieldsRegex&gt;(regular expression matching fields to merge)&lt;/fromFieldsRegex&gt;
- *      &lt;/merge&gt;
- *      &lt;!-- multiple merge tags allowed --&gt;
+ *   <!-- multiple merge tags allowed -->
+ *   <merge toField="(name of target field for merged values)"
+ *       deleteFromFields="[false|true]"
+ *       singleValue="[false|true]"
+ *       singleValueSeparator="(text joining multiple-values)">
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#attributes}>
+ *       (one or more matching fields to merge)
+ *     </fieldMatcher>
+ *   </merge>
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
- * <p>
+ * </handler>
+ * }
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.MergeTagger">
+ *   <merge toField="title" deleteFromFields="true"
+ *       singleValue="true" singleValueSeparator="," >
+ *     <fieldMatcher method="regex">(title|dc.title|dc:title|doctitle)</fieldMatcher>
+ *   </merge>
+ * </handler>
+ * }
+ *
  * The following merges several title fields into one, joining multiple
  * occurrences with a coma, and deleting original fields.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.MergeTagger"&gt;
- *      &lt;merge toField="title" deleteFromFields="true"
- *             singleValue="true" singleValueSeparator="," &gt;
- *        &lt;fromFields&gt;title,dc.title,dc:title,doctitle&lt;/fromFields&gt;
- *      &lt;/merge&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.7.0
  */
+@SuppressWarnings("javadoc")
 public class MergeTagger extends AbstractDocumentTagger {
 
     private final List<Merge> merges = new ArrayList<>();
@@ -123,34 +118,21 @@ public class MergeTagger extends AbstractDocumentTagger {
             throws ImporterHandlerException {
 
         for (Merge merge : merges) {
-            Map<String, List<String>> toMerge = new LinkedHashMap<>();
-            // From CSV
-            if (!merge.getFromFields().isEmpty()) {
-                for (String fromField : merge.getFromFields()) {
-                    if (metadata.containsKey(fromField)) {
-                        toMerge.put(fromField, metadata.getStrings(fromField));
-                    }
-                }
-            }
-            // From Regex
-            if (StringUtils.isNotBlank(merge.getFromFieldsRegex())) {
-                Pattern p = Pattern.compile(merge.getFromFieldsRegex());
-                for (Entry<String, List<String>> entry : metadata.entrySet()) {
-                    if (p.matcher(entry.getKey()).matches()) {
-                        toMerge.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
 
             // Merge values in one list
             List<String> mergedValues = new ArrayList<>();
-            for (List<String> propValues : toMerge.values()) {
-                mergedValues.addAll(propValues);
-            }
 
-            // Delete if necessary
-            if (merge.isDeleteFromFields()) {
-                for (String field : toMerge.keySet()) {
+            for (Entry<String, List<String>> en :
+                    metadata.matchKeys(merge.fieldMatcher).entrySet()) {
+
+                String field = en.getKey();
+                List<String> values = en.getValue();
+
+                // Merge values in one list
+                mergedValues.addAll(values);
+
+                // Delete if necessary
+                if (merge.isDeleteFromFields()) {
                     metadata.remove(field);
                 }
             }
@@ -173,8 +155,7 @@ public class MergeTagger extends AbstractDocumentTagger {
     }
 
     public static class Merge {
-        private final List<String> fromFields = new ArrayList<>();
-        private String fromFieldsRegex;
+        private final TextMatcher fieldMatcher = new TextMatcher();
         private boolean deleteFromFields;
         private String toField;
         private boolean singleValue;
@@ -182,18 +163,63 @@ public class MergeTagger extends AbstractDocumentTagger {
         public Merge() {
             super();
         }
+
+        /**
+         * Gets field matcher.
+         * @return field matcher
+         * @since 3.0.0
+         */
+        public TextMatcher getFieldMatcher() {
+            return fieldMatcher;
+        }
+        /**
+         * Sets field matcher.
+         * @param fieldMatcher field matcher
+         * @since 3.0.0
+         */
+        public void setFieldMatcher(TextMatcher fieldMatcher) {
+            this.fieldMatcher.copyFrom(fieldMatcher);
+        }
+
+        /**
+         * Gets the pattern for fields to merge as first element.
+         * @return fields to merge
+         * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}
+         */
+        @Deprecated
         public List<String> getFromFields() {
-            return Collections.unmodifiableList(fromFields);
+            return Arrays.asList(fieldMatcher.getPattern());
         }
+        /**
+         * Sets field name.
+         * @param fromFields field name.
+         * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+         */
+        @Deprecated
         public void setFromFields(List<String> fromFields) {
-            CollectionUtil.setAll(this.fromFields, fromFields);
+            if (!fromFields.isEmpty()) {
+                this.fieldMatcher.setPattern(fromFields.get(0));
+            }
         }
+        /**
+         * Gets field matcher pattern.
+         * @return field matcher pattern
+         * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}
+         */
+        @Deprecated
         public String getFromFieldsRegex() {
-            return fromFieldsRegex;
+            return fieldMatcher.getPattern();
         }
-        public void setFromFieldsRegex(String fromFieldsRegex) {
-            this.fromFieldsRegex = fromFieldsRegex;
+        /**
+         * Sets field matcher pattern.
+         * @param fieldsRegex field matcher pattern.
+         * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
+         */
+        @Deprecated
+        public void setFromFieldsRegex(String fieldsRegex) {
+            this.fieldMatcher.setPattern(fieldsRegex).setMethod(Method.REGEX);
         }
+
         public boolean isDeleteFromFields() {
             return deleteFromFields;
         }
@@ -238,6 +264,8 @@ public class MergeTagger extends AbstractDocumentTagger {
     protected void loadHandlerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("merge");
         for (XML node : nodes) {
+            node.checkDeprecated("fields", "fieldMatcher", true);
+            node.checkDeprecated("fieldsRegex", "fieldMatcher", true);
             Merge m = new Merge();
             m.setToField(node.getString("@toField", m.getToField()));
             m.setDeleteFromFields(node.getBoolean(
@@ -246,10 +274,7 @@ public class MergeTagger extends AbstractDocumentTagger {
                     "@singleValue", m.isSingleValue()));
             m.setSingleValueSeparator(node.getString(
                     "@singleValueSeparator", m.getSingleValueSeparator()));
-            m.setFromFields(node.getDelimitedStringList(
-                    "fromFields", m.getFromFields()));
-            m.setFromFieldsRegex(node.getString(
-                    "fromFieldsRegex", m.getFromFieldsRegex()));
+            m.getFieldMatcher().loadFromXML(node.getXML("fieldMatcher"));
             addMerge(m);
         }
     }
@@ -263,8 +288,7 @@ public class MergeTagger extends AbstractDocumentTagger {
                     .setAttribute("singleValue", m.isSingleValue())
                     .setAttribute("singleValueSeparator",
                             m.getSingleValueSeparator());
-            mergeXML.addDelimitedElementList("fromFields", m.getFromFields());
-            mergeXML.addElement("fromFieldsRegex", m.getFromFieldsRegex());
+            m.getFieldMatcher().saveToXML(mergeXML.addElement("fieldMatcher"));
         }
     }
 

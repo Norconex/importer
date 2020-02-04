@@ -1,4 +1,4 @@
-/* Copyright 2016-2019 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.TreeSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -37,8 +38,7 @@ public class MergeTaggerTest {
 
         m = new Merge();
         m.setDeleteFromFields(true);
-        m.setFromFields(Arrays.asList("1", "2"));
-        m.setFromFieldsRegex("regex");
+        m.setFieldMatcher(TextMatcher.regex("(1|2)"));
         m.setSingleValue(true);
         m.setSingleValueSeparator(",");
         m.setToField("toField");
@@ -46,8 +46,7 @@ public class MergeTaggerTest {
 
         m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields(Arrays.asList("3", "4"));
-        m.setFromFieldsRegex(null);
+        m.setFieldMatcher(TextMatcher.regex("(3|4)"));
         m.setSingleValue(false);
         m.setSingleValueSeparator(null);
         m.setToField("toAnotherField");
@@ -73,16 +72,14 @@ public class MergeTaggerTest {
 
         m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields(Arrays.asList("fld4", "fld6"));
-        m.setFromFieldsRegex("field.*");
+        m.setFieldMatcher(TextMatcher.regex("(fld4|fld6|field.*)"));
         m.setSingleValue(false);
         m.setToField("toField");
         tagger.addMerge(m);
 
         m = new Merge();
         m.setDeleteFromFields(true);
-        m.setFromFields(Arrays.asList("fld4", "fld6"));
-        m.setFromFieldsRegex("field.*");
+        m.setFieldMatcher(TextMatcher.regex("(fld4|fld6|field.*)"));
         m.setSingleValue(true);
         m.setSingleValueSeparator("-");
         m.setToField("fld4");
@@ -108,7 +105,7 @@ public class MergeTaggerTest {
 
         Merge m = new Merge();
         m.setDeleteFromFields(false);
-        m.setFromFields(Arrays.asList("field"));
+        m.setFieldMatcher(TextMatcher.basic("field"));
         m.setSingleValue(true);
         m.setToField("field");
         tagger.addMerge(m);

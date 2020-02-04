@@ -52,6 +52,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <code>&lt;rank&gt;</code> is to indicate the match order, based
  * on match probability score (starting at 1).
  * </p>
+ *
  * <p>This tagger can be used both as a pre-parse (on text only)
  * or post-parse handler.</p>
  *
@@ -157,42 +158,38 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * the default behavior is to try match all languages currently supported.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- *
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
  *          keepProbabilities="(false|true)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max characters to read at once)"
- *          fallbackLanguage="(default language when detection failed)" &gt;
+ *          toField="(custom target field to store the language)"
+ *          fallbackLanguage="(default language when detection failed)" >
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;languages&gt;
- *        (CSV list of language tag candidates. Defaults to the above list.)
- *      &lt;/languages&gt;
+ *   <languages>
+ *     (CSV list of language tag candidates. Defaults to the above list.)
+ *   </languages>
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
+ *     fallbackLanguage="en" >
+ *   <languages>en, fr</languages>
+ * </handler>
+ * }
  * <p>
- * The following detects whether pages are English or French, falling back to
- * English if detection failed.
+ * The above example detects whether pages are English or French, falling back
+ * to English if detection failed.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
- *          fallbackLanguage="en" &gt;
- *      &lt;languages&gt;en, fr&lt;/languages&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class LanguageTagger extends AbstractStringTagger
         implements IXMLConfigurable {
 
