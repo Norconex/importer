@@ -33,7 +33,7 @@
   <xs:element name="copy">
     <xs:complexType>
       <xs:all>
-        <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />
       </xs:all>
       <xs:attribute name="toField" type="xs:string" use="required"/>
       <xs:attribute name="onSet" type="PropertySetterMethodType"/>

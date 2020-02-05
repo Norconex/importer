@@ -72,22 +72,22 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * <p>The following examples add new metadata field indicating which
  * fruit is a document about.</p>
  * <h5>JavaScript:</h5>
- * <pre>{@code
+ * {@nx.xml
  * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger">
  *   <script><![CDATA[
  *       metadata.add('fruit', 'apple');
  *   ]]></script>
  * </handler>
- * }</pre>
+ * }
  * <h5>Lua:</h5>
- * <pre>{@code
+ * {@nx.xml
  * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
  *     engineName="lua">
  *   <script><![CDATA[
  *       metadata:addString('fruit', {'apple'});
  *   ]]></script>
  * </handler>
- * }</pre>
+ * }
  *
  * @author Pascal Essiembre
  * @since 2.4.0

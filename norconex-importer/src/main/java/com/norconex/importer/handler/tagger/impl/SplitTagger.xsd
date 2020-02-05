@@ -32,32 +32,20 @@
   
   <xs:element name="split">
     <xs:complexType>
-      <xs:sequence>
+      <xs:all>
+        <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />
         <xs:element name="separator" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>        
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="regex" type="xs:boolean"/>
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>  
         </xs:element>
-      </xs:sequence>
-      <xs:attribute name="fromField" type="xs:string" use="required"/>
+      </xs:all>
       <xs:attribute name="toField" type="xs:string"/>
-      <xs:attribute name="regex" type="xs:boolean"/>
-      <xs:attribute name="onSet">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="APPEND"/>
-            <xs:enumeration value="append"/>
-            <xs:enumeration value="PREPEND"/>
-            <xs:enumeration value="prepend"/>
-            <xs:enumeration value="REPLACE"/>
-            <xs:enumeration value="replace"/>
-            <xs:enumeration value="OPTIONAL"/>
-            <xs:enumeration value="optional"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
+      <xs:attribute name="onSet" type="PropertySetterMethodType"/>
     </xs:complexType>
   </xs:element>
 

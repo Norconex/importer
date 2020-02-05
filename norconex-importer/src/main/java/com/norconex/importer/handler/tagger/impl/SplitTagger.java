@@ -14,12 +14,15 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.StringUtils;
@@ -29,18 +32,24 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 
 /**
  * <p>Splits an existing metadata value into multiple values based on a given
- * value separator.  The "toField" argument
+ * value separator (the separator gets discarded).  The "toField" argument
  * is optional (the same field will be used to store the splits if no
- * "toField" is specified").</p>
- * <p>Can be used both as a pre-parse or post-parse handler.</p>
- *
+ * "toField" is specified"). Duplicates are removed.</p>
+ * <p>Can be used both as a pre-parse (metadata or text content) or
+ * post-parse handler.</p>
+ * <p>
+ * If no "fieldMatcher" expression is specified, the document content will be
+ * used.  If the "fieldMatcher" matches more than one field, they will all
+ * be split and stored in the same multi-value metadata field.
+ * </p>
  * <h3>Storing values in an existing field</h3>
  * <p>
  * If a target field with the same name already exists for a document,
@@ -49,80 +58,114 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * {@link PropertySetter}.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.SplitTagger"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractCharStreamTagger#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
-
- *      &lt;split fromField="sourceFieldName"
- *             toField="targetFieldName"
- *             regex="[false|true]"
- *             onSet="[append|prepend|replace|optional]"&gt;
- *          &lt;separator&gt;(separator value)&lt;/separator&gt;
- *      &lt;/split&gt;
- *      &lt;!-- multiple split tags allowed --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <!-- multiple split tags allowed -->
+ *   <split
+ *       toField="targetFieldName"
+ *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *       (one or more matching fields to split)
+ *     </fieldMatcher>
+ *     <separator regex="[false|true]">(separator value)</separator>
+ *   </split>
+ *
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.SplitTagger">
+ *   <fieldMatcher>myField</fieldMatcher>
+ *   <split>
+ *     <separator regex="true">\s*,\s*</separator>
+ *   </split>
+ * </handler>
+ * }
  * <p>
- * The following example splits a single value field holding a comma-separated
+ * The above example splits a single value field holding a comma-separated
  * list into multiple values.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.SplitTagger"&gt;
- *      &lt;split fromField="myField" regex="true"&gt;
- *          &lt;separator&gt;\s*,\s*&lt;/separator&gt;
- *      &lt;/split&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 1.3.0
  */
-public class SplitTagger extends AbstractDocumentTagger {
+@SuppressWarnings("javadoc")
+public class SplitTagger extends AbstractCharStreamTagger {
 
     private final List<SplitDetails> splits = new ArrayList<>();
 
     @Override
-    public void tagApplicableDocument(
-            String reference, InputStream document,
+    protected void tagTextDocument(String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
             throws ImporterHandlerException {
 
         for (SplitDetails split : splits) {
-            if (metadata.containsKey(split.getFromField())) {
-                List<String> sourceValues =
-                        metadata.getStrings(split.getFromField());
-                List<String> targetValues =
-                        SetUniqueList.setUniqueList(new ArrayList<>());
-                for (String metaValue : sourceValues) {
-                    if (split.isRegex()) {
-                        targetValues.addAll(regexSplit(
-                                metaValue, split.getSeparator()));
-                    } else {
-                        targetValues.addAll(regularSplit(
-                                metaValue, split.getSeparator()));
-                    }
-                }
 
-                if (StringUtils.isNotBlank(split.getToField())) {
-                    // set on target field
-                    PropertySetter.orDefault(split.getOnSet()).apply(
-                            metadata, split.getToField(), targetValues);
-                } else {
-                    // overwrite source field
-                    PropertySetter.REPLACE.apply(
-                            metadata, split.fromField, targetValues);
-                }
+            if (split.fieldMatcher.getPattern() == null) {
+                splitContent(split, input, metadata);
+            } else {
+                splitMetadata(split, metadata);
             }
         }
     }
 
+    private void splitContent(
+            SplitDetails split, Reader input, ImporterMetadata metadata) {
+
+        String delim = split.getSeparator();
+        if (!split.isSeparatorRegex()) {
+            delim = Pattern.quote(delim);
+        }
+        List<String> targetValues =
+                SetUniqueList.setUniqueList(new ArrayList<>());
+        @SuppressWarnings("resource") // input stream controlled by caller.
+        Scanner scanner = new Scanner(input).useDelimiter(delim);
+        while (scanner.hasNext()) {
+            targetValues.add(scanner.next());
+        }
+        PropertySetter.orDefault(split.getOnSet()).apply(
+                metadata, split.getToField(), targetValues);
+    }
+    private void splitMetadata(SplitDetails split, ImporterMetadata metadata) {
+
+        List<String> allTargetValues =
+                SetUniqueList.setUniqueList(new ArrayList<>());
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(split.fieldMatcher).entrySet()) {
+            String fromField = en.getKey();
+            List<String> sourceValues = en.getValue();
+            List<String> targetValues =
+                    SetUniqueList.setUniqueList(new ArrayList<>());
+            for (String sourceValue : sourceValues) {
+                if (split.isSeparatorRegex()) {
+                    targetValues.addAll(regexSplit(
+                            sourceValue, split.getSeparator()));
+                } else {
+                    targetValues.addAll(regularSplit(
+                            sourceValue, split.getSeparator()));
+                }
+            }
+
+            // toField is blank, we overwrite the source and do not
+            // carry values further.
+            if (StringUtils.isBlank(split.getToField())) {
+                // overwrite source field
+                PropertySetter.REPLACE.apply(
+                        metadata, fromField, targetValues);
+            } else {
+                allTargetValues.addAll(targetValues);
+            }
+        }
+        if (StringUtils.isNotBlank(split.getToField())) {
+            // set on target field
+            PropertySetter.orDefault(split.getOnSet()).apply(
+                    metadata, split.getToField(), allTargetValues);
+        }
+    }
 
     private List<String> regexSplit(String metaValue, String separator) {
         String[] values = metaValue.split(separator);
@@ -181,30 +224,101 @@ public class SplitTagger extends AbstractDocumentTagger {
 
 
     public static class SplitDetails {
-        private String fromField;
+        private final TextMatcher fieldMatcher = new TextMatcher();
         private String toField;
         private PropertySetter onSet;
         private String separator;
-        private boolean regex;
+        private boolean separatorRegex;
+
         public SplitDetails() {
             super();
         }
+        /**
+         * Constructor.
+         * @param fromField source field
+         * @param separator split separator
+         * @param regex is separator a regular expression
+         * @deprecated Since 3.0.0, use
+         *        {@link SplitDetails#SplitDetails(TextMatcher, String, String)}
+         */
+        @Deprecated
         public SplitDetails(String fromField, String separator, boolean regex) {
             this(fromField, null, separator, regex);
         }
+        /**
+         * Constructor.
+         * @param fromField source field
+         * @param toField target field
+         * @param separator split separator
+         * @param regex is separator a regular expression
+         * @deprecated Since 3.0.0, use
+         *        {@link SplitDetails#SplitDetails(TextMatcher, String, String)}
+         */
+        @Deprecated
         public SplitDetails(String fromField, String toField,
                 String separator, boolean regex) {
+            this(new TextMatcher(fromField), toField, separator);
+            this.separatorRegex = regex;
+        }
+        /**
+         * Constructor.
+         * @param fieldMatcher source field matcher
+         * @param toField target field
+         * @param separator split separator
+         * @since 3.0.0
+         */
+        public SplitDetails(
+                TextMatcher fieldMatcher, String toField, String separator) {
+            this(fieldMatcher, toField, separator, false);
+        }
+        /**
+         * Constructor.
+         * @param fieldMatcher source field matcher
+         * @param toField target field
+         * @param separator split separator
+         * @param separatorRegex whether the separator is a regular expression
+         * @since 3.0.0
+         */
+        public SplitDetails(TextMatcher fieldMatcher, String toField,
+                String separator, boolean separatorRegex) {
             super();
-            this.fromField = fromField;
+            this.fieldMatcher.copyFrom(fieldMatcher);
             this.toField = toField;
             this.separator = separator;
-            this.regex = regex;
+            this.separatorRegex = separatorRegex;
         }
+
+        /**
+         * Gets field matcher for fields to delete.
+         * @return field matcher
+         * @since 3.0.0
+         */
+        public TextMatcher getFieldMatcher() {
+            return fieldMatcher;
+        }
+        /**
+         * Sets the field matcher for fields to delete.
+         * @param fieldMatcher field matcher
+         * @since 3.0.0
+         */
+        public void setFieldMatcher(TextMatcher fieldMatcher) {
+            this.fieldMatcher.copyFrom(fieldMatcher);
+        }
+
+        /**
+         * @deprecated Since 3.0.0, use {@link #getFieldMatcher()} instead
+         */
+        @Deprecated
         public String getFromField() {
-            return fromField;
+            return fieldMatcher.getPattern();
         }
+        /**
+         * @deprecated Since 3.0.0, use
+         *             {@link #setFieldMatcher(TextMatcher)} instead
+         */
+        @Deprecated
         public void setFromField(String fromField) {
-            this.fromField = fromField;
+            this.fieldMatcher.setPattern(fromField);
         }
         public String getToField() {
             return toField;
@@ -218,11 +332,36 @@ public class SplitTagger extends AbstractDocumentTagger {
         public void setSeparator(String separator) {
             this.separator = separator;
         }
+        /**
+         * @deprecated Since 3.0.0, use {@link #isSeparatorRegex()} instead
+         */
+        @Deprecated
         public boolean isRegex() {
-            return regex;
+            return isSeparatorRegex();
         }
+        /**
+         * Gets whether the separator value is a regular expression.
+         * @return <code>true</code> if a regular expression.
+         * @since 3.0.0
+         */
+        public boolean isSeparatorRegex() {
+            return separatorRegex;
+        }
+        /**
+         * @deprecated Since 3.0.0, use
+         *             {@link #setSeparatorRegex(boolean)} instead
+         */
+        @Deprecated
         public void setRegex(boolean regex) {
-            this.regex = regex;
+            setSeparatorRegex(regex);
+        }
+        /**
+         * Sets whether the separator value is a regular expression.
+         * @param regex <code>true</code> if a regular expression.
+         * @since 3.0.0
+         */
+        public void setSeparatorRegex(boolean regex) {
+            this.separatorRegex = regex;
         }
         /**
          * Gets the property setter to use when a value is set.
@@ -257,27 +396,30 @@ public class SplitTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void loadHandlerFromXML(XML xml) {
+    protected void loadCharStreamTaggerFromXML(XML xml) {
         for (XML node : xml.getXMLList("split")) {
+            node.checkDeprecated("@fromField", "fieldMatcher", true);
+            node.checkDeprecated(
+                    "@regex", "separator[@regex]", true);
             SplitDetails sd = new SplitDetails();
-            sd.setFromField(node.getString("@fromField"));
+            sd.fieldMatcher.loadFromXML(node.getXML("fieldMatcher"));
             sd.setToField(node.getString("@toField", null));
             sd.setSeparator(node.getString("separator"));
-            sd.setRegex(node.getBoolean("@regex", false));
+            sd.setSeparatorRegex(node.getBoolean("separator/@regex", false));
             sd.setOnSet(PropertySetter.fromXML(node, null));
             addSplitDetails(sd);
         }
     }
 
     @Override
-    protected void saveHandlerToXML(XML xml) {
+    protected void saveCharStreamTaggerToXML(XML xml) {
         for (SplitDetails split : splits) {
             XML sxml = xml.addElement("split")
-                    .setAttribute("fromField", split.getFromField())
-                    .setAttribute("toField", split.getToField())
-                    .setAttribute("regex", split.isRegex());
-            sxml.addElement("separator", split.getSeparator());
+                    .setAttribute("toField", split.getToField());
+            sxml.addElement("separator", split.getSeparator())
+                    .setAttribute("regex", split.isSeparatorRegex());
             PropertySetter.toXML(sxml, split.getOnSet());
+            split.fieldMatcher.saveToXML(sxml.addElement("fieldMatcher"));
         }
     }
 

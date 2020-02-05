@@ -68,7 +68,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
     private static final Logger LOG =
             LoggerFactory.getLogger(DeleteTagger.class);
 
-    private TextMatcher fieldMatcher = new TextMatcher();
+    private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
     public void tagApplicableDocument(
@@ -101,7 +101,7 @@ public class DeleteTagger extends AbstractDocumentTagger {
      * @since 3.0.0
      */
     public void setFieldMatcher(TextMatcher fieldMatcher) {
-        this.fieldMatcher = fieldMatcher;
+        this.fieldMatcher.copyFrom(fieldMatcher);
     }
 
     /**

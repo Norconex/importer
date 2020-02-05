@@ -35,6 +35,9 @@ TODO:
   - how all PropertySetter default to APPEND
   - etc.
 
+- Document that a few classes can now apply on content in addition
+  to metadata.
+
 - Maybe: have a @taglet for if it can be used as pre-post or both? 
 
 - CountValueTagger (one to count mattching patterns, one to count number of multi-value entries)
