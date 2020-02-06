@@ -289,7 +289,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
         }
 
         /**
-         * Gets field matcher for fields to delete.
+         * Gets field matcher for fields to split.
          * @return field matcher
          * @since 3.0.0
          */
@@ -297,7 +297,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
             return fieldMatcher;
         }
         /**
-         * Sets the field matcher for fields to delete.
+         * Sets the field matcher for fields to split.
          * @param fieldMatcher field matcher
          * @since 3.0.0
          */

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,38 +33,14 @@
   <xs:element name="textBetween">
     <xs:complexType>
       <xs:all>
-        <xs:element name="start" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>        
-        </xs:element>
-        <xs:element name="end" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>        
-        </xs:element>
+        <xs:element name="fieldMatcher" type="TextMatcherType" minOccurs="0" maxOccurs="1" />
+        <xs:element name="startMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+        <xs:element name="endMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="1" />
       </xs:all>
-      <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="inclusive" type="xs:boolean"/>
-      <xs:attribute name="caseSensitive" type="xs:boolean"/>
-      <xs:attribute name="onSet">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="APPEND"/>
-            <xs:enumeration value="append"/>
-            <xs:enumeration value="PREPEND"/>
-            <xs:enumeration value="prepend"/>
-            <xs:enumeration value="REPLACE"/>
-            <xs:enumeration value="replace"/>
-            <xs:enumeration value="OPTIONAL"/>
-            <xs:enumeration value="optional"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
+      <xs:attribute name="toField" type="xs:string"/>
+      <xs:attribute name="onSet" type="PropertySetterMethodType"/>
+
     </xs:complexType>
   </xs:element>
 

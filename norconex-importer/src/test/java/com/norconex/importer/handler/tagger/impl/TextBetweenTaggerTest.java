@@ -19,12 +19,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -32,6 +36,29 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.TextBetweenTagger.TextBetweenDetails;
 
 public class TextBetweenTaggerTest {
+
+    @Test
+    public void testExtractFromMetadata()
+            throws IOException, ImporterHandlerException {
+        // use it in a way that one of the end point is all we want to match
+        TextBetweenTagger t = new TextBetweenTagger();
+        addDetails(t, "target", "x", "y", false, false, null)
+               .getFieldMatcher().setPattern("fld*").setMethod(Method.WILDCARD);
+
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.add("fld1", "x1y", "x2y", "x3y");
+        metadata.add("fld2", "asdfx4yqwer", "asdfx5yquer");
+        metadata.add("fld3", "x6y");
+        metadata.add("fld4", "7"); //ignored
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+
+        t.tagDocument("n/a", null, metadata, false);
+
+        List<String> targetValues = metadata.getStrings("target");
+        Collections.sort(targetValues);
+        String target = StringUtils.join(targetValues, ",");
+        Assertions.assertEquals("1,2,3,4,5,6", target);
+    }
 
     @Test
     public void testExtractMatchingRegex()
@@ -116,13 +143,17 @@ public class TextBetweenTaggerTest {
         XML.assertWriteRead(tagger, "handler");
     }
 
-    private static void addDetails(
+    private static TextBetweenDetails addDetails(
             TextBetweenTagger t, String name, String start, String end,
             boolean inclusive, boolean caseSensitive, PropertySetter onSet) {
-        TextBetweenDetails tbd = new TextBetweenDetails(name, start, end);
+        TextBetweenDetails tbd = new TextBetweenDetails();
+        tbd.setToField(name);
+        tbd.setStartMatcher(
+                TextMatcher.regex(start).setIgnoreCase(!caseSensitive));
+        tbd.setEndMatcher(TextMatcher.regex(end).setIgnoreCase(!caseSensitive));
         tbd.setInclusive(inclusive);
-        tbd.setCaseSensitive(caseSensitive);
         tbd.setOnSet(onSet);
         t.addTextBetweenDetails(tbd);
+        return tbd;
     }
 }

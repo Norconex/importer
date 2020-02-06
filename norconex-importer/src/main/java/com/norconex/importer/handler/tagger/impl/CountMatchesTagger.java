@@ -130,7 +130,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
     private int countFieldMatches(ImporterMetadata metadata) {
         int count = 0;
         for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
-            Matcher m = countMatcher.toMatcher(value);
+            Matcher m = countMatcher.toRegexMatcher(value);
             while (m.find()) {
                 count++;
             }
@@ -143,7 +143,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         String text = null;
         try (TextReader tr = new TextReader(reader, maxReadSize)) {
             while ((text = tr.readText()) != null) {
-                Matcher m = countMatcher.toMatcher(text);
+                Matcher m = countMatcher.toRegexMatcher(text);
                 while (m.find()) {
                     count++;
                 }
