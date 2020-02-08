@@ -334,7 +334,7 @@ public class ExternalHandler {
             return;
         }
         addMetadataExtractionPatterns(
-                new RegexFieldValueExtractor(pattern).setField(field));
+                new RegexFieldValueExtractor(pattern).setToField(field));
     }
     /**
      * Adds a metadata extraction pattern, which will extract the value from
@@ -349,7 +349,7 @@ public class ExternalHandler {
             return;
         }
         addMetadataExtractionPatterns(new RegexFieldValueExtractor(
-                pattern).setField(field).setValueGroup(valueGroup));
+                pattern).setToField(field).setValueGroup(valueGroup));
     }
     /**
      * Adds a metadata extraction pattern that will extract matching field
@@ -748,21 +748,6 @@ public class ExternalHandler {
         for (XML node : nodes) {
             RegexFieldValueExtractor ex = new RegexFieldValueExtractor();
             ex.loadFromXML(node);
-
-//            node.checkDeprecated("@caseSensitive", "ignoreCase", true);
-//
-//            int valueGroup = node.getInteger("@group", -1);
-//            valueGroup = node.getInteger("@valueGroup", valueGroup);
-//
-//
-//            RegexFieldValueExtractor ex =
-//                    new RegexFieldValueExtractor(node.getString(".", null));
-//            ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
-//            ex.getRegex().setIgnoreDiacritic(
-//                    node.getBoolean("@ignoreDiacritic", false));
-//            ex.setField(node.getString("@field", null));
-//            ex.setFieldGroup(node.getInteger("@fieldGroup", -1));
-//            ex.setValueGroup(valueGroup);
             addMetadataExtractionPatterns(ex);
         }
 
@@ -787,15 +772,6 @@ public class ExternalHandler {
 
             for (RegexFieldValueExtractor rfe : patterns) {
                 rfe.saveToXML(metaXML.addElement("pattern"));
-
-//                metaXML.addElement("pattern", rfe.getRegex().getPattern())
-//                        .setAttribute("field", rfe.getField())
-//                        .setAttribute("fieldGroup", rfe.getFieldGroup())
-//                        .setAttribute("valueGroup", rfe.getValueGroup())
-//                        .setAttribute("ignoreCase",
-//                                rfe.getRegex().isIgnoreCase())
-//                        .setAttribute("ignoreDiacritic",
-//                                rfe.getRegex().isIgnoreDiacritic());
             }
         }
         if (getEnvironmentVariables() != null) {

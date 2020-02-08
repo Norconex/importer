@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,15 +34,13 @@ import com.norconex.importer.handler.ImporterHandlerException;
 /**
  * @author Pascal Essiembre
  * @since 2.3.0
- * @deprecated
  */
-@Deprecated
-public class TextPatternTaggerTest {
+public class RegexTaggerTest {
 
     @Test
     public void testTagTextDocument()
             throws IOException, ImporterHandlerException {
-        TextPatternTagger t = new TextPatternTagger();
+        RegexTagger t = new RegexTagger();
         t.addPattern("headings", "<h2>(.*?)</h2>" , 1);
         t.addPattern("country", "\\w+\\sZealand");
         File htmlFile = TestUtil.getAliceHtmlFile();
@@ -71,7 +69,7 @@ public class TextPatternTaggerTest {
     @Test
     public void testExtractFirst100ContentChars()
             throws IOException, ImporterHandlerException {
-        TextPatternTagger t = new TextPatternTagger();
+        RegexTagger t = new RegexTagger();
         t.addPattern("mytitle", "^.{0,100}");
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
@@ -88,7 +86,7 @@ public class TextPatternTaggerTest {
 
     @Test
     public void testWriteRead() throws IOException {
-        TextPatternTagger tagger = new TextPatternTagger();
+        RegexTagger tagger = new RegexTagger();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
         tagger.addPattern(new RegexFieldValueExtractor("blah")

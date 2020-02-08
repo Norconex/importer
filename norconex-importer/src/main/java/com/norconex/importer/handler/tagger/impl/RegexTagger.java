@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,26 +29,28 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
- * <p>Extracts and add all text values matching the regular expression provided
- * in to a field provided explicitly, or also matching a regular
- * expression.  The target field is considered a multi-value field.
- * </p>
- *
  * <p>
- * It is possible to extract both the field names
- * and their values with regular expression.  This is done by using
+ * Extracts field names and their values with regular expression.
+ * This is done by using
  * match groups in your regular expressions (parenthesis).  For each pattern
  * you define, you can specify which match group hold the field name and
  * which one holds the value.
  * Specifying a field match group is optional if a <code>field</code>
  * is provided.  If no match groups are specified, a <code>field</code>
  * is expected.
+ * </p>
+ *
+ * <p>
+ * If "fieldMatcher" is specified, it will use content from matching fields and
+ * storing all text extracted into the target field, multi-value.
+ * Else, the document content is used.
  * </p>
  *
  * <h3>Storing values in an existing field</h3>
@@ -63,62 +65,65 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * This class can be used as a pre-parsing handler on text documents only
  * or a post-parsing handler.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.RegexTagger"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
- *      &lt;pattern toField="(target field name)"
- *              fieldGroup="(field name match group index)"
- *              valueGroup="(field value match group index)"
- *              ignoreCase="[false|true]"
- *              ignoreDiacritic="[false|true]"
- *              onSet="[append|prepend|replace|optional]"&gt;
- *          (regular expression)
- *      &lt;/pattern&gt;
- *      &lt;!-- multiple pattern tags allowed --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (optional expression matching source fields on which to perform extraction)
+ *   </fieldMatcher>
+ *
+ *   <!-- multiple pattern tags allowed -->
+ *   <pattern
+ *       {@nx.include com.norconex.commons.lang.text.RegexFieldValueExtractor#attributes}>
+ *     (regular expression)
+ *   </pattern>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.RegexTagger" >
+ *   <pattern toField="emails">
+ *     [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
+ *   </pattern>
+ *   <pattern fieldGroup="1" valueGroup="2"><![CDATA[
+ *     <tr><td class="label">(.*?)</td><td class="value">(.*?)</td></tr>
+ *   ]]></pattern>
+ * </handler>
+ * }
  * <p>
- * The first pattern in the following example extracts what look like email
+ * The first pattern in the above example extracts what look like email
  * addresses in to an "email" field (simplified regex). The second pattern
  * extracts field names and values from "label" and "value" cells on
- * a given HTML table:
+ * a given HTML table.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger" &gt;
- *      &lt;pattern field="emails"&gt;
- *          [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
- *      &lt;/pattern&gt;
- *      &lt;pattern fieldGroup="1" valueGroup="2"&gt;&lt;![CDATA[
- *        &lt;tr&gt;&lt;td class="label"&gt;(.*?)&lt;/td&gt;&lt;td class="value"&gt;(.*?)&lt;/td&gt;&lt;/tr&gt;
- *      ]]&gt;&lt;/pattern&gt;
- *  &lt;/handler&gt;
- * </pre>
  *
  * @author Pascal Essiembre
- * @since 2.3.0
- * @deprecated Since 3.0.0, use {@link RegexTagger}.
+ * @see RegexFieldValueExtractor
+ * @since 3.0.0, based on former TextPatternTagger
  */
-@Deprecated
-public class TextPatternTagger
+@SuppressWarnings("javadoc")
+public class RegexTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 
+    private final TextMatcher fieldMatcher = new TextMatcher();
     private final List<RegexFieldValueExtractor> patterns = new ArrayList<>();
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
             ImporterMetadata metadata, boolean parsed, int sectionIndex) {
-        RegexFieldValueExtractor.extractFieldValues(metadata, content, patterns);
+        if (fieldMatcher.getPattern() == null) {
+            RegexFieldValueExtractor.extractFieldValues(
+                    metadata, content, patterns);
+        } else {
+            for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+                RegexFieldValueExtractor.extractFieldValues(
+                        metadata, value, patterns);
+            }
+        }
     }
 
     /**
@@ -172,20 +177,28 @@ public class TextPatternTagger
         return Collections.unmodifiableList(patterns);
     }
 
+    /**
+     * Gets source field matcher for fields on which to extract fields/values.
+     * @return field matcher
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets source field matcher for fields on which to extract fields/values.
+     * @param fieldMatcher field matcher
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
+
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
         List<XML> nodes = xml.getXMLList("pattern");
         for (XML node : nodes) {
             node.checkDeprecated("@caseSensitive", "ignoreCase", true);
-            RegexFieldValueExtractor ex = new RegexFieldValueExtractor(
-                    node.getString(".", null));
-            ex.getRegex().setIgnoreCase(node.getBoolean("@ignoreCase", false));
-            ex.getRegex().setIgnoreDiacritic(
-                    node.getBoolean("@ignoreDiacritic", false));
-            ex.setToField(node.getString("@toField", null));
-            ex.setFieldGroup(node.getInteger("@fieldGroup", -1));
-            ex.setValueGroup(node.getInteger("@valueGroup", -1));
-            ex.setOnSet(PropertySetter.fromXML(node, null));
+            RegexFieldValueExtractor ex = new RegexFieldValueExtractor();
+            ex.loadFromXML(node);
             addPattern(ex);
         }
     }
@@ -193,14 +206,7 @@ public class TextPatternTagger
     @Override
     protected void saveStringTaggerToXML(XML xml) {
         for (RegexFieldValueExtractor rfe : patterns) {
-            XML node = xml.addElement("pattern", rfe.getRegex().getPattern())
-                    .setAttribute("toField", rfe.getToField())
-                    .setAttribute("fieldGroup", rfe.getFieldGroup())
-                    .setAttribute("valueGroup", rfe.getValueGroup())
-                    .setAttribute("ignoreCase", rfe.getRegex().isIgnoreCase())
-                    .setAttribute("ignoreDiacritic",
-                            rfe.getRegex().isIgnoreDiacritic());
-            PropertySetter.toXML(node, rfe.getOnSet());
+            rfe.saveToXML(xml.addElement("pattern"));
         }
     }
 

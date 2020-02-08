@@ -135,19 +135,19 @@ public class TextBetweenTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         TextBetweenTagger tagger = new TextBetweenTagger();
-        tagger.addTextEndpoints("headings", "<h1>", "</h1>");
-        tagger.addTextEndpoints("headings", "<h2>", "</h2>");
         addDetails(tagger, "name", "start", "end", true,
                 true, PropertySetter.PREPEND);
+        addDetails(tagger, "headingsame", "<h1>", "</h1>", false,
+                false, PropertySetter.APPEND);
         tagger.setMaxReadSize(512);
         XML.assertWriteRead(tagger, "handler");
     }
 
     private static TextBetweenDetails addDetails(
-            TextBetweenTagger t, String name, String start, String end,
+            TextBetweenTagger t, String toField, String start, String end,
             boolean inclusive, boolean caseSensitive, PropertySetter onSet) {
         TextBetweenDetails tbd = new TextBetweenDetails();
-        tbd.setToField(name);
+        tbd.setToField(toField);
         tbd.setStartMatcher(
                 TextMatcher.regex(start).setIgnoreCase(!caseSensitive));
         tbd.setEndMatcher(TextMatcher.regex(end).setIgnoreCase(!caseSensitive));

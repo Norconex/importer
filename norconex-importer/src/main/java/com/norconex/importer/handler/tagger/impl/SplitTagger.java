@@ -251,8 +251,8 @@ public class SplitTagger extends AbstractCharStreamTagger {
          * @param toField target field
          * @param separator split separator
          * @param regex is separator a regular expression
-         * @deprecated Since 3.0.0, use
-         *        {@link SplitDetails#SplitDetails(TextMatcher, String, String)}
+         * @deprecated Since 3.0.0, use {@link
+         *      SplitDetails#SplitDetails(TextMatcher, String, String, boolean)}
          */
         @Deprecated
         public SplitDetails(String fromField, String toField,
@@ -306,6 +306,8 @@ public class SplitTagger extends AbstractCharStreamTagger {
         }
 
         /**
+         * Gets the from field.
+         * @return from field
          * @deprecated Since 3.0.0, use {@link #getFieldMatcher()} instead
          */
         @Deprecated
@@ -313,6 +315,8 @@ public class SplitTagger extends AbstractCharStreamTagger {
             return fieldMatcher.getPattern();
         }
         /**
+         * Sets the from field.
+         * @param fromField from field.
          * @deprecated Since 3.0.0, use
          *             {@link #setFieldMatcher(TextMatcher)} instead
          */
@@ -333,6 +337,8 @@ public class SplitTagger extends AbstractCharStreamTagger {
             this.separator = separator;
         }
         /**
+         * Gets whether regular expression is used.
+         * @return <code>true</code> if regex is used
          * @deprecated Since 3.0.0, use {@link #isSeparatorRegex()} instead
          */
         @Deprecated
@@ -348,6 +354,8 @@ public class SplitTagger extends AbstractCharStreamTagger {
             return separatorRegex;
         }
         /**
+         * Sets whether regular expression is used.
+         * @param regex <code>true</code> if regex is used
          * @deprecated Since 3.0.0, use
          *             {@link #setSeparatorRegex(boolean)} instead
          */

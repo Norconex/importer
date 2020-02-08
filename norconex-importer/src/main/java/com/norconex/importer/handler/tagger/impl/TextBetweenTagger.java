@@ -229,14 +229,18 @@ public class TextBetweenTagger
      *             values
      * @param fromText the left string to match
      * @param toText the right string to match
+     * @deprecated Since 3.0.0, use
+     *              {@link #addTextBetweenDetails(TextBetweenDetails)}
      */
-    public void addTextEndpoints(String name, String fromText, String toText) {
-        if (StringUtils.isBlank(name)
+    @Deprecated
+    public void addTextEndpoints(
+            String toField, String fromText, String toText) {
+        if (StringUtils.isBlank(toField)
                 || StringUtils.isBlank(fromText)
                 || StringUtils.isBlank(toText)) {
             return;
         }
-        betweens.add(new TextBetweenDetails(name, fromText, toText));
+        betweens.add(new TextBetweenDetails(toField, fromText, toText));
     }
     /**
      * Adds text between instructions.
@@ -302,6 +306,10 @@ public class TextBetweenTagger
         private boolean inclusive;
         private PropertySetter onSet;
         /**
+         * Constructor.
+         * @param toField target field
+         * @param start start matcher
+         * @param end end matcher
          * @deprecated Since 3.0.0, use
          * {@link TextBetweenDetails#TextBetweenDetails(String, TextMatcher,
          * TextMatcher, TextMatcher)}
@@ -404,6 +412,8 @@ public class TextBetweenTagger
         }
 
         /**
+         * Gets whether matching is case sensitive.
+         * @return <code>true</code> if case sensitive
          * @deprecated Since 3.0.0, use {@link #getStartMatcher()}
          *     and {@link #getEndMatcher()}
          */
@@ -412,6 +422,8 @@ public class TextBetweenTagger
             return !startMatcher.isIgnoreCase();
         }
         /**
+         * Sets whether matching is case sensitive.
+         * @param caseSensitive <code>true</code> if case sensitive
          * @deprecated Since 3.0.0, use {@link #setStartMatcher(TextMatcher)}
          *     and {@link #setEndMatcher(TextMatcher)}
          */
@@ -436,7 +448,9 @@ public class TextBetweenTagger
             this.onSet = onSet;
         }
         /**
-         * @deprecated Use {@link #getToField()} instead
+         * Gets target field.
+         * @return target field.
+         * @deprecated Since 3.0.0, use {@link #getToField()} instead
          */
         @Deprecated
         public String getName() {
@@ -448,6 +462,8 @@ public class TextBetweenTagger
         }
 
         /**
+         * Gets start expression.
+         * @return start expression
          * @deprecated Since 3.0.0, use {@link #getStartMatcher()}.
          */
         @Deprecated
@@ -455,6 +471,8 @@ public class TextBetweenTagger
             return startMatcher.getPattern();
         }
         /**
+         * Gets end expression.
+         * @return end expression
          * @deprecated Since 3.0.0, use {@link #getEndMatcher()}.
          */
         @Deprecated
