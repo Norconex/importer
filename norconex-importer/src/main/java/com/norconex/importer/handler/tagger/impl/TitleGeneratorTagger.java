@@ -42,7 +42,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 /**
  * <p>Attempts to generate a title from the document content (default) or
  * a specified metadata field. It does not consider the document
- * format/structure to consider some terms more than others.
+ * format/structure nor does it weight some terms more than others.
  * For instance, it would not
  * consider text found in &lt;H1&gt; tags more importantly than other
  * text in HTML documents.</p>

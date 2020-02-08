@@ -15,8 +15,11 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.text.BreakIterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +31,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -91,50 +95,66 @@ import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
  *   </tr>
  * </table>
  *
- * <p>You can specify a field name to obtain statistics about that field instead.
+ * <p>You can specify a field matcher to obtain statistics about matching
+ * fields instead.
  * When you do so, the field name will be inserted in the above
  * names, right after "document.stat.". E.g.:
  * <code>document.stat.myfield.characterCount</code></p>
  *
  * <p>Can be used both as a pre-parse (text-only) or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
- *          sourceCharset="(character encoding)"
- *          fieldName="(optional field name instead of using content)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractCharStreamTagger#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ *
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (optional expression matching source fields to analyze instead of content)
+ *   </fieldMatcher>
+ *
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger">
+ *   <fieldMatcher>statistics</fieldMatcher>
+ * </handler>
+ * }
  * <p>
- * The following store the statistics in a field called "statistics".
+ * The above create statistics from the value of a field called "statistics".
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger"
- *          fieldName="statistics" /&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public class TextStatisticsTagger extends AbstractCharStreamTagger
         implements IXMLConfigurable {
 
     private static final Pattern PATTERN_WORD = Pattern.compile(
             "\\w+\\-{0,1}\\w*", Pattern.UNICODE_CHARACTER_CLASS);
 
-    private String fieldName;
+    private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
     protected void tagTextDocument(String reference, Reader input,
             ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
+                    throws ImporterHandlerException {
+        if (fieldMatcher.getPattern() == null) {
+            analyze(input, metadata, null);
+        } else {
+            for (Entry<String, List<String>> en :
+                    metadata.matchKeys(fieldMatcher).entrySet()) {
+                analyze(new StringReader(StringUtils.join(
+                        en.getValue(), "\n\n")), metadata, en.getKey());
+            }
+        }
+    }
+
+    protected void analyze(
+            Reader input, ImporterMetadata metadata, String field)
+                    throws ImporterHandlerException {
         long charCount = 0;
         long wordCharCount = 0;
         long wordCount = 0;
@@ -175,13 +195,11 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
             }
         }
 
-        String field = StringUtils.EMPTY;
-        if (StringUtils.isNotBlank(fieldName)) {
-            field = fieldName.trim() + ".";
-        }
-
         //--- Add fields ---
-        String prefix = "document.stat." + field;
+        String prefix = "document.stat.";
+        if (StringUtils.isNotBlank(field)) {
+            prefix += field.trim() + ".";
+        }
         metadata.add(prefix + "characterCount", charCount);
         metadata.add(prefix + "wordCount", wordCount);
         metadata.add(prefix + "sentenceCount", sentenceCount);
@@ -207,21 +225,51 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
                         BigDecimal.ROUND_HALF_UP).toString();
     }
 
+    /**
+     * Gets the name of field containing the text to analyze.
+     * @return field name
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
+     */
+    @Deprecated
     public String getFieldName() {
-        return fieldName;
+        return fieldMatcher.getPattern();
     }
+    /**
+     * Sets the name of field containing the text to analyze.
+     * @param fieldName field name
+     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}.
+     */
+    @Deprecated
     public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
+        this.fieldMatcher.setPattern(fieldName);
     }
+    /**
+     * Gets field matcher for fields to split.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
+    }
+    /**
+     * Sets the field matcher for fields to split.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
+
 
     @Override
     protected void loadCharStreamTaggerFromXML(XML xml) {
-        setFieldName(xml.getString("@fieldName", fieldName));
+        xml.checkDeprecated("@fieldName", "fieldMatcher", true);
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
 
     @Override
     protected void saveCharStreamTaggerToXML(XML xml) {
-        xml.setAttribute("fieldName", fieldName);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override
