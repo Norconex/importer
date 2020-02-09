@@ -22,6 +22,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -83,7 +84,7 @@ public class TestStatisticsTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         TextStatisticsTagger tagger = new TextStatisticsTagger();
-        tagger.setFieldName("afield");
+        tagger.setFieldMatcher(new TextMatcher("afield"));
         XML.assertWriteRead(tagger, "handler");
     }
 }

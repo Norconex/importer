@@ -19,7 +19,9 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertySetter;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -30,12 +32,12 @@ public class TruncateTaggerTest {
     public void testWriteRead() throws IOException {
         TruncateTagger t = new TruncateTagger();
         t.setAppendHash(true);
-        t.setFromField("fromField");
+        t.setFieldMatcher(TextMatcher.basic("fromField"));
         t.setMaxLength(100);
         t.setOnSet(PropertySetter.REPLACE);
         t.setSuffix("suffix");
         t.setToField("toField");
-        t.addRestriction("field", "regex", true);
+        t.addRestriction(new PropertyMatcher(TextMatcher.regex("field")));
 
         XML.assertWriteRead(t, "handler");
     }
@@ -52,7 +54,7 @@ public class TruncateTaggerTest {
 
         TruncateTagger t = new TruncateTagger();
 
-        t.setFromField("from");
+        t.setFieldMatcher(TextMatcher.basic("from"));
         t.setToField("to");
         t.setMaxLength(50);
         t.setOnSet(PropertySetter.REPLACE);

@@ -20,7 +20,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -124,14 +123,12 @@ public class TextBetweenTagger
     }
     private void betweenMetadata(
             TextBetweenDetails between, ImporterMetadata metadata) {
-        List<String> allTargetValues =
-                SetUniqueList.setUniqueList(new ArrayList<>());
+        List<String> allTargetValues = new ArrayList<>();
         for (Entry<String, List<String>> en :
                 metadata.matchKeys(between.fieldMatcher).entrySet()) {
             String fromField = en.getKey();
             List<String> sourceValues = en.getValue();
-            List<String> targetValues =
-                    SetUniqueList.setUniqueList(new ArrayList<>());
+            List<String> targetValues = new ArrayList<>();
             for (String sourceValue : sourceValues) {
                 targetValues.addAll(betweenText(between, sourceValue));
             }

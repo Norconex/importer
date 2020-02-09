@@ -29,20 +29,7 @@
           <xs:attribute name="detectHeading" type="xs:boolean"/>
           <xs:attribute name="detectHeadingMinLength" type="xs:int"/>
           <xs:attribute name="detectHeadingMaxLength" type="xs:int"/>
-          <xs:attribute name="onSet">
-            <xs:simpleType>
-              <xs:restriction base="xs:string">
-                <xs:enumeration value="APPEND"/>
-                <xs:enumeration value="append"/>
-                <xs:enumeration value="PREPEND"/>
-                <xs:enumeration value="prepend"/>
-                <xs:enumeration value="REPLACE"/>
-                <xs:enumeration value="replace"/>
-                <xs:enumeration value="OPTIONAL"/>
-                <xs:enumeration value="optional"/>
-              </xs:restriction>
-            </xs:simpleType>
-          </xs:attribute>
+          <xs:attribute name="onSet" type="PropertySetterMethodType"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

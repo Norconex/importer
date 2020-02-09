@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ public class ScriptTransformerTest {
 
     @Test
     public void testLua() throws IOException, ImporterHandlerException {
-        testScriptTagger("lua",
+        testScriptTransformer("lua",
                 "metadata:add('test', {'success'});"
               + "local text = content:gsub('Alice', 'Roger');"
               + "return text;"
@@ -45,14 +47,37 @@ public class ScriptTransformerTest {
     @Test
     public void testJavaScript()
             throws IOException, ImporterHandlerException {
-        testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
+        testScriptTransformer(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
                 "metadata.add('test', 'success');"
               + "text = content.replace(/Alice/g, 'Roger');"
               + "/*return*/ text;"
         );
     }
 
-    private void testScriptTagger(String engineName, String script)
+    // https://github.com/Norconex/collector-http/issues/665
+    @Test
+    public void testContentModify()
+            throws IOException, ImporterHandlerException {
+
+        ScriptTransformer t = new ScriptTransformer();
+        t.setEngineName(ScriptRunner.DEFAULT_SCRIPT_ENGINE);
+        t.setScript(
+                "var ct = metadata.getString('document.contentType');\n"
+              + "if (ct != null && ct == 'text/html') {\n"
+              + "    if (content != null) {\n"
+              + "        content = 'Hello ' + content;\n"
+              + "    }\n"
+              + "}\n");
+        ImporterMetadata metadata = new ImporterMetadata();
+        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        t.transformDocument("N/A", IOUtils.toInputStream("World!" ,
+                StandardCharsets.UTF_8), out, metadata, true);
+        String content = out.toString(StandardCharsets.UTF_8.toString());
+        Assertions.assertEquals("Hello World!", content);
+    }
+
+    private void testScriptTransformer(String engineName, String script)
             throws IOException, ImporterHandlerException {
         ScriptTransformer t = new ScriptTransformer();
         t.setEngineName(engineName);

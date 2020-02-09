@@ -24,7 +24,6 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -120,8 +119,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
         if (!split.isSeparatorRegex()) {
             delim = Pattern.quote(delim);
         }
-        List<String> targetValues =
-                SetUniqueList.setUniqueList(new ArrayList<>());
+        List<String> targetValues = new ArrayList<>();
         @SuppressWarnings("resource") // input stream controlled by caller.
         Scanner scanner = new Scanner(input).useDelimiter(delim);
         while (scanner.hasNext()) {
@@ -132,14 +130,12 @@ public class SplitTagger extends AbstractCharStreamTagger {
     }
     private void splitMetadata(SplitDetails split, ImporterMetadata metadata) {
 
-        List<String> allTargetValues =
-                SetUniqueList.setUniqueList(new ArrayList<>());
+        List<String> allTargetValues = new ArrayList<>();
         for (Entry<String, List<String>> en :
                 metadata.matchKeys(split.fieldMatcher).entrySet()) {
             String fromField = en.getKey();
             List<String> sourceValues = en.getValue();
-            List<String> targetValues =
-                    SetUniqueList.setUniqueList(new ArrayList<>());
+            List<String> targetValues = new ArrayList<>();
             for (String sourceValue : sourceValues) {
                 if (split.isSeparatorRegex()) {
                     targetValues.addAll(regexSplit(

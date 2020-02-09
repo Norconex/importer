@@ -35,8 +35,13 @@ TODO:
   - how all PropertySetter default to APPEND
   - etc.
 
+- Add to scripts "-Dnashorn.args=--no-deprecation-warning" to silence
+  deprecation warning on some JVM.
+
 - Document that a few classes can now apply on content in addition
   to metadata.
+
+- Add RemoveDuplicateValuesTagger and SortValuesTagger (for lists/multi-value)
 
 - Maybe: have a @taglet for if it can be used as pre-post or both? 
 

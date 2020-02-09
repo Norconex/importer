@@ -46,38 +46,34 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
- *      field="(target field)"
- *      onSet="[append|prepend|replace|optional]" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+ *     toField="(target field)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- * <h4>Usage example:</h4>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
+ *     field="uuid" onSet="replace" />
+ * }
  * <p>
- * The following generates a UUID and stores it in a "uuid" field, overwriting
+ * The above generates a UUID and stores it in a "uuid" field, overwriting
  * any existing values under that field.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
- *      field="uuid" onSet="replace" /&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.7.0
  */
+@SuppressWarnings("javadoc")
 public class UUIDTagger extends AbstractDocumentTagger {
 
     public static final String DEFAULT_FIELD = "document.uuid";
 
-    private String field = DEFAULT_FIELD;
+    private String toField = DEFAULT_FIELD;
     private PropertySetter onSet;
 
     /**
@@ -93,19 +89,47 @@ public class UUIDTagger extends AbstractDocumentTagger {
             throws ImporterHandlerException {
 
         String uuid = UUID.randomUUID().toString();
-
-        String finalField = field;
+        String finalField = toField;
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
         PropertySetter.orDefault(onSet).apply(metadata, finalField, uuid);
     }
 
-    public String getField() {
-        return field;
+    /**
+     * Gets the target field.
+     * @return target field
+     * @since 3.0.0
+     */
+    public String getToField() {
+        return toField;
     }
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @since 3.0.0
+     */
+    public void setToField(String toField) {
+        this.toField = toField;
+    }
+
+    /**
+     * Gets the target field.
+     * @return target field
+     * @deprecated Since 3.0.0, use {@link #getToField()}
+     */
+    @Deprecated
+    public String getField() {
+        return getToField();
+    }
+    /**
+     * Sets the target field.
+     * @param toField target field
+     * @deprecated Since 3.0.0, use {@link #setToField(String)}
+     */
+    @Deprecated
     public void setField(String toField) {
-        this.field = toField;
+        setToField(toField);
     }
 
     /**
@@ -147,13 +171,14 @@ public class UUIDTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XML xml) {
         xml.checkDeprecated("@overwrite", "onSet", true);
-        field = xml.getString("@field", field);
+        xml.checkDeprecated("@field", "toField", true);
+        toField = xml.getString("@toField", toField);
         setOnSet(PropertySetter.fromXML(xml, onSet));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("field", field);
+        xml.setAttribute("toField", toField);
         PropertySetter.toXML(xml, onSet);
     }
 

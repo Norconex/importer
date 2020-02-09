@@ -26,7 +26,7 @@ public class UUIDTaggerTest {
     @Test
     public void testWriteRead() throws IOException {
         UUIDTagger tagger = new UUIDTagger();
-        tagger.setField("field1");
+        tagger.setToField("field1");
         tagger.setOnSet(PropertySetter.REPLACE);
         XML.assertWriteRead(tagger, "handler");
     }

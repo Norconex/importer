@@ -90,41 +90,38 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * accurate titles generated.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
- *          fromField="(field of text to use/default uses document content)"
- *          toField="(target field where to store generated title)"
- *          onSet="[append|prepend|replace|optional]"
- *          overwrite="[false|true]"
- *          titleMaxLength="(max num of chars for generated title)"
- *          detectHeading="[false|true]"
- *          detectHeadingMinLength="(min length a heading title can have)"
- *          detectHeadingMaxLength="(max length a heading title can have)"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}
+ *     fromField="(field of text to use/default uses document content)"
+ *     toField="(target field where to store generated title)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
+ *     overwrite="[false|true]"
+ *     titleMaxLength="(max num of chars for generated title)"
+ *     detectHeading="[false|true]"
+ *     detectHeadingMinLength="(min length a heading title can have)"
+ *     detectHeadingMaxLength="(max length a heading title can have)"
+ *     sourceCharset="(character encoding)"
+ *     maxReadSize="(max characters to read at once)">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+ *     toField="title" titleMaxLength="200" detectHeading="true" />
+ * }
  * <p>
- * The following will check if the first line looks like a title and if not,
+ * The above will check if the first line looks like a title and if not,
  * it will store the first sentence, up to 200 characters, in a field called
  * title.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
- *          toField="title" titleMaxLength="200" detectHeading="true" /&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.1.0
  */
+@SuppressWarnings("javadoc")
 public class TitleGeneratorTagger
         extends AbstractStringTagger implements IXMLConfigurable {
 

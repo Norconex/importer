@@ -17,6 +17,7 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.StringUtil;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -50,11 +52,6 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * {@link PropertySetter}.
  * </p>
  * <p>
- * When storing the truncated values in a new field already having one or
- * more values, the truncated values will be <i>added</i> to the list of
- * existing values, unless "overwrite" is set to <code>true</code>.
- * </p>
- * <p>
  * The <code>maxLength</code> is guaranteed to be respected. This means any
  * appended hash code and suffix will fit within the <code>maxLength</code>.
  * </p>
@@ -62,53 +59,51 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
  * Can be used both as a pre-parse or post-parse handler.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
- *      fromField="(fromField holding one or more values to truncate)"
- *      maxLength="(maximum length)"
- *      toField="(optional fromField where to store the truncated value)"
- *      onSet="[append|prepend|replace|optional]"
- *      appendHash="[false|true]"
- *      suffix="(value to append after truncation. Goes before hash if one.)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
+ *     maxLength="(maximum length)"
+ *     toField="(optional target field where to store the truncated value)"
+ *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
+ *     appendHash="[false|true]"
+ *     suffix="(value to append after truncation. Goes before hash if one.)">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              fromField="(name of header/metadata fromField name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- * <h4>Usage example:</h4>
+ *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (one or more matching fields to have their values truncated)
+ *   </fieldMatcher>
+
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
+ *     maxLength="50"
+ *     appendHash="true"
+ *     suffix="!">
+ *   <fieldMatcher>myField</fieldMatcher>
+ * </handler>
+ * }
+ *
  * <p>
- * To truncate this "myField" value...
+ * Assuming this "myField" value...
  * </p>
  * <pre>    Please truncate me before you start thinking I am too long.</pre>
  * <p>
- * ...to become this...
+ * ...the above example will truncate it to...
  * </p>
  * <pre>    Please truncate me before you start thi!0996700004</pre>
- * ...you would set a max length of 50, with a "!" suffix and append a hash.
- * Like this:
- *
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
- *      fromField="myField"
- *      maxLength="50"
- *      appendHash="true"
- *      suffix="!" /&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.8.0
  */
+@SuppressWarnings("javadoc")
 public class TruncateTagger extends AbstractDocumentTagger {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(TruncateTagger.class);
 
-    private String fromField;
+    private final TextMatcher fieldMatcher = new TextMatcher();
     private int maxLength;
     private String toField;
     private PropertySetter onSet;
@@ -118,11 +113,28 @@ public class TruncateTagger extends AbstractDocumentTagger {
     public TruncateTagger() {
         super();
     }
+    /**
+     * Constructor.
+     * @param fromField field to truncate
+     * @param maxLength truncation length
+     * @deprecated Since 3.0.0, use {@link #TruncateTagger(TextMatcher, int)}
+     */
+    @Deprecated
     public TruncateTagger(String fromField, int maxLength) {
+        this(TextMatcher.basic(fromField), maxLength);
+    }
+    /**
+     * Constructor.
+     * @param fieldMatcher field matcher
+     * @param maxLength truncation length
+     * @since 3.0.0
+     */
+    public TruncateTagger(TextMatcher fieldMatcher, int maxLength) {
         super();
-        this.fromField = fromField;
+        this.fieldMatcher.copyFrom(fieldMatcher);
         this.maxLength = maxLength;
     }
+
     public String getToField() {
         return toField;
     }
@@ -184,37 +196,78 @@ public class TruncateTagger extends AbstractDocumentTagger {
     public void setMaxLength(int maxLength) {
         this.maxLength = maxLength;
     }
-    public String getFromField() {
-        return fromField;
+    /**
+     * Gets field matcher for fields to truncate.
+     * @return field matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
     }
+    /**
+     * Sets the field matcher for fields to truncate.
+     * @param fieldMatcher field matcher
+     * @since 3.0.0
+     */
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
+        this.fieldMatcher.copyFrom(fieldMatcher);
+    }
+
+    /**
+     * Gets the from field.
+     * @return from field
+     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()} instead
+     */
+    @Deprecated
+    public String getFromField() {
+        return fieldMatcher.getPattern();
+    }
+    /**
+     * Sets the from field.
+     * @param fromField from field.
+     * @deprecated Since 3.0.0, use
+     *             {@link #setFieldMatcher(TextMatcher)} instead
+     */
+    @Deprecated
     public void setFromField(String fromField) {
-        this.fromField = fromField;
+        this.fieldMatcher.setPattern(fromField);
     }
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
             ImporterMetadata metadata, boolean parsed)
-            throws ImporterHandlerException {
+                    throws ImporterHandlerException {
 
-        List<String> values = metadata.getStrings(fromField);
-        List<String> truncValues = new ArrayList<>(values.size());
-        for (String value : values) {
-            String truncValue = truncate(value);
-            truncValues.add(truncValue);
-            if (LOG.isDebugEnabled()
-                    && !Objects.equals(truncValue, value)) {
-                LOG.debug("\"{}\" value truncated to \"{}\".",
-                        fromField, truncValue);
+        List<String> allTargetValues = new ArrayList<>();
+        for (Entry<String, List<String>> en :
+                metadata.matchKeys(fieldMatcher).entrySet()) {
+            String fromField = en.getKey();
+            List<String> sourceValues = en.getValue();
+            List<String> targetValues = new ArrayList<>();
+            for (String sourceValue : sourceValues) {
+                String truncValue = truncate(sourceValue);
+                targetValues.add(truncValue);
+                if (LOG.isDebugEnabled()
+                        && !Objects.equals(truncValue, sourceValue)) {
+                    LOG.debug("\"{}\" value truncated to \"{}\".",
+                            fromField, truncValue);
+                }
+            }
+
+            // toField is blank, we overwrite the source and do not
+            // carry values further.
+            if (StringUtils.isBlank(getToField())) {
+                // overwrite source field
+                PropertySetter.REPLACE.apply(
+                        metadata, fromField, targetValues);
+            } else {
+                allTargetValues.addAll(targetValues);
             }
         }
-
         if (StringUtils.isNotBlank(getToField())) {
             // set on target field
-            PropertySetter.orDefault(onSet).apply(
-                    metadata, getToField(), truncValues);
-        } else {
-            // overwrite source field
-            PropertySetter.REPLACE.apply(metadata, getFromField(), truncValues);
+            PropertySetter.orDefault(getOnSet()).apply(
+                    metadata, getToField(), allTargetValues);
         }
     }
 
@@ -235,21 +288,22 @@ public class TruncateTagger extends AbstractDocumentTagger {
     @Override
     protected void loadHandlerFromXML(XML xml) {
         xml.checkDeprecated("@overwrite", "onSet", true);
-        fromField = xml.getString("@fromField", fromField);
+        xml.checkDeprecated("@fromField", "fieldMatcher", true);
         appendHash = xml.getBoolean("@appendHash", appendHash);
         suffix = xml.getString("@suffix", suffix);
         toField = xml.getString("@toField", toField);
         setOnSet(PropertySetter.fromXML(xml, onSet));
         maxLength = xml.getInteger("@maxLength", maxLength);
+        fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
     @Override
     protected void saveHandlerToXML(XML xml) {
-        xml.setAttribute("fromField", fromField);
         xml.setAttribute("appendHash", appendHash);
         xml.setAttribute("suffix", suffix);
         xml.setAttribute("toField", toField);
-        PropertySetter.toXML(xml, onSet);
         xml.setAttribute("maxLength", maxLength);
+        PropertySetter.toXML(xml, onSet);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
 
     @Override
