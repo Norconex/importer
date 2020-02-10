@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,29 +56,26 @@ import com.norconex.importer.parser.GenericDocumentParserFactory;
  * image.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
- *      targetFormat="(jpg, png, gif, bmp, wbmp, or other supported format)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
+ *      targetFormat="(jpg, png, gif, bmp, wbmp, or other supported format)" >
  *
- *      &lt;scale
- *          stretch="[false|true]"
- *          factor="(decimal value ratio factor, default is 1)"
- *          dimension="(target dimension, in pixels, format: [width]x[height])" /&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;rotate degrees="(-360 to 360)"/&gt;
+ *   <scale
+ *       stretch="[false|true]"
+ *       factor="(decimal value ratio factor, default is 1)"
+ *       dimension="(target dimension, in pixels, format: [width]x[height])" />
  *
- *      &lt;crop x="(top-left x-axis, default 0)"
- *               y="(top-left y-axis, default 0)"
- *               dimension="(crop dimension, in pixels, format: [width]x[height])"/&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *   <rotate degrees="(-360 to 360)"/>
+ *
+ *   <crop
+ *       x="(top-left x-axis, default 0)"
+ *       y="(top-left y-axis, default 0)"
+ *       dimension="(crop dimension, in pixels, format: [width]x[height])"/>
+ * </handler>
+ * }
  *
  *
  * <h4>Image dimension format</h4>
@@ -87,27 +84,31 @@ import com.norconex.importer.parser.GenericDocumentParserFactory;
  * {@link DimensionConverter}.
  * </p>
  *
+ * {@nx.xml.example
+ * }
  * <h4>Usage example:</h4>
  * <p>
  * The following example converts images to PNG while scaling it to a maximum
  * dimension of 400 pixels wide and 250 pixel high.
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
- *          targetFormat="png"&gt;
- *      &lt;scale dimension="400x250" /&gt;
- *  &lt;/handler&gt;
+ *  <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
+ *          targetFormat="png">
+ *      <scale dimension="400x250" />
+ *  </handler>
  * </pre>
  *
  * @author Pascal Essiembre
  * @see ExternalHandler
  * @since 3.0.0
  */
+@SuppressWarnings("javadoc")
 public class ImageTransformer extends AbstractDocumentTransformer {
 
     public static final String DEFAULT_TARGET_FORMAT = "png";
 
-    //TODO Maybe: default == null == keep same as source, derived from detected content-type
+    //TODO Maybe: default == null == keep same as source,
+    // derived from detected content-type
     private String targetFormat = DEFAULT_TARGET_FORMAT;
 
     private boolean scaleStretch;

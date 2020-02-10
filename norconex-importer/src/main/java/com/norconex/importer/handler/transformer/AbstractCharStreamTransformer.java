@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,20 +58,14 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * used as a post-parse handler.
  * </p>
  *
+ * {@nx.xml.usage #attributes
+ *  sourceCharset="(character encoding)"
+ * }
  * <p>
- * Subclasses implementing {@link IXMLConfigurable} should allow this inner
- * configuration:
+ * Subclasses inherit the above {@link IXMLConfigurable} attribute(s),
+ * in addition to <a href="../AbstractImporterHandler.html#nx-xml-restrictTo">
+ * &lt;restrictTo&gt;</a>.
  * </p>
- * <pre>
- *  &lt;!-- parent tag has these attribute:
- *      sourceCharset="(character encoding)"
- *    --&gt;
- *  &lt;restrictTo caseSensitive="[false|true]"
- *          field="(name of header/metadata field name to match)"&gt;
- *      (regular expression of value to match)
- *  &lt;/restrictTo&gt;
- *  &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
  * @author Pascal Essiembre
  */
 public abstract class AbstractCharStreamTransformer

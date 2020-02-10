@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,22 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
+ * <p>
  * Base class for transformers.
- * <br><br>
+ * </p>
  *
+ * <p>
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
- * <pre>
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- * </pre>
+ * </p>
+ *
+ * {@nx.xml
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * }
+ *
  * @author Pascal Essiembre
  * @since 2.0.0
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractDocumentTransformer
             extends AbstractImporterHandler
             implements IDocumentTransformer {

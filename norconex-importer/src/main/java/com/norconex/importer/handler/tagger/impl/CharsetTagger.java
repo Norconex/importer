@@ -37,6 +37,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.handler.transformer.impl.CharsetTransformer;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -95,6 +96,7 @@ import com.norconex.importer.util.CharsetUtil;
  *
  * @author Pascal Essiembre
  * @since 2.5.0
+ * @see CharsetTransformer
  */
 @SuppressWarnings("javadoc")
 public class CharsetTagger extends AbstractDocumentTagger

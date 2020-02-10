@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,26 +44,21 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * {@link ReplaceTransformer} instead.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
- *          caseSensitive="[false|true]"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"
+ *     ignoreCase="[false|true]"
+ *     {@nx.include com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;reduce&gt;(character or string to strip)&lt;/reduce&gt;
- *      &lt;!-- multiple reduce tags allowed --&gt;
+ *   <!-- multiple reduce tags allowed -->
+ *   <reduce>(character or string to strip)</reduce>
  *
- *  &lt;/handler&gt;
- * </pre>
+ * </handler>
+ * }
  * <p>
- * You can specify these special characters in your XML:
+ * In addition to regular characters, you can specify these special characters
+ * in your XML:
  * </p>
  * <ul>
  *   <li>\r (carriage returns)</li>
@@ -71,22 +66,25 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *   <li>\t (tab)</li>
  *   <li>\s (space)</li>
  * </ul>
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer">
+ *   <reduce>\s</reduce>
+ * </handler>
+ * }
  * <p>
- * The following reduces multiple spaces into a single one.
+ * The above example reduces multiple spaces into a single one.
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer"&gt;
- *      &lt;reduce&gt;\s&lt;/reduce&gt;
- *  &lt;/handler&gt;
  * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.2.0
+ * @see ReplaceTransformer
  */
+@SuppressWarnings("javadoc")
 public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
-    private boolean caseSensitive;
+    private boolean ignoreCase;
     private final List<String> reductions = new ArrayList<>();
 
     @Override
@@ -99,10 +97,10 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
         Pattern pattern;
         for (String reduction : reductions) {
             String regex = "(" + escapeRegex(reduction) + ")+";
-            if (caseSensitive) {
-                pattern = Pattern.compile(regex);
-            } else {
+            if (ignoreCase) {
                 pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+            } else {
+                pattern = Pattern.compile(regex);
             }
             text = pattern.matcher(text).replaceAll("$1");
         }
@@ -119,16 +117,41 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
         this.reductions.addAll(Arrays.asList(reductions));
     }
 
+    /**
+     * Gets whether character matching should be case sensitive or not.
+     * @return <code>true</code> if case sensitive.
+     * @deprecated Since 3.0.0, use {@link #isIgnoreCase()}.
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return !ignoreCase;
     }
     /**
      * Sets whether to ignore case when matching characters or string
      * to reduce.
      * @param caseSensitive <code>true</code> to consider character case
+     * @deprecated Since 3.0.0, use {@link #setIgnoreCase(boolean)}.
      */
+    @Deprecated
     public void setCaseSensitive(final boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+        this.ignoreCase = !caseSensitive;
+    }
+
+    /**
+     * Gets whether to ignore case sensitivity.
+     * @return <code>true</code> if ignoring character case
+     * @since 3.0.0
+     */
+    public boolean isIgnoreCase() {
+        return ignoreCase;
+    }
+    /**
+     * Sets whether to ignore case sensitivity.
+     * @param ignoreCase <code>true</code> if ignoring character case
+     * @since 3.0.0
+     */
+    public void setIgnoreCase(boolean ignoreCase) {
+        this.ignoreCase = ignoreCase;
     }
 
     private String escapeRegex(final String text) {
@@ -138,7 +161,9 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        xml.checkDeprecated("@caseSensitive", "ignoreCase", true);
+
+        setIgnoreCase(xml.getBoolean("@ignoreCase", ignoreCase));
 
         List<XML> nodes = xml.getXMLList("reduce");
         for (XML node : nodes) {
@@ -153,7 +178,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", caseSensitive);
+        xml.setAttribute("ignoreCase", ignoreCase);
         for (String reduction : reductions) {
             if (reduction != null) {
                 String text = reduction;

@@ -43,6 +43,8 @@ TODO:
 
 - Add RemoveDuplicateValuesTagger and SortValuesTagger (for lists/multi-value)
 
+- Add ReduceConsecutiveTagger.
+
 - Maybe: have a @taglet for if it can be used as pre-post or both? 
 
 - CountValueTagger (one to count mattching patterns, one to count number of multi-value entries)
