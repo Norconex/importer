@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
           <xs:all>
             <xs:element ref="replace" minOccurs="1" maxOccurs="unbounded" />
           </xs:all>
-          <xs:attribute name="caseSensitive" type="xs:boolean"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -34,13 +33,7 @@
   <xs:element name="replace">
     <xs:complexType>
       <xs:all>
-        <xs:element name="fromValue" minOccurs="1" maxOccurs="1">
-          <xs:simpleType>
-            <xs:restriction base="xs:string">
-              <xs:minLength value="1"/>
-            </xs:restriction>
-          </xs:simpleType>        
-        </xs:element>
+        <xs:element name="valueMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="1" />
         <xs:element name="toValue" type="xs:string" minOccurs="0" maxOccurs="1"/>
       </xs:all>
     </xs:complexType>

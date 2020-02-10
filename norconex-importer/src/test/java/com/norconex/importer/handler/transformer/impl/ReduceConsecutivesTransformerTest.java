@@ -31,7 +31,8 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReduceConsecutivesTransformerTest {
 
-    private final String xml = "<handler><reduce>\\stext</reduce>"
+    private final String xml =
+              "<handler ignoreCase=\"true\"><reduce>\\stext</reduce>"
             + "<reduce>\\t</reduce><reduce>\\n\\r</reduce>"
             + "<reduce>\\s</reduce><reduce>.</reduce></handler>";
 

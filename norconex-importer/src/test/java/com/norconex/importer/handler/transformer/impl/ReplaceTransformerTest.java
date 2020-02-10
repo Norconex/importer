@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,20 @@ import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReplaceTransformerTest {
 
-    private final String restrictionTestConfig = "<handler>"
-            + "<replace><fromValue>CAKES</fromValue>"
-            + "<toValue>FRUITS</toValue></replace>"
-            + "<replace><fromValue>candies</fromValue>"
-            + "<toValue>vegetables</toValue></replace>"
-            + "<restrictTo><fieldMatcher ignoreCase=\"true\">"
-            + "document.reference</fieldMatcher>"
-            + "<valueMatcher method=\"regex\">.*test.*</valueMatcher>"
-            + "</restrictTo>"
-            + "</handler>";
+    private final String restrictionTestConfig =
+          "<handler>"
+        + "<replace><valueMatcher ignoreCase=\"true\" partial=\"true\">"
+        + "CAKES</valueMatcher>"
+        + "<toValue>FRUITS</toValue></replace>"
+        + "<replace><valueMatcher ignoreCase=\"true\" partial=\"true\">"
+        + "candies</valueMatcher>"
+        + "<toValue>vegetables</toValue></replace>"
+        + "<restrictTo><fieldMatcher ignoreCase=\"true\">"
+        + "document.reference</fieldMatcher>"
+        + "<valueMatcher ignoreCase=\"true\" partial=\"true\" method=\"regex\">"
+        + ".*test.*</valueMatcher>"
+        + "</restrictTo>"
+        + "</handler>";
     private final String restrictionTestContent =
             "I like to eat cakes and candies.";
 
@@ -53,9 +57,10 @@ public class ReplaceTransformerTest {
 
         String preserveTestConfig =
                 "<handler>"
-//                  "<transformer xml:space=\"preserve\">"
-                + "<replace><fromValue>[\\r\\n]+</fromValue>"
-                + "<toValue xml:space=\"preserve\"> </toValue></replace>"
+                + "<replace><valueMatcher method=\"regex\" ignoreCase=\"true\" "
+                + "partial=\"true\" replaceAll=\"true\">"
+                + "[\\r\\n]+</valueMatcher>"
+                + "<toValue> </toValue></replace>"
                 + "</handler>";
         String response1 = transformTextDocument(
                 preserveTestConfig, "N/A", input);

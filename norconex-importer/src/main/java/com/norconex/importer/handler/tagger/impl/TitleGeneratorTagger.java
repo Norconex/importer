@@ -100,9 +100,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *     titleMaxLength="(max num of chars for generated title)"
  *     detectHeading="[false|true]"
  *     detectHeadingMinLength="(min length a heading title can have)"
- *     detectHeadingMaxLength="(max length a heading title can have)"
- *     sourceCharset="(character encoding)"
- *     maxReadSize="(max characters to read at once)">
+ *     detectHeadingMaxLength="(max length a heading title can have)">
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  * </handler>

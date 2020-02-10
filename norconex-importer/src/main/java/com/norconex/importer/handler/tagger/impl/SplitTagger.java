@@ -235,7 +235,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
          * @param separator split separator
          * @param regex is separator a regular expression
          * @deprecated Since 3.0.0, use
-         *        {@link SplitDetails#SplitDetails(TextMatcher, String, String)}
+         *        {@link #SplitDetails(TextMatcher, String, String)}
          */
         @Deprecated
         public SplitDetails(String fromField, String separator, boolean regex) {
@@ -248,7 +248,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
          * @param separator split separator
          * @param regex is separator a regular expression
          * @deprecated Since 3.0.0, use {@link
-         *      SplitDetails#SplitDetails(TextMatcher, String, String, boolean)}
+         *      #SplitDetails(TextMatcher, String, String, boolean)}
          */
         @Deprecated
         public SplitDetails(String fromField, String toField,
