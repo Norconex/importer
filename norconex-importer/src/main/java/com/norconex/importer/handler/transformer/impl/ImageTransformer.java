@@ -56,10 +56,15 @@ import com.norconex.importer.parser.GenericDocumentParserFactory;
  * image.
  * </p>
  *
+ * <h3>Image dimension format</h3>
+ * <p>
+ * For a list of supported image dimension formats, refer to
+ * {@link DimensionConverter}.
+ * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
- *      targetFormat="(jpg, png, gif, bmp, wbmp, or other supported format)" >
+ *      targetFormat="(jpg, png, gif, bmp, wbmp, or other supported format)">
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
@@ -77,26 +82,17 @@ import com.norconex.importer.parser.GenericDocumentParserFactory;
  * </handler>
  * }
  *
- *
- * <h4>Image dimension format</h4>
- * <p>
- * For a list of supported image dimension formats, refer to
- * {@link DimensionConverter}.
- * </p>
- *
  * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
+ *     targetFormat="png">
+ *   <scale dimension="400x250" />
+ * </handler>
  * }
  * <h4>Usage example:</h4>
  * <p>
- * The following example converts images to PNG while scaling it to a maximum
+ * The above example converts images to PNG while scaling it to a maximum
  * dimension of 400 pixels wide and 250 pixel high.
  * </p>
- * <pre>
- *  <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
- *          targetFormat="png">
- *      <scale dimension="400x250" />
- *  </handler>
- * </pre>
  *
  * @author Pascal Essiembre
  * @see ExternalHandler

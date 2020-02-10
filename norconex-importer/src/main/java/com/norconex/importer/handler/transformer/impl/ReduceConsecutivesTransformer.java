@@ -74,8 +74,6 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * <p>
  * The above example reduces multiple spaces into a single one.
  * </p>
- * <pre>
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 1.2.0

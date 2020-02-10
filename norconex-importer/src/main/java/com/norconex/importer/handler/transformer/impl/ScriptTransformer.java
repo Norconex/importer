@@ -1,4 +1,4 @@
-/* Copyright 2015-2018 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *   <li><b>reference:</b> Document unique reference as a string.</li>
  *   <li><b>content:</b> Document content, as a string
  *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as a {@link ImporterMetadata}
+ *   <li><b>metadata:</b> Document metadata as an {@link ImporterMetadata}
  *       object.</li>
  *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
@@ -59,9 +59,8 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * the modified content.
  * </p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ * {@nx.xml.usage
+ * &lt;handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
  *          engineName="(script engine name)"
  *          sourceCharset="(character encoding)"
  *          maxReadSize="(max content characters to read at once)" &gt;
@@ -72,10 +71,11 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *      &lt;/restrictTo&gt;
  *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
  *
+ *
  *      &lt;script&gt;(your script)&lt;/script&gt;
  *
  *  &lt;/handler&gt;
- * </pre>
+ * }
  *
  * <h4>Usage example:</h4>
  * <p>The following example replaces all occurences of "Alice" with "Roger"

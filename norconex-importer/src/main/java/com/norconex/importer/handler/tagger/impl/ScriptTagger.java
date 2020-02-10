@@ -44,7 +44,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *   <li><b>reference:</b> Document unique reference as a string.</li>
  *   <li><b>content:</b> Document content, as a string
  *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as a {@link ImporterMetadata}
+ *   <li><b>metadata:</b> Document metadata as an {@link ImporterMetadata}
  *       object.</li>
  *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
@@ -57,15 +57,15 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  * </p>
  *
  * {@nx.xml.usage
- *  <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
- *          engineName="(script engine name)"
- *          {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
+ * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
+ *     engineName="(script engine name)"
+ *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
  *   <script>(your script)</script>
  *
- *  </handler>
+ * </handler>
  * }
  *
  * <h4>Usage example:</h4>

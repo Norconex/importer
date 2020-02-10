@@ -307,8 +307,7 @@ public class TextBetweenTagger
          * @param toField target field
          * @param start start matcher
          * @param end end matcher
-         * @deprecated Since 3.0.0, use {@link #TextBetweenDetails(
-         *                 String, TextMatcher, TextMatcher, TextMatcher)}
+         * @deprecated Since 3.0.0.
          */
         @Deprecated
         public TextBetweenDetails(String toField, String start, String end) {

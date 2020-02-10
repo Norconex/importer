@@ -51,7 +51,7 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *   </replace>
  *
  *  </handler>
- * </pre>
+ * }
  *
  * {@nx.xml.example
  * <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
