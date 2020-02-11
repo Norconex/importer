@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2018 Norconex Inc.
+   Copyright 2017-2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,15 +23,8 @@
       <xs:complexContent> 
         <xs:extension base="AbstractStringTransformer"> 
           <xs:all>
-            <xs:element name="stripBeforeRegex" minOccurs="1" maxOccurs="1">
-              <xs:simpleType>
-                <xs:restriction base="xs:string">
-                  <xs:minLength value="1"/>
-                </xs:restriction>
-              </xs:simpleType>        
-            </xs:element>
+            <xs:element name="stripBeforeMatcher" type="TextMatcherType" minOccurs="1" maxOccurs="1" />
           </xs:all>
-          <xs:attribute name="caseSensitive" type="xs:boolean"/>
           <xs:attribute name="inclusive" type="xs:boolean"/>
         </xs:extension>
       </xs:complexContent>

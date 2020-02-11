@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -35,8 +36,8 @@ public class StripBeforeTransformerTest {
     public void testTransformTextDocument()
             throws IOException, ImporterHandlerException {
         StripBeforeTransformer t = new StripBeforeTransformer();
-        t.setStripBeforeRegex("So she set to work");
-        t.setCaseSensitive(false);
+        t.setStripBeforeMatcher(
+                TextMatcher.regex("So she set to work").setIgnoreCase(true));
         t.setInclusive(false);
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
@@ -47,7 +48,6 @@ public class StripBeforeTransformerTest {
         t.transformDocument(
                 htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
-//        System.out.println(os.toString());
 
         Assertions.assertEquals(371, os.toString().length(),
                 "Length of doc content after transformation is incorrect.");
@@ -61,7 +61,8 @@ public class StripBeforeTransformerTest {
     public void testWriteRead() throws IOException {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setInclusive(false);
-        t.setStripBeforeRegex("So she set to work");
+        t.setStripBeforeMatcher(
+                TextMatcher.regex("So she set to work").setIgnoreCase(true));
         XML.assertWriteRead(t, "handler");
     }
 }

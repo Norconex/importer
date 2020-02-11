@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -154,8 +153,7 @@ public class TextBetweenTagger
         List<Pair<Integer, Integer>> matches = new ArrayList<>();
         Matcher leftMatch = between.startMatcher.toRegexMatcher(text);
         while (leftMatch.find()) {
-            Pattern rightPattern = between.endMatcher.toRegexPattern();
-            Matcher rightMatch = rightPattern.matcher(text);
+            Matcher rightMatch = between.endMatcher.toRegexMatcher(text);
             if (rightMatch.find(leftMatch.end())) {
                 if (between.inclusive) {
                     matches.add(new ImmutablePair<>(
@@ -243,20 +241,26 @@ public class TextBetweenTagger
      * Adds text between instructions.
      * @param tbd "text between" details
      */
-    public void addTextBetweenDetails(TextBetweenDetails tbd) {
-        betweens.add(tbd);
+    public void addTextBetweenDetails(TextBetweenDetails details) {
+        betweens.add(details);
+    }
+    /**
+     * Gets text between instructions.
+     * @return "text between" details
+     * @since 3.0.0
+     */
+    public List<TextBetweenDetails> getTextBetweenDetailsList() {
+        return new ArrayList<>(betweens);
     }
 
     @Override
     protected void loadStringTaggerFromXML(XML xml) {
+        xml.checkDeprecated("@caseSensitive",
+                "startMatcher@ignoreCase and endMatcher@ignoreCase", true);
+        xml.checkDeprecated("@name", "toField", true);
 
         List<XML> nodes = xml.getXMLList("textBetween");
         for (XML node : nodes) {
-
-            node.checkDeprecated("@caseSensitive",
-                    "startMatcher@ignoreCase and endMatcher@ignoreCase", true);
-            node.checkDeprecated("@name", "toField", true);
-
             TextBetweenDetails tbd = new TextBetweenDetails();
             tbd.setToField(node.getString("@toField", null));
             tbd.setInclusive(node.getBoolean("@inclusive", false));

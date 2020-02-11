@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,17 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.norconex.commons.lang.text.Regex;
+import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -42,54 +38,49 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *
  * <p>This class can be used as a pre-parsing (text content-types only)
  * or post-parsing handlers.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
- *          inclusive="[false|true]"
- *          caseSensitive="[false|true]"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+ *     {@nx.include com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
  *
- *      &lt;stripBetween&gt;
- *          &lt;start&gt;(regex)&lt;/start&gt;
- *          &lt;end&gt;(regex)&lt;/end&gt;
- *      &lt;/stripBetween&gt;
- *      &lt;!-- multiple stripBetween tags allowed --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <!-- multiple stripBetween tags allowed -->
+ *   <stripBetween
+ *       inclusive="[false|true]">
+ *     <startMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *       (expression matching "left" delimiter)
+ *     </startMatcher>
+ *     <endMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *       (expression matching "right" delimiter)
+ *     </endMatcher>
+ *   </stripBetween>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
+ *     inclusive="true">
+ *   <stripBetween>
+ *     <startMatcher><![CDATA[<!-- SIDENAV_START -->]]></startMatcher>
+ *     <endMatcher><![CDATA[<!-- SIDENAV_END -->]]></endMatcher>
+ *   </stripBetween>
+ * </handler>
+ * }
  * <p>
  * The following will strip all text between (and including) these two
  * HTML comments:
  * <code>&lt;!-- SIDENAV_START --&gt;</code> and
  * <code>&lt;!-- SIDENAV_END --&gt;</code>.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer"
- *          inclusive="true" &gt;
- *      &lt;stripBetween&gt;
- *          &lt;start&gt;&lt;![CDATA[&lt;!-- SIDENAV_START --&gt;]]&gt;&lt;/start&gt;
- *          &lt;end&gt;&lt;![CDATA[&lt;!-- SIDENAV_END --&gt;]]&gt;&lt;/end&gt;
- *      &lt;/stripBetween&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class StripBetweenTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
-    private final Comparator<Pair<String,String>> stripComparator =
-            (o1, o2) -> o1.getLeft().length() - o2.getLeft().length();
-    private final List<Pair<String, String>> stripPairs = new ArrayList<>();
-    private boolean inclusive;
-    private boolean caseSensitive;
+    private final List<StripBetweenDetails> betweens = new ArrayList<>();
 
     @Override
     protected void transformStringContent(final String reference,
@@ -97,92 +88,131 @@ public class StripBetweenTransformer extends AbstractStringTransformer
             final boolean parsed,
             final int sectionIndex) {
 
-        Regex regex = new Regex().dotAll().setIgnoreCase(!caseSensitive);
-//        int flags = Pattern.DOTALL;
-//        if (!caseSensitive) {
-//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-//        }
-        for (Pair<String, String> pair : stripPairs) {
-            List<Pair<Integer, Integer>> matches = new ArrayList<>();
-            Pattern leftPattern = regex.compile(pair.getLeft());
-//                    Pattern.compile(pair.getLeft(), flags);
-            Matcher leftMatch = leftPattern.matcher(content);
+        for (StripBetweenDetails between : betweens) {
+            Matcher leftMatch = between.startMatcher.toRegexMatcher(content);
             while (leftMatch.find()) {
-                Pattern rightPattern = regex.compile(pair.getRight());
-//                        Pattern.compile(pair.getRight(), flags);
-                Matcher rightMatch = rightPattern.matcher(content);
+                Matcher rightMatch = between.endMatcher.toRegexMatcher(content);
                 if (rightMatch.find(leftMatch.end())) {
-                    if (inclusive) {
-                        matches.add(new ImmutablePair<>(
-                                leftMatch.start(), rightMatch.end()));
+                    if (between.inclusive) {
+                        content.delete(leftMatch.start(), rightMatch.end());
                     } else {
-                        matches.add(new ImmutablePair<>(
-                                leftMatch.end(), rightMatch.start()));
+                        content.delete(leftMatch.end(), rightMatch.start());
                     }
                 } else {
                     break;
                 }
-            }
-            for (int i = matches.size() -1; i >= 0; i--) {
-                Pair<Integer, Integer> matchPair = matches.get(i);
-                content.delete(matchPair.getLeft(), matchPair.getRight());
+                leftMatch = between.startMatcher.toRegexMatcher(content);
             }
         }
     }
 
-
-    public boolean isInclusive() {
-        return inclusive;
+    /**
+     * Adds strip between instructions.
+     * @param details "strip between" details
+     * @since 3.0.0
+     */
+    public void addStripBetweenDetails(StripBetweenDetails details) {
+        betweens.add(details);
     }
     /**
-     * Sets whether start and end text pairs should themselves be stripped or
-     * not.
-     * @param inclusive <code>true</code> to strip start and end text
+     * Gets text between instructions.
+     * @return "strip between" details
+     * @since 3.0.0
      */
-    public void setInclusive(final boolean inclusive) {
-        this.inclusive = inclusive;
+    public List<StripBetweenDetails> getStripBetweenDetailsList() {
+        return new ArrayList<>(betweens);
     }
+
+    /**
+     * Gets whether start and end text pairs should be stripped or
+     * not.
+     * @return always <code>false</code>
+     * @deprecated Since 3.0.0, use {@link StripBetweenDetails#isInclusive()}
+     */
+    @Deprecated
+    public boolean isInclusive() {
+        return false;
+    }
+    /**
+     * Sets whether start and end text pairs should be stripped or
+     * not. <b>Calling this method has no effect.</b>
+     * @param inclusive <code>true</code> to keep matching start and end text
+     * @deprecated Since 3.0.0, use {@link StripBetweenDetails#setInclusive(boolean)}
+     */
+    @Deprecated
+    public void setInclusive(boolean inclusive) {
+        //NOOP
+    }
+
+    /**
+     * Gets whether to ignore case when matching start and end text.
+     * @return always <code>false</code>
+     * @deprecated Since 3.0.0, use {@link StripBetweenDetails#isCaseSensitive()}
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return false;
     }
     /**
      * Sets whether to ignore case when matching start and end text.
+     * <b>Calling this method has no effect.</b>
      * @param caseSensitive <code>true</code> to consider character case
+     * @deprecated Since 3.0.0,
+     *             use {@link StripBetweenDetails#setCaseSensitive(boolean)}
      */
-    public void setCaseSensitive(final boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+    @Deprecated
+    public void setCaseSensitive(boolean caseSensitive) {
+        //NOOP
     }
 
+    /**
+     * Adds a new pair of end points to match for stripping.
+     * @param fromText the left string to match
+     * @param toText the right string to match
+     * @deprecated Since 3.0.0, use
+     *              {@link #addStripBetweenDetails(StripBetweenDetails)}
+     */
+    @Deprecated
     public synchronized void addStripEndpoints(
             final String fromText, final String toText) {
-        if (StringUtils.isBlank(fromText) || StringUtils.isBlank(toText)) {
+
+        if (StringUtils.isAnyBlank(fromText, toText)) {
             return;
         }
-        stripPairs.add(new ImmutablePair<>(fromText, toText));
-        Collections.sort(stripPairs, stripComparator);
+        betweens.add(new StripBetweenDetails(
+                TextMatcher.basic(fromText), TextMatcher.basic(toText)));
     }
+    /**
+     * Gets an empty list.
+     * @return empty list
+     * @deprecated Since 3.0.0, use {@link #getStripBetweenDetails()}.
+     */
+    @Deprecated
     public List<Pair<String, String>> getStripEndpoints() {
-        return new ArrayList<>(stripPairs);
+        return new ArrayList<>();
     }
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
-        setInclusive(xml.getBoolean("@inclusive", inclusive));
+        xml.checkDeprecated("@caseSensitive",
+                "startMatcher@ignoreCase and endMatcher@ignoreCase", true);
+        xml.checkDeprecated("@inclusive", "stripBetween@inclusive", true);
         for (XML node : xml.getXMLList("stripBetween")) {
-            addStripEndpoints(
-                    node.getString("start", null), node.getString("end", null));
+            StripBetweenDetails d = new StripBetweenDetails();
+            d.setInclusive(node.getBoolean("@inclusive", false));
+            d.startMatcher.loadFromXML(node.getXML("startMatcher"));
+            d.endMatcher.loadFromXML(node.getXML("endMatcher"));
+            addStripBetweenDetails(d);
         }
     }
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", caseSensitive);
-        xml.setAttribute("inclusive", inclusive);
-        for (Pair<String, String> pair : stripPairs) {
-            XML sbXML = xml.addElement("stripBetween");
-            sbXML.addElement("start", pair.getLeft());
-            sbXML.addElement("end", pair.getRight());
+        for (StripBetweenDetails between : betweens) {
+            XML bxml = xml.addElement("stripBetween")
+                    .setAttribute("inclusive", between.inclusive);
+            between.startMatcher.saveToXML(bxml.addElement("startMatcher"));
+            between.endMatcher.saveToXML(bxml.addElement("endMatcher"));
         }
     }
 
@@ -198,5 +228,81 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     public String toString() {
         return new ReflectionToStringBuilder(
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+
+    /**
+     * @since 3.0.0
+     */
+    public static class StripBetweenDetails {
+        private final TextMatcher startMatcher = new TextMatcher();
+        private final TextMatcher endMatcher = new TextMatcher();
+        private boolean inclusive;
+        /**
+         * Constructor.
+         */
+        public StripBetweenDetails() {
+            super();
+        }
+        /**
+         * Constructor.
+         * @param startMatcher start matcher
+         * @param endMatcher end matcher
+         */
+        public StripBetweenDetails(
+                TextMatcher startMatcher, TextMatcher endMatcher) {
+            super();
+            this.startMatcher.copyFrom(startMatcher);
+            this.endMatcher.copyFrom(endMatcher);
+        }
+
+        /**
+         * Gets the start delimiter matcher for text to strip.
+         * @return start delimiter matcher
+         */
+        public TextMatcher getStartMatcher() {
+            return startMatcher;
+        }
+        /**
+         * Sets the start delimiter matcher for text to strip.
+         * @param startMatcher start delimiter matcher
+         */
+        public void setStartMatcher(TextMatcher startMatcher) {
+            this.startMatcher.copyFrom(startMatcher);
+        }
+        /**
+         * Gets the end delimiter matcher for text to strip.
+         * @return end delimiter matcher
+         */
+        public TextMatcher getEndMatcher() {
+            return endMatcher;
+        }
+        /**
+         * Sets the end delimiter matcher for text to strip.
+         * @param endMatcher end delimiter matcher
+         */
+        public void setEndMatcher(TextMatcher endMatcher) {
+            this.endMatcher.copyFrom(endMatcher);
+        }
+
+        public boolean isInclusive() {
+            return inclusive;
+        }
+        public void setInclusive(boolean inclusive) {
+            this.inclusive = inclusive;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+        @Override
+        public String toString() {
+            return new ReflectionToStringBuilder(
+                    this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        }
     }
 }

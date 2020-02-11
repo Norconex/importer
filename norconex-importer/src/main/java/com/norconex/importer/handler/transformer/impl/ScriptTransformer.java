@@ -60,50 +60,45 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  * </p>
  *
  * {@nx.xml.usage
- * &lt;handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
- *          engineName="(script engine name)"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max content characters to read at once)" &gt;
+ * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ *     engineName="(script engine name)"
+ *     {@nx.include com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
+ *   <script>(your script)</script>
  *
- *      &lt;script&gt;(your script)&lt;/script&gt;
- *
- *  &lt;/handler&gt;
+ * </handler>
  * }
  *
  * <h4>Usage example:</h4>
  * <p>The following example replaces all occurences of "Alice" with "Roger"
  * in a document content.</p>
  * <h5>JavaScript:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *        modifiedContent = content.replace(/Alice/g, 'Roger');
- *        /&#42;return&#42;/ modifiedContent;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml
+ * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer">
+ *   <script><![CDATA[
+ *       modifiedContent = content.replace(/Alice/g, 'Roger');
+ *       /&#42;return&#42;/ modifiedContent;
+ *   ]]></script>
+ * </handler>
+ * }
  * <h5>Lua:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
- *      engineName="lua"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *        modifiedContent = content:gsub('Alice', 'Roger');
- *        return modifiedContent;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml
+ * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ *     engineName="lua">
+ *   <script><![CDATA[
+ *       modifiedContent = content:gsub('Alice', 'Roger');
+ *       return modifiedContent;
+ *   ]]></script>
+ * </handler>
+ * }
  *
  * @author Pascal Essiembre
  * @since 2.4.0
  * @see ScriptRunner
  */
+@SuppressWarnings("javadoc")
 public class ScriptTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 

@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -24,7 +23,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.text.Regex;
+import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.ImporterMetadata;
@@ -35,37 +35,35 @@ import com.norconex.importer.handler.transformer.AbstractStringTransformer;
  *
  * <p>This class can be used as a pre-parsing (text content-types only)
  * or post-parsing handlers.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
- *          inclusive="[false|true]"
- *          caseSensitive="[false|true]"
- *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+ *     inclusive="[false|true]"
+ *     {@nx.include com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
  *
- *      &lt;stripBeforeRegex&gt;(regex)&lt;/stripBeforeRegex&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <stripBeforeMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>>
+ *     (expression matching text up to which to strip)
+ *   </stripBeforeMatcher>
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
+ *     inclusive="true">
+ *   <stripBeforeMatcher><![CDATA[<!-- HEADER_END -->]]></stripBeforeMatcher>
+ * </handler>
+ * }
+ *
  * <p>
- * The following will strip all text up to and including this HTML comment:
+ * The above example will strip all text up to and including this HTML comment:
  * <code>&lt;!-- HEADER_END --&gt;</code>.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
- *          inclusive="true"&gt;
- *      &lt;stripBeforeRegex&gt;&lt;![CDATA[&lt;!-- HEADER_END --&gt;]]&gt;&lt;/stripBeforeRegex&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  */
+@SuppressWarnings("javadoc")
 public class StripBeforeTransformer extends AbstractStringTransformer
         implements IXMLConfigurable {
 
@@ -73,31 +71,42 @@ public class StripBeforeTransformer extends AbstractStringTransformer
             LoggerFactory.getLogger(StripBeforeTransformer.class);
 
     private boolean inclusive;
-    private boolean caseSensitive;
-    private String stripBeforeRegex;
+    private final TextMatcher stripBeforeMatcher = new TextMatcher();
 
     @Override
     protected void transformStringContent(final String reference,
             final StringBuilder content, final ImporterMetadata metadata, final boolean parsed,
             final int sectionIndex) {
-        if (stripBeforeRegex == null) {
-            LOG.error("No regular expression provided.");
+        if (stripBeforeMatcher.getPattern() == null) {
+            LOG.error("No matcher pattern provided.");
             return;
         }
-//        int flags = Pattern.DOTALL;
-//        if (!caseSensitive) {
-//            flags = flags | Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-//        }
-//        Pattern pattern = Pattern.compile(stripBeforeRegex, flags);
-        Pattern pattern = Regex.compileDotAll(stripBeforeRegex, !caseSensitive);
-        Matcher match = pattern.matcher(content);
-        if (match.find()) {
+
+        Matcher m = stripBeforeMatcher.toRegexMatcher(content);
+        if (m.find()) {
             if (inclusive) {
-                content.delete(0, match.end());
+                content.delete(0, m.end());
             } else {
-                content.delete(0, match.start());
+                content.delete(0, m.start());
             }
         }
+    }
+
+    /**
+     * Gets the matcher for the text up to which to strip content.
+     * @return text matcher
+     * @since 3.0.0
+     */
+    public TextMatcher getStripBeforeMatcher() {
+        return stripBeforeMatcher;
+    }
+    /**
+     * Sets the matcher for the text up to which to strip content.
+     * @param stripBeforeMatcher text matcher
+     * @since 3.0.0
+     */
+    public void setStripBeforeMatcher(TextMatcher stripBeforeMatcher) {
+        this.stripBeforeMatcher.copyFrom(stripBeforeMatcher);
     }
 
     public boolean isInclusive() {
@@ -110,37 +119,58 @@ public class StripBeforeTransformer extends AbstractStringTransformer
     public void setInclusive(final boolean inclusive) {
         this.inclusive = inclusive;
     }
+
+    /**
+     * Gets whether matching is case sensitive.
+     * @return <code>true</code> if case sensitive
+     * @deprecated Since 3.0.0, use {@link #getStripBeforeMatcher()}.
+     */
+    @Deprecated
     public boolean isCaseSensitive() {
-        return caseSensitive;
+        return !stripBeforeMatcher.isIgnoreCase();
     }
     /**
-     * Sets whether to ignore case when matching text.
-     * @param caseSensitive <code>true</code> to consider character case
+     * Sets whether matching is case sensitive.
+     * @param caseSensitive <code>true</code> if case sensitive
+     * @deprecated Since 3.0.0, use {@link #setStripBeforeMatcher(TextMatcher)}.
      */
+    @Deprecated
     public void setCaseSensitive(final boolean caseSensitive) {
-        this.caseSensitive = caseSensitive;
+        stripBeforeMatcher.setIgnoreCase(!caseSensitive);
     }
 
+    /**
+     * Gets the expression matching text up to which to strip.
+     * @return expression
+     * @deprecated Since 3.0.0, use {@link #getStripBeforeMatcher()}.
+     */
+    @Deprecated
     public String getStripBeforeRegex() {
-        return stripBeforeRegex;
+        return stripBeforeMatcher.getPattern();
     }
+    /**
+     * Sets the expression matching text up to which to strip.
+     * @param regex expression
+     * @deprecated Since 3.0.0, use {@link #setStripBeforeMatcher(TextMatcher)}.
+     */
+    @Deprecated
     public void setStripBeforeRegex(final String regex) {
-        this.stripBeforeRegex = regex;
+        this.stripBeforeMatcher.setPattern(regex).setMethod(Method.REGEX);
     }
 
     @Override
     protected void loadStringTransformerFromXML(final XML xml) {
-        setCaseSensitive(xml.getBoolean("@caseSensitive", caseSensitive));
+        xml.checkDeprecated(
+                "@caseSensitive", "stripBeforeMatcher@ignoreCase", true);
+        xml.checkDeprecated("stripBeforeRegex", "stripBeforeMatcher", true);
         setInclusive(xml.getBoolean("@inclusive", inclusive));
-        setStripBeforeRegex(
-                xml.getString("stripBeforeRegex", stripBeforeRegex));
+        stripBeforeMatcher.loadFromXML(xml.getXML("stripBeforeMatcher"));
     }
 
     @Override
     protected void saveStringTransformerToXML(final XML xml) {
-        xml.setAttribute("caseSensitive", caseSensitive);
         xml.setAttribute("inclusive", inclusive);
-        xml.addElement("stripBeforeRegex", stripBeforeRegex);
+        stripBeforeMatcher.saveToXML(xml.addElement("stripBeforeMatcher"));
     }
 
     @Override
