@@ -185,7 +185,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
     /**
      * Gets an empty list.
      * @return empty list
-     * @deprecated Since 3.0.0, use {@link #getStripBetweenDetails()}.
+     * @deprecated Since 3.0.0, use {@link #getStripBetweenDetailsList()}.
      */
     @Deprecated
     public List<Pair<String, String>> getStripEndpoints() {

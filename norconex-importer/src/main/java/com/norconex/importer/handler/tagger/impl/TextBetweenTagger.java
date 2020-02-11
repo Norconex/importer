@@ -239,7 +239,7 @@ public class TextBetweenTagger
     }
     /**
      * Adds text between instructions.
-     * @param tbd "text between" details
+     * @param details "text between" details
      */
     public void addTextBetweenDetails(TextBetweenDetails details) {
         betweens.add(details);

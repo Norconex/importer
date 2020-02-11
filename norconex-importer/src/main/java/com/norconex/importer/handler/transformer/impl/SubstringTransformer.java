@@ -1,4 +1,4 @@
-/* Copyright 2017-2018 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,32 +47,27 @@ import com.norconex.importer.handler.transformer.AbstractCharStreamTransformer;
  * This class can be used as a pre-parsing (text content-types only)
  * or post-parsing handlers.</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
- *          begin="(number)" end="(number)"&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
+ *     {@nx.include com.norconex.importer.handler.transformer.AbstractCharStreamTransformer#attributes}
+ *     begin="(number)" end="(number)">
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * </handler>
+ * }
  *
- *  &lt;/handler&gt;
- * </pre>
- *
- * <h4>Usage example:</h4>
+ * {@nx.xml.example
+ * <handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
+ *     end="10000"/>
+ * }
  * <p>
- * The following truncates long text to be 10,000 characters maximum.
+ * The above example truncates long text to be 10,000 characters maximum.
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
- *          end="10000"/&gt;
- * </pre>
  *
  * @author Pascal Essiembre
  * @since 2.7.0
  */
+@SuppressWarnings("javadoc")
 public class SubstringTransformer extends AbstractCharStreamTransformer
         implements IXMLConfigurable {
 
