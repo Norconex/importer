@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,17 @@
  */
 package com.norconex.importer.doc;
 
+import static com.norconex.importer.doc.ImporterMetadata.DOC_REFERENCE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
@@ -32,63 +38,56 @@ import com.norconex.importer.ImporterRuntimeException;
  * @since 2.0.0
  */
 public class ImporterDocument {
+    //TODO still allow String reference in constructor and create
+    // new DocInfo?
 
     //TODO add parent reference info here???
 
-    private String reference;
+    // Rename Doc and rename ImporterMetadata to DocMetadata?
+
+    private final DocInfo docInfo;
     private CachedInputStream content;
     private ImporterMetadata metadata;
-    private ContentType contentType;
-    private String contentEncoding;
-
-    /**
-     * Creates a blank importer document using the supplied stream factory
-     * to handle content.
-     * @param reference document reference
-     * @param streamFactory stream factory
-     * @since 3.0.0
-     */
-    public ImporterDocument(
-            String reference, CachedStreamFactory streamFactory) {
-        Objects.requireNonNull(
-                streamFactory, "'streamFactory' must not be null.");
-        init(reference, streamFactory.newInputStream(), null);
-    }
-
-    /**
-     * Creates a blank importer document using the supplied stream factory
-     * to handle content.
-     * @param reference document reference
-     * @param streamFactory stream factory
-     * @param metadata importer document metadata
-     * @since 3.0.0
-     */
-    public ImporterDocument(String reference,
-            CachedStreamFactory streamFactory, ImporterMetadata metadata) {
-        Objects.requireNonNull(
-                streamFactory, "'streamFactory' must not be null.");
-        init(reference, streamFactory.newInputStream(), metadata);
-    }
 
     public ImporterDocument(String reference, CachedInputStream content) {
-        init(reference, content, null);
+        this(reference, content, null);
     }
     public ImporterDocument(String reference, CachedInputStream content,
             ImporterMetadata metadata) {
-        init(reference, content, metadata);
+        this(new DocInfo(Objects.requireNonNull(reference,
+                "'reference' must not be null.")), content, metadata);
     }
 
-    private void init(String reference,
-            CachedInputStream content, ImporterMetadata metadata) {
+    /**
+     * Creates a blank importer document using the supplied input stream
+     * to handle content.
+     * @param docInfo document details
+     * @param content content input stream
+     * @since 3.0.0
+     */
+    public ImporterDocument(DocInfo docInfo, CachedInputStream content) {
+        this(docInfo, content, null);
+    }
+    /**
+     * Creates a blank importer document using the supplied input stream
+     * to handle content.
+     * @param docInfo document details
+     * @param content content input stream
+     * @param metadata importer document metadata
+     * @since 3.0.0
+     */
+    public ImporterDocument(DocInfo docInfo, CachedInputStream content,
+            ImporterMetadata metadata) {
+        Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
         Objects.requireNonNull(content, "'content' must not be null.");
-        Objects.requireNonNull(reference, "'reference' must not be null.");
-        this.reference = reference;
+        this.docInfo = docInfo;
         this.content = content;
         if (metadata == null) {
             this.metadata = new ImporterMetadata();
         } else {
             this.metadata = metadata;
         }
+        this.metadata.set(DOC_REFERENCE, docInfo.getReference());
     }
 
     /**
@@ -100,21 +99,6 @@ public class ImporterDocument {
     //TODO implement "closeable" instead?
     public synchronized void dispose() throws IOException {
         content.dispose();
-    }
-
-    public ContentType getContentType() {
-        return contentType;
-    }
-    public void setContentType(ContentType contentType) {
-        this.contentType = contentType;
-    }
-
-    public String getReference() {
-        return reference;
-    }
-    public void setReference(String reference) {
-        Objects.requireNonNull(reference, "'reference' must not be null.");
-        this.reference = reference;
     }
 
     /**
@@ -167,13 +151,76 @@ public class ImporterDocument {
         return content.getStreamFactory();
     }
 
-    public String getContentEncoding() {
-        return contentEncoding;
+    public DocInfo getDocInfo() {
+        return docInfo;
     }
-    public void setContentEncoding(String contentEncoding) {
-        this.contentEncoding = contentEncoding;
-    }
+
     public ImporterMetadata getMetadata() {
         return metadata;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+
+    //TODO Deprecate all below?
+
+    /**
+     * Gets the content encoding.
+     * @return content encoding
+     */
+    public String getContentEncoding() {
+        return docInfo.getContentEncoding();
+    }
+    /**
+     * Sets the content encoding.
+     * @param contentEncoding content encoding
+     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
+     */
+    @Deprecated
+    public void setContentEncoding(String contentEncoding) {
+        this.docInfo.setContentEncoding(contentEncoding);
+    }
+    /**
+     * Gets the content type.
+     * @return content type
+     */
+    public ContentType getContentType() {
+        return docInfo.getContentType();
+    }
+    /**
+     * Sets the content type.
+     * @param contentType content type
+     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
+     */
+    @Deprecated
+    public void setContentType(ContentType contentType) {
+        this.docInfo.setContentType(contentType);
+    }
+    /**
+     * Gets the document reference.
+     * @return reference
+     */
+    public String getReference() {
+        return docInfo.getReference();
+    }
+    /**
+     * Sets the document reference.
+     * @param reference reference
+     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
+     */
+    @Deprecated
+    public void setReference(String reference) {
+        this.docInfo.setReference(reference);
     }
 }

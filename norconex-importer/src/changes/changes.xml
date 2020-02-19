@@ -54,6 +54,9 @@
         an extra "onSet" option for dictating how values are set:
         append, prepend, replace, optional.
       </action>
+      <action dev="essiembre" type="add">
+        New DocInfo class.
+      </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>

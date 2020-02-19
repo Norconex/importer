@@ -26,6 +26,9 @@ import com.norconex.commons.lang.map.Properties;
  */
 public class ImporterMetadata extends Properties {
 
+    //TODO rename DocMetadata?
+    //TODO eliminate and user Properties straight?
+
     private static final long serialVersionUID = -2568349411949228998L;
 
     private static final String DOC_META_PREFIX = "document.";

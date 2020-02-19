@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -303,8 +303,8 @@ public class Importer {
             List<ImporterDocument> nestedDocs = new ArrayList<>();
             ImporterDocument document =
                     new ImporterDocument(reference, content, meta);
-            document.setContentType(safeContentType);
-            document.setContentEncoding(contentEncoding);
+            document.getDocInfo().setContentType(safeContentType);
+            document.getDocInfo().setContentEncoding(contentEncoding);
 
             ImporterStatus filterStatus = importDocument(document, nestedDocs);
 
@@ -480,11 +480,11 @@ public class Importer {
                 String ct = doc.getMetadata().getString(
                                 ImporterMetadata.DOC_CONTENT_TYPE);
                 if (StringUtils.isNotBlank(ct)) {
-                    doc.setContentType(ContentType.valueOf(ct));
+                    doc.getDocInfo().setContentType(ContentType.valueOf(ct));
                 }
             }
             if (StringUtils.isBlank(doc.getContentEncoding())) {
-                doc.setContentEncoding(doc.getMetadata().getString(
+                doc.getDocInfo().setContentEncoding(doc.getMetadata().getString(
                         ImporterMetadata.DOC_CONTENT_ENCODING));
             }
             if (nestedDocs != null) {
