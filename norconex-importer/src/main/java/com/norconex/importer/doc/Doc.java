@@ -24,7 +24,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
@@ -38,44 +37,10 @@ import com.norconex.importer.ImporterRuntimeException;
  */
 public class Doc {
 
-
-    //TODO Move these to a new "DocMetadata" constant class?
-    //TODO DELETE these if they can be referenced from DocInfo?
-    //    (still have them as metadata, just no longer need constants).
-    private static final String DOC_META_PREFIX = "document.";
-    public static final String DOC_REFERENCE = DOC_META_PREFIX + "reference";
-    public static final String DOC_CONTENT_TYPE =
-            DOC_META_PREFIX + "contentType";
-    public static final String DOC_CONTENT_ENCODING =
-            DOC_META_PREFIX + "contentEncoding";
-    public static final String DOC_CONTENT_FAMILY =
-            DOC_META_PREFIX + "contentFamily";
-    public static final String DOC_LANGUAGE =
-            DOC_META_PREFIX + "language";
-    public static final String DOC_TRANSLATED_FROM =
-            DOC_META_PREFIX + "translatedFrom";
-    public static final String DOC_GENERATED_TITLE =
-            DOC_META_PREFIX + "generatedTitle";
-    public static final String DOC_IMPORTED_DATE =
-            DOC_META_PREFIX + "importedDate";
-    static final String DOC_EMBEDDED_META_PREFIX =
-            DOC_META_PREFIX + "embedded.";
-    public static final String DOC_EMBEDDED_PARENT_REFERENCE =
-            DOC_EMBEDDED_META_PREFIX + "parent.reference";
-    public static final String DOC_EMBEDDED_PARENT_ROOT_REFERENCE =
-            DOC_EMBEDDED_META_PREFIX + "parent.root.reference";
-    public static final String DOC_EMBEDDED_REFERENCE =
-            DOC_EMBEDDED_META_PREFIX + "reference";
-    public static final String DOC_EMBEDDED_TYPE =
-            DOC_EMBEDDED_META_PREFIX + "type";
-
-
     //TODO still allow String reference in constructor and create
     // new DocInfo?
 
     //TODO add parent reference info here???
-
-    // Rename Doc and rename Properties to DocMetadata?
 
     private final DocInfo docInfo;
     private CachedInputStream content;
@@ -121,7 +86,7 @@ public class Doc {
         } else {
             this.metadata = metadata;
         }
-        this.metadata.set(Doc.DOC_REFERENCE, docInfo.getReference());
+        this.metadata.set(DocMetadata.REFERENCE, docInfo.getReference());
     }
 
     /**
@@ -207,54 +172,13 @@ public class Doc {
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
-    //TODO Deprecate all below?
-
     /**
-     * Gets the content encoding.
-     * @return content encoding
-     */
-    public String getContentEncoding() {
-        return docInfo.getContentEncoding();
-    }
-    /**
-     * Sets the content encoding.
-     * @param contentEncoding content encoding
-     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
-     */
-    @Deprecated
-    public void setContentEncoding(String contentEncoding) {
-        this.docInfo.setContentEncoding(contentEncoding);
-    }
-    /**
-     * Gets the content type.
-     * @return content type
-     */
-    public ContentType getContentType() {
-        return docInfo.getContentType();
-    }
-    /**
-     * Sets the content type.
-     * @param contentType content type
-     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
-     */
-    @Deprecated
-    public void setContentType(ContentType contentType) {
-        this.docInfo.setContentType(contentType);
-    }
-    /**
-     * Gets the document reference.
+     * Gets the document reference. Same as
+     * invoking {@link DocInfo#getReference()}.
      * @return reference
+     * @see #getDocInfo()
      */
     public String getReference() {
         return docInfo.getReference();
-    }
-    /**
-     * Sets the document reference.
-     * @param reference reference
-     * @deprecated Since 3.0.0, use {@link #getDocInfo()}
-     */
-    @Deprecated
-    public void setReference(String reference) {
-        this.docInfo.setReference(reference);
     }
 }

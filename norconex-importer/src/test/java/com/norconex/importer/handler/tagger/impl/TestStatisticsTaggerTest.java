@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TestStatisticsTaggerTest {
@@ -55,7 +55,7 @@ public class TestStatisticsTaggerTest {
         InputStream is = IOUtils.toInputStream(txt, StandardCharsets.UTF_8);
 
         Properties meta = new Properties();
-        meta.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        meta.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument("n/a", is, meta, false);
 
         is.close();

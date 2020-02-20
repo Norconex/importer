@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 
@@ -61,7 +61,7 @@ public class ScriptTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

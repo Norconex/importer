@@ -32,7 +32,7 @@ import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.TextBetweenTagger.TextBetweenDetails;
 
@@ -51,7 +51,7 @@ public class TextBetweenTaggerTest {
         metadata.add("fld2", "asdfx4yqwer", "asdfx5yquer");
         metadata.add("fld3", "x6y");
         metadata.add("fld4", "7"); //ignored
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
 
         t.tagDocument("n/a", null, metadata, false);
 
@@ -73,7 +73,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -97,7 +97,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -124,7 +124,7 @@ public class TextBetweenTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

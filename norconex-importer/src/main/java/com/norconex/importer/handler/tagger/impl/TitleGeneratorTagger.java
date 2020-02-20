@@ -36,7 +36,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -135,7 +135,7 @@ public class TitleGeneratorTagger
             new EntryValueComparator();
 
     public static final String DEFAULT_TO_FIELD =
-            Doc.DOC_GENERATED_TITLE;
+            DocMetadata.GENERATED_TITLE;
     public static final int DEFAULT_TITLE_MAX_LENGTH = 150;
     public static final int UNLIMITED_TITLE_LENGTH = -1;
     public static final int DEFAULT_HEADING_MIN_LENGTH = 10;

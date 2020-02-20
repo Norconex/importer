@@ -37,7 +37,7 @@ import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
 import com.norconex.importer.util.DOMUtil;
@@ -279,7 +279,7 @@ public class DOMTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -310,7 +310,7 @@ public class DOMTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -331,7 +331,7 @@ public class DOMTaggerTest {
             Properties metadata, DOMTagger tagger, String html)
             throws ImporterHandlerException, IOException {
         InputStream is = new ByteArrayInputStream(html.getBytes());
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         tagger.tagDocument("n/a", is, metadata, false);
         is.close();
     }
@@ -386,7 +386,7 @@ public class DOMTaggerTest {
 
         Properties metadata = new Properties();
         InputStream is = new ByteArrayInputStream(content.getBytes());
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.tagDocument("n/a", is, metadata, false);
         is.close();
 

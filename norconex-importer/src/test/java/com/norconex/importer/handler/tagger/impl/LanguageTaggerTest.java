@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class LanguageTaggerTest {
@@ -59,7 +60,7 @@ public class LanguageTaggerTest {
         tagger.tagDocument(doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), true);
         Assertions.assertNotEquals(
-                "en", doc.getMetadata().get(Doc.DOC_LANGUAGE));
+                "en", doc.getMetadata().get(DocMetadata.LANGUAGE));
     }
 
     @Test
@@ -75,7 +76,7 @@ public class LanguageTaggerTest {
             tagger.tagDocument(doc.getReference(),
                     doc.getInputStream(), doc.getMetadata(), true);
             Assertions.assertEquals(
-                    lang, doc.getMetadata().getString(Doc.DOC_LANGUAGE));
+                    lang, doc.getMetadata().getString(DocMetadata.LANGUAGE));
         }
     }
 
@@ -114,6 +115,6 @@ public class LanguageTaggerTest {
         tagger.tagDocument(doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), true);
         Assertions.assertEquals("nl",
-                doc.getMetadata().getString(Doc.DOC_LANGUAGE));
+                doc.getMetadata().getString(DocMetadata.LANGUAGE));
     }
 }

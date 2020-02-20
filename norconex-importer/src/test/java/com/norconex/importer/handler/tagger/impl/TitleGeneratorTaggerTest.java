@@ -30,7 +30,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TitleGeneratorTaggerTest {
@@ -48,11 +48,11 @@ public class TitleGeneratorTaggerTest {
         t.setDetectHeading(true);
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", null, metadata, true);
 
         Assertions.assertNull(
-                metadata.getString(Doc.DOC_GENERATED_TITLE),
+                metadata.getString(DocMetadata.GENERATED_TITLE),
                 "Title should be null");
     }
 
@@ -67,7 +67,7 @@ public class TitleGeneratorTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
@@ -92,12 +92,12 @@ public class TitleGeneratorTaggerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
 
-        String title = metadata.getString(Doc.DOC_GENERATED_TITLE);
+        String title = metadata.getString(DocMetadata.GENERATED_TITLE);
 
         LOG.debug("TITLE IS: " + title);
         Assertions.assertEquals("Chapter I",  title, "Wrong title.");
@@ -112,12 +112,12 @@ public class TitleGeneratorTaggerTest {
                 "This is the first line. This is another line.".getBytes());
 
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", is, metadata, true);
 
         is.close();
 
-        String title = metadata.getString(Doc.DOC_GENERATED_TITLE);
+        String title = metadata.getString(DocMetadata.GENERATED_TITLE);
 
         LOG.debug("TITLE IS: {}", title);
         Assertions.assertEquals(

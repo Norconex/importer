@@ -32,6 +32,7 @@ import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.response.ImporterResponse;
@@ -69,7 +70,7 @@ public class ScriptFilterTest {
 
         Properties metadata = new Properties();
         metadata.set("fruit", "apple");
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
 
         Assertions.assertTrue(f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false),

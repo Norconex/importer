@@ -29,7 +29,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.StripBetweenTransformer.StripBetweenDetails;
 
@@ -49,7 +49,7 @@ public class StripBetweenTransformerTest {
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
@@ -81,7 +81,7 @@ public class StripBetweenTransformerTest {
         ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Properties metadata = new Properties();
-        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument("fake.html", is, os, metadata, false);
         String output = os.toString();
         is.close();

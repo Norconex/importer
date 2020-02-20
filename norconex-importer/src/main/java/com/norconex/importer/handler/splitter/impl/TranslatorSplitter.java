@@ -52,6 +52,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
@@ -281,7 +282,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
         // Do not re-translate a document already translated
         if (doc.getMetadata().containsKey(
-                Doc.DOC_TRANSLATED_FROM)) {
+                DocMetadata.TRANSLATED_FROM)) {
             return Collections.emptyList();
         }
 
@@ -449,8 +450,8 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 //        childMeta.setEmbeddedReference(childEmbedRef);
 //        childMeta.setEmbeddedParentReference(doc.getReference());
 //        childMeta.setEmbeddedParentRootReference(doc.getReference());
-        childMeta.set(Doc.DOC_LANGUAGE, targetLang);
-        childMeta.set(Doc.DOC_TRANSLATED_FROM, sourceLang);
+        childMeta.set(DocMetadata.LANGUAGE, targetLang);
+        childMeta.set(DocMetadata.TRANSLATED_FROM, sourceLang);
 
         Doc childDoc = new Doc(
                 childDocRef, childInput, childMeta);

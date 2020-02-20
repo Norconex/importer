@@ -28,7 +28,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
@@ -89,7 +89,7 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 public class CurrentDateTagger extends AbstractDocumentTagger {
 
     public static final String DEFAULT_FIELD =
-            Doc.DOC_IMPORTED_DATE;
+            DocMetadata.IMPORTED_DATE;
 
     private String toField = DEFAULT_FIELD;
     private String format;

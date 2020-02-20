@@ -35,7 +35,7 @@ import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.handler.transformer.impl.CharsetTransformer;
@@ -173,7 +173,7 @@ public class CharsetTagger extends AbstractDocumentTagger
             return;
         }
         String declaredEncoding =
-                metadata.getString(Doc.DOC_CONTENT_ENCODING);
+                metadata.getString(DocMetadata.CONTENT_ENCODING);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
             String newValue = value;

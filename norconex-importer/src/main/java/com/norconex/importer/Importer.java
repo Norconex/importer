@@ -49,6 +49,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
@@ -284,17 +285,17 @@ public class Importer {
         } else {
             meta = new Properties(metadata);
         }
-        meta.set(Doc.DOC_REFERENCE);
-        meta.set(Doc.DOC_CONTENT_TYPE,
+        meta.set(DocMetadata.REFERENCE);
+        meta.set(DocMetadata.CONTENT_TYPE,
                 safeContentType.toString());
         ContentFamily contentFamily =
                 ContentFamily.forContentType(safeContentType.toString());
         if (contentFamily != null) {
-            meta.set(Doc.DOC_CONTENT_FAMILY,
+            meta.set(DocMetadata.CONTENT_FAMILY,
                     contentFamily.toString());
         }
         if (StringUtils.isNotBlank(contentEncoding)) {
-            meta.set(Doc.DOC_CONTENT_ENCODING, contentEncoding);
+            meta.set(DocMetadata.CONTENT_ENCODING, contentEncoding);
         }
 
         //--- Document Handling ---
@@ -316,8 +317,8 @@ public class Importer {
             for (Doc childDoc : nestedDocs) {
                 ImporterResponse nestedResponse = importDocument(
                         childDoc.getInputStream(),
-                        childDoc.getContentType(),
-                        childDoc.getContentEncoding(),
+                        childDoc.getDocInfo().getContentType(),
+                        childDoc.getDocInfo().getContentEncoding(),
                         childDoc.getMetadata(),
                         childDoc.getReference());
                 if (nestedResponse != null) {
@@ -445,8 +446,8 @@ public class Importer {
             throws IOException, ImporterException {
 
         IDocumentParserFactory factory = importerConfig.getParserFactory();
-        IDocumentParser parser =
-                factory.getParser(doc.getReference(), doc.getContentType());
+        IDocumentParser parser = factory.getParser(
+                doc.getReference(), doc.getDocInfo().getContentType());
 
         // Do not attempt to parse zero-length content
         if (doc.getInputStream().isEmpty()) {
@@ -475,16 +476,16 @@ public class Importer {
             List<Doc> nestedDocs =
                     parser.parseDocument(doc, output);
             output.flush();
-            if (doc.getContentType() == null) {
+            if (doc.getDocInfo().getContentType() == null) {
                 String ct = doc.getMetadata().getString(
-                                Doc.DOC_CONTENT_TYPE);
+                                DocMetadata.CONTENT_TYPE);
                 if (StringUtils.isNotBlank(ct)) {
                     doc.getDocInfo().setContentType(ContentType.valueOf(ct));
                 }
             }
-            if (StringUtils.isBlank(doc.getContentEncoding())) {
+            if (StringUtils.isBlank(doc.getDocInfo().getContentEncoding())) {
                 doc.getDocInfo().setContentEncoding(doc.getMetadata().getString(
-                        Doc.DOC_CONTENT_ENCODING));
+                        DocMetadata.CONTENT_ENCODING));
             }
             if (nestedDocs != null) {
                 embeddedDocs.addAll(nestedDocs);
@@ -561,7 +562,7 @@ public class Importer {
         try {
             String ext = FilenameUtils.getExtension(doc.getReference());
             if (StringUtils.isBlank(ext)) {
-                ContentType ct = doc.getContentType();
+                ContentType ct = doc.getDocInfo().getContentType();
                 if (ct != null) {
                     ext = ct.getExtension();
                 }

@@ -25,7 +25,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -44,7 +44,7 @@ public class DOMFilterTest {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
-                Doc.DOC_CONTENT_TYPE, "text/html");
+                DocMetadata.CONTENT_TYPE, "text/html");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         filter.setSelector("div.disclaimer");
@@ -69,7 +69,7 @@ public class DOMFilterTest {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
-                Doc.DOC_CONTENT_TYPE, "application/xml");
+                DocMetadata.CONTENT_TYPE, "application/xml");
         filter.setOnMatch(OnMatch.INCLUDE);
 
         filter.setSelector("food > fruit[color=red]");
@@ -97,7 +97,7 @@ public class DOMFilterTest {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
-                Doc.DOC_CONTENT_TYPE, "application/xml");
+                DocMetadata.CONTENT_TYPE, "application/xml");
         metadata.set("field1", xml);
         filter.setOnMatch(OnMatch.INCLUDE);
         filter.setFieldMatcher(TextMatcher.basic("field1"));

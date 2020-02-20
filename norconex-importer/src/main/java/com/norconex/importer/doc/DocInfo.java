@@ -64,6 +64,12 @@ public class DocInfo implements Serializable {
 
     // trail of parent references (first one is root/top-level)
     private List<String> embeddedParentReferences = new ArrayList<>();
+
+
+    //TODO above should just be parentReferences and below should be metadata?
+
+
+
     // relative reference to this document within its parent.
     private String embeddedReference = null;
     // type of embedded file this is (from a zip, a word doc, etc.)

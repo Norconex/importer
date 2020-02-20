@@ -185,9 +185,9 @@ public class EmbeddedTest {
                 "Should only have 1 content type.");
 
         // the only content type must be zip
-        Assertions.assertEquals(
-                ZIP, zipResponse.getDocument().getContentType().toString(),
-                "Must be zip content type.");
+        Assertions.assertEquals(ZIP, zipResponse.getDocument()
+                .getDocInfo().getContentType().toString(),
+                        "Must be zip content type.");
 
         String content = IOUtils.toString(
                 zipResponse.getDocument().getInputStream(),
@@ -237,8 +237,9 @@ public class EmbeddedTest {
 
         // the only content type must be zip
         Assertions.assertEquals(
-                ZIP, zipResponse.getDocument().getContentType().toString(),
-                "Must be zip content type.");
+                ZIP, zipResponse.getDocument()
+                        .getDocInfo().getContentType().toString(),
+                                "Must be zip content type.");
 
         String content = IOUtils.toString(
                 zipResponse.getDocument().getInputStream(),
@@ -488,8 +489,8 @@ public class EmbeddedTest {
 
     private ImporterResponse findResponse(
             ImporterResponse response, String contentType) {
-        if (response.getDocument().getContentType().toString().equals(
-                contentType)) {
+        if (response.getDocument().getDocInfo()
+                .getContentType().toString().equals(contentType)) {
             return response;
         }
         ImporterResponse[] childResponses = response.getNestedResponses();

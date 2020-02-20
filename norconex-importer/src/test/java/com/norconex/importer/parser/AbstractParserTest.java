@@ -119,7 +119,7 @@ public abstract class AbstractParserTest {
         String content =
                 IOUtils.toString(doc.getInputStream(), StandardCharsets.UTF_8);
         Assertions.assertEquals(ContentType.valueOf(contentType),
-                doc.getContentType(),
+                doc.getDocInfo().getContentType(),
                 testType + " content-type detection failed for \""
                         + resourcePath + "\".");
 
@@ -127,12 +127,12 @@ public abstract class AbstractParserTest {
                 testType + " content extraction failed for \""
                         + resourcePath + "\". Content:\n" + content);
 
-        String ext = doc.getContentType().getExtension();
+        String ext = doc.getDocInfo().getContentType().getExtension();
         Assertions.assertEquals(extension, ext,
                 testType + " extension detection failed for \""
                         + resourcePath + "\".");
 
-        String familyEnglish = doc.getContentType()
+        String familyEnglish = doc.getDocInfo().getContentType()
                 .getContentFamily().getDisplayName(Locale.ENGLISH);
 //        System.out.println("FAMILY: " + familyEnglish);
         Assertions.assertEquals(family, familyEnglish,

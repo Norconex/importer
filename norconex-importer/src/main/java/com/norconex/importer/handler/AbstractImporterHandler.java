@@ -34,7 +34,7 @@ import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -225,7 +225,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             String declaredEncoding = null;
             if (metadata != null) {
                 declaredEncoding = metadata.getString(
-                        Doc.DOC_CONTENT_ENCODING);
+                        DocMetadata.CONTENT_ENCODING);
             }
             try {
                 detectedCharset = CharsetUtil.detectCharset(

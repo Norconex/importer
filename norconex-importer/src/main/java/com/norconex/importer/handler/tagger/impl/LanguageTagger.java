@@ -35,7 +35,7 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -229,20 +229,20 @@ public class LanguageTagger extends AbstractStringTagger
         if (results.isEmpty()) {
             LOG.debug("No language found, using fallback language for {}.",
                     reference);
-            metadata.set(Doc.DOC_LANGUAGE, fallbackLanguage);
+            metadata.set(DocMetadata.LANGUAGE, fallbackLanguage);
 //            metadata.setLanguage(fallbackLanguage);
             return;
         }
 
         Collections.sort(results, langResultComparator);
-        metadata.set(Doc.DOC_LANGUAGE, results.get(0).getLanguage());
+        metadata.set(DocMetadata.LANGUAGE, results.get(0).getLanguage());
 //        metadata.setLanguage(results.get(0).getLanguage());
 
         if (keepProbabilities) {
             int count = 0;
             for (LanguageResult lang : results) {
                 count++;
-                String prefix = Doc.DOC_LANGUAGE + "." + count;
+                String prefix = DocMetadata.LANGUAGE + "." + count;
                 metadata.set(prefix + ".tag", lang.getLanguage());
                 metadata.set(prefix + ".probability", lang.getRawScore());
             }

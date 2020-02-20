@@ -26,7 +26,7 @@ import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CurrentDateTaggerTest {
@@ -45,7 +45,7 @@ public class CurrentDateTaggerTest {
         tagger.setFormat("yyyy-MM-dd'T'HH:mm:ss");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertTrue(
-                meta.getString(Doc.DOC_IMPORTED_DATE).matches(
+                meta.getString(DocMetadata.IMPORTED_DATE).matches(
                         "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"),
                 "Returned date format does not match");
 
@@ -58,7 +58,7 @@ public class CurrentDateTaggerTest {
                 ArrayUtils.contains(new String[]{
                         "lundi", "mardi", "mercredi", "jeudi", "vendredi",
                         "samedi", "dimanche"},
-                        meta.getString(Doc.DOC_IMPORTED_DATE)),
+                        meta.getString(DocMetadata.IMPORTED_DATE)),
                 "Returned date format does not match");
 
         meta = new Properties();

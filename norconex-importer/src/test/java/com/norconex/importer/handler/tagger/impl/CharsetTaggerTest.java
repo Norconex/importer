@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CharsetTaggerTest {
@@ -73,7 +73,7 @@ public class CharsetTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set("field1", new String(sourceBytes, fromCharset));
-        metadata.set(Doc.DOC_CONTENT_ENCODING, fromCharset);
+        metadata.set(DocMetadata.CONTENT_ENCODING, fromCharset);
 
         t.tagDocument(
                 "ref-" + fromCharset + "-" + toCharset,
