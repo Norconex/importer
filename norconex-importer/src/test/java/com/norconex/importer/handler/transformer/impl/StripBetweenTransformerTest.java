@@ -25,10 +25,11 @@ import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.StripBetweenTransformer.StripBetweenDetails;
 
@@ -47,8 +48,8 @@ public class StripBetweenTransformerTest {
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument(
                 htmlFile.getAbsolutePath(),
                 is, os, metadata, false);
@@ -79,8 +80,8 @@ public class StripBetweenTransformerTest {
 
         ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.transformDocument("fake.html", is, os, metadata, false);
         String output = os.toString();
         is.close();

@@ -27,10 +27,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
@@ -83,7 +83,7 @@ public class KeepOnlyTagger extends AbstractDocumentTagger {
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         for (String field : new HashSet<>(metadata.keySet())) {

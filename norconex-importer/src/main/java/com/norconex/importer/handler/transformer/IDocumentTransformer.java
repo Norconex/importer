@@ -17,7 +17,7 @@ package com.norconex.importer.handler.transformer;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -40,6 +40,6 @@ public interface IDocumentTransformer extends IImporterHandler {
      */
     void transformDocument(
             String reference, InputStream input, 
-            OutputStream output, ImporterMetadata metadata, boolean parsed)
+            OutputStream output, Properties metadata, boolean parsed)
                     throws ImporterHandlerException;
 }

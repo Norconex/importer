@@ -36,7 +36,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XMLValidationException;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
 /**
@@ -166,7 +166,7 @@ public final class ImporterLauncher {
             System.out.println(statusLabel + response.getReference() + " ("
                     + response.getImporterStatus().getDescription() + ")");
         } else {
-            ImporterDocument doc = response.getDocument();
+            Doc doc = response.getDocument();
             StringBuilder path = new StringBuilder(outputPath);
             if (depth > 0) {
                 int pathLength = outputPath.length();

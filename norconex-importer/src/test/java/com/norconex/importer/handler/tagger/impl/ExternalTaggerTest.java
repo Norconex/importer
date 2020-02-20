@@ -24,10 +24,10 @@ import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.ExternalApp;
 
@@ -70,7 +70,7 @@ public class ExternalTaggerTest {
     private void testWithExternalApp(String command)
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set(
                 "metaFileField1", "this is a first test");
         metadata.set("metaFileField2",
@@ -88,7 +88,7 @@ public class ExternalTaggerTest {
         assertMetadataFiles(metadata);
     }
 
-    private void assertMetadataFiles(ImporterMetadata meta) {
+    private void assertMetadataFiles(Properties meta) {
         Assertions.assertEquals(
                 "test first a is this", meta.getString("metaFileField1"));
         Assertions.assertEquals(

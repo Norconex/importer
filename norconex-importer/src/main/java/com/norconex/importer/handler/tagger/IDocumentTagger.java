@@ -16,7 +16,7 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -37,6 +37,6 @@ public interface IDocumentTagger extends IImporterHandler {
      * @throws ImporterHandlerException problem tagging the document
      */
     void tagDocument(String reference, InputStream document, 
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException;
 }

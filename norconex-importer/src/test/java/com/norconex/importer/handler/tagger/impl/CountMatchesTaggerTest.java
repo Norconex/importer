@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CountMatchesTaggerTest {
@@ -42,7 +42,7 @@ public class CountMatchesTaggerTest {
     @Test
     public void testMatchesCount()
             throws ImporterHandlerException, IOException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("url", "http://domain/url/test");
         meta.add("fruits", "grapefruit, apple, orange, APPLE");
         String content = "potato carrot Potato";
@@ -136,7 +136,7 @@ public class CountMatchesTaggerTest {
     @Test
     public void testLargeContent()
             throws ImporterHandlerException, IOException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("fruits", "orange orange");
         String content = "potato whatever whatever whatever whatever"
                 + "potato whatever whatever whatever whatever";
@@ -163,7 +163,7 @@ public class CountMatchesTaggerTest {
     @Test
     public void testAddToSameFieldAndNoMatch()
             throws ImporterHandlerException, IOException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("orange", "orange orange");
         meta.add("apple", "apple apple apple");
         meta.add("potato", "carrot");

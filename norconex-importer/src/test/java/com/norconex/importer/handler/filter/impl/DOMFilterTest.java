@@ -21,10 +21,11 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -41,9 +42,9 @@ public class DOMFilterTest {
     public void testFilterHTML()
             throws IOException, ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set(
-                ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+                Doc.DOC_CONTENT_TYPE, "text/html");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         filter.setSelector("div.disclaimer");
@@ -66,9 +67,9 @@ public class DOMFilterTest {
     public void testFilterXML()
             throws IOException, ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set(
-                ImporterMetadata.DOC_CONTENT_TYPE, "application/xml");
+                Doc.DOC_CONTENT_TYPE, "application/xml");
         filter.setOnMatch(OnMatch.INCLUDE);
 
         filter.setSelector("food > fruit[color=red]");
@@ -94,9 +95,9 @@ public class DOMFilterTest {
     public void testFilterXMLFromField()
             throws IOException, ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set(
-                ImporterMetadata.DOC_CONTENT_TYPE, "application/xml");
+                Doc.DOC_CONTENT_TYPE, "application/xml");
         metadata.set("field1", xml);
         filter.setOnMatch(OnMatch.INCLUDE);
         filter.setFieldMatcher(TextMatcher.basic("field1"));
@@ -121,7 +122,7 @@ public class DOMFilterTest {
     }
 
     private boolean filter(DOMFilter filter,
-            String content, ImporterMetadata metadata)
+            String content, Properties metadata)
                     throws ImporterHandlerException, IOException {
         return filter.acceptDocument("n/a", IOUtils.toInputStream(
                 content, StandardCharsets.UTF_8), metadata, false);

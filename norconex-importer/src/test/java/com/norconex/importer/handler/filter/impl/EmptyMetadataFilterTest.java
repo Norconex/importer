@@ -19,10 +19,10 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -31,7 +31,7 @@ public class EmptyMetadataFilterTest {
 
     @Test
     public void testAcceptDocument() throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field1", "a string to match");
         meta.add("field2", "");
 

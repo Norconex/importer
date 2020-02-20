@@ -20,9 +20,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ConstantTaggerTest {
@@ -41,7 +41,7 @@ public class ConstantTaggerTest {
 
     @Test
     public void testOnSet() throws IOException, ImporterHandlerException {
-        ImporterMetadata m = new ImporterMetadata();
+        Properties m = new Properties();
         m.add("test1", "1");
         m.add("test1", "2");
         m.add("test2", "1");

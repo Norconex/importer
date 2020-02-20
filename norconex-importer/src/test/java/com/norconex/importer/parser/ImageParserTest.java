@@ -17,7 +17,7 @@ package com.norconex.importer.parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.response.ImporterResponse;
 
 public class ImageParserTest extends AbstractParserTest {
@@ -42,7 +42,7 @@ public class ImageParserTest extends AbstractParserTest {
         ImporterResponse[] responses =
                 testParsing("/parser/image/importer-xmp.jpg",
                         "image/jpeg", ".*", "jpg", "Image");
-        ImporterMetadata meta = responses[0].getDocument().getMetadata();
+        Properties meta = responses[0].getDocument().getMetadata();
         Assertions.assertEquals(
                 "XMP Parsing", meta.getString("dc:subject"),
                 "Could not find XMP metadata dc:subject with "
@@ -67,7 +67,7 @@ public class ImageParserTest extends AbstractParserTest {
     public void testJBIG2() throws Exception {
         ImporterResponse[] responses = testParsing("/parser/image/importer.jb2",
                 "image/x-jbig2", ".*", "jb2", "Image");
-        ImporterMetadata meta = responses[0].getDocument().getMetadata();
+        Properties meta = responses[0].getDocument().getMetadata();
 
         Assertions.assertEquals(
                 "125", meta.getString("width"),

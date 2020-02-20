@@ -1,4 +1,4 @@
-/* Copyright 2019 Norconex Inc.
+/* Copyright 2019-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
@@ -76,7 +75,7 @@ public class OnMatchFilterTest {
         }
         @Override
         public boolean acceptDocument(String reference, InputStream document,
-                ImporterMetadata metadata, boolean parsed)
+                Properties metadata, boolean parsed)
                 throws ImporterHandlerException {
             return matched && onMatch == OnMatch.INCLUDE
                 || !matched && onMatch == OnMatch.EXCLUDE;
@@ -90,7 +89,7 @@ public class OnMatchFilterTest {
         }
         @Override
         public boolean acceptDocument(String reference, InputStream document,
-                ImporterMetadata metadata, boolean parsed)
+                Properties metadata, boolean parsed)
                 throws ImporterHandlerException {
             return accept;
         }

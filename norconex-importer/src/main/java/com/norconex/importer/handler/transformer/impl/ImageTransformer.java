@@ -28,8 +28,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.convert.DimensionConverter;
 import com.norconex.commons.lang.img.MutableImage;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -162,7 +162,7 @@ public class ImageTransformer extends AbstractDocumentTransformer {
 
     @Override
     protected void transformApplicableDocument(String reference,
-            InputStream input, OutputStream output, ImporterMetadata metadata,
+            InputStream input, OutputStream output, Properties metadata,
             boolean parsed) throws ImporterHandlerException {
         Objects.requireNonNull("'targetFormat' must not be null");
 

@@ -26,10 +26,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TitleGeneratorTaggerTest {
@@ -46,12 +47,12 @@ public class TitleGeneratorTaggerTest {
         t.setFromField("nullField");
         t.setDetectHeading(true);
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", null, metadata, true);
 
         Assertions.assertNull(
-                metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE),
+                metadata.getString(Doc.DOC_GENERATED_TITLE),
                 "Title should be null");
     }
 
@@ -65,8 +66,8 @@ public class TitleGeneratorTaggerTest {
         File file = TestUtil.getAliceTextFile();
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
@@ -90,13 +91,13 @@ public class TitleGeneratorTaggerTest {
         File file = TestUtil.getAliceTextFile();
         InputStream is = new BufferedInputStream(new FileInputStream(file));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument(file.getAbsolutePath(), is, metadata, true);
 
         is.close();
 
-        String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
+        String title = metadata.getString(Doc.DOC_GENERATED_TITLE);
 
         LOG.debug("TITLE IS: " + title);
         Assertions.assertEquals("Chapter I",  title, "Wrong title.");
@@ -110,13 +111,13 @@ public class TitleGeneratorTaggerTest {
         InputStream is = new ByteArrayInputStream(
                 "This is the first line. This is another line.".getBytes());
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/plain");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/plain");
         t.tagDocument("test.txt", is, metadata, true);
 
         is.close();
 
-        String title = metadata.getString(ImporterMetadata.DOC_GENERATED_TITLE);
+        String title = metadata.getString(Doc.DOC_GENERATED_TITLE);
 
         LOG.debug("TITLE IS: {}", title);
         Assertions.assertEquals(

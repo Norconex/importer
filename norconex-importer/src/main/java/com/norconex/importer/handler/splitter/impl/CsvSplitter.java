@@ -34,10 +34,11 @@ import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
@@ -119,7 +120,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
     private final List<String> contentColumns = new ArrayList<>();
 
     @Override
-    protected List<ImporterDocument> splitApplicableDocument(
+    protected List<Doc> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
@@ -131,12 +132,12 @@ public class CsvSplitter extends AbstractDocumentSplitter
         }
     }
 
-    private List<ImporterDocument> doSplitApplicableDocument(
+    private List<Doc> doSplitApplicableDocument(
             SplittableDocument doc, CachedStreamFactory streamFactory)
             throws IOException {
 
 
-        List<ImporterDocument> rows = new ArrayList<>();
+        List<Doc> rows = new ArrayList<>();
 
         //TODO by default (or as an option), try to detect the format of the
         // file (read first few lines and count number of tabs vs coma,
@@ -150,7 +151,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
             StringBuilder contentStr = new StringBuilder();
             while ((cols = cvsreader.readNext()) != null) {
                 count++;
-                ImporterMetadata childMeta = new ImporterMetadata();
+                Properties childMeta = new Properties();
                 childMeta.loadFromMap(doc.getMetadata());
                 String childEmbedRef = "row-" + count;
                 if (count == 1 && useFirstRowAsFields) {
@@ -190,12 +191,17 @@ public class CsvSplitter extends AbstractDocumentSplitter
                     } else {
                         content = streamFactory.newInputStream();
                     }
-                    ImporterDocument childDoc = new ImporterDocument(
+                    Doc childDoc = new Doc(
                             childDocRef, content, childMeta);
-                    childMeta.setReference(childDocRef);
-                    childMeta.setEmbeddedReference(childEmbedRef);
-                    childMeta.setEmbeddedParentReference(doc.getReference());
-                    childMeta.setEmbeddedParentRootReference(doc.getReference());
+                    DocInfo childInfo = childDoc.getDocInfo();
+                    childInfo.setReference(childDocRef);
+                    childInfo.addEmbeddedParentReference(doc.getReference());
+                    childInfo.setEmbeddedReference(childEmbedRef);
+
+//                    childMeta.setReference(childDocRef);
+//                    childMeta.setEmbeddedReference(childEmbedRef);
+//                    childMeta.setEmbeddedParentReference(doc.getReference());
+//                    childMeta.setEmbeddedParentRootReference(doc.getReference());
                     rows.add(childDoc);
                 }
             }

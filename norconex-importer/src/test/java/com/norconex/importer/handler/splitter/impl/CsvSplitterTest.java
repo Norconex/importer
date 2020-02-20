@@ -27,11 +27,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
@@ -60,9 +60,9 @@ public class CsvSplitterTest {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
         splitter.setReferenceColumn("clientPhone");
-        List<ImporterDocument> docs = split(splitter);
+        List<Doc> docs = split(splitter);
         Assertions.assertEquals(
-                "654-0987", docs.get(2).getMetadata().getEmbeddedReference(),
+                "654-0987", docs.get(2).getDocInfo().getEmbeddedReference(),
                 "Could not find embedded William Dalton phone reference.");
     }
 
@@ -72,9 +72,9 @@ public class CsvSplitterTest {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(false);
         splitter.setReferenceColumn("2");
-        List<ImporterDocument> docs = split(splitter);
+        List<Doc> docs = split(splitter);
         Assertions.assertEquals("William Dalton",
-                docs.get(3).getMetadata().getEmbeddedReference(),
+                docs.get(3).getDocInfo().getEmbeddedReference(),
                 "Could not find embedded William Dalton reference.");
     }
 
@@ -86,7 +86,7 @@ public class CsvSplitterTest {
         splitter.setUseFirstRowAsFields(true);
         splitter.setContentColumns("clientName", "3");
 
-        List<ImporterDocument> docs = split(splitter);
+        List<Doc> docs = split(splitter);
         Assertions.assertEquals("William Dalton 654-0987",
                 IOUtils.toString(docs.get(2).getInputStream(),
                         StandardCharsets.UTF_8));
@@ -98,7 +98,7 @@ public class CsvSplitterTest {
             throws ImporterHandlerException, IOException {
         CsvSplitter splitter = new CsvSplitter();
         splitter.setUseFirstRowAsFields(true);
-        List<ImporterDocument> docs = split(splitter);
+        List<Doc> docs = split(splitter);
 
         Assertions.assertEquals(4, docs.size(),
                 "Invalid number of docs returned.");
@@ -108,15 +108,15 @@ public class CsvSplitterTest {
                 "Could not find William Dalton by column name.");
     }
 
-    private List<ImporterDocument> split(CsvSplitter splitter)
+    private List<Doc> split(CsvSplitter splitter)
             throws IOException, ImporterHandlerException {
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
 
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
 
-        List<ImporterDocument> docs = splitter.splitApplicableDocument(
+        List<Doc> docs = splitter.splitApplicableDocument(
                 doc, new NullOutputStream(), factory, false);
         return docs;
 

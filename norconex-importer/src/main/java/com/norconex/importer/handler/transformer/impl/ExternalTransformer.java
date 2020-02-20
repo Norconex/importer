@@ -25,10 +25,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
@@ -290,7 +290,7 @@ public class ExternalTransformer extends AbstractDocumentTransformer {
 
     @Override
     protected void transformApplicableDocument(String reference,
-            InputStream input, OutputStream output, ImporterMetadata metadata,
+            InputStream input, OutputStream output, Properties metadata,
             boolean parsed) throws ImporterHandlerException {
         h.handleDocument(reference, input, output, metadata);
     }

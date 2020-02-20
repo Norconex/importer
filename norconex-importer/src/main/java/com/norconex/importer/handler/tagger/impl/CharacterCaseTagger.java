@@ -34,9 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.EqualsUtil;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
@@ -180,7 +180,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
     @Override
     public void tagApplicableDocument(
             String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
 
         if (StringUtils.isNotBlank(applyTo)
@@ -209,7 +209,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
     }
 
-    private String changeFieldCase(String field, ImporterMetadata metadata) {
+    private String changeFieldCase(String field, Properties metadata) {
         List<String> values = metadata.getStrings(field);
         String newField = changeCase(field, caseType);
         metadata.remove(field);
@@ -219,7 +219,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         return newField;
     }
     private void changeValuesCase(
-            String field, ImporterMetadata metadata) {
+            String field, Properties metadata) {
         List<String> values = metadata.getStrings(field);
         if (values != null) {
             for (int i = 0; i < values.size(); i++) {

@@ -20,9 +20,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class DeleteTaggerTest {
@@ -37,7 +37,7 @@ public class DeleteTaggerTest {
 
     @Test
     public void testDeleteField() throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field1", "delete me");
         meta.add("field1", "delete me too");
         meta.set("field2", "delete also");
@@ -59,7 +59,7 @@ public class DeleteTaggerTest {
     @Test
     public void testDeleteFieldsViaXMLConfig()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
         meta.add("X-CONTENT-TYPE-OPTIONS", "blah");
@@ -78,7 +78,7 @@ public class DeleteTaggerTest {
         Assertions.assertEquals(3, meta.size(), "Invalid field count");
     }
 
-    private void deleteBasic(ImporterMetadata meta, String field)
+    private void deleteBasic(Properties meta, String field)
             throws ImporterHandlerException {
         DeleteTagger tagger = new DeleteTagger();
         tagger.loadFromXML(new XML(
@@ -93,7 +93,7 @@ public class DeleteTaggerTest {
     @Test
     public void testDeleteFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
         meta.add("X-CONTENT-TYPE-OPTIONS", "blah");

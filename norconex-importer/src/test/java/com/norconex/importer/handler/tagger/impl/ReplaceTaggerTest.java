@@ -20,10 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
 
@@ -33,7 +33,7 @@ public class ReplaceTaggerTest {
     @Test
     public void testNoValue()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("test", "a b c");
 
         Replacement r = null;
@@ -93,7 +93,7 @@ public class ReplaceTaggerTest {
     @Test
     public void testMatchReturnSameValue()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("EXP_NAME+COUNTRY1", "LAZARUS ANDREW");
         meta.add("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]");
 
@@ -188,7 +188,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testRegularReplace() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("fullMatchField", "full value match");
         meta.add("partialNoMatchField", "partial value nomatch");
         meta.add("matchOldField", "match to new field");
@@ -250,7 +250,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testRegexReplace() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("path1", "/this/is/a/path/file.doc");
         meta.add("path2", "/that/is/a/path/file.doc");
         meta.add("path3", "/That/Is/A/Path/File.doc");
@@ -300,7 +300,7 @@ public class ReplaceTaggerTest {
         String originalValue = "One dog, two dogs, three dogs";
 
 
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field", originalValue);
 
         Replacement r = null;
@@ -512,7 +512,7 @@ public class ReplaceTaggerTest {
 
 
         String originalValue = "One dog, two dogs, three dogs";
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field", originalValue);
 
         Replacement r = null;
@@ -581,7 +581,7 @@ public class ReplaceTaggerTest {
     @Test
     public void testDiscardUnchanged()
              throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("test1", "keep me");
         meta.add("test2", "throw me");
 
@@ -615,7 +615,7 @@ public class ReplaceTaggerTest {
 
         // Test what happens when target field already has a value
 
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("source1", "value 1");
         meta.add("target1", "target value 1");
         meta.add("source2", "value 2");

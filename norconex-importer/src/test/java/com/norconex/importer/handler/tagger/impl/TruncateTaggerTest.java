@@ -19,11 +19,11 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class TruncateTaggerTest {
@@ -44,7 +44,7 @@ public class TruncateTaggerTest {
 
     @Test
     public void testWithSuffixAndHash() throws ImporterHandlerException {
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.add("from",
                 "Please truncate me before you start thinking I am too long.",
                 "Another long string to test similar with suffix and no hash",

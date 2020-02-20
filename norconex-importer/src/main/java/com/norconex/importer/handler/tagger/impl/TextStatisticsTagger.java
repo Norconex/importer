@@ -31,10 +31,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 
@@ -139,7 +139,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
 
     @Override
     protected void tagTextDocument(String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
         if (fieldMatcher.getPattern() == null) {
             analyze(input, metadata, null);
@@ -153,7 +153,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     }
 
     protected void analyze(
-            Reader input, ImporterMetadata metadata, String field)
+            Reader input, Properties metadata, String field)
                     throws ImporterHandlerException {
         long charCount = 0;
         long wordCharCount = 0;

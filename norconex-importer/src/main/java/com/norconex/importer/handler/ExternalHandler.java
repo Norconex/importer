@@ -52,7 +52,6 @@ import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.impl.ExternalTagger;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.impl.ExternalParser;
@@ -495,12 +494,12 @@ public class ExternalHandler {
      */
     public void handleDocument(
             String reference, InputStream input,
-            OutputStream output, ImporterMetadata metadata)
+            OutputStream output, Properties metadata)
             throws ImporterHandlerException {
         validate();
         String cmd = command;
         final ArgFiles files = new ArgFiles();
-        ImporterMetadata externalMeta = new ImporterMetadata();
+        Properties externalMeta = new Properties();
 
         //--- Resolve command tokens ---
         LOG.debug("Command before token replacement: {}", cmd);
@@ -552,7 +551,7 @@ public class ExternalHandler {
     private int executeCommand(
             final String cmd,
             final ArgFiles files,
-            final ImporterMetadata metadata,
+            final Properties metadata,
             final InputStream input,
             final OutputStream output) throws ImporterHandlerException {
         SystemCommand systemCommand = new SystemCommand(cmd);
@@ -606,7 +605,7 @@ public class ExternalHandler {
     }
 
     private synchronized void extractMetaFromFile(
-            Reader reader, ImporterMetadata metadata) {
+            Reader reader, Properties metadata) {
         Iterator<String> it = IOUtils.lineIterator(reader);
         while (it.hasNext()) {
             extractMetaFromLine(it.next(), metadata);
@@ -614,7 +613,7 @@ public class ExternalHandler {
     }
 
     private synchronized void extractMetaFromLine(
-            String line, ImporterMetadata metadata) {
+            String line, Properties metadata) {
         RegexFieldValueExtractor.extractFieldValues(metadata, line,
                 patterns.toArray(RegexFieldValueExtractor.EMPTY_ARRAY));
     }
@@ -663,7 +662,7 @@ public class ExternalHandler {
         }
     }
     private String resolveInputMetaToken(
-            String cmd, ArgFiles files, InputStream is, ImporterMetadata meta)
+            String cmd, ArgFiles files, InputStream is, Properties meta)
                     throws ImporterHandlerException {
         if (!cmd.contains(TOKEN_INPUT_META)) {
             return cmd;

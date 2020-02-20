@@ -25,9 +25,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
@@ -52,7 +52,7 @@ public class PDFPageSplitterTest {
     @Test
     public void testSplit() throws IOException, ImporterHandlerException {
         PDFPageSplitter s = new PDFPageSplitter();
-        List<ImporterDocument> pages = split(s);
+        List<Doc> pages = split(s);
 
         Assertions.assertEquals(3, pages.size(), "Invalid number of pages.");
         Assertions.assertEquals(1, getPageNo(pages.get(0)));
@@ -60,7 +60,7 @@ public class PDFPageSplitterTest {
         Assertions.assertEquals(3, getPageNo(pages.get(2)));
     }
 
-    private int getPageNo(ImporterDocument doc) throws IOException {
+    private int getPageNo(Doc doc) throws IOException {
         return doc.getMetadata().getInteger(PDFPageSplitter.DOC_PDF_PAGE_NO);
     }
 
@@ -71,15 +71,15 @@ public class PDFPageSplitterTest {
         XML.assertWriteRead(splitter, "handler");
     }
 
-    private List<ImporterDocument> split(PDFPageSplitter splitter)
+    private List<Doc> split(PDFPageSplitter splitter)
             throws IOException, ImporterHandlerException {
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
 
         CachedStreamFactory factory = new CachedStreamFactory(
                 100 * 1024,  100 * 1024);
 
-        List<ImporterDocument> docs = splitter.splitApplicableDocument(
+        List<Doc> docs = splitter.splitApplicableDocument(
                 doc, new NullOutputStream(), factory, false);
         return docs;
     }

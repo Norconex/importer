@@ -24,11 +24,12 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
@@ -46,8 +47,8 @@ public class RegexTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -74,8 +75,8 @@ public class RegexTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

@@ -24,13 +24,13 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -117,7 +117,7 @@ public class RegexContentFilterTest {
                 new ReaderInputStream(
                         new StringReader("a string that matches"),
                         StandardCharsets.UTF_8),
-                new ImporterMetadata(), "N/A");
+                new Properties(), "N/A");
         Assertions.assertEquals(
                 Status.SUCCESS, response.getImporterStatus().getStatus(),
                 "Status should have been SUCCESS");
@@ -144,7 +144,7 @@ public class RegexContentFilterTest {
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
                         new StringReader("no matches"), StandardCharsets.UTF_8),
-                new ImporterMetadata(), "N/A");
+                new Properties(), "N/A");
         Assertions.assertEquals(
                 Status.REJECTED, response.getImporterStatus().getStatus(),
                 "Status should have been REJECTED");

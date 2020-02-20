@@ -29,11 +29,11 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
 
@@ -105,7 +105,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     @Override
     protected void tagTextDocument(String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         // "toField" and value must be present.
@@ -127,7 +127,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         PropertySetter.orDefault(onSet).apply(metadata, getToField(), count);
     }
 
-    private int countFieldMatches(ImporterMetadata metadata) {
+    private int countFieldMatches(Properties metadata) {
         int count = 0;
         for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
             Matcher m = countMatcher.toRegexMatcher(value);

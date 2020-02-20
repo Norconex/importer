@@ -27,11 +27,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
@@ -107,7 +107,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
 
         // match the keys dealing with values later
@@ -119,7 +119,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
         }
     }
 
-    private void replaceMeta(ImporterMetadata metadata, Replacement r,
+    private void replaceMeta(Properties metadata, Replacement r,
             String sourceField, List<String> metaValues) {
         List<String> newValues = new ArrayList<>(metaValues.size());
         String toValue = r.toValue == null ? "" : r.toValue;

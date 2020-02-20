@@ -17,7 +17,7 @@ package com.norconex.importer.parser;
 import java.io.Writer;
 import java.util.List;
 
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * Implementations are responsible for parsing a document to
@@ -36,6 +36,6 @@ public interface IDocumentParser {
      * @return a list of first-level embedded documents, if any
      * @throws DocumentParserException problem parsing document
      */
-    List<ImporterDocument> parseDocument(
-            ImporterDocument doc, Writer output) throws DocumentParserException;
+    List<Doc> parseDocument(
+            Doc doc, Writer output) throws DocumentParserException;
 }

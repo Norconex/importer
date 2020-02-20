@@ -30,11 +30,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
 public abstract class AbstractParserTest {
@@ -73,9 +73,9 @@ public abstract class AbstractParserTest {
 
         ImporterResponse[] responses = new ImporterResponse[2];
 
-        ImporterMetadata metadata = null;
+        Properties metadata = null;
         ImporterResponse response = null;
-        ImporterDocument doc = null;
+        Doc doc = null;
         ImporterConfig config = new ImporterConfig();
         if (splitEmbedded) {
             GenericDocumentParserFactory f = new GenericDocumentParserFactory();
@@ -84,7 +84,7 @@ public abstract class AbstractParserTest {
         }
 
         // Test file
-        metadata = new ImporterMetadata();
+        metadata = new Properties();
         response = new Importer(config).importDocument(
                 getFile(resourcePath), metadata);
         doc = response.getDocument();
@@ -94,7 +94,7 @@ public abstract class AbstractParserTest {
         responses[0] = response;
 
         // Test input stream
-        metadata = new ImporterMetadata();
+        metadata = new Properties();
         response = new Importer(config).importDocument(
                 getInputStream(resourcePath), metadata, "guess");
         doc = response.getDocument();
@@ -105,7 +105,7 @@ public abstract class AbstractParserTest {
     }
 
     private void assertDefaults(
-            ImporterDocument doc,
+            Doc doc,
             String testType,
             String resourcePath,
             String contentType,

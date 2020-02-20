@@ -27,11 +27,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
@@ -105,7 +105,7 @@ public class TextBetweenTagger
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex) {
+            Properties metadata, boolean parsed, int sectionIndex) {
         for (TextBetweenDetails between : betweens) {
             if (between.fieldMatcher.getPattern() == null) {
                 betweenContent(between, content, metadata);
@@ -116,12 +116,12 @@ public class TextBetweenTagger
     }
 
     private void betweenContent(TextBetweenDetails between,
-            StringBuilder content, ImporterMetadata metadata) {
+            StringBuilder content, Properties metadata) {
         PropertySetter.orDefault(between.onSet).apply(metadata,
                 between.toField, betweenText(between, content.toString()));
     }
     private void betweenMetadata(
-            TextBetweenDetails between, ImporterMetadata metadata) {
+            TextBetweenDetails between, Properties metadata) {
         List<String> allTargetValues = new ArrayList<>();
         for (Entry<String, List<String>> en :
                 metadata.matchKeys(between.fieldMatcher).entrySet()) {

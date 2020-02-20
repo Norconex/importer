@@ -24,9 +24,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class RenameTaggerTest {
@@ -45,7 +45,7 @@ public class RenameTaggerTest {
 
     @Test
     public void testRename() throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("regularFrom1", "value1");
         meta.add("regexFrom2", "value2");
         meta.add("regexFrom3", "value3");

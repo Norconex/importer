@@ -27,11 +27,11 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
 /**
@@ -117,7 +117,7 @@ public class TextPatternTagger
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex) {
+            Properties metadata, boolean parsed, int sectionIndex) {
         RegexFieldValueExtractor.extractFieldValues(metadata, content, patterns);
     }
 

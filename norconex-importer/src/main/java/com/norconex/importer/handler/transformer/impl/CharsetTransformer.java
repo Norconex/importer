@@ -28,9 +28,9 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.CharsetTagger;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
@@ -105,7 +105,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
 
     @Override
     protected void transformApplicableDocument(final String reference,
-            final InputStream input, final OutputStream output, final ImporterMetadata metadata,
+            final InputStream input, final OutputStream output, final Properties metadata,
             final boolean parsed) throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(

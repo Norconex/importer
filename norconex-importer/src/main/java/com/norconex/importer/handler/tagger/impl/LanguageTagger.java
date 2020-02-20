@@ -32,9 +32,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -212,7 +213,7 @@ public class LanguageTagger extends AbstractStringTagger
     @Override
     protected void tagStringContent(
             String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed,
+            Properties metadata, boolean parsed,
             int sectionIndex) throws ImporterHandlerException {
 
         // For massive docs: only use first section of document to detect langs
@@ -226,22 +227,22 @@ public class LanguageTagger extends AbstractStringTagger
 
         // leave now if no matches
         if (results.isEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No language found, using fallback language for "
-                        + reference);
-            }
-            metadata.setLanguage(fallbackLanguage);
+            LOG.debug("No language found, using fallback language for {}.",
+                    reference);
+            metadata.set(Doc.DOC_LANGUAGE, fallbackLanguage);
+//            metadata.setLanguage(fallbackLanguage);
             return;
         }
 
         Collections.sort(results, langResultComparator);
-        metadata.setLanguage(results.get(0).getLanguage());
+        metadata.set(Doc.DOC_LANGUAGE, results.get(0).getLanguage());
+//        metadata.setLanguage(results.get(0).getLanguage());
 
         if (keepProbabilities) {
             int count = 0;
             for (LanguageResult lang : results) {
                 count++;
-                String prefix = ImporterMetadata.DOC_LANGUAGE + "." + count;
+                String prefix = Doc.DOC_LANGUAGE + "." + count;
                 metadata.set(prefix + ".tag", lang.getLanguage());
                 metadata.set(prefix + ".probability", lang.getRawScore());
             }

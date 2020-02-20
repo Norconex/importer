@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 public final class TestUtil {
 
@@ -35,7 +35,7 @@ public final class TestUtil {
         super();
     }
 
-    public static String getContentAsString(ImporterDocument doc)
+    public static String getContentAsString(Doc doc)
             throws IOException {
         return IOUtils.toString(doc.getInputStream(), StandardCharsets.UTF_8);
     }

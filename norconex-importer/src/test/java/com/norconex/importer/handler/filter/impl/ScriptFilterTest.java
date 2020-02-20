@@ -26,12 +26,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.response.ImporterResponse;
@@ -67,9 +67,9 @@ public class ScriptFilterTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set("fruit", "apple");
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
 
         Assertions.assertTrue(f.acceptDocument(
                 htmlFile.getAbsolutePath(), is, metadata, false),
@@ -87,8 +87,8 @@ public class ScriptFilterTest {
             Importer importer = new Importer(cfg);
             ImporterResponse resp = importer.importDocument(
                     new ByteArrayInputStream("test".getBytes()),
-                    new ImporterMetadata(), "N/A");
-            ImporterDocument doc = resp.getDocument();
+                    new Properties(), "N/A");
+            Doc doc = resp.getDocument();
             Assertions.assertNotNull(doc, "Document must not be null");
             Status status = resp.getImporterStatus().getStatus();
             Assertions.assertEquals(Status.SUCCESS, status);

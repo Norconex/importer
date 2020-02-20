@@ -24,9 +24,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
@@ -51,7 +51,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *
  * <p>
  * <b>Since 3.0.0</b> the
- * {@link #isStringContentMatching(String, StringBuilder, ImporterMetadata, boolean, int)}
+ * {@link #isStringContentMatching(String, StringBuilder, Properties, boolean, int)}
  * method is invoked at least once, even if there is no content. This gives
  * subclasses a chance to act on metadata even if there is no content.
  * </p>
@@ -83,7 +83,7 @@ public abstract class AbstractStringFilter
     @Override
     protected final boolean isTextDocumentMatching(
             String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         int sectionIndex = 0;
@@ -133,7 +133,7 @@ public abstract class AbstractStringFilter
     }
 
     protected abstract boolean isStringContentMatching(
-           String reference, StringBuilder content, ImporterMetadata metadata,
+           String reference, StringBuilder content, Properties metadata,
            boolean parsed, int sectionIndex)
                    throws ImporterHandlerException;
 

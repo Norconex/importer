@@ -30,11 +30,12 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.handler.transformer.impl.CharsetTransformer;
@@ -114,7 +115,7 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     @Override
     protected void tagApplicableDocument(String reference,
-            InputStream document, ImporterMetadata metadata, boolean parsed)
+            InputStream document, Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         if (fieldMatcher.getPattern() == null) {
@@ -166,13 +167,13 @@ public class CharsetTagger extends AbstractDocumentTagger
     }
 
     private void convertCharset(
-            String reference, ImporterMetadata metadata, String metaField) {
+            String reference, Properties metadata, String metaField) {
         List<String> values = metadata.get(metaField);
         if (values == null) {
             return;
         }
         String declaredEncoding =
-                metadata.getString(ImporterMetadata.DOC_CONTENT_ENCODING);
+                metadata.getString(Doc.DOC_CONTENT_ENCODING);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
             String newValue = value;

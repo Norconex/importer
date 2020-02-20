@@ -23,8 +23,8 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CharsetTransformerTest {
@@ -70,7 +70,7 @@ public class CharsetTransformerTest {
         t.setTargetCharset("UTF-8");
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         InputStream is = getFileStream("/charset/ISO-8859-1.txt");
 
         t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
@@ -95,7 +95,7 @@ public class CharsetTransformerTest {
         t.setTargetCharset("UTF-8");
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         InputStream is = getFileStream("/charset/ISO-8859-1.txt");
 
         t.transformDocument("ISO-8859-1.txt", is, os, metadata, false);
@@ -126,7 +126,7 @@ public class CharsetTransformerTest {
         t.setTargetCharset(toCharset);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         InputStream is = getFileStream("/charset/" + fromCharset + ".txt");
 
         t.transformDocument(fromCharset + ".txt", is, os, metadata, false);

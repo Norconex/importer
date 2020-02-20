@@ -25,8 +25,8 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
@@ -87,7 +87,7 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
 
     @Override
     protected void transformStringContent(final String reference,
-            final StringBuilder content, final ImporterMetadata metadata, final boolean parsed,
+            final StringBuilder content, final Properties metadata, final boolean parsed,
             final int sectionIndex) {
 
         String text = content.toString();

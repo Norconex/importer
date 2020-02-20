@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class LanguageTaggerTest {
@@ -54,11 +54,12 @@ public class LanguageTaggerTest {
                 new CachedStreamFactory(10 * 1024, 10 * 1024);
         LanguageTagger tagger = new LanguageTagger();
         tagger.setLanguages(Arrays.asList("fr", "it"));
-        ImporterDocument doc = new ImporterDocument(
+        Doc doc = new Doc(
                 "n/a", factory.newInputStream(sampleTexts.get("en")));
         tagger.tagDocument(doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), true);
-        Assertions.assertNotEquals("en", doc.getMetadata().getLanguage());
+        Assertions.assertNotEquals(
+                "en", doc.getMetadata().get(Doc.DOC_LANGUAGE));
     }
 
     @Test
@@ -69,11 +70,12 @@ public class LanguageTaggerTest {
         tagger.setLanguages(Arrays.asList("en", "fr", "it", "es"));
 
         for (String lang : sampleTexts.keySet()) {
-            ImporterDocument doc = new ImporterDocument(
+            Doc doc = new Doc(
                     "n/a", factory.newInputStream(sampleTexts.get(lang)));
             tagger.tagDocument(doc.getReference(),
                     doc.getInputStream(), doc.getMetadata(), true);
-            Assertions.assertEquals(lang, doc.getMetadata().getLanguage());
+            Assertions.assertEquals(
+                    lang, doc.getMetadata().getString(Doc.DOC_LANGUAGE));
         }
     }
 
@@ -96,7 +98,7 @@ public class LanguageTaggerTest {
         LanguageTagger tagger = new LanguageTagger();
         tagger.setKeepProbabilities(true);
         tagger.setLanguages(Arrays.asList("en", "fr", "nl"));
-        ImporterDocument doc = new ImporterDocument(
+        Doc doc = new Doc(
                 "n/a", factory.newInputStream(
             "Alice fing an sich zu langweilen; sie saß schon lange bei ihrer "
           + "Schwester am Ufer und hatte nichts zu thun. Das Buch, das ihre "
@@ -111,6 +113,7 @@ public class LanguageTaggerTest {
           + "This last line is purposely in English."));
         tagger.tagDocument(doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), true);
-        Assertions.assertEquals("nl", doc.getMetadata().getLanguage());
+        Assertions.assertEquals("nl",
+                doc.getMetadata().getString(Doc.DOC_LANGUAGE));
     }
 }

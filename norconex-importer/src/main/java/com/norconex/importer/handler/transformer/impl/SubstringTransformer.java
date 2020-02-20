@@ -24,9 +24,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.AbstractCharStreamTransformer;
 
@@ -99,7 +99,7 @@ public class SubstringTransformer extends AbstractCharStreamTransformer
 
     @Override
     protected void transformTextDocument(final String reference, final Reader input,
-            final Writer output, final ImporterMetadata metadata, final boolean parsed)
+            final Writer output, final Properties metadata, final boolean parsed)
             throws ImporterHandlerException {
         long length = -1;
         if (end > -1) {

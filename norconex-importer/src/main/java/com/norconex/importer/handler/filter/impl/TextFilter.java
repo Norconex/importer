@@ -19,10 +19,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
@@ -127,7 +127,7 @@ public class TextFilter extends AbstractStringFilter {
 
     @Override
     protected boolean isStringContentMatching(String reference,
-            StringBuilder content, ImporterMetadata metadata, boolean parsed,
+            StringBuilder content, Properties metadata, boolean parsed,
             int sectionIndex) throws ImporterHandlerException {
 
         // content

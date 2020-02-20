@@ -19,7 +19,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 
 /**
  * @since 2.0.0
@@ -28,10 +28,10 @@ public class SplittableDocument {
 
     private final String reference;
     private final InputStream input;
-    private final ImporterMetadata metadata;
+    private final Properties metadata;
     
     public SplittableDocument(
-            String reference, InputStream input, ImporterMetadata metadata) {
+            String reference, InputStream input, Properties metadata) {
         super();
         this.reference = reference;
         this.input = input;
@@ -47,7 +47,7 @@ public class SplittableDocument {
     public Reader getReader() {
         return new InputStreamReader(input, StandardCharsets.UTF_8);
     }
-    public ImporterMetadata getMetadata() {
+    public Properties getMetadata() {
         return metadata;
     }
 }

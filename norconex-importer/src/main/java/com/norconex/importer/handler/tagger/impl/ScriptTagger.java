@@ -21,8 +21,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
@@ -44,7 +44,7 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
  *   <li><b>reference:</b> Document unique reference as a string.</li>
  *   <li><b>content:</b> Document content, as a string
  *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as an {@link ImporterMetadata}
+ *   <li><b>metadata:</b> Document metadata as an {@link Properties}
  *       object.</li>
  *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
@@ -114,7 +114,7 @@ public class ScriptTagger extends AbstractStringTagger {
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex)
+            Properties metadata, boolean parsed, int sectionIndex)
             throws ImporterHandlerException {
         Bindings b = scriptRunner.createBindings();
         b.put("reference", reference);

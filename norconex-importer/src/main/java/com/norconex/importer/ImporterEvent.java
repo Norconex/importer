@@ -18,14 +18,14 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.event.Event;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * An Importer event.
  * @author Pascal Essiembre
  * @since 3.0.0
  */
-public class ImporterEvent extends Event<ImporterDocument> {
+public class ImporterEvent extends Event<Doc> {
 
     private static final long serialVersionUID = 1L;
 
@@ -52,7 +52,7 @@ public class ImporterEvent extends Event<ImporterDocument> {
      */
     public ImporterEvent(
             String name,
-            ImporterDocument source,
+            Doc source,
             Object subject,
             boolean parsed,
             Throwable exception) {
@@ -69,14 +69,14 @@ public class ImporterEvent extends Event<ImporterDocument> {
     }
 
     public static ImporterEvent create(
-            String name, ImporterDocument doc, boolean parsed) {
+            String name, Doc doc, boolean parsed) {
         return create(name, doc, null, parsed, null);
     }
-    public static ImporterEvent create(String name, ImporterDocument doc,
+    public static ImporterEvent create(String name, Doc doc,
             Object subject, boolean parsed) {
         return create(name, doc, subject, parsed, null);
     }
-    public static ImporterEvent create(String name, ImporterDocument doc,
+    public static ImporterEvent create(String name, Doc doc,
             Object subject, boolean parsed, Throwable exception) {
         return new ImporterEvent(name, doc, subject, parsed, exception);
     }

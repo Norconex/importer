@@ -31,9 +31,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -96,7 +96,7 @@ public abstract class AbstractCharStreamTransformer
     @Override
     protected final void transformApplicableDocument(
             final String reference, final InputStream input,
-            final OutputStream output, final ImporterMetadata metadata, final boolean parsed)
+            final OutputStream output, final Properties metadata, final boolean parsed)
             throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(
@@ -125,7 +125,7 @@ public abstract class AbstractCharStreamTransformer
 
     protected abstract void transformTextDocument(
             String reference, Reader input,
-            Writer output, ImporterMetadata metadata, boolean parsed)
+            Writer output, Properties metadata, boolean parsed)
                     throws ImporterHandlerException;
 
 

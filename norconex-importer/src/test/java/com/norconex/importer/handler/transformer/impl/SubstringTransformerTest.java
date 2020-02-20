@@ -22,9 +22,9 @@ import java.io.InputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterException;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class SubstringTransformerTest {
@@ -56,7 +56,7 @@ public class SubstringTransformerTest {
         t.setEnd(end);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         t.transformDocument(
-                "N/A", input, output, new ImporterMetadata(), false);
+                "N/A", input, output, new Properties(), false);
         return new String(output.toByteArray());
     }
 

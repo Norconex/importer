@@ -24,13 +24,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.file.ContentType;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.parser.impl.ExternalParser;
 
 public class GenericDocumentParserFactoryTest {
@@ -67,12 +67,12 @@ public class GenericDocumentParserFactoryTest {
         GenericDocumentParserFactory factory =
                 new GenericDocumentParserFactory();
         factory.setIgnoredContentTypesRegex("application/pdf");
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
 
         ImporterConfig config = new ImporterConfig();
         config.setParserFactory(factory);
         Importer importer = new Importer(config);
-        ImporterDocument doc = importer.importDocument(
+        Doc doc = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null,
                         metadata, "n/a").getDocument();
 

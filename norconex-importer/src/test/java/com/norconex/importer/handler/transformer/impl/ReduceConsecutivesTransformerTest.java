@@ -25,8 +25,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReduceConsecutivesTransformerTest {
@@ -53,7 +53,7 @@ public class ReduceConsecutivesTransformerTest {
                 text, StandardCharsets.UTF_8);
                 ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             t.transformDocument(
-                    "dummyRef", is, os, new ImporterMetadata(), true);
+                    "dummyRef", is, os, new Properties(), true);
             String response = os.toString();
 //            System.out.println(response);
             Assertions.assertEquals(

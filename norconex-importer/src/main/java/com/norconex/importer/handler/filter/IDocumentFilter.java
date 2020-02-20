@@ -16,7 +16,7 @@ package com.norconex.importer.handler.filter;
 
 import java.io.InputStream;
 
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -37,7 +37,7 @@ public interface IDocumentFilter extends IImporterHandler {
      * @throws ImporterHandlerException problem reading the document
      */
     boolean acceptDocument(String reference,
-            InputStream document, ImporterMetadata metadata, boolean parsed)
+            InputStream document, Properties metadata, boolean parsed)
         throws ImporterHandlerException;
 
    //TODO have a RejectionCause returned instead of boolean?

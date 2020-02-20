@@ -20,9 +20,9 @@ import java.util.Locale;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class DateFormatTaggerTest {
@@ -38,7 +38,7 @@ public class DateFormatTaggerTest {
         String dateEPOCH = "1002727941000";
         String dateHTTP = "Wed, 10 Oct 2001 11:32:21";
 
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("dateISO", dateISO);
         meta.add("dateEPOCH", dateEPOCH);
         meta.add("dateHTTP",  dateHTTP);
@@ -83,7 +83,7 @@ public class DateFormatTaggerTest {
 
     @Test
     public void testDateFormat() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("datefield1", "2001-10-10T11:32:21");
         meta.add("datefield2", "1002727941000");
 
@@ -118,10 +118,10 @@ public class DateFormatTaggerTest {
 
     @Test
     public void testLocalizedDateFormatting() throws ImporterHandlerException {
-        ImporterMetadata meta;
+        Properties meta;
         DateFormatTagger tagger;
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
@@ -132,7 +132,7 @@ public class DateFormatTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals("Tue, 10 Apr 2001", meta.getString("targetField"));
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("sourceField", "2001-04-10T11:32:21");
         tagger = new DateFormatTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
@@ -147,10 +147,10 @@ public class DateFormatTaggerTest {
 
     @Test
     public void testLocalizedDateParsing() throws ImporterHandlerException {
-        ImporterMetadata meta;
+        Properties meta;
         DateFormatTagger tagger;
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("sourceField", "Tue, 10 Apr 2001");
         tagger = new DateFormatTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
@@ -161,7 +161,7 @@ public class DateFormatTaggerTest {
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertEquals("2001-04-10", meta.getString("targetField"));
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("sourceField", "mar., 10 avr. 2001");
         tagger = new DateFormatTagger();
         tagger.setOnSet(PropertySetter.REPLACE);

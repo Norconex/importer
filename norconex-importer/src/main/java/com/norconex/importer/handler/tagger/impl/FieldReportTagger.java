@@ -37,8 +37,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 
@@ -141,12 +141,12 @@ public class FieldReportTagger extends AbstractDocumentTagger {
 
     @Override
     public void tagApplicableDocument(String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
         reportFields(metadata);
     }
 
-    private synchronized void reportFields(ImporterMetadata metadata) {
+    private synchronized void reportFields(Properties metadata) {
         boolean dirty = false;
         for (Entry<String, List<String>> en : metadata.entrySet()) {
             if (reportField(en.getKey(), en.getValue())) {

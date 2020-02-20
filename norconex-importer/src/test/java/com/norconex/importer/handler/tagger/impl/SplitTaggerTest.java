@@ -23,10 +23,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.SplitTagger.SplitDetails;
 
@@ -53,7 +53,7 @@ public class SplitTaggerTest {
 
     @Test
     public void testMetadataRegularSplit() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("metaToSplitSameField", "Joe, Jack, William, Avrel");
         meta.add("metaNoSplitSameField", "Joe Jack William Avrel");
         meta.add("metaToSplitNewField", "Joe, Jack, William, Avrel");
@@ -104,7 +104,7 @@ public class SplitTaggerTest {
 
     @Test
     public void testMetadataRegexSplit() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("path1", "/a/path/file.doc");
         meta.add("path2", "a, b,c d;e, f");
 
@@ -126,7 +126,7 @@ public class SplitTaggerTest {
 
     @Test
     public void testContentRegularSplit() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
 
         SplitTagger tagger = new SplitTagger();
 
@@ -143,7 +143,7 @@ public class SplitTaggerTest {
 
     @Test
     public void testContentRegexSplit() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         SplitTagger tagger = new SplitTagger();
         tagger.addSplitDetails(new SplitDetails(
                 (TextMatcher) null, "targetField", "[, ;]+", true));

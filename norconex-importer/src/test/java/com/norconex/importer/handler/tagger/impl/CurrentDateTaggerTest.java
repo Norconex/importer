@@ -23,9 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.Sleeper;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class CurrentDateTaggerTest {
@@ -36,19 +37,19 @@ public class CurrentDateTaggerTest {
         long now = System.currentTimeMillis();
         Sleeper.sleepMillis(10);// to make sure time has passed
 
-        ImporterMetadata meta = null;
+        Properties meta = null;
         CurrentDateTagger tagger = null;
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         tagger = new CurrentDateTagger();
         tagger.setFormat("yyyy-MM-dd'T'HH:mm:ss");
         tagger.tagDocument("n/a", null, meta, true);
         Assertions.assertTrue(
-                meta.getString(ImporterMetadata.DOC_IMPORTED_DATE).matches(
+                meta.getString(Doc.DOC_IMPORTED_DATE).matches(
                         "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"),
                 "Returned date format does not match");
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         tagger = new CurrentDateTagger();
         tagger.setFormat("EEEE");
         tagger.setLocale(Locale.CANADA_FRENCH);
@@ -57,10 +58,10 @@ public class CurrentDateTaggerTest {
                 ArrayUtils.contains(new String[]{
                         "lundi", "mardi", "mercredi", "jeudi", "vendredi",
                         "samedi", "dimanche"},
-                        meta.getString(ImporterMetadata.DOC_IMPORTED_DATE)),
+                        meta.getString(Doc.DOC_IMPORTED_DATE)),
                 "Returned date format does not match");
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
@@ -73,7 +74,7 @@ public class CurrentDateTaggerTest {
                 meta.getLong("existingField") > now,
                 "Invalid overwritten date created");
 
-        meta = new ImporterMetadata();
+        meta = new Properties();
         meta.add("existingField", "1002727941000");
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.APPEND);

@@ -46,11 +46,12 @@ import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterRuntimeException;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
@@ -273,20 +274,20 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
 
     @Override
-    protected List<ImporterDocument> splitApplicableDocument(
+    protected List<Doc> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
 
         // Do not re-translate a document already translated
         if (doc.getMetadata().containsKey(
-                ImporterMetadata.DOC_TRANSLATED_FROM)) {
+                Doc.DOC_TRANSLATED_FROM)) {
             return Collections.emptyList();
         }
 
         validateProperties(doc);
 
-        List<ImporterDocument> translatedDocs = new ArrayList<>();
+        List<Doc> translatedDocs = new ArrayList<>();
 
         InputStream is = doc.getInput();
         CachedInputStream cachedInput = null;
@@ -407,7 +408,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         return strategy;
     }
 
-    private ImporterDocument translateDocument(SplittableDocument doc,
+    private Doc translateDocument(SplittableDocument doc,
             CachedStreamFactory streamFactory, String targetLang,
             TextReader reader) throws Exception {
 
@@ -416,7 +417,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
 
         //--- Do Fields ---
-        ImporterMetadata childMeta = translateFields(
+        Properties childMeta = translateFields(
                 doc, translator, sourceLang, targetLang);
 
         //--- Do Content ---
@@ -440,22 +441,27 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         String childEmbedRef = "translation-" + targetLang;
         String childDocRef = doc.getReference() + "!" + childEmbedRef;
 
-        ImporterDocument childDoc = new ImporterDocument(
+        DocInfo childInfo = new DocInfo(childDocRef);
+        childInfo.setEmbeddedReference(childEmbedRef);
+        childInfo.addEmbeddedParentReference(doc.getReference());
+
+//        childMeta.setReference(childDocRef);
+//        childMeta.setEmbeddedReference(childEmbedRef);
+//        childMeta.setEmbeddedParentReference(doc.getReference());
+//        childMeta.setEmbeddedParentRootReference(doc.getReference());
+        childMeta.set(Doc.DOC_LANGUAGE, targetLang);
+        childMeta.set(Doc.DOC_TRANSLATED_FROM, sourceLang);
+
+        Doc childDoc = new Doc(
                 childDocRef, childInput, childMeta);
 
-        childMeta.setReference(childDocRef);
-        childMeta.setEmbeddedReference(childEmbedRef);
-        childMeta.setEmbeddedParentReference(doc.getReference());
-        childMeta.setEmbeddedParentRootReference(doc.getReference());
-        childMeta.set(ImporterMetadata.DOC_LANGUAGE, targetLang);
-        childMeta.set(ImporterMetadata.DOC_TRANSLATED_FROM, sourceLang);
         return childDoc;
     }
 
-    private ImporterMetadata translateFields(
+    private Properties translateFields(
             SplittableDocument doc, Translator translator,
             String sourceLang, String targetLang) throws Exception {
-        ImporterMetadata childMeta = new ImporterMetadata();
+        Properties childMeta = new Properties();
         if (ignoreNonTranslatedFields) {
             if (fieldsToTranslate.isEmpty()) {
                 return childMeta;

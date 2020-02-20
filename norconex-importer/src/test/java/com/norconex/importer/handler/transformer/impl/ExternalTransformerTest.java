@@ -25,10 +25,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.ExternalApp;
@@ -98,7 +98,7 @@ public class ExternalTransformerTest {
             throws IOException, ImporterHandlerException {
         InputStream input = inputAsStream();
         ByteArrayOutputStream output = outputAsStream();
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         if (metaFiles) {
             metadata.set(
                     "metaFileField1", "this is a first test");
@@ -131,7 +131,7 @@ public class ExternalTransformerTest {
         }
     }
 
-    private void assertMetadataFiles(ImporterMetadata meta) {
+    private void assertMetadataFiles(Properties meta) {
         Assertions.assertEquals(
                 "test first a is this", meta.getString("metaFileField1"));
         Assertions.assertEquals(
@@ -141,7 +141,7 @@ public class ExternalTransformerTest {
                 "value2 test second a is this",
                 meta.getStrings("metaFileField2").get(1));
     }
-    private void assertMetadata(ImporterMetadata meta, boolean testReference) {
+    private void assertMetadata(Properties meta, boolean testReference) {
         Assertions.assertEquals("StdoutBefore", meta.getString("field1"));
         Assertions.assertEquals("StdoutAfter", meta.getString("field2"));
         Assertions.assertEquals("field3 StdErrBefore", meta.getString("field3"));

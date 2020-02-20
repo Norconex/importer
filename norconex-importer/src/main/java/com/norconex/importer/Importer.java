@@ -48,8 +48,7 @@ import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ContentTypeDetector;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
@@ -279,30 +278,30 @@ public class Importer {
         }
 
         //--- Metadata ---
-        ImporterMetadata meta = null;
-        if (metadata instanceof ImporterMetadata) {
-            meta = (ImporterMetadata) metadata;
+        Properties meta = null;
+        if (metadata instanceof Properties) {
+            meta = metadata;
         } else {
-            meta = new ImporterMetadata(metadata);
+            meta = new Properties(metadata);
         }
-        meta.setReference(reference);
-        meta.set(ImporterMetadata.DOC_CONTENT_TYPE,
+        meta.set(Doc.DOC_REFERENCE);
+        meta.set(Doc.DOC_CONTENT_TYPE,
                 safeContentType.toString());
         ContentFamily contentFamily =
                 ContentFamily.forContentType(safeContentType.toString());
         if (contentFamily != null) {
-            meta.set(ImporterMetadata.DOC_CONTENT_FAMILY,
+            meta.set(Doc.DOC_CONTENT_FAMILY,
                     contentFamily.toString());
         }
         if (StringUtils.isNotBlank(contentEncoding)) {
-            meta.set(ImporterMetadata.DOC_CONTENT_ENCODING, contentEncoding);
+            meta.set(Doc.DOC_CONTENT_ENCODING, contentEncoding);
         }
 
         //--- Document Handling ---
         try {
-            List<ImporterDocument> nestedDocs = new ArrayList<>();
-            ImporterDocument document =
-                    new ImporterDocument(reference, content, meta);
+            List<Doc> nestedDocs = new ArrayList<>();
+            Doc document =
+                    new Doc(reference, content, meta);
             document.getDocInfo().setContentType(safeContentType);
             document.getDocInfo().setContentEncoding(contentEncoding);
 
@@ -314,7 +313,7 @@ public class Importer {
             } else {
                 response = new ImporterResponse(document);
             }
-            for (ImporterDocument childDoc : nestedDocs) {
+            for (Doc childDoc : nestedDocs) {
                 ImporterResponse nestedResponse = importDocument(
                         childDoc.getInputStream(),
                         childDoc.getContentType(),
@@ -339,7 +338,7 @@ public class Importer {
     }
 
     private ImporterStatus importDocument(
-            ImporterDocument document, List<ImporterDocument> nestedDocs)
+            Doc document, List<Doc> nestedDocs)
                     throws IOException, ImporterException {
         ImporterStatus filterStatus = null;
 
@@ -374,7 +373,7 @@ public class Importer {
     }
 
     private ImporterStatus executeHandlers(
-            ImporterDocument doc, List<ImporterDocument> childDocsHolder,
+            Doc doc, List<Doc> childDocsHolder,
             List<IImporterHandler> handlers, boolean parsed)
             throws IOException, ImporterException {
         if (handlers == null) {
@@ -442,7 +441,7 @@ public class Importer {
     }
 
     private void parseDocument(
-            ImporterDocument doc, List<ImporterDocument> embeddedDocs)
+            Doc doc, List<Doc> embeddedDocs)
             throws IOException, ImporterException {
 
         IDocumentParserFactory factory = importerConfig.getParserFactory();
@@ -473,19 +472,19 @@ public class Importer {
                         parser.getClass().getCanonicalName(),
                         doc.getReference());
             }
-            List<ImporterDocument> nestedDocs =
+            List<Doc> nestedDocs =
                     parser.parseDocument(doc, output);
             output.flush();
             if (doc.getContentType() == null) {
                 String ct = doc.getMetadata().getString(
-                                ImporterMetadata.DOC_CONTENT_TYPE);
+                                Doc.DOC_CONTENT_TYPE);
                 if (StringUtils.isNotBlank(ct)) {
                     doc.getDocInfo().setContentType(ContentType.valueOf(ct));
                 }
             }
             if (StringUtils.isBlank(doc.getContentEncoding())) {
                 doc.getDocInfo().setContentEncoding(doc.getMetadata().getString(
-                        ImporterMetadata.DOC_CONTENT_ENCODING));
+                        Doc.DOC_CONTENT_ENCODING));
             }
             if (nestedDocs != null) {
                 embeddedDocs.addAll(nestedDocs);
@@ -522,7 +521,7 @@ public class Importer {
         }
     }
 
-    private void saveParseError(ImporterDocument doc, Exception e) {
+    private void saveParseError(Doc doc, Exception e) {
         Path saveDir = importerConfig.getParseErrorsSaveDir();
         if (!saveDir.toFile().exists()) {
             try {
@@ -560,8 +559,7 @@ public class Importer {
 
         // Save content
         try {
-            String ext = FilenameUtils.getExtension(
-                    doc.getMetadata().getReference());
+            String ext = FilenameUtils.getExtension(doc.getReference());
             if (StringUtils.isBlank(ext)) {
                 ContentType ct = doc.getContentType();
                 if (ct != null) {
@@ -580,14 +578,14 @@ public class Importer {
         }
     }
 
-    private void tagDocument(ImporterDocument doc, IDocumentTagger tagger,
+    private void tagDocument(Doc doc, IDocumentTagger tagger,
             boolean parsed) throws ImporterHandlerException {
         tagger.tagDocument(doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), parsed);
     }
 
     private boolean acceptDocument(
-            ImporterDocument doc, IDocumentFilter filter, boolean parsed)
+            Doc doc, IDocumentFilter filter, boolean parsed)
             throws ImporterHandlerException {
 
         boolean accepted = filter.acceptDocument(
@@ -603,7 +601,7 @@ public class Importer {
         return true;
     }
 
-    private void transformDocument(ImporterDocument doc,
+    private void transformDocument(Doc doc,
             IDocumentTransformer transformer, boolean parsed)
                     throws ImporterHandlerException, IOException {
 
@@ -616,9 +614,9 @@ public class Importer {
         CachedInputStream newInputStream = null;
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Transformer \"" + transformer.getClass()
-                        + "\" did not return any content for: "
-                        + doc.getReference());
+                LOG.debug("Transformer \"{}"
+                        + "\" did not return any content for: {}.",
+                        transformer.getClass(), doc.getReference());
             }
             try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             newInputStream = in;
@@ -633,8 +631,8 @@ public class Importer {
         doc.setInputStream(newInputStream);
     }
 
-    private List<ImporterDocument> splitDocument(
-            ImporterDocument doc, IDocumentSplitter h, boolean parsed)
+    private List<Doc> splitDocument(
+            Doc doc, IDocumentSplitter h, boolean parsed)
                     throws ImporterHandlerException, IOException {
 
         CachedInputStream  in = doc.getInputStream();
@@ -643,7 +641,7 @@ public class Importer {
         SplittableDocument sdoc = new SplittableDocument(
                 doc.getReference(), in, doc.getMetadata());
 
-        List<ImporterDocument> childDocs = h.splitDocument(
+        List<Doc> childDocs = h.splitDocument(
                 sdoc, out, streamFactory, parsed);
         try {
             // If writing was performed, get new content

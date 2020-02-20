@@ -36,8 +36,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.TextFilter;
@@ -126,7 +125,7 @@ public class ImporterTest {
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
                 TestUtil.getAlicePdfFile(), ContentType.PDF, null,
-                        new ImporterMetadata(), "n/a");
+                        new Properties(), "n/a");
 
 //        System.out.println("Reject desc: "
 //                        + result.getImporterStatus().getDescription());
@@ -137,7 +136,7 @@ public class ImporterTest {
                         + "status description.");
     }
 
-    private void writeToFile(ImporterDocument doc, File file)
+    private void writeToFile(Doc doc, File file)
             throws IOException {
         FileOutputStream out = new FileOutputStream(file);
         IOUtils.copy(doc.getInputStream(), out);

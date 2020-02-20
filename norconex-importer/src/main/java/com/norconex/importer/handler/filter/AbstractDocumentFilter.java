@@ -21,9 +21,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -33,7 +33,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * upon matching it is handled by this class.  Subclasses only
  * need to focus on whether the document gets matched or not by
  * implementing the
- * {@link #isDocumentMatched(String, InputStream, ImporterMetadata, boolean)}
+ * {@link #isDocumentMatched(String, InputStream, Properties, boolean)}
  * method.</p>
  *
  * <h3 id="logic">Inclusion/exclusion logic:</h3>
@@ -97,7 +97,7 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     @Override
     public boolean acceptDocument(String reference,
-            InputStream input, ImporterMetadata metadata,
+            InputStream input, Properties metadata,
             boolean parsed) throws ImporterHandlerException {
 
         if (!isApplicable(reference, metadata, parsed)) {
@@ -116,7 +116,7 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
 
     protected abstract boolean isDocumentMatched(
             String reference, InputStream input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException;
 
     @Override

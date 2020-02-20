@@ -28,12 +28,13 @@ import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
@@ -104,7 +105,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
     public PDFPageSplitter() {
         super();
         addRestriction(new PropertyMatcher(
-                TextMatcher.basic(ImporterMetadata.DOC_CONTENT_TYPE),
+                TextMatcher.basic(Doc.DOC_CONTENT_TYPE),
                 TextMatcher.basic("application/pdf")));
     }
 
@@ -116,12 +117,12 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
     }
 
     @Override
-    protected List<ImporterDocument> splitApplicableDocument(
+    protected List<Doc> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
                     throws ImporterHandlerException {
 
-        List<ImporterDocument> pageDocs = new ArrayList<>();
+        List<Doc> pageDocs = new ArrayList<>();
 
         // Make sure we are not splitting a page that was already split
         if (doc.getMetadata().getInteger(DOC_PDF_PAGE_NO, 0) > 0) {
@@ -147,12 +148,18 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                         doc.getReference() + referencePagePrefix + pageNo;
 
                 // metadata
-                ImporterMetadata pageMeta = new ImporterMetadata();
+                Properties pageMeta = new Properties();
                 pageMeta.loadFromMap(doc.getMetadata());
-                pageMeta.setReference(pageRef);
-                pageMeta.setEmbeddedReference(Integer.toString(pageNo));
-                pageMeta.setEmbeddedParentReference(doc.getReference());
-                pageMeta.setEmbeddedParentRootReference(doc.getReference());
+
+                DocInfo pageInfo = new DocInfo(pageRef);
+
+                pageInfo.setEmbeddedReference(Integer.toString(pageNo));
+                pageInfo.addEmbeddedParentReference(doc.getReference());
+
+//                pageMeta.setReference(pageRef);
+//                pageMeta.setEmbeddedReference(Integer.toString(pageNo));
+//                pageMeta.setEmbeddedParentReference(doc.getReference());
+//                pageMeta.setEmbeddedParentRootReference(doc.getReference());
 
                 pageMeta.set(DOC_PDF_PAGE_NO, pageNo);
                 pageMeta.set(DOC_PDF_TOTAL_PAGES, document.getNumberOfPages());
@@ -164,8 +171,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                 } finally {
                     page.close();
                 }
-                ImporterDocument pageDoc = new ImporterDocument(
-                        pageRef,
+                Doc pageDoc = new Doc(
+                        pageInfo,
                         streamFactory.newInputStream(os.toInputStream()),
                         pageMeta);
                 pageDocs.add(pageDoc);

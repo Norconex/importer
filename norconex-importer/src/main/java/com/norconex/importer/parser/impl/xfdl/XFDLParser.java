@@ -47,8 +47,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 
@@ -67,7 +67,7 @@ public class XFDLParser implements IDocumentParser {
           "application/vnd.xfdl;content-encoding=\"base64-gzip\"".toCharArray();
 
     @Override
-    public List<ImporterDocument> parseDocument(ImporterDocument doc,
+    public List<Doc> parseDocument(Doc doc,
             Writer output) throws DocumentParserException {
         try {
             //TODO have a generic utility method for this?
@@ -92,7 +92,7 @@ public class XFDLParser implements IDocumentParser {
     }
 
     private void parse(
-            BufferedReader reader, Writer out, ImporterMetadata metadata)
+            BufferedReader reader, Writer out, Properties metadata)
             throws IOException, ParserConfigurationException, SAXException {
         reader.mark(MAGIC_BASE64.length);
         char[] signature = new char[MAGIC_BASE64.length];
@@ -125,7 +125,7 @@ public class XFDLParser implements IDocumentParser {
     }
 
     //TODO use a SAX parser instead for increased efficiency.
-    private void parseXML(Document doc, Writer out, ImporterMetadata metadata)
+    private void parseXML(Document doc, Writer out, Properties metadata)
             throws IOException {
 
         // Grab the title

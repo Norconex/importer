@@ -32,10 +32,11 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
 
@@ -134,7 +135,7 @@ public class TitleGeneratorTagger
             new EntryValueComparator();
 
     public static final String DEFAULT_TO_FIELD =
-            ImporterMetadata.DOC_GENERATED_TITLE;
+            Doc.DOC_GENERATED_TITLE;
     public static final int DEFAULT_TITLE_MAX_LENGTH = 150;
     public static final int UNLIMITED_TITLE_LENGTH = -1;
     public static final int DEFAULT_HEADING_MIN_LENGTH = 10;
@@ -153,7 +154,7 @@ public class TitleGeneratorTagger
 
     @Override
     protected void tagStringContent(String reference, StringBuilder content,
-            ImporterMetadata metadata, boolean parsed, int sectionIndex)
+            Properties metadata, boolean parsed, int sectionIndex)
                     throws ImporterHandlerException {
 
         // The first chunk already did the title generation.

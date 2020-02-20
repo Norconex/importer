@@ -30,10 +30,11 @@ import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
@@ -160,7 +161,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
     }
 
     @Override
-    protected List<ImporterDocument> splitApplicableDocument(
+    protected List<Doc> splitApplicableDocument(
             SplittableDocument doc, OutputStream output,
             CachedStreamFactory streamFactory, boolean parsed)
             throws ImporterHandlerException {
@@ -169,7 +170,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 sourceCharset, doc.getReference(),
                 doc.getInput(), doc.getMetadata(), parsed);
 
-        List<ImporterDocument> docs = new ArrayList<>();
+        List<Doc> docs = new ArrayList<>();
         try {
             Document soupDoc = Jsoup.parse(doc.getInput(), inputCharset,
                     doc.getReference(), DOMUtil.toJSoupParser(getParser()));
@@ -188,7 +189,7 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
             // process "legit" child elements
             for (Element elm : elms) {
-                ImporterMetadata childMeta = new ImporterMetadata();
+                Properties childMeta = new Properties();
                 childMeta.loadFromMap(doc.getMetadata());
                 String childContent = elm.outerHtml();
                 String childEmbedRef = elm.cssSelector();
@@ -199,12 +200,16 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 } else {
                     content = streamFactory.newInputStream();
                 }
-                ImporterDocument childDoc =
-                        new ImporterDocument(childRef, content, childMeta);
-                childMeta.setReference(childRef);
-                childMeta.setEmbeddedReference(childEmbedRef);
-                childMeta.setEmbeddedParentReference(doc.getReference());
-                childMeta.setEmbeddedParentRootReference(doc.getReference());
+                Doc childDoc =
+                        new Doc(childRef, content, childMeta);
+
+                DocInfo childInfo = childDoc.getDocInfo();
+                childInfo.addEmbeddedParentReference(doc.getReference());
+                childInfo.setEmbeddedReference(childEmbedRef);
+//                childMeta.setReference(childRef);
+//                childMeta.setEmbeddedReference(childEmbedRef);
+//                childMeta.setEmbeddedParentReference(doc.getReference());
+//                childMeta.setEmbeddedParentRootReference(doc.getReference());
                 docs.add(childDoc);
             }
         } catch (IOException e) {

@@ -23,9 +23,9 @@ import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class KeepOnlyTaggerTest {
@@ -40,7 +40,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void testKeepAllFields() throws Exception {
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.add("key1", "value1");
         metadata.add("key2", "value2");
         metadata.add("key3", "value3");
@@ -57,7 +57,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void testKeepSingleField() throws Exception {
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.add("key1", "value1");
         metadata.add("key2", "value2");
         metadata.add("key3", "value3");
@@ -74,7 +74,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void testDeleteAllMetadata() throws Exception {
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.add("key1", "value1");
         metadata.add("key2", "value2");
         metadata.add("key3", "value3");
@@ -91,7 +91,7 @@ public class KeepOnlyTaggerTest {
     @Test
     public void testKeepFieldsRegexViaXMLConfig()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
         meta.add("X-CONTENT-TYPE-OPTIONS", "blah");

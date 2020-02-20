@@ -21,9 +21,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.HierarchyTagger.HierarchyDetails;
 
@@ -66,7 +66,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testMultiCharSeparator() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "//vegetable//potato//sweet");
         HierarchyTagger tagger = createDefaultTagger("//", "!");
         Assertions.assertArrayEquals(new String[] {
@@ -78,7 +78,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testEmptySegments() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "//vegetable/potato//sweet/fries//");
         HierarchyTagger tagger = createDefaultTagger("/", "!");
 
@@ -106,7 +106,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testMultipleWithMiscSeparatorPlacement() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "/vegetable/potato/sweet",
                 "vegetable/potato/sweet",
                 "vegetable/potato/sweet/",
@@ -134,7 +134,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testRegexSeparatorWithToSep() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "/1/vegetable/2/potato/3//4/sweet");
         HierarchyTagger tagger = createDefaultTagger("/\\d/", "!");
         tagger.getHierarchyDetails().get(0).setRegex(true);
@@ -147,7 +147,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testRegexSeparatorWithToSepKeepEmpty() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "/1/vegetable/2/potato/3//4/sweet");
         HierarchyTagger tagger = createDefaultTagger("/\\d/", "!");
         tagger.getHierarchyDetails().get(0).setKeepEmptySegments(true);
@@ -162,7 +162,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testRegexSeparatorWithoutToSep() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "/1/vegetable/2/potato/3//4/sweet");
         HierarchyTagger tagger = createDefaultTagger("/\\d/", null);
         tagger.getHierarchyDetails().get(0).setRegex(true);
@@ -175,7 +175,7 @@ public class HierarchyTaggerTest {
 
     @Test
     public void testRegexSeparatorWithoutToSepKeepEmpty() {
-        ImporterMetadata meta = createDefaultTestMetadata(
+        Properties meta = createDefaultTestMetadata(
                 "/1/vegetable/2/potato/3//4/sweet");
         HierarchyTagger tagger = createDefaultTagger("/\\d/", null);
         tagger.getHierarchyDetails().get(0).setKeepEmptySegments(true);
@@ -191,11 +191,11 @@ public class HierarchyTaggerTest {
 
     private void tagAndAssert(
             String fromSep, String toSep, String... expected) {
-        ImporterMetadata meta = createDefaultTestMetadata();
+        Properties meta = createDefaultTestMetadata();
         HierarchyTagger tagger = createDefaultTagger(fromSep, toSep);
         Assertions.assertArrayEquals(expected, tag(tagger, meta));
     }
-    private String[] tag(HierarchyTagger tagger, ImporterMetadata meta) {
+    private String[] tag(HierarchyTagger tagger, Properties meta) {
         try {
             tagger.tagDocument("blah", new NullInputStream(0), meta, false);
             return meta.getStrings("targetField").toArray(new String[] {});
@@ -209,8 +209,8 @@ public class HierarchyTaggerTest {
                 "sourceField", "targetField", fromSep, toSep));
         return tagger;
     }
-    private ImporterMetadata createDefaultTestMetadata(String... testValues) {
-        ImporterMetadata meta = new ImporterMetadata();
+    private Properties createDefaultTestMetadata(String... testValues) {
+        Properties meta = new Properties();
         if (ArrayUtils.isEmpty(testValues)) {
             meta.set("sourceField", "/vegetable/potato/sweet");
         } else {

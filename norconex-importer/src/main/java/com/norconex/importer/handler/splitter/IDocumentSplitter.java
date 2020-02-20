@@ -20,14 +20,14 @@ import java.util.List;
 import org.apache.xmlbeans.impl.xb.xsdschema.ImportDocument;
 
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 
 /**
  * Responsible for splitting a single document into several ones.  The 
- * {@link ImporterDocument} instances returned by implementations will be
+ * {@link Doc} instances returned by implementations will be
  * added as children of a parent {@link ImportDocument}.  Each children
  * will then be passed to this interface again for further splitting if
  * necessary.  Each document returned will also go through the same
@@ -52,7 +52,7 @@ import com.norconex.importer.handler.filter.IDocumentFilter;
  */
 public interface IDocumentSplitter extends IImporterHandler {
 
-    List<ImporterDocument> splitDocument(
+    List<Doc> splitDocument(
             SplittableDocument doc, 
             OutputStream docOutput,
             CachedStreamFactory streamFactory, 

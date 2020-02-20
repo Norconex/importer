@@ -27,9 +27,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
@@ -121,7 +121,7 @@ public class RegexMetadataFilter extends AbstractDocumentFilter {
 
     @Override
     protected boolean isDocumentMatched(String reference, InputStream input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         if (StringUtils.isBlank(regex)) {

@@ -33,9 +33,9 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
@@ -259,7 +259,7 @@ public class DOMTagger extends AbstractDocumentTagger {
 
     @Override
     protected void tagApplicableDocument(String reference,
-            InputStream document, ImporterMetadata metadata, boolean parsed)
+            InputStream document, Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         try {
@@ -294,7 +294,7 @@ public class DOMTagger extends AbstractDocumentTagger {
     }
 
     private void domExtractDocList(
-            List<Document> jsoupDocs, ImporterMetadata metadata) {
+            List<Document> jsoupDocs, Properties metadata) {
         for (DOMExtractDetails details : extractions) {
             List<String> extractedValues = new ArrayList<>();
             for (Document doc : jsoupDocs) {

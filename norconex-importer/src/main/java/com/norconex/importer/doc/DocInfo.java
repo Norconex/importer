@@ -15,6 +15,9 @@
 package com.norconex.importer.doc;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -23,6 +26,7 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.bean.BeanUtil;
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.file.ContentType;
 
 /**
@@ -32,7 +36,7 @@ import com.norconex.commons.lang.file.ContentType;
  * which can be anything, and can be modified at will by implementors
  * (thus not always constant).
  * In most cases where light caching is involved, implementors can cache this
- * class data as opposed to caching {@link ImporterDocument}.
+ * class data as opposed to caching {@link Doc}.
  * @author Pascal Essiembre
  * @since 3.0.0
  */
@@ -47,7 +51,7 @@ public class DocInfo implements Serializable {
 
     //TODO add parent reference info here???
 
-    //TODO remove most ImporterMetadata method and put them here.
+    //TODO remove most Properties method and put them here.
 
     //TODO track original vs final here (useful for tracking deletions
     // under a modified reference (and have dynamic committer targets).
@@ -55,6 +59,20 @@ public class DocInfo implements Serializable {
     private String reference;
     private ContentType contentType;
     private String contentEncoding;
+
+    //TODO remove prefix "embedded" and just keep parent* ?
+
+    // trail of parent references (first one is root/top-level)
+    private List<String> embeddedParentReferences = new ArrayList<>();
+    // relative reference to this document within its parent.
+    private String embeddedReference = null;
+    // type of embedded file this is (from a zip, a word doc, etc.)
+    private String embeddedType = null;
+
+
+    //TODO add a method toMetadata or "asMetadata" as opposed to have
+    // external conversion
+
 
     /**
      * Constructor.
@@ -99,6 +117,32 @@ public class DocInfo implements Serializable {
     }
     public void setContentEncoding(String contentEncoding) {
         this.contentEncoding = contentEncoding;
+    }
+
+    public List<String> getEmbeddedParentReferences() {
+        return Collections.unmodifiableList(embeddedParentReferences);
+    }
+    public void setEmbeddedParentReferences(
+            List<String> embeddedParentReferences) {
+        CollectionUtil.setAll(
+                this.embeddedParentReferences, embeddedParentReferences);
+    }
+    public void addEmbeddedParentReference(String embeddedParentReference) {
+        this.embeddedParentReferences.add(embeddedParentReference);
+    }
+
+    public String getEmbeddedReference() {
+        return embeddedReference;
+    }
+    public void setEmbeddedReference(String embeddedReference) {
+        this.embeddedReference = embeddedReference;
+    }
+
+    public String getEmbeddedType() {
+        return embeddedType;
+    }
+    public void setEmbeddedType(String embeddedType) {
+        this.embeddedType = embeddedType;
     }
 
     public void copyTo(DocInfo target) {

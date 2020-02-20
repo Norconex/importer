@@ -26,8 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 public class ReplaceTransformerTest {
@@ -99,7 +99,7 @@ public class ReplaceTransformerTest {
         InputStream is = IOUtils.toInputStream(content, StandardCharsets.UTF_8);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.set("document.reference", reference);
 
         t.transformDocument(reference, is, os, metadata, true);

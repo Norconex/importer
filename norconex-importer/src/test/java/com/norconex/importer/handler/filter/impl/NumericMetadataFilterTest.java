@@ -19,9 +19,9 @@ import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.NumericMetadataFilter.Operator;
@@ -32,7 +32,7 @@ public class NumericMetadataFilterTest {
     public void testAcceptDocument()
             throws IOException, ImporterHandlerException {
 
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("lowerthan", "-4.25");
         meta.add("inrange", "25");
         meta.add("greaterthan", "55");

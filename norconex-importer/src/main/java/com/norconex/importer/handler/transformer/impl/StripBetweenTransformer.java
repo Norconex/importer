@@ -25,10 +25,10 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
@@ -84,7 +84,7 @@ public class StripBetweenTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringContent(final String reference,
-            final StringBuilder content, final ImporterMetadata metadata,
+            final StringBuilder content, final Properties metadata,
             final boolean parsed,
             final int sectionIndex) {
 

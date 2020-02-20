@@ -25,9 +25,9 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -79,7 +79,7 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
     @Override
     protected final void tagApplicableDocument(
             String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
         InputStream nonNullDocument = document;
         if (nonNullDocument == null) {
@@ -99,7 +99,7 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     protected abstract void tagTextDocument(
             String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException;
 
 

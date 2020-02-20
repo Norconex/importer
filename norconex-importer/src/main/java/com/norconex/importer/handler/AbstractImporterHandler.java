@@ -28,12 +28,13 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -50,7 +51,7 @@ import com.norconex.importer.util.CharsetUtil;
  *
  * <p>
  * Subclasses <b>must</b> test if a document is accepted using the
- * {@link #isApplicable(String, ImporterMetadata, boolean)} method.
+ * {@link #isApplicable(String, Properties, boolean)} method.
  * </p>
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
@@ -181,7 +182,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @return <code>true</code> if this handler is applicable to the document
      */
     protected final boolean isApplicable(
-            String reference, ImporterMetadata metadata, boolean parsed) {
+            String reference, Properties metadata, boolean parsed) {
         if (restrictions.isEmpty()) {
             return true;
         }
@@ -209,7 +210,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             String charset,
             String reference,
             InputStream document,
-            ImporterMetadata metadata,
+            Properties metadata,
             boolean parsed) {
         if (parsed) {
             LOG.debug("Document already parsed, assuming UTF-8 charset: {}",
@@ -224,7 +225,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
             String declaredEncoding = null;
             if (metadata != null) {
                 declaredEncoding = metadata.getString(
-                        ImporterMetadata.DOC_CONTENT_ENCODING);
+                        Doc.DOC_CONTENT_ENCODING);
             }
             try {
                 detectedCharset = CharsetUtil.detectCharset(

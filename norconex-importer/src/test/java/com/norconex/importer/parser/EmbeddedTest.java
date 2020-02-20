@@ -30,10 +30,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.response.ImporterResponse;
 
 public class EmbeddedTest {
@@ -508,7 +508,7 @@ public class EmbeddedTest {
 
     private List<String> getTikaContentTypes(ImporterResponse response) {
         List<String> types = new ArrayList<>();
-        ImporterMetadata meta = response.getDocument().getMetadata();
+        Properties meta = response.getDocument().getMetadata();
         List<String> rawTypes = meta.getStrings("Content-Type");
         for (String t : rawTypes) {
             types.add(StringUtils.substringBefore(t, ";"));
@@ -523,7 +523,7 @@ public class EmbeddedTest {
     private ImporterResponse importFileZipFile(GenericDocumentParserFactory f)
             throws IOException, ImporterException {
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         ImporterConfig config = new ImporterConfig();
         config.setParserFactory(f);
         Importer importer = new Importer(config);

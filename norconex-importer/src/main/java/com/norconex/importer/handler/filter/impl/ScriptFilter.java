@@ -23,8 +23,8 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
@@ -46,7 +46,7 @@ import com.norconex.importer.handler.filter.AbstractStringFilter;
  *   <li><b>reference:</b> Document unique reference as a string.</li>
  *   <li><b>content:</b> Document content, as a string
  *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as a {@link ImporterMetadata}
+ *   <li><b>metadata:</b> Document metadata as a {@link Properties}
  *       object.</li>
  *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
@@ -118,7 +118,7 @@ public class ScriptFilter extends AbstractStringFilter {
 
     @Override
     protected boolean isStringContentMatching(String reference,
-            StringBuilder content, ImporterMetadata metadata, boolean parsed,
+            StringBuilder content, Properties metadata, boolean parsed,
             int sectionIndex) throws ImporterHandlerException {
 
         Bindings b = scriptRunner.createBindings();

@@ -16,8 +16,8 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 
@@ -42,7 +42,7 @@ public abstract class AbstractDocumentTagger extends AbstractImporterHandler
 
     @Override
     public final void tagDocument(String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException {
         if (!isApplicable(reference, metadata, parsed)) {
             return;
@@ -52,6 +52,6 @@ public abstract class AbstractDocumentTagger extends AbstractImporterHandler
 
     protected abstract void tagApplicableDocument(
             String reference, InputStream document,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
                     throws ImporterHandlerException;
 }

@@ -26,12 +26,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.TextBetweenTagger.TextBetweenDetails;
 
@@ -45,12 +46,12 @@ public class TextBetweenTaggerTest {
         addDetails(t, "target", "x", "y", false, false, null)
                .getFieldMatcher().setPattern("fld*").setMethod(Method.WILDCARD);
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         metadata.add("fld1", "x1y", "x2y", "x3y");
         metadata.add("fld2", "asdfx4yqwer", "asdfx5yquer");
         metadata.add("fld3", "x6y");
         metadata.add("fld4", "7"); //ignored
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
 
         t.tagDocument("n/a", null, metadata, false);
 
@@ -71,8 +72,8 @@ public class TextBetweenTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -95,8 +96,8 @@ public class TextBetweenTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();
@@ -122,8 +123,8 @@ public class TextBetweenTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
 
         is.close();

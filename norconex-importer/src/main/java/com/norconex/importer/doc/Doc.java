@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.doc;
 
-import static com.norconex.importer.doc.ImporterMetadata.DOC_REFERENCE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
@@ -30,6 +28,7 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.ImporterRuntimeException;
 
 /**
@@ -37,23 +36,56 @@ import com.norconex.importer.ImporterRuntimeException;
  * @author Pascal Essiembre
  * @since 2.0.0
  */
-public class ImporterDocument {
+public class Doc {
+
+
+    //TODO Move these to a new "DocMetadata" constant class?
+    //TODO DELETE these if they can be referenced from DocInfo?
+    //    (still have them as metadata, just no longer need constants).
+    private static final String DOC_META_PREFIX = "document.";
+    public static final String DOC_REFERENCE = DOC_META_PREFIX + "reference";
+    public static final String DOC_CONTENT_TYPE =
+            DOC_META_PREFIX + "contentType";
+    public static final String DOC_CONTENT_ENCODING =
+            DOC_META_PREFIX + "contentEncoding";
+    public static final String DOC_CONTENT_FAMILY =
+            DOC_META_PREFIX + "contentFamily";
+    public static final String DOC_LANGUAGE =
+            DOC_META_PREFIX + "language";
+    public static final String DOC_TRANSLATED_FROM =
+            DOC_META_PREFIX + "translatedFrom";
+    public static final String DOC_GENERATED_TITLE =
+            DOC_META_PREFIX + "generatedTitle";
+    public static final String DOC_IMPORTED_DATE =
+            DOC_META_PREFIX + "importedDate";
+    static final String DOC_EMBEDDED_META_PREFIX =
+            DOC_META_PREFIX + "embedded.";
+    public static final String DOC_EMBEDDED_PARENT_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "parent.reference";
+    public static final String DOC_EMBEDDED_PARENT_ROOT_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "parent.root.reference";
+    public static final String DOC_EMBEDDED_REFERENCE =
+            DOC_EMBEDDED_META_PREFIX + "reference";
+    public static final String DOC_EMBEDDED_TYPE =
+            DOC_EMBEDDED_META_PREFIX + "type";
+
+
     //TODO still allow String reference in constructor and create
     // new DocInfo?
 
     //TODO add parent reference info here???
 
-    // Rename Doc and rename ImporterMetadata to DocMetadata?
+    // Rename Doc and rename Properties to DocMetadata?
 
     private final DocInfo docInfo;
     private CachedInputStream content;
-    private ImporterMetadata metadata;
+    private Properties metadata;
 
-    public ImporterDocument(String reference, CachedInputStream content) {
+    public Doc(String reference, CachedInputStream content) {
         this(reference, content, null);
     }
-    public ImporterDocument(String reference, CachedInputStream content,
-            ImporterMetadata metadata) {
+    public Doc(String reference, CachedInputStream content,
+            Properties metadata) {
         this(new DocInfo(Objects.requireNonNull(reference,
                 "'reference' must not be null.")), content, metadata);
     }
@@ -61,33 +93,35 @@ public class ImporterDocument {
     /**
      * Creates a blank importer document using the supplied input stream
      * to handle content.
+     * The document reference automatically gets added to the metadata.
      * @param docInfo document details
      * @param content content input stream
      * @since 3.0.0
      */
-    public ImporterDocument(DocInfo docInfo, CachedInputStream content) {
+    public Doc(DocInfo docInfo, CachedInputStream content) {
         this(docInfo, content, null);
     }
     /**
      * Creates a blank importer document using the supplied input stream
      * to handle content.
+     * The document reference automatically gets added to the metadata.
      * @param docInfo document details
      * @param content content input stream
      * @param metadata importer document metadata
      * @since 3.0.0
      */
-    public ImporterDocument(DocInfo docInfo, CachedInputStream content,
-            ImporterMetadata metadata) {
+    public Doc(DocInfo docInfo, CachedInputStream content,
+            Properties metadata) {
         Objects.requireNonNull(docInfo, "'docInfo' must not be null.");
         Objects.requireNonNull(content, "'content' must not be null.");
         this.docInfo = docInfo;
         this.content = content;
         if (metadata == null) {
-            this.metadata = new ImporterMetadata();
+            this.metadata = new Properties();
         } else {
             this.metadata = metadata;
         }
-        this.metadata.set(DOC_REFERENCE, docInfo.getReference());
+        this.metadata.set(Doc.DOC_REFERENCE, docInfo.getReference());
     }
 
     /**
@@ -155,7 +189,7 @@ public class ImporterDocument {
         return docInfo;
     }
 
-    public ImporterMetadata getMetadata() {
+    public Properties getMetadata() {
         return metadata;
     }
 

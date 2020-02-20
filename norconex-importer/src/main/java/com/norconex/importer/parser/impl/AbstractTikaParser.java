@@ -51,8 +51,9 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.importer.doc.ImporterDocument;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IHintsAwareParser;
 import com.norconex.importer.parser.OCRConfig;
@@ -101,14 +102,14 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
 
     @Override
-    public final List<ImporterDocument> parseDocument(
-            ImporterDocument doc, Writer output)
+    public final List<Doc> parseDocument(
+            Doc doc, Writer output)
             throws DocumentParserException {
 
         Metadata tikaMetadata = new Metadata();
         if (doc.getContentType() == null) {
             throw new DocumentParserException(
-                    "ImporterDocument must have a content-type.");
+                    "Doc must have a content-type.");
         }
         String contentType = doc.getContentType().toString();
         //TODO getContent() here does a rewind just to get stream
@@ -173,7 +174,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
 
     protected void addTikaMetadataToImporterMetadata(
-            Metadata tikaMeta, ImporterMetadata metadata) {
+            Metadata tikaMeta, Properties metadata) {
         String[]  names = tikaMeta.names();
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
@@ -209,7 +210,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
     protected RecursiveParser createRecursiveParser(
             String reference, String contentType, Writer writer,
-            ImporterMetadata metadata, CachedStreamFactory streamFactory) {
+            Properties metadata, CachedStreamFactory streamFactory) {
         String splitRegex =
                 parseHints.getEmbeddedConfig().getSplitContentTypes();
         if (StringUtils.isNotBlank(splitRegex)
@@ -291,14 +292,14 @@ public class AbstractTikaParser implements IHintsAwareParser {
             extends ParserDecorator implements RecursiveParser {
         private static final long serialVersionUID = -5011890258694908887L;
         private final String reference;
-        private final ImporterMetadata metadata;
+        private final Properties metadata;
         private final CachedStreamFactory streamFactory;
         private boolean isMasterDoc = true;
         private String masterType;
         private int embedCount;
-        private List<ImporterDocument> embeddedDocs;
+        private List<Doc> embeddedDocs;
         public SplitEmbbededParser(String reference, Parser parser,
-                ImporterMetadata metadata, CachedStreamFactory streamFactory) {
+                Properties metadata, CachedStreamFactory streamFactory) {
             super(parser);
             this.streamFactory = streamFactory;
             this.reference = reference;
@@ -334,11 +335,11 @@ public class AbstractTikaParser implements IHintsAwareParser {
                     embeddedDocs = new ArrayList<>();
                 }
 
-                ImporterMetadata embedMeta = new ImporterMetadata();
+                Properties embedMeta = new Properties();
                 addTikaMetadataToImporterMetadata(tikaMeta, embedMeta);
 
-                String embedRef = reference + "!" + resolveEmbeddedResourceName(
-                        tikaMeta, embedMeta, embedCount);
+                DocInfo embedDocInfo = resolveEmbeddedResourceName(
+                        tikaMeta, reference, embedCount);
 
                 // Read the steam into cache for reuse since Tika will
                 // close the original stream on us causing exceptions later.
@@ -347,45 +348,56 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 CachedInputStream embedInput = embedOutput.getInputStream();
                 embedOutput.close();
 
-                ImporterDocument embedDoc = new ImporterDocument(
-                        embedRef, embedInput, embedMeta);
-                embedMeta.setReference(embedRef);
-                embedMeta.setEmbeddedParentReference(reference);
+                embedDocInfo.addEmbeddedParentReference(reference);
+                Doc embedDoc = new Doc(embedDocInfo, embedInput, embedMeta);
+//                embedMeta.setReference(embedRef);
+//                embedMeta.setEmbeddedParentReference(reference);
 
-                String rootRef = metadata.getEmbeddedParentRootReference();
-                if (StringUtils.isBlank(rootRef)) {
-                    rootRef = reference;
-                }
-                embedMeta.setEmbeddedParentRootReference(rootRef);
+//                String rootRef = metadata.getEmbeddedParentRootReference();
+//                if (StringUtils.isBlank(rootRef)) {
+//                    rootRef = reference;
+//                }
+//                embedMeta.setEmbeddedParentRootReference(rootRef);
 
                 embeddedDocs.add(embedDoc);
             }
         }
 
         @Override
-        public List<ImporterDocument> getEmbeddedDocuments() {
+        public List<Doc> getEmbeddedDocuments() {
             return embeddedDocs;
         }
 
-        private String resolveEmbeddedResourceName(
-                Metadata tikaMeta, ImporterMetadata embedMeta, int embedCount) {
+        private DocInfo resolveEmbeddedResourceName(
+                Metadata tikaMeta, String parentRef, int embedCount) {
+
+            DocInfo docInfo = new DocInfo();
+
             String name = null;
 
             // Package item file name (e.g. a file in a zip)
             name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
             if (StringUtils.isNotBlank(name)) {
-                embedMeta.setEmbeddedReference(name);
-                embedMeta.setEmbeddedType("package-file");
-                return name;
+                docInfo.setReference(reference + "!" + name);
+                docInfo.setEmbeddedReference(name);
+                docInfo.setEmbeddedType("package-file");
+//                embedMeta.setEmbeddedReference(name);
+//                embedMeta.setEmbeddedType("package-file");
+//                return name;
+                return docInfo;
             }
 
             // Name of Embedded file in regular document
             // (e.g. excel file in a word doc)
             name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
             if (StringUtils.isNotBlank(name)) {
-                embedMeta.setEmbeddedReference(name);
-                embedMeta.setEmbeddedType("file-file");
-                return name;
+                docInfo.setReference(reference + "!" + name);
+                docInfo.setEmbeddedReference(name);
+                docInfo.setEmbeddedType("package-file");
+//                embedMeta.setEmbeddedReference(name);
+//                embedMeta.setEmbeddedType("file-file");
+//                return name;
+                return docInfo;
             }
 
             // Name of embedded content in regular document
@@ -396,14 +408,21 @@ public class AbstractTikaParser implements IHintsAwareParser {
             if (StringUtils.isNotBlank(name)) {
                 ContentType ct = ContentType.valueOf(name);
                 if (ct != null) {
-                    embedMeta.setEmbeddedType("file-object");
-                    return "embedded-" + embedCount + "." + ct.getExtension();
+                    docInfo.setReference(reference + "!" + "embedded-"
+                            + embedCount + "." + ct.getExtension());
+                    docInfo.setEmbeddedType("package-file");
+//                    embedMeta.setEmbeddedType("file-object");
+//                    return "embedded-" + embedCount + "." + ct.getExtension();
+                    return docInfo;
                 }
             }
 
             // Default... we could not find any name so make a unique one.
-            embedMeta.setEmbeddedType("unknown");
-            return "embedded-" + embedCount + ".unknown";
+//            embedMeta.setEmbeddedType("unknown");
+            docInfo.setEmbeddedType("unknown");
+            docInfo.setReference(reference + "!"
+                    + "embedded-" + embedCount + ".unknown");
+            return docInfo;
         }
     }
 
@@ -411,13 +430,13 @@ public class AbstractTikaParser implements IHintsAwareParser {
             extends ParserDecorator implements RecursiveParser  {
         private static final long serialVersionUID = -5011890258694908887L;
         private final Writer writer;
-        private final ImporterMetadata metadata;
+        private final Properties metadata;
 
         private final LinkedList<String> hierarchy = new LinkedList<>();
 
 
         public MergeEmbeddedParser(Parser parser,
-                Writer writer, ImporterMetadata metadata) {
+                Writer writer, Properties metadata) {
             super(parser);
             this.writer = writer;
             this.metadata = metadata;
@@ -445,13 +464,13 @@ public class AbstractTikaParser implements IHintsAwareParser {
             }
         }
         @Override
-        public List<ImporterDocument> getEmbeddedDocuments() {
+        public List<Doc> getEmbeddedDocuments() {
             return null;
         }
     }
 
     protected interface RecursiveParser extends Parser {
-        List<ImporterDocument> getEmbeddedDocuments();
+        List<Doc> getEmbeddedDocuments();
     }
 
     private boolean hasNoExtractCondition() {

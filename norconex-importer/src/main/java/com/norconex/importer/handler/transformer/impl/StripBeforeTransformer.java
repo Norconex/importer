@@ -23,11 +23,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
 
 /**
@@ -75,7 +75,7 @@ public class StripBeforeTransformer extends AbstractStringTransformer
 
     @Override
     protected void transformStringContent(final String reference,
-            final StringBuilder content, final ImporterMetadata metadata, final boolean parsed,
+            final StringBuilder content, final Properties metadata, final boolean parsed,
             final int sectionIndex) {
         if (stripBeforeMatcher.getPattern() == null) {
             LOG.error("No matcher pattern provided.");

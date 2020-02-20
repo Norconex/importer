@@ -23,9 +23,9 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.TextReader;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 
 /**
@@ -73,7 +73,7 @@ public abstract class AbstractStringTagger
     @Override
     protected final void tagTextDocument(
             String reference, Reader input,
-            ImporterMetadata metadata, boolean parsed)
+            Properties metadata, boolean parsed)
             throws ImporterHandlerException {
 
         int sectionIndex = 0;
@@ -120,7 +120,7 @@ public abstract class AbstractStringTagger
     }
 
     protected abstract void tagStringContent(
-           String reference, StringBuilder content, ImporterMetadata metadata,
+           String reference, StringBuilder content, Properties metadata,
            boolean parsed, int sectionIndex)
                    throws ImporterHandlerException;
 

@@ -26,7 +26,7 @@ import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
@@ -304,7 +304,7 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
     }
 
     @Override
-    public List<ImporterDocument> parseDocument(ImporterDocument doc,
+    public List<Doc> parseDocument(Doc doc,
             Writer output) throws DocumentParserException {
         try {
             h.handleDocument(doc.getReference(), doc.getInputStream(),

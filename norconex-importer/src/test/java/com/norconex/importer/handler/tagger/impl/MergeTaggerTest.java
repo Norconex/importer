@@ -22,9 +22,9 @@ import java.util.TreeSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.MergeTagger.Merge;
 
@@ -58,7 +58,7 @@ public class MergeTaggerTest {
 
     @Test
     public void testMultiFieldsMerge() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field1", "1.1", "1.2");
         meta.add("field2", "2");
         meta.add("field3", "3");
@@ -98,7 +98,7 @@ public class MergeTaggerTest {
 
     @Test
     public void testSingleFieldMerge() throws ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field", "1", "2");
 
         MergeTagger tagger = new MergeTagger();

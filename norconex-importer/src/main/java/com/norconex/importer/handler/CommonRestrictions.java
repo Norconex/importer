@@ -18,7 +18,7 @@ import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 
 /**
  * Commonly encountered restrictions that can be applied to subclass instances
@@ -49,7 +49,7 @@ public final class CommonRestrictions {
      * @return list of restrictions
      */
     public static PropertyMatchers domContentTypes() {
-        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
+        return regexesIgnoreCase(Doc.DOC_CONTENT_TYPE,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml",
@@ -74,7 +74,7 @@ public final class CommonRestrictions {
      * @since 2.8.0
      */
     public static PropertyMatchers htmlContentTypes() {
-        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
+        return regexesIgnoreCase(Doc.DOC_CONTENT_TYPE,
                 "text/html",
                 "application/xhtml\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml");
@@ -93,7 +93,7 @@ public final class CommonRestrictions {
      * @since 3.0.0
      */
     public static PropertyMatchers imageIOStandardContentTypes() {
-        return regexesIgnoreCase(ImporterMetadata.DOC_CONTENT_TYPE,
+        return regexesIgnoreCase(Doc.DOC_CONTENT_TYPE,
                 "image/jpeg",
                 "image/png",
                 "image/gif",

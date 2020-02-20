@@ -24,13 +24,13 @@ import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
-import com.norconex.importer.doc.ImporterMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.response.ImporterResponse;
@@ -109,7 +109,7 @@ public class TextFilterTest {
                 new ReaderInputStream(
                         new StringReader("a string that matches"),
                         StandardCharsets.UTF_8),
-                new ImporterMetadata(), "N/A");
+                new Properties(), "N/A");
         Assertions.assertEquals(
                 Status.SUCCESS, response.getImporterStatus().getStatus(),
                 "Status should have been SUCCESS");
@@ -137,7 +137,7 @@ public class TextFilterTest {
         ImporterResponse response = new Importer(config).importDocument(
                 new ReaderInputStream(
                         new StringReader("no matches"), StandardCharsets.UTF_8),
-                new ImporterMetadata(), "N/A");
+                new Properties(), "N/A");
         Assertions.assertEquals(
                 Status.REJECTED, response.getImporterStatus().getStatus(),
                 "Status should have been REJECTED");
@@ -146,7 +146,7 @@ public class TextFilterTest {
     @Test
     public void testRegexFieldDocument()
             throws IOException, ImporterHandlerException {
-        ImporterMetadata meta = new ImporterMetadata();
+        Properties meta = new Properties();
         meta.add("field1", "a string to match");
         meta.add("field2", "something we want");
 

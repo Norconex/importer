@@ -32,11 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
-import com.norconex.importer.doc.ImporterMetadata;
+import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
 import com.norconex.importer.util.DOMUtil;
@@ -70,7 +71,7 @@ public class DOMTaggerTest {
                 + "<td>This is a description.</td>"
                 + "</tr>";
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         performTagging(metadata, t, xml);
 
         String whole = metadata.getString("WHOLE");
@@ -122,7 +123,7 @@ public class DOMTaggerTest {
                 + "</test>";
 
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         performTagging(metadata, t, xml);
 
         String[] blanksON = getSortedArray(metadata, "blanksON");
@@ -140,7 +141,7 @@ public class DOMTaggerTest {
     }
 
 
-    private String[] getSortedArray(ImporterMetadata metadata, String key) {
+    private String[] getSortedArray(Properties metadata, String key) {
         List<String> list = metadata.getStrings(key);
         Collections.sort(list);
         return list.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -166,7 +167,7 @@ public class DOMTaggerTest {
         String xml = "<test><author><name></name></author></test>";
 
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         performTagging(metadata, t, xml);
 
         String noDefault = metadata.getString("noDefault");
@@ -202,7 +203,7 @@ public class DOMTaggerTest {
                 + "<whatever/>"
                 + "</body></html>";
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
 
         DOMTagger parentTagger = new DOMTagger();
         parentTagger.addDOMExtractDetails(new DOMExtractDetails(
@@ -253,7 +254,7 @@ public class DOMTaggerTest {
                 + "<div class=\"class3\">text3</div>"
                 + "</body></html>";
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         performTagging(metadata, t, html);
 
         String match1 = metadata.getString("match1");
@@ -277,8 +278,8 @@ public class DOMTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -308,8 +309,8 @@ public class DOMTaggerTest {
         File htmlFile = TestUtil.getAliceHtmlFile();
         InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ImporterMetadata metadata = new ImporterMetadata();
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        Properties metadata = new Properties();
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
         is.close();
 
@@ -327,10 +328,10 @@ public class DOMTaggerTest {
     }
 
     private void performTagging(
-            ImporterMetadata metadata, DOMTagger tagger, String html)
+            Properties metadata, DOMTagger tagger, String html)
             throws ImporterHandlerException, IOException {
         InputStream is = new ByteArrayInputStream(html.getBytes());
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         tagger.tagDocument("n/a", is, metadata, false);
         is.close();
     }
@@ -383,9 +384,9 @@ public class DOMTaggerTest {
                 + "textarea value.</textarea>"
                 + "</body></html>";
 
-        ImporterMetadata metadata = new ImporterMetadata();
+        Properties metadata = new Properties();
         InputStream is = new ByteArrayInputStream(content.getBytes());
-        metadata.set(ImporterMetadata.DOC_CONTENT_TYPE, "text/html");
+        metadata.set(Doc.DOC_CONTENT_TYPE, "text/html");
         t.tagDocument("n/a", is, metadata, false);
         is.close();
 

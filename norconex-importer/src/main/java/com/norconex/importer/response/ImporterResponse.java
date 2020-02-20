@@ -22,7 +22,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.importer.doc.ImporterDocument;
+import com.norconex.importer.doc.Doc;
 
 /**
  * @author Pascal Essiembre
@@ -35,7 +35,7 @@ public class ImporterResponse {
 
     private final String reference;
     private ImporterStatus status;
-    private final ImporterDocument doc;
+    private final Doc doc;
     private final List<ImporterResponse> nestedResponses = new ArrayList<>();
     private ImporterResponse parentResponse;
 
@@ -44,13 +44,13 @@ public class ImporterResponse {
         this.status = status;
         this.doc = null;
     }
-    public ImporterResponse(ImporterDocument doc) {
+    public ImporterResponse(Doc doc) {
         this.reference = doc.getReference();
         this.doc = doc;
         this.status = new ImporterStatus();
     }
 
-    public ImporterDocument getDocument() {
+    public Doc getDocument() {
         return doc;
     }
 
