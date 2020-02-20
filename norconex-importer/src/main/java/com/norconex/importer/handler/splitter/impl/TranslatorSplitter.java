@@ -443,7 +443,11 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         String childDocRef = doc.getReference() + "!" + childEmbedRef;
 
         DocInfo childInfo = new DocInfo(childDocRef);
-        childInfo.setEmbeddedReference(childEmbedRef);
+
+        childMeta.set(
+                DocMetadata.EMBEDDED_REFERENCE, childEmbedRef);
+
+//        childInfo.setEmbeddedReference(childEmbedRef);
         childInfo.addEmbeddedParentReference(doc.getReference());
 
 //        childMeta.setReference(childDocRef);

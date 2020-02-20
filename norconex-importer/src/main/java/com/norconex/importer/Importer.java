@@ -49,6 +49,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -302,7 +303,7 @@ public class Importer {
         try {
             List<Doc> nestedDocs = new ArrayList<>();
             Doc document =
-                    new Doc(reference, content, meta);
+                    new Doc(new DocInfo(reference), content, meta);
             document.getDocInfo().setContentType(safeContentType);
             document.getDocInfo().setContentEncoding(contentEncoding);
 

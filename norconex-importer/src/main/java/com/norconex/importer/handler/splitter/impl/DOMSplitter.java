@@ -35,6 +35,7 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
@@ -205,7 +206,11 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
                 DocInfo childInfo = childDoc.getDocInfo();
                 childInfo.addEmbeddedParentReference(doc.getReference());
-                childInfo.setEmbeddedReference(childEmbedRef);
+                childMeta.set(
+                        DocMetadata.EMBEDDED_REFERENCE, childEmbedRef);
+
+//                childInfo.setEmbeddedReference(childEmbedRef);
+
 //                childMeta.setReference(childRef);
 //                childMeta.setEmbeddedReference(childEmbedRef);
 //                childMeta.setEmbeddedParentReference(doc.getReference());

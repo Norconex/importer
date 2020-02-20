@@ -39,6 +39,7 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.handler.splitter.SplittableDocument;
@@ -196,7 +197,11 @@ public class CsvSplitter extends AbstractDocumentSplitter
                     DocInfo childInfo = childDoc.getDocInfo();
                     childInfo.setReference(childDocRef);
                     childInfo.addEmbeddedParentReference(doc.getReference());
-                    childInfo.setEmbeddedReference(childEmbedRef);
+
+                    childMeta.set(
+                            DocMetadata.EMBEDDED_REFERENCE, childEmbedRef);
+
+//                    childInfo.setEmbeddedReference(childEmbedRef);
 
 //                    childMeta.setReference(childDocRef);
 //                    childMeta.setEmbeddedReference(childEmbedRef);

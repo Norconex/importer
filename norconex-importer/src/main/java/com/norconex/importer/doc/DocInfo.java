@@ -44,10 +44,7 @@ public class DocInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //TODO rename DocumentMemento?  Or DocMemento   Or DocRecord?
-//  DocProfile?  DocSpecs?  DocInfo? Specifics? Facts? Profile?
-    // DocInfo
-
+    //TODO create interface IDocInfo?
 
     //TODO add parent reference info here???
 
@@ -70,10 +67,10 @@ public class DocInfo implements Serializable {
 
 
 
-    // relative reference to this document within its parent.
-    private String embeddedReference = null;
-    // type of embedded file this is (from a zip, a word doc, etc.)
-    private String embeddedType = null;
+//    // relative reference to this document within its parent.
+//    private String embeddedReference = null;
+//    // type of embedded file this is (from a zip, a word doc, etc.)
+//    private String embeddedType = null;
 
 
     //TODO add a method toMetadata or "asMetadata" as opposed to have
@@ -135,20 +132,6 @@ public class DocInfo implements Serializable {
     }
     public void addEmbeddedParentReference(String embeddedParentReference) {
         this.embeddedParentReferences.add(embeddedParentReference);
-    }
-
-    public String getEmbeddedReference() {
-        return embeddedReference;
-    }
-    public void setEmbeddedReference(String embeddedReference) {
-        this.embeddedReference = embeddedReference;
-    }
-
-    public String getEmbeddedType() {
-        return embeddedType;
-    }
-    public void setEmbeddedType(String embeddedType) {
-        this.embeddedType = embeddedType;
     }
 
     public void copyTo(DocInfo target) {

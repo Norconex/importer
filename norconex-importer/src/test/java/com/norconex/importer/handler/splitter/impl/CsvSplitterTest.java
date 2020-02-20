@@ -32,6 +32,7 @@ import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.SplittableDocument;
 
@@ -62,7 +63,8 @@ public class CsvSplitterTest {
         splitter.setReferenceColumn("clientPhone");
         List<Doc> docs = split(splitter);
         Assertions.assertEquals(
-                "654-0987", docs.get(2).getDocInfo().getEmbeddedReference(),
+                "654-0987", docs.get(2).getMetadata().getString(
+                        DocMetadata.EMBEDDED_REFERENCE),
                 "Could not find embedded William Dalton phone reference.");
     }
 
@@ -74,7 +76,8 @@ public class CsvSplitterTest {
         splitter.setReferenceColumn("2");
         List<Doc> docs = split(splitter);
         Assertions.assertEquals("William Dalton",
-                docs.get(3).getDocInfo().getEmbeddedReference(),
+                docs.get(3).getMetadata().getString(
+                        DocMetadata.EMBEDDED_REFERENCE),
                 "Could not find embedded William Dalton reference.");
     }
 

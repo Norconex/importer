@@ -154,7 +154,11 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
                 DocInfo pageInfo = new DocInfo(pageRef);
 
-                pageInfo.setEmbeddedReference(Integer.toString(pageNo));
+//                pageInfo.setEmbeddedReference(Integer.toString(pageNo));
+                pageMeta.set(DocMetadata.EMBEDDED_REFERENCE,
+                        Integer.toString(pageNo));
+
+
                 pageInfo.addEmbeddedParentReference(doc.getReference());
 
 //                pageMeta.setReference(pageRef);

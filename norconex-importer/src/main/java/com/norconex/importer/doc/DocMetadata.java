@@ -32,19 +32,32 @@ public final class DocMetadata {
     //TODO DELETE these if they can be referenced from DocInfo?
     //    (still have them as metadata, just no longer need constants).
     private static final String PREFIX = "document.";
+
+    /** Document unique reference (also called "id", "primary key", etc.). */
     public static final String REFERENCE = PREFIX + "reference";
+    /** Document content type (also called "media type", or "mime type"). */
     public static final String CONTENT_TYPE = PREFIX + "contentType";
+    /** Document character encoding. */
     public static final String CONTENT_ENCODING = PREFIX + "contentEncoding";
+    /** Document content family (general categorization of content types). */
     public static final String CONTENT_FAMILY = PREFIX + "contentFamily";
+    /** Document language. */
     public static final String LANGUAGE = PREFIX + "language";
+    /** Original language when translated. */
     public static final String TRANSLATED_FROM = PREFIX + "translatedFrom";
+    /** Generated title. */
     public static final String GENERATED_TITLE = PREFIX + "generatedTitle";
+    /** Date processed by the Importer. */
     public static final String IMPORTED_DATE = PREFIX + "importedDate";
+
     static final String EMBEDDED_PREFIX = PREFIX + "embedded.";
+    /** All references to parents of an embedded document (first is top-one). */
     public static final String EMBEDDED_PARENT_REFERENCES =
             EMBEDDED_PREFIX + "parent.reference";
+    /** Relative reference to this document within its parent. */
     public static final String EMBEDDED_REFERENCE =
             EMBEDDED_PREFIX + "reference";
+    /** Type of embedded file (from a zip, a word doc, etc.). */
     public static final String EMBEDDED_TYPE =
             EMBEDDED_PREFIX + "type";
 

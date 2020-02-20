@@ -14,6 +14,9 @@
  */
 package com.norconex.importer.parser.impl;
 
+import static com.norconex.importer.doc.DocMetadata.EMBEDDED_REFERENCE;
+import static com.norconex.importer.doc.DocMetadata.EMBEDDED_TYPE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -340,7 +343,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 addTikaMetadataToImporterMetadata(tikaMeta, embedMeta);
 
                 DocInfo embedDocInfo = resolveEmbeddedResourceName(
-                        tikaMeta, reference, embedCount);
+                        tikaMeta, embedMeta, embedCount);
 
                 // Read the steam into cache for reuse since Tika will
                 // close the original stream on us causing exceptions later.
@@ -370,7 +373,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
         }
 
         private DocInfo resolveEmbeddedResourceName(
-                Metadata tikaMeta, String parentRef, int embedCount) {
+                Metadata tikaMeta, Properties embedMeta, int embedCount) {
 
             DocInfo docInfo = new DocInfo();
 
@@ -380,8 +383,12 @@ public class AbstractTikaParser implements IHintsAwareParser {
             name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
             if (StringUtils.isNotBlank(name)) {
                 docInfo.setReference(reference + "!" + name);
-                docInfo.setEmbeddedReference(name);
-                docInfo.setEmbeddedType("package-file");
+                embedMeta.set(EMBEDDED_REFERENCE, name);
+                embedMeta.set(EMBEDDED_TYPE, "package-file");
+
+
+//                docInfo.setEmbeddedReference(name);
+//                docInfo.setEmbeddedType("package-file");
 //                embedMeta.setEmbeddedReference(name);
 //                embedMeta.setEmbeddedType("package-file");
 //                return name;
@@ -393,8 +400,12 @@ public class AbstractTikaParser implements IHintsAwareParser {
             name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
             if (StringUtils.isNotBlank(name)) {
                 docInfo.setReference(reference + "!" + name);
-                docInfo.setEmbeddedReference(name);
-                docInfo.setEmbeddedType("package-file");
+
+                embedMeta.set(EMBEDDED_REFERENCE, name);
+                embedMeta.set(EMBEDDED_TYPE, "file-file");
+
+//                docInfo.setEmbeddedReference(name);
+//                docInfo.setEmbeddedType("package-file");
 //                embedMeta.setEmbeddedReference(name);
 //                embedMeta.setEmbeddedType("file-file");
 //                return name;
@@ -409,9 +420,15 @@ public class AbstractTikaParser implements IHintsAwareParser {
             if (StringUtils.isNotBlank(name)) {
                 ContentType ct = ContentType.valueOf(name);
                 if (ct != null) {
-                    docInfo.setReference(reference + "!" + "embedded-"
-                            + embedCount + "." + ct.getExtension());
-                    docInfo.setEmbeddedType("package-file");
+                    String embedRef =
+                            "embedded-" + embedCount + "." + ct.getExtension();
+
+                    docInfo.setReference(reference + "!" + embedRef);
+
+                    embedMeta.set(EMBEDDED_REFERENCE, embedRef);
+                    embedMeta.set(EMBEDDED_TYPE, "file-file");
+
+//                    docInfo.setEmbeddedType("file-object");
 //                    embedMeta.setEmbeddedType("file-object");
 //                    return "embedded-" + embedCount + "." + ct.getExtension();
                     return docInfo;
@@ -420,9 +437,16 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
             // Default... we could not find any name so make a unique one.
 //            embedMeta.setEmbeddedType("unknown");
-            docInfo.setEmbeddedType("unknown");
-            docInfo.setReference(reference + "!"
-                    + "embedded-" + embedCount + ".unknown");
+
+            String embedRef =
+                    "embedded-" + embedCount + ".unknown";
+
+            embedMeta.set(EMBEDDED_REFERENCE, embedRef);
+            embedMeta.set(EMBEDDED_TYPE, "unknown");
+
+//            docInfo.setEmbeddedType("unknown");
+            docInfo.setReference(reference + "!" + embedRef);
+//                    + "embedded-" + embedCount + ".unknown");
             return docInfo;
         }
     }
