@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocMetadata;
@@ -86,9 +87,9 @@ public class ScriptFilterTest {
             ImporterConfig cfg = new ImporterConfig();
             cfg.loadFromXML(new XML(r));
             Importer importer = new Importer(cfg);
-            ImporterResponse resp = importer.importDocument(
-                    new ByteArrayInputStream("test".getBytes()),
-                    new Properties(), "N/A");
+            ImporterResponse resp = importer.importDocument(new ImporterRequest(
+                    new ByteArrayInputStream("test".getBytes()))
+                    .setReference("N/A"));
             Doc doc = resp.getDocument();
             Assertions.assertNotNull(doc, "Document must not be null");
             Status status = resp.getImporterStatus().getStatus();

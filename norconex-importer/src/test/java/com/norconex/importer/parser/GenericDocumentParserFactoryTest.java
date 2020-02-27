@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.parser.impl.ExternalParser;
@@ -73,8 +74,10 @@ public class GenericDocumentParserFactoryTest {
         config.setParserFactory(factory);
         Importer importer = new Importer(config);
         Doc doc = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, null,
-                        metadata, "n/a").getDocument();
+                new ImporterRequest(TestUtil.getAlicePdfFile().toPath())
+                        .setContentType(ContentType.PDF)
+                        .setMetadata(metadata)
+                        .setReference("n/a")).getDocument();
 
         try (InputStream is = doc.getInputStream()) {
             String output = IOUtils.toString(

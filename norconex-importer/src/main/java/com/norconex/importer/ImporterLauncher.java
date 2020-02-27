@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,11 +108,14 @@ public final class ImporterLauncher {
         Properties metadata = new Properties();
         ImporterConfig config =
                 loadCommandLineConfig(cmd, configFile, varFile);
-        File inputFile = new File(cmd.getOptionValue(ARG_INPUTFILE));
+        Path inputFile = Paths.get(cmd.getOptionValue(ARG_INPUTFILE));
         try {
             ImporterResponse response = new Importer(config).importDocument(
-                    inputFile, contentType, contentEncoding,
-                    metadata, reference);
+                    new ImporterRequest(inputFile)
+                        .setContentType(contentType)
+                        .setContentEncoding(contentEncoding)
+                        .setMetadata(metadata)
+                        .setReference(reference));
             writeResponse(response, output,
                     cmd.getOptionValue(ARG_OUTMETAFORMAT), 0, 0);
         } catch (Exception e) {

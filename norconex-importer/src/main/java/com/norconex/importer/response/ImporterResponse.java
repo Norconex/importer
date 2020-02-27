@@ -1,4 +1,4 @@
-/* Copyright 2014-2018 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ import java.util.List;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringSummary;
 
 import com.norconex.importer.doc.Doc;
 
@@ -35,8 +37,11 @@ public class ImporterResponse {
 
     private final String reference;
     private ImporterStatus status;
+    @ToStringSummary
     private final Doc doc;
+    @ToStringSummary
     private final List<ImporterResponse> nestedResponses = new ArrayList<>();
+    @ToStringExclude
     private ImporterResponse parentResponse;
 
     public ImporterResponse(String reference, ImporterStatus status) {
@@ -128,12 +133,9 @@ public class ImporterResponse {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("reference", reference)
-                .append("status", status)
-                .append("doc", doc)
-                .append("nestedResponses", nestedResponses)
-                .toString();
+        ReflectionToStringBuilder b = new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        b.setExcludeNullValues(true);
+        return b.toString();
     }
 }

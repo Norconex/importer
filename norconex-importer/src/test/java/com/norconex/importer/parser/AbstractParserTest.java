@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -86,7 +87,8 @@ public abstract class AbstractParserTest {
         // Test file
         metadata = new Properties();
         response = new Importer(config).importDocument(
-                getFile(resourcePath), metadata);
+                new ImporterRequest(getFile(resourcePath).toPath())
+                        .setMetadata(metadata));
         doc = response.getDocument();
 
         assertDefaults(doc, "FILE",
@@ -96,7 +98,9 @@ public abstract class AbstractParserTest {
         // Test input stream
         metadata = new Properties();
         response = new Importer(config).importDocument(
-                getInputStream(resourcePath), metadata, "guess");
+                new ImporterRequest(getInputStream(resourcePath))
+                        .setMetadata(metadata)
+                        .setReference("guess"));
         doc = response.getDocument();
         assertDefaults(doc, "STREAM",
                 resourcePath, contentType, contentRegex, extension, family);

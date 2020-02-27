@@ -27,6 +27,7 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
@@ -56,7 +57,8 @@ public class OnMatchFilterTest {
         ImporterConfig cfg = new ImporterConfig();
         cfg.setPreParseHandlers(Arrays.asList(f));
         Importer importer = new Importer(cfg);
-        ImporterResponse r = importer.importDocument(is, meta, "N/A");
+        ImporterResponse r = importer.importDocument(
+                new ImporterRequest(is).setReference("N/A").setMetadata(meta));
         Assertions.assertEquals(
                 expectedStatus, r.getImporterStatus().getStatus());
     }

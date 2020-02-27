@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.response.ImporterResponse;
 
 public class EmbeddedTest {
@@ -529,7 +530,8 @@ public class EmbeddedTest {
         config.setParserFactory(f);
         Importer importer = new Importer(config);
         ImporterResponse response = importer.importDocument(
-                getZipFile(), metadata);
+                new ImporterRequest(getZipFile().toPath())
+                        .setMetadata(metadata));
         return response;
     }
 

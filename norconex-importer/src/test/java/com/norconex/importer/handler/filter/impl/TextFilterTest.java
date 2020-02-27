@@ -31,6 +31,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterException;
+import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.response.ImporterResponse;
@@ -106,10 +107,10 @@ public class TextFilterTest {
         config.setPreParseHandlers(Arrays.asList(filter1, filter2, filter3));
 
         ImporterResponse response = new Importer(config).importDocument(
-                new ReaderInputStream(
+                new ImporterRequest(new ReaderInputStream(
                         new StringReader("a string that matches"),
-                        StandardCharsets.UTF_8),
-                new Properties(), "N/A");
+                        StandardCharsets.UTF_8))
+                .setReference("N/A"));
         Assertions.assertEquals(
                 Status.SUCCESS, response.getImporterStatus().getStatus(),
                 "Status should have been SUCCESS");
@@ -135,9 +136,9 @@ public class TextFilterTest {
         config.setPostParseHandlers(Arrays.asList(filter1, filter2, filter3));
 
         ImporterResponse response = new Importer(config).importDocument(
-                new ReaderInputStream(
-                        new StringReader("no matches"), StandardCharsets.UTF_8),
-                new Properties(), "N/A");
+                new ImporterRequest(new ReaderInputStream(
+                        new StringReader("no matches"), StandardCharsets.UTF_8))
+                .setReference("N/A"));
         Assertions.assertEquals(
                 Status.REJECTED, response.getImporterStatus().getStatus(),
                 "Status should have been REJECTED");

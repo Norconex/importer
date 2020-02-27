@@ -169,159 +169,71 @@ public class Importer {
 
     /**
      * Imports a document according to the importer configuration.
-     * @param input document input
-     * @param metadata the document starting metadata
-     * @param reference document reference (e.g. URL, file path, etc)
-     * @return importer output
+     * @param req request instructions for importing
+     * @return importer response
+     * @since 3.0.0
      */
-    public ImporterResponse importDocument(
-            InputStream input, Properties metadata, String reference) {
-        return importDocument(input, null, null, metadata, reference);
-    }
-
-    /**
-     * Imports a document according to the importer configuration.
-     * @param input document input
-     * @param metadata the document starting metadata
-     * @return importer output
-     * @throws ImporterException problem importing document
-     */
-    public ImporterResponse importDocument(
-            File input, Properties metadata) throws ImporterException {
-        return importDocument(input, null, null, metadata, null);
-    }
-
-    /**
-     * Imports a document according to the importer configuration.
-     * @param file document input
-     * @param contentType document content-type
-     * @param contentEncoding document content encoding
-     * @param metadata the document starting metadata
-     * @param reference document reference (e.g. URL, file path, etc)
-     * @return importer output
-     * @throws ImporterException problem importing document
-     */
-    public ImporterResponse importDocument(
-            final File file, ContentType contentType, String contentEncoding,
-            Properties metadata, String reference) throws ImporterException {
-
-        //--- Validate File ---
-        if (file == null) {
-            throw new ImporterException("File cannot be null.");
-        } else if (!file.isFile()) {
-            throw new ImporterException(
-                    "File does not exists or is not a file.");
-        }
-
-        //--- Reference ---
-        String finalReference = reference;
-        if (StringUtils.isBlank(reference)) {
-            finalReference = file.getAbsolutePath();
-        }
-
-        try (InputStream is =
-                streamFactory.newInputStream(new FileInputStream(file))) {
-            return importDocument(is, contentType,
-                    contentEncoding, metadata, finalReference);
-        } catch (IOException e) {
-            throw new ImporterException("Could not import file.", e);
-        }
-    }
-
-    public ImporterResponse importDocument(final InputStream input,
-            ContentType contentType, String charEncoding,
-            Properties metadata, String reference) {
+    public ImporterResponse importDocument(ImporterRequest req) {
         try {
-            return doImportDocument(input, contentType,
-                    charEncoding, metadata, reference);
+            return importDocument(toDocument(req));
         } catch (ImporterException e) {
-            LOG.warn("Could not import " + reference, e);
-            return new ImporterResponse(reference, new ImporterStatus(e));
+            LOG.warn("Importer request failed: {}", req, e);
+            return new ImporterResponse(req.getReference(),
+                    new ImporterStatus(new ImporterException(
+                            "Importer request failed: " + req, e)));
         }
     }
+    /**
+     * Imports a document according to the importer configuration.
+     * @param document the document to import
+     * @return importer response
+     * @since 3.0.0
+     */
+    public ImporterResponse importDocument(Doc document) {
+        // Note: Doc reference, InputStream and metadata are all null-safe.
 
-    //TODO pass ImportDocument instead?   Accept one as argument?
-    private ImporterResponse doImportDocument(final InputStream input,
-            ContentType contentType, String contentEncoding,
-            Properties metadata, String reference) throws ImporterException {
+        DocInfo docInfo = document.getDocInfo();
 
-
-        if (input == null && LOG.isDebugEnabled()) {
-            LOG.debug("Content is null for " + reference
-                    + ". Won't import much. Was it intentional?");
-        }
-
-        //--- Input ---
-        CachedInputStream content = null;
-        if (input instanceof CachedInputStream) {
-            content = (CachedInputStream) input;
-        } else {
-            content = streamFactory.newInputStream(input);
-        }
-
-        //--- Reference ---
-        if (StringUtils.isBlank(reference)) {
-            throw new ImporterException("The document reference was not set.");
-        }
-
-        //--- Content Type ---
-        ContentType safeContentType = contentType;
-        if (safeContentType == null
-                || StringUtils.isBlank(safeContentType.toString())) {
+        //--- Ensure non-null content Type on Doc ---
+        ContentType ct = docInfo.getContentType();
+        if (ct == null || StringUtils.isBlank(ct.toString())) {
             try {
-                safeContentType =
-                        ContentTypeDetector.detect(content, reference);
+                ct = ContentTypeDetector.detect(
+                        document.getInputStream(), document.getReference());
             } catch (IOException e) {
-                LOG.error("Could not detect content type. Defaulting to "
+                LOG.warn("Could not detect content type. Defaulting to "
                         + "\"application/octet-stream\".", e);
-                safeContentType =
-                        ContentType.valueOf("application/octet-stream");
+                ct = ContentType.valueOf("application/octet-stream");
             }
+            docInfo.setContentType(ct);
         }
 
-        //--- Metadata ---
-        Properties meta = null;
-        if (metadata instanceof Properties) {
-            meta = metadata;
-        } else {
-            meta = new Properties(metadata);
-        }
+        //--- Add basic metadata already ---
+        Properties meta = document.getMetadata();
         meta.set(DocMetadata.REFERENCE);
-        meta.set(DocMetadata.CONTENT_TYPE,
-                safeContentType.toString());
-        ContentFamily contentFamily =
-                ContentFamily.forContentType(safeContentType.toString());
+        meta.set(DocMetadata.CONTENT_TYPE, ct.toString());
+        ContentFamily contentFamily = ContentFamily.forContentType(ct);
         if (contentFamily != null) {
-            meta.set(DocMetadata.CONTENT_FAMILY,
-                    contentFamily.toString());
+            meta.set(DocMetadata.CONTENT_FAMILY, contentFamily.toString());
         }
-        if (StringUtils.isNotBlank(contentEncoding)) {
-            meta.set(DocMetadata.CONTENT_ENCODING, contentEncoding);
+        if (StringUtils.isNotBlank(docInfo.getContentEncoding())) {
+            meta.set(DocMetadata.CONTENT_ENCODING,
+                    docInfo.getContentEncoding());
         }
 
         //--- Document Handling ---
         try {
             List<Doc> nestedDocs = new ArrayList<>();
-            Doc document =
-                    new Doc(new DocInfo(reference), content, meta);
-            document.getDocInfo().setContentType(safeContentType);
-            document.getDocInfo().setContentEncoding(contentEncoding);
-
             ImporterStatus filterStatus = importDocument(document, nestedDocs);
-
             ImporterResponse response = null;
             if (filterStatus.isRejected()) {
-                response = new ImporterResponse(reference, filterStatus);
+                response = new ImporterResponse(
+                        document.getReference(), filterStatus);
             } else {
                 response = new ImporterResponse(document);
             }
             for (Doc childDoc : nestedDocs) {
-                ImporterResponse nestedResponse = importDocument(
-                        childDoc.getInputStream(),
-                        childDoc.getDocInfo().getContentType(),
-                        childDoc.getDocInfo().getContentEncoding(),
-                        childDoc.getMetadata(),
-                        childDoc.getReference());
+                ImporterResponse nestedResponse = importDocument(childDoc);
                 if (nestedResponse != null) {
                     response.addNestedResponse(nestedResponse);
                 }
@@ -333,15 +245,54 @@ public class Importer {
                 processResponse(response);
             }
             return response;
-        } catch (IOException e) {
-            throw new ImporterException(
-                    "Could not import document: " + reference, e);
+        } catch (IOException | ImporterException e) {
+            LOG.warn("Could not import document: {}", document, e);
+            return new ImporterResponse(document.getReference(),
+                    new ImporterStatus(new ImporterException(
+                            "Could not import document: " + document, e)));
         }
+    }
+
+
+    // We deal with stream, but since only one of stream or file can be set,
+    // convert file to stream only if set.
+    private Doc toDocument(ImporterRequest req) throws ImporterException {
+        CachedInputStream is;
+        String ref = StringUtils.trimToEmpty(req.getReference());
+        if (req.getInputStream() != null) {
+            // From input stream
+            is = CachedInputStream.cache(req.getInputStream(), streamFactory);
+        } else if (req.getFile() != null) {
+            // From file
+            if (!req.getFile().toFile().isFile()) {
+                throw new ImporterException(
+                        "File does not exists or is not a file: "
+                                + req.getFile().toAbsolutePath());
+            }
+            try {
+                is = streamFactory.newInputStream(
+                        new FileInputStream(req.getFile().toFile()));
+            } catch (IOException e) {
+                throw new ImporterException("Could not import file: "
+                        + req.getFile().toAbsolutePath(), e);
+            }
+            if (StringUtils.isBlank(ref)) {
+                ref = req.getFile().toFile().getAbsolutePath();
+            }
+        } else {
+            is = streamFactory.newInputStream();
+        }
+
+        DocInfo info = new DocInfo(ref);
+        info.setContentEncoding(req.getContentEncoding());
+        info.setContentType(req.getContentType());
+
+        return new Doc(info, is, req.getMetadata());
     }
 
     private ImporterStatus importDocument(
             Doc document, List<Doc> nestedDocs)
-                    throws IOException, ImporterException {
+                    throws ImporterException, IOException {
         ImporterStatus filterStatus = null;
 
         //--- Pre-handlers ---
@@ -350,19 +301,16 @@ public class Importer {
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
-
         //--- Parse ---
         //TODO make parse just another handler in the chain?  Eliminating
         //the need for pre and post handlers?
         parseDocument(document, nestedDocs);
-
         //--- Post-handlers ---
         filterStatus = executeHandlers(document, nestedDocs,
                 importerConfig.getPostParseHandlers(), true);
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
-
         return PASSING_FILTER_STATUS;
     }
 
@@ -377,7 +325,7 @@ public class Importer {
     private ImporterStatus executeHandlers(
             Doc doc, List<Doc> childDocsHolder,
             List<IImporterHandler> handlers, boolean parsed)
-            throws IOException, ImporterException {
+                    throws ImporterException {
         if (handlers == null) {
             return PASSING_FILTER_STATUS;
         }
@@ -411,10 +359,15 @@ public class Importer {
                 } else {
                     LOG.error("Unsupported Import Handler: {}", h);
                 }
-            } catch (IOException | ImporterException | RuntimeException e) {
+            } catch (ImporterException e) {
                 eventManager.fire(ImporterEvent.create(
                         IMPORTER_HANDLER_ERROR, doc, h, parsed, e));
                 throw e;
+            } catch (IOException | RuntimeException e) {
+                eventManager.fire(ImporterEvent.create(
+                        IMPORTER_HANDLER_ERROR, doc, h, parsed, e));
+                throw new ImporterException(
+                        "Importer failure for handler: " + h, e);
             }
             eventManager.fire(ImporterEvent.create(
                     IMPORTER_HANDLER_END, doc, h, parsed));
@@ -443,7 +396,7 @@ public class Importer {
     }
 
     private void parseDocument(
-            Doc doc, List<Doc> embeddedDocs)
+            final Doc doc, final List<Doc> embeddedDocs)
             throws IOException, ImporterException {
 
         IDocumentParserFactory factory = importerConfig.getParserFactory();
@@ -509,16 +462,18 @@ public class Importer {
                         parser.getClass(), doc.getReference());
             }
             try { out.close(); } catch (IOException ie) { /*NOOP*/ }
-            doc.getInputStream().dispose();
+
+//            doc.getInputStream().dispose();
             doc.setInputStream(streamFactory.newInputStream());
         } else {
-            doc.getInputStream().dispose();
+//            doc.getInputStream().dispose();
             CachedInputStream newInputStream = null;
             try {
                 newInputStream = out.getInputStream();
             } finally {
                 try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             }
+
             doc.setInputStream(newInputStream);
         }
     }
@@ -593,9 +548,9 @@ public class Importer {
         boolean accepted = filter.acceptDocument(
                 doc.getReference(),
                 doc.getInputStream(), doc.getMetadata(), parsed);
-        //TODO Is the next .rewind() necessary given next call to getContent()
-        //will do it?
-        doc.getInputStream().rewind();
+//        //TODO Is the next .rewind() necessary given next call to getContent()
+//        //will do it?
+//        doc.getInputStream().rewind();
         if (!accepted) {
             LOG.debug("Document import rejected. Filter: {}", filter);
             return false;
@@ -663,5 +618,76 @@ public class Importer {
 
     private CachedOutputStream createOutputStream() {
         return streamFactory.newOuputStream();
+    }
+
+    //--- Deprecated -----------------------------------------------------------
+
+    /**
+     * Imports a document according to the importer configuration.
+     * @param input document input
+     * @param metadata the document starting metadata
+     * @param reference document reference (e.g. URL, file path, etc)
+     * @return importer output
+     * @deprecated Since 3.0.0 use {@link #importDocument(ImporterRequest)}
+     */
+    @Deprecated
+    public ImporterResponse importDocument(
+            InputStream input, Properties metadata, String reference) {
+        return importDocument(input, null, null, metadata, reference);
+    }
+
+    /**
+     * Imports a document according to the importer configuration.
+     * @param input document input
+     * @param metadata the document starting metadata
+     * @return importer output
+     * @deprecated Since 3.0.0 use {@link #importDocument(ImporterRequest)}
+     */
+    @Deprecated
+    public ImporterResponse importDocument(File input, Properties metadata) {
+        return importDocument(input, null, null, metadata, null);
+    }
+
+    /**
+     * Imports a document according to the importer configuration.
+     * @param file document input
+     * @param contentType document content-type
+     * @param contentEncoding document content encoding
+     * @param metadata the document starting metadata
+     * @param reference document reference (e.g. URL, file path, etc)
+     * @return importer output
+     * @deprecated Since 3.0.0 use {@link #importDocument(ImporterRequest)}
+     */
+    @Deprecated
+    public ImporterResponse importDocument(
+            final File file, ContentType contentType, String contentEncoding,
+            Properties metadata, String reference) {
+        Path path = file != null ? file.toPath() : null;
+        return importDocument(new ImporterRequest(path)
+            .setContentType(contentType)
+            .setContentEncoding(contentEncoding)
+            .setMetadata(metadata)
+            .setReference(reference));
+    }
+
+    /**
+     * Imports a document according to the importer configuration.
+     * @param input an input stream
+     * @param contentType document content-type
+     * @param contentEncoding document content encoding
+     * @param metadata the document starting metadata
+     * @param reference document reference (e.g. URL, file path, etc)
+     * @return importer output
+     * @deprecated Since 3.0.0 use {@link #importDocument(ImporterRequest)}
+     */
+    @Deprecated
+    public ImporterResponse importDocument(final InputStream input,
+            ContentType contentType, String contentEncoding,
+            Properties metadata, String reference) {
+        return importDocument(new ImporterRequest(input)
+                .setContentType(contentType)
+                .setContentEncoding(contentEncoding)
+                .setMetadata(metadata)
+                .setReference(reference));
     }
 }

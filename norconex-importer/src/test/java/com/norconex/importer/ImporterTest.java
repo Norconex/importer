@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ public class ImporterTest {
     @BeforeEach
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (reference, input, output, metadata,
-                parsed) -> {
+        config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (
+                reference, input, output, metadata, parsed) -> {
             try {
                // Clean up what we know is extra noise for a given format
                Pattern pattern = Pattern.compile("[^a-zA-Z ]");
@@ -81,20 +81,23 @@ public class ImporterTest {
         File docxOutput = File.createTempFile("ImporterTest-doc-", ".txt");
         Properties metaDocx = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAliceDocxFile(), metaDocx).getDocument(),
+                new ImporterRequest(TestUtil.getAliceDocxFile().toPath())
+                        .setMetadata(metaDocx)).getDocument(),
                         docxOutput);
 
         // PDF
         File pdfOutput = File.createTempFile("ImporterTest-pdf-", ".txt");
         Properties metaPdf = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAlicePdfFile(), metaPdf).getDocument(), pdfOutput);
+                new ImporterRequest(TestUtil.getAlicePdfFile().toPath())
+                        .setMetadata(metaPdf)).getDocument(), pdfOutput);
 
         // ZIP/RTF
         File rtfOutput = File.createTempFile("ImporterTest-zip-rtf-", ".txt");
         Properties metaRtf = new Properties();
         writeToFile(importer.importDocument(
-                TestUtil.getAliceZipFile(), metaRtf).getDocument(), rtfOutput);
+                new ImporterRequest(TestUtil.getAliceZipFile().toPath())
+                        .setMetadata(metaRtf)).getDocument(), rtfOutput);
 
         Assertions.assertTrue(pdfOutput.length() > 10,
                 "Converted file size is too small to be valid.");
@@ -124,8 +127,9 @@ public class ImporterTest {
                 OnMatch.EXCLUDE)));
         Importer importer = new Importer(config);
         ImporterResponse result = importer.importDocument(
-                TestUtil.getAlicePdfFile(), ContentType.PDF, null,
-                        new Properties(), "n/a");
+                new ImporterRequest(TestUtil.getAlicePdfFile().toPath())
+                        .setContentType(ContentType.PDF)
+                        .setReference("n/a"));
 
 //        System.out.println("Reject desc: "
 //                        + result.getImporterStatus().getDescription());

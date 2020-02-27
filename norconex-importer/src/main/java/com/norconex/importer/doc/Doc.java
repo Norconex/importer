@@ -22,7 +22,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringSummary;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
@@ -38,13 +40,14 @@ import com.norconex.importer.ImporterRuntimeException;
 public class Doc {
 
     //TODO still allow String reference in constructor and create
-    // new DocInfo?
 
     //TODO add parent reference info here???
 
     private final DocInfo docInfo;
+    @ToStringSummary
+    private final Properties metadata;
+    @ToStringExclude
     private CachedInputStream content;
-    private Properties metadata;
 
     public Doc(String reference, CachedInputStream content) {
         this(reference, content, null);
@@ -124,6 +127,7 @@ public class Doc {
         content.rewind();
         return content;
     }
+    // nullsafe
     //TODO Since 3.0.0
     public void setInputStream(InputStream inputStream) {
         Objects.requireNonNull(inputStream, "'inputStream' must not be null.");
@@ -158,6 +162,16 @@ public class Doc {
         return metadata;
     }
 
+    /**
+     * Gets the document reference. Same as
+     * invoking {@link DocInfo#getReference()}.
+     * @return reference
+     * @see #getDocInfo()
+     */
+    public String getReference() {
+        return docInfo.getReference();
+    }
+
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
@@ -168,17 +182,10 @@ public class Doc {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
-    }
+        ReflectionToStringBuilder b = new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        b.setExcludeNullValues(true);
+        return b.toString();
 
-    /**
-     * Gets the document reference. Same as
-     * invoking {@link DocInfo#getReference()}.
-     * @return reference
-     * @see #getDocInfo()
-     */
-    public String getReference() {
-        return docInfo.getReference();
     }
 }

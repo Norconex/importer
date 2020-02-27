@@ -24,6 +24,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringSummary;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
@@ -60,6 +61,7 @@ public class DocInfo implements Serializable {
     //TODO remove prefix "embedded" and just keep parent* ?
 
     // trail of parent references (first one is root/top-level)
+    @ToStringSummary
     private List<String> embeddedParentReferences = new ArrayList<>();
 
 
@@ -151,7 +153,10 @@ public class DocInfo implements Serializable {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        ReflectionToStringBuilder b = new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        b.setExcludeNullValues(true);
+        return b.toString();
+
     }
 }
