@@ -16,7 +16,7 @@ package com.norconex.importer.response;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.importer.ImporterException;
@@ -87,38 +87,17 @@ public class ImporterStatus {
 
     @Override
     public boolean equals(final Object other) {
-        if (!(other instanceof ImporterStatus)) {
-            return false;
-        }
-        ImporterStatus castOther = (ImporterStatus) other;
-        return new EqualsBuilder()
-                .appendSuper(super.equals(castOther))
-                .append(status, castOther.status)
-                .append(filter, castOther.filter)
-                .append(exception, castOther.exception)
-                .append(description, castOther.description)
-                .isEquals();
+        return EqualsBuilder.reflectionEquals(this, other);
     }
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .appendSuper(super.hashCode())
-                .append(status)
-                .append(filter)
-                .append(exception)
-                .append(description)
-                .toHashCode();
+        return HashCodeBuilder.reflectionHashCode(this);
     }
-
     @Override
     public String toString() {
-        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
-                .append("status", status)
-                .append("filter", filter)
-                .append("exception", exception)
-                .append("description", description)
-                .toString();
+        ReflectionToStringBuilder b = new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE);
+        b.setExcludeNullValues(true);
+        return b.toString();
     }
 }
