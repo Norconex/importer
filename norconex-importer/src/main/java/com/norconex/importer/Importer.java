@@ -210,7 +210,7 @@ public class Importer {
 
         //--- Add basic metadata already ---
         Properties meta = document.getMetadata();
-        meta.set(DocMetadata.REFERENCE);
+        meta.set(DocMetadata.REFERENCE, document.getReference());
         meta.set(DocMetadata.CONTENT_TYPE, ct.toString());
         ContentFamily contentFamily = ContentFamily.forContentType(ct);
         if (contentFamily != null) {

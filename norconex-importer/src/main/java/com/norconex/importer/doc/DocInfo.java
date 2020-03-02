@@ -45,6 +45,9 @@ public class DocInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+
+    //TODO    private Locale locale?
+
     //TODO create interface IDocInfo?
 
     //TODO add parent reference info here???
