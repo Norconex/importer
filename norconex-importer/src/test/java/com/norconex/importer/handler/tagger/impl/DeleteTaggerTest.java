@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
@@ -23,12 +23,14 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class DeleteTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         DeleteTagger tagger = new DeleteTagger();
         tagger.getFieldMatcher().setPattern("(potato|carrot|document\\.*)")
                 .setMethod(Method.REGEX);
@@ -36,7 +38,7 @@ public class DeleteTaggerTest {
     }
 
     @Test
-    public void testDeleteField() throws IOException, ImporterHandlerException {
+    public void testDeleteField() throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("field1", "delete me");
         meta.add("field1", "delete me too");
@@ -48,7 +50,9 @@ public class DeleteTaggerTest {
         tagger.getFieldMatcher().setPattern("(field1|field2|field4\\.*)")
                 .setMethod(Method.REGEX);
 
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        InputStream is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals(1, meta.size(), "Invalid field count");
         Assertions.assertEquals(
@@ -58,7 +62,7 @@ public class DeleteTaggerTest {
 
     @Test
     public void testDeleteFieldsViaXMLConfig()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
@@ -85,14 +89,16 @@ public class DeleteTaggerTest {
                 "<tagger>"
               + "<fieldMatcher ignoreCase=\"true\">" + field + "</fieldMatcher>"
               + "</tagger>"));
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        InputStream is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
     }
 
 
 
     @Test
     public void testDeleteFieldsRegexViaXMLConfig()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
@@ -109,7 +115,9 @@ public class DeleteTaggerTest {
                 "<tagger><fieldMatcher method=\"regex\">"
               + "^[Xx]-.*</fieldMatcher></tagger>"));
 
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        InputStream is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals(3, meta.size(), "Invalid field count");
     }

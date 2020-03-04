@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -37,9 +37,10 @@ import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -163,17 +164,15 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
     @Override
     protected List<Doc> splitApplicableDocument(
-            SplittableDocument doc, OutputStream output,
-            CachedStreamFactory streamFactory, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input, OutputStream output,
+            ParseState parseState) throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, doc.getReference(),
-                doc.getInput(), doc.getMetadata(), parsed);
+                doc, input, sourceCharset, parseState);
 
         List<Doc> docs = new ArrayList<>();
         try {
-            Document soupDoc = Jsoup.parse(doc.getInput(), inputCharset,
+            Document soupDoc = Jsoup.parse(input, inputCharset,
                     doc.getReference(), DOMUtil.toJSoupParser(getParser()));
             Elements elms = soupDoc.select(selector);
 
@@ -197,9 +196,10 @@ public class DOMSplitter extends AbstractDocumentSplitter
                 String childRef = doc.getReference() + "!" + childEmbedRef;
                 CachedInputStream content = null;
                 if (childContent.length() > 0) {
-                    content = streamFactory.newInputStream(childContent);
+                    content = doc.getStreamFactory().newInputStream(
+                            childContent);
                 } else {
-                    content = streamFactory.newInputStream();
+                    content = doc.getStreamFactory().newInputStream();
                 }
                 Doc childDoc =
                         new Doc(childRef, content, childMeta);

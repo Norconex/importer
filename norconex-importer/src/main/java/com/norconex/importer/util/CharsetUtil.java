@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -116,10 +117,9 @@ public final class CharsetUtil {
      * @param declaredEncoding declared input encoding, if known
      * @return the character encoding official name or <code>null</code>
      *         if the input is null or blank
-     * @throws IOException if there is a problem find the character encoding
      */
     public static String detectCharset(
-            String input, String declaredEncoding) throws IOException {
+            String input, String declaredEncoding) {
         if (StringUtils.isBlank(input)) {
             return null;
         }
@@ -129,7 +129,7 @@ public final class CharsetUtil {
         }
         String charset = null;
         cd.enableInputFilter(true);
-        cd.setText(input.getBytes("UTF-8"));
+        cd.setText(input.getBytes(StandardCharsets.UTF_8));
         CharsetMatch match = cd.detect();
         charset = match.getName();
         LOG.debug("Detected encoding: {}", charset);
@@ -186,8 +186,8 @@ public final class CharsetUtil {
         return charset;
     }
 
-    private static void rewind(InputStream is) throws IOException {
-        //TODO investigate why regular reset on CachedInputStream has
+    private static void rewind(InputStream is) {
+        //MAYBE: investigate why regular reset on CachedInputStream has
         //no effect and returns an empty stream when read again. Fix that
         //instead of having this method.
         if (is instanceof CachedInputStream) {

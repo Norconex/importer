@@ -24,10 +24,11 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.TextReader;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class to facilitate creating transformers on text content, loading
@@ -89,21 +90,27 @@ public abstract class AbstractStringTransformer
 
     @Override
     protected final void transformTextDocument(
-            final String reference, final Reader input,
-            final Writer output, final Properties metadata, final boolean parsed)
+            HandlerDoc doc, final Reader input,
+            final Writer output, final ParseState parseState)
                     throws ImporterHandlerException {
 
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
         String text = null;
+        boolean atLeastOnce = false;
         try (TextReader reader = new TextReader(input, maxReadSize)) {
             while ((text = reader.readText()) != null) {
                 b.append(text);
-                transformStringContent(
-                        reference, b, metadata, parsed, sectionIndex);
+                transformStringContent(doc, b, parseState, sectionIndex);
                 output.append(b);
                 sectionIndex++;
                 b.setLength(0);
+                atLeastOnce = true;
+            }
+            // If no content, go at least once in it in case the transformer
+            // is writing content regardless.
+            if (!atLeastOnce) {
+                transformStringContent(doc, b, parseState, 0);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(
@@ -131,8 +138,9 @@ public abstract class AbstractStringTransformer
     }
 
     protected abstract void transformStringContent(
-           String reference, StringBuilder content, Properties metadata,
-           boolean parsed, int sectionIndex) throws ImporterHandlerException;
+            HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException;
 
     @Override
     protected final void saveCharStreamTransformerToXML(final XML xml) {

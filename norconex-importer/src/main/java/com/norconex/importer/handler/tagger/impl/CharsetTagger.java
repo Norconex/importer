@@ -36,9 +36,11 @@ import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.handler.transformer.impl.CharsetTransformer;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -114,9 +116,9 @@ public class CharsetTagger extends AbstractDocumentTagger
     private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
-    protected void tagApplicableDocument(String reference,
-            InputStream document, Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
+                    throws ImporterHandlerException {
 
         if (fieldMatcher.getPattern() == null) {
             throw new ImporterHandlerException(
@@ -124,9 +126,9 @@ public class CharsetTagger extends AbstractDocumentTagger
         }
 
         for (Entry<String, List<String>> en :
-                metadata.matchKeys(fieldMatcher).entrySet()) {
+            doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             LOG.debug("Field to convert charset: {}", en.getKey());
-            convertCharset(reference, metadata, en.getKey());
+            convertCharset(doc.getReference(), doc.getMetadata(), en.getKey());
         }
     }
 
@@ -176,23 +178,15 @@ public class CharsetTagger extends AbstractDocumentTagger
                 metadata.getString(DocMetadata.CONTENT_ENCODING);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
-            String newValue = value;
-            try {
-                newValue = convertCharset(reference, value, declaredEncoding);
-            } catch (IOException e) {
-                LOG.warn("Cannot detect source encoding for value \""
-                        + StringUtils.abbreviate(value, 0, 200)
-                        + "\". Encoding will remain unchanged. Reference: "
-                        + reference, e);
-            }
+            String newValue =
+                    convertCharset(reference, value, declaredEncoding);
             newValues.add(newValue);
         }
         metadata.setList(metaField, newValues);
     }
 
     private String convertCharset(
-            String reference, String value, String declaredEncoding)
-            throws IOException {
+            String reference, String value, String declaredEncoding) {
 
         //--- Get source charset ---
         String inputCharset = sourceCharset;

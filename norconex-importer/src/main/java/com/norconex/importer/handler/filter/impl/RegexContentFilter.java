@@ -24,14 +24,15 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.Regex;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Filters a document based on a pattern matching in its content.  Based
@@ -119,9 +120,9 @@ public class RegexContentFilter extends AbstractStringFilter {
     }
 
     @Override
-    protected boolean isStringContentMatching(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
-            int sectionIndex) throws ImporterHandlerException {
+    protected boolean isStringContentMatching(HandlerDoc doc,
+            StringBuilder content, ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
 
         if (StringUtils.isBlank(regex)) {
             return true;

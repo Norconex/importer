@@ -21,11 +21,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
+import com.norconex.importer.parser.ParseState;
 /**
  * <p>Accepts or rejects a document based on its reference (e.g. URL).
  * </p>
@@ -83,10 +84,10 @@ public class ReferenceFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
-        return valueMatcher.matches(reference);
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
+        return valueMatcher.matches(doc.getReference());
     }
 
 

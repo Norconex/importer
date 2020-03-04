@@ -34,8 +34,10 @@ import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -104,8 +106,8 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
     private int maxReadSize = TextReader.DEFAULT_MAX_READ_SIZE;
 
     @Override
-    protected void tagTextDocument(String reference, Reader input,
-            Properties metadata, boolean parsed)
+    protected void tagTextDocument(
+            HandlerDoc doc, Reader input, ParseState parseState)
             throws ImporterHandlerException {
 
         // "toField" and value must be present.
@@ -121,10 +123,11 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         if (fieldMatcher.getPattern() == null) {
             count = countContentMatches(input);
         } else {
-            count = countFieldMatches(metadata);
+            count = countFieldMatches(doc.getMetadata());
         }
 
-        PropertySetter.orDefault(onSet).apply(metadata, getToField(), count);
+        PropertySetter.orDefault(onSet).apply(
+                doc.getMetadata(), getToField(), count);
     }
 
     private int countFieldMatches(Properties metadata) {

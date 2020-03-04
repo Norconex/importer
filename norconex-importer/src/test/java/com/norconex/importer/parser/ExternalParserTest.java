@@ -15,7 +15,6 @@
 package com.norconex.importer.parser;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ public class ExternalParserTest {
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ExternalParser p = new ExternalParser();
         p.setCommand("my command");
 
@@ -58,40 +57,35 @@ public class ExternalParserTest {
     }
 
     @Test
-    public void testInFileOutFile()
-            throws IOException, DocumentParserException {
+    public void testInFileOutFile() throws DocumentParserException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
-    public void testInFileStdout()
-            throws IOException, DocumentParserException {
+    public void testInFileStdout() throws DocumentParserException {
         testWithExternalApp("-ic ${INPUT}");
     }
     @Test
-    public void testStdinOutFile()
-            throws IOException, DocumentParserException {
+    public void testStdinOutFile() throws DocumentParserException {
         testWithExternalApp("-oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
-    public void testStdinStdout()
-            throws IOException, DocumentParserException {
+    public void testStdinStdout() throws DocumentParserException {
         testWithExternalApp("");
     }
 
     @Test
-    public void testMetaInputOutputFiles()
-            throws IOException, DocumentParserException {
+    public void testMetaInputOutputFiles() throws DocumentParserException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} "
                 + "-im ${INPUT_META} -om ${OUTPUT_META} "
                 + "-ref ${REFERENCE}", true);
     }
 
     private void testWithExternalApp(String command)
-            throws IOException, DocumentParserException {
+            throws DocumentParserException {
         testWithExternalApp(command, false);
     }
     private void testWithExternalApp(String command, boolean metaFiles)
-            throws IOException, DocumentParserException {
+            throws DocumentParserException {
         InputStream input = inputAsStream();
         StringWriter output = new StringWriter();
         Doc doc = new Doc(
@@ -170,7 +164,7 @@ public class ExternalParserTest {
         );
     }
 
-    private InputStream inputAsStream() throws IOException {
+    private InputStream inputAsStream() {
         return new ByteArrayInputStream(INPUT.getBytes());
     }
 }

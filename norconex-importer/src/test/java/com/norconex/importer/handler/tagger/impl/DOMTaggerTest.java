@@ -40,6 +40,7 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.DOMTagger.DOMExtractDetails;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -88,7 +89,7 @@ public class DOMTaggerTest {
     // This is a test for: https://github.com/Norconex/importer/issues/39
     @Test
     public void testMatchBlanks()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         DOMTagger t = new DOMTagger();
         DOMExtractDetails d = null;
@@ -151,7 +152,7 @@ public class DOMTaggerTest {
     // where default value should not be trimmed.
     @Test
     public void testDefaultValue()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         String cfg = "<tagger class=\""
                 + "com.norconex.importer.handler.tagger.impl.DOMTagger\">"
@@ -184,7 +185,7 @@ public class DOMTaggerTest {
     // https://github.com/Norconex/importer/issues/28
     @Test
     public void testFromField()
-                throws IOException, ImporterHandlerException {
+                throws ImporterHandlerException, IOException {
 
         String html = "<html><body>"
                 + "<whatever/>"
@@ -238,7 +239,7 @@ public class DOMTaggerTest {
     // This is a test for: https://github.com/Norconex/importer/issues/21
     @Test
     public void testNotAllSelectorsMatching()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
@@ -268,7 +269,7 @@ public class DOMTaggerTest {
 
     @Test
     public void testExtractFromDOM()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "h2", "headings", APPEND));
@@ -280,7 +281,8 @@ public class DOMTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
         is.close();
 
         List<String> headings = metadata.getStrings("headings");
@@ -297,7 +299,7 @@ public class DOMTaggerTest {
 
     @Test
     public void testExtractionTypes()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
                 "head", "fhtml", APPEND, "html"));
@@ -311,7 +313,8 @@ public class DOMTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
         is.close();
 
         String expectedText = "Alice's Adventures in Wonderland -- Chapter I";
@@ -332,7 +335,8 @@ public class DOMTaggerTest {
             throws ImporterHandlerException, IOException {
         InputStream is = new ByteArrayInputStream(html.getBytes());
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        tagger.tagDocument("n/a", is, metadata, false);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "n/a", is, metadata), is, ParseState.PRE);
         is.close();
     }
 
@@ -348,7 +352,7 @@ public class DOMTaggerTest {
 
     @Test
     public void testAllExtractionTypes()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         DOMTagger t = new DOMTagger();
         t.addDOMExtractDetails(new DOMExtractDetails(
@@ -387,7 +391,9 @@ public class DOMTaggerTest {
         Properties metadata = new Properties();
         InputStream is = new ByteArrayInputStream(content.getBytes());
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument("n/a", is, metadata, false);
+
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "n/a", is, metadata), is, ParseState.PRE);
         is.close();
 
         String text = metadata.getString("text");
@@ -418,7 +424,7 @@ public class DOMTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         DOMTagger tagger = new DOMTagger();
         tagger.addDOMExtractDetails(new DOMExtractDetails(
                 "p.blah > a", "myField", REPLACE));

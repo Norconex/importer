@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,27 +31,25 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import com.norconex.importer.ImporterException;
-
 public class PDFParserTest extends AbstractParserTest {
 
     private static final String PDF_FAMILY = "Portable Document Format (PDF)";
 
     @Test
-    public void test_PDF_plain() throws IOException, ImporterException {
+    public void test_PDF_plain() throws IOException {
         testParsing("/parser/pdf/plain.pdf", "application/pdf",
                 DEFAULT_CONTENT_REGEX, "pdf", PDF_FAMILY);
     }
 
     @Test
-    public void test_PDF_jpeg() throws IOException, ImporterException {
+    public void test_PDF_jpeg() throws IOException {
         testParsing("/parser/pdf/jpeg.pdf", "application/pdf",
                 ".*PDF with a JPEG image.*", "pdf", PDF_FAMILY, true);
     }
 
     @Test
     public void test_PDF_jbig2()
-            throws IOException, ImporterException, SAXException, TikaException {
+            throws IOException, SAXException, TikaException {
         RecursiveParserWrapperHandler h = new RecursiveParserWrapperHandler(
                 new BasicContentHandlerFactory(BasicContentHandlerFactory
                         .HANDLER_TYPE.IGNORE, -1));

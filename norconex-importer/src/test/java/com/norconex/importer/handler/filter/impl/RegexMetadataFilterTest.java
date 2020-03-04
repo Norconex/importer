@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +21,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * @deprecated
@@ -34,7 +34,7 @@ public class RegexMetadataFilterTest {
 
     @Test
     public void testAcceptDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("field1", "a string to match");
         meta.add("field2", "something we want");
@@ -46,18 +46,18 @@ public class RegexMetadataFilterTest {
         filter.setOnMatch(OnMatch.EXCLUDE);
 
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, ParseState.PRE),
                 "field1 not filtered properly.");
 
         filter.setField("field2");
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, ParseState.PRE),
                 "field2 not filtered properly.");
 
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         RegexMetadataFilter filter = new RegexMetadataFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("author"),

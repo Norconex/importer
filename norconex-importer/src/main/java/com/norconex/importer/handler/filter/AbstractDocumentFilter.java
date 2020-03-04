@@ -21,11 +21,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class for document filters.  Subclasses can be set an attribute
@@ -33,7 +34,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * upon matching it is handled by this class.  Subclasses only
  * need to focus on whether the document gets matched or not by
  * implementing the
- * {@link #isDocumentMatched(String, InputStream, Properties, boolean)}
+ * {@link #isDocumentMatched(HandlerDoc, InputStream, ParseState)}
  * method.</p>
  *
  * <h3 id="logic">Inclusion/exclusion logic:</h3>
@@ -96,27 +97,22 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
     }
 
     @Override
-    public boolean acceptDocument(String reference,
-            InputStream input, Properties metadata,
-            boolean parsed) throws ImporterHandlerException {
-
-        if (!isApplicable(reference, metadata, parsed)) {
+    public boolean acceptDocument(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+            throws ImporterHandlerException {
+        if (!isApplicable(doc, parseState)) {
             return true;
         }
-
-        boolean matched = isDocumentMatched(reference, input, metadata, parsed);
-
+        boolean matched = isDocumentMatched(doc, input, parseState);
         OnMatch safeOnMatch = OnMatch.includeIfNull(onMatch);
         if (matched) {
             return safeOnMatch == OnMatch.INCLUDE;
-        } else {
-            return safeOnMatch == OnMatch.EXCLUDE;
         }
+        return safeOnMatch == OnMatch.EXCLUDE;
     }
 
     protected abstract boolean isDocumentMatched(
-            String reference, InputStream input,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream input, ParseState parseState)
                     throws ImporterHandlerException;
 
     @Override

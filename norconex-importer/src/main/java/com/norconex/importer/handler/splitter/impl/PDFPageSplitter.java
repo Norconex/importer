@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
-import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
@@ -36,9 +36,10 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -119,9 +120,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
     @Override
     protected List<Doc> splitApplicableDocument(
-            SplittableDocument doc, OutputStream output,
-            CachedStreamFactory streamFactory, boolean parsed)
-                    throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input, OutputStream output,
+            ParseState parseState) throws ImporterHandlerException {
 
         List<Doc> pageDocs = new ArrayList<>();
 
@@ -130,7 +130,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
             return pageDocs;
         }
 
-        try (PDDocument document = PDDocument.load(doc.getInput())) {
+        try (PDDocument document = PDDocument.load(input)) {
 
             // Make sure we are not splitting single pages.
             if (document.getNumberOfPages() <= 1) {
@@ -178,7 +178,8 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                 }
                 Doc pageDoc = new Doc(
                         pageInfo,
-                        streamFactory.newInputStream(os.toInputStream()),
+                        doc.getStreamFactory().newInputStream(
+                                os.toInputStream()),
                         pageMeta);
                 pageDocs.add(pageDoc);
             }

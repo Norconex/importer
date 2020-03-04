@@ -34,10 +34,11 @@ import org.slf4j.event.Level;
 
 import com.norconex.commons.lang.SLF4JUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>A utility tagger to help with troubleshooting of document importing.
@@ -90,20 +91,20 @@ public class DebugTagger extends AbstractDocumentTagger {
 
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
 
         Level level = Level.valueOf(
                 ObjectUtils.defaultIfNull(logLevel, "debug").toUpperCase());
 
         if (logFields.isEmpty()) {
-            for (Entry<String, List<String>> entry : metadata.entrySet()) {
+            for (Entry<String, List<String>> entry :
+                    doc.getMetadata().entrySet()) {
                 logField(level, entry.getKey(), entry.getValue());
             }
         } else {
             for (String fieldName : logFields) {
-                logField(level, fieldName, metadata.get(fieldName));
+                logField(level, fieldName, doc.getMetadata().get(fieldName));
             }
         }
 

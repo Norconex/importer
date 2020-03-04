@@ -32,8 +32,10 @@ import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Replaces an existing metadata value with another one. The "toField"
@@ -106,15 +108,16 @@ public class ReplaceTagger extends AbstractDocumentTagger {
     private final List<Replacement> replacements = new ArrayList<>();
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
 
         // match the keys dealing with values later
         for (Replacement repl : replacements) {
             for (Entry<String, List<String>> en :
-                    metadata.matchKeys(repl.fieldMatcher).entrySet()) {
-                replaceMeta(metadata, repl, en.getKey(), en.getValue());
+                    doc.getMetadata().matchKeys(repl.fieldMatcher).entrySet()) {
+                replaceMeta(
+                        doc.getMetadata(), repl, en.getKey(), en.getValue());
             }
         }
     }

@@ -16,10 +16,11 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -41,17 +42,15 @@ public abstract class AbstractDocumentTagger extends AbstractImporterHandler
             implements IDocumentTagger {
 
     @Override
-    public final void tagDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
-                    throws ImporterHandlerException {
-        if (!isApplicable(reference, metadata, parsed)) {
+    public final void tagDocument(HandlerDoc doc, InputStream input,
+            ParseState parseState) throws ImporterHandlerException {
+        if (!isApplicable(doc, parseState)) {
             return;
         }
-        tagApplicableDocument(reference, document, metadata, parsed);
+        tagApplicableDocument(doc, input, parseState);
     }
 
     protected abstract void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
-                    throws ImporterHandlerException;
+            HandlerDoc doc, InputStream input,
+            ParseState parseState) throws ImporterHandlerException;
 }

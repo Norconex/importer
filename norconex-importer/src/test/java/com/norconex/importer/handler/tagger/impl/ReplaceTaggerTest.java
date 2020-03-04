@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,15 +22,17 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.ReplaceTagger.Replacement;
+import com.norconex.importer.parser.ParseState;
 
 public class ReplaceTaggerTest {
 
     // Test for: https://github.com/Norconex/collector-http/issues/416
     @Test
     public void testNoValue()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("test", "a b c");
 
@@ -48,7 +48,7 @@ public class ReplaceTaggerTest {
         r.setToValue("");
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         // normal
         r = new Replacement();
@@ -60,7 +60,7 @@ public class ReplaceTaggerTest {
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("ac", meta.getString("regex"));
         Assertions.assertEquals("a  c", meta.getString("normal"));
@@ -82,7 +82,8 @@ public class ReplaceTaggerTest {
         tagger.loadFromXML(new XML(xml));
         r = new Replacement();
         tagger.addReplacement(r);
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
+
         Assertions.assertEquals("ac", meta.getString("regexXML"));
         Assertions.assertEquals("a  c", meta.getString("normalXML"));
     }
@@ -92,7 +93,7 @@ public class ReplaceTaggerTest {
     //still store it (was a bug).
     @Test
     public void testMatchReturnSameValue()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("EXP_NAME+COUNTRY1", "LAZARUS ANDREW");
         meta.add("EXP_NAME+COUNTRY2", "LAZARUS ANDREW [US]");
@@ -134,7 +135,7 @@ public class ReplaceTaggerTest {
         r.setDiscardUnchanged(false);
         tagger.addReplacement(r);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("LAZARUS ANDREW", meta.getString("EXP_NAME1"));
         Assertions.assertEquals("", meta.getString("EXP_COUNTRY1"));
@@ -143,7 +144,7 @@ public class ReplaceTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
 
@@ -236,7 +237,7 @@ public class ReplaceTaggerTest {
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("replaced", meta.getString("fullMatchField"));
         Assertions.assertNull(meta.getString("partialNoMatchField"));
@@ -284,7 +285,7 @@ public class ReplaceTaggerTest {
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("/this/is/a/path", meta.getString("path1"));
         Assertions.assertEquals("/that/is/a/path", meta.getString("folder"));
@@ -296,7 +297,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testWholeAndPartialMatches()
-             throws IOException, ImporterHandlerException {
+             throws ImporterHandlerException {
         String originalValue = "One dog, two dogs, three dogs";
 
 
@@ -464,7 +465,7 @@ public class ReplaceTaggerTest {
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         //--- Whole-match regular replace, case insensitive --------------------
         Assertions.assertNull(meta.getString("wholeNrmlInsensitiveUnchanged"));
@@ -508,7 +509,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testReplaceAll()
-             throws IOException, ImporterHandlerException {
+             throws ImporterHandlerException {
 
 
         String originalValue = "One dog, two dogs, three dogs";
@@ -567,7 +568,7 @@ public class ReplaceTaggerTest {
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertNull(meta.getString("wholeNrmlUnchanged"));
         Assertions.assertNull(meta.getString("wholeRegexUnchanged"));
@@ -580,7 +581,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testDiscardUnchanged()
-             throws IOException, ImporterHandlerException {
+             throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("test1", "keep me");
         meta.add("test2", "throw me");
@@ -603,7 +604,7 @@ public class ReplaceTaggerTest {
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("keep me", meta.getString("test1"));
         Assertions.assertNull(meta.getString("test2"));
@@ -611,7 +612,7 @@ public class ReplaceTaggerTest {
 
     @Test
     public void testOnSet()
-             throws IOException, ImporterHandlerException {
+             throws ImporterHandlerException {
 
         // Test what happens when target field already has a value
 
@@ -665,7 +666,7 @@ public class ReplaceTaggerTest {
         tagger.addReplacement(r);
 
         //=== Asserts ==========================================================
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals(
                 "target value 1, source value 1",

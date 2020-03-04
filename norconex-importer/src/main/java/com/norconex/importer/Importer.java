@@ -37,6 +37,7 @@ import java.util.UUID;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,23 +47,25 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
+import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.splitter.IDocumentSplitter;
-import com.norconex.importer.handler.splitter.SplittableDocument;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.response.IImporterResponseProcessor;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus;
@@ -297,7 +300,7 @@ public class Importer {
 
         //--- Pre-handlers ---
         filterStatus = executeHandlers(document, nestedDocs,
-                importerConfig.getPreParseHandlers(), false);
+                importerConfig.getPreParseHandlers(), ParseState.PRE);
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
@@ -307,7 +310,7 @@ public class Importer {
         parseDocument(document, nestedDocs);
         //--- Post-handlers ---
         filterStatus = executeHandlers(document, nestedDocs,
-                importerConfig.getPostParseHandlers(), true);
+                importerConfig.getPostParseHandlers(), ParseState.POST);
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
@@ -324,27 +327,35 @@ public class Importer {
 
     private ImporterStatus executeHandlers(
             Doc doc, List<Doc> childDocsHolder,
-            List<IImporterHandler> handlers, boolean parsed)
+            List<IImporterHandler> handlers, ParseState parseState)
                     throws ImporterException {
         if (handlers == null) {
             return PASSING_FILTER_STATUS;
         }
 
         IncludeMatchResolver includeResolver = new IncludeMatchResolver();
+        HandlerDoc hdoc = new HandlerDoc(doc);
+        MutableObject<CachedInputStream> input = new MutableObject<>();
         for (IImporterHandler h : handlers) {
             eventManager.fire(ImporterEvent.create(
-                    IMPORTER_HANDLER_BEGIN, doc, h, parsed));
+                    IMPORTER_HANDLER_BEGIN, doc, h, parseState));
+            input.setValue(doc.getInputStream());
             try {
                 if (h instanceof IDocumentTagger) {
-                    tagDocument(doc, (IDocumentTagger) h, parsed);
+                    tagDocument(hdoc, input.getValue(),
+                            (IDocumentTagger) h, parseState);
                 } else if (h instanceof IDocumentTransformer) {
-                    transformDocument(doc, (IDocumentTransformer) h, parsed);
+                    transformDocument(
+                            hdoc, input, (IDocumentTransformer) h, parseState);
+                    doc.setInputStream(input.getValue());
                 } else if (h instanceof IDocumentSplitter) {
-                    childDocsHolder.addAll(
-                            splitDocument(doc, (IDocumentSplitter) h, parsed));
+                    childDocsHolder.addAll(splitDocument(
+                            hdoc, input, (IDocumentSplitter) h, parseState));
+                    doc.setInputStream(input.getValue());
                 } else if (h instanceof IDocumentFilter) {
                     IDocumentFilter filter = (IDocumentFilter) h;
-                    boolean accepted = acceptDocument(doc, filter, parsed);
+                    boolean accepted = acceptDocument(
+                            hdoc, input.getValue(), filter, parseState);
                     if (isMatchIncludeFilter(filter)) {
                         includeResolver.hasIncludes = true;
                         if (accepted) {
@@ -361,16 +372,16 @@ public class Importer {
                 }
             } catch (ImporterException e) {
                 eventManager.fire(ImporterEvent.create(
-                        IMPORTER_HANDLER_ERROR, doc, h, parsed, e));
+                        IMPORTER_HANDLER_ERROR, doc, h, parseState, e));
                 throw e;
             } catch (IOException | RuntimeException e) {
                 eventManager.fire(ImporterEvent.create(
-                        IMPORTER_HANDLER_ERROR, doc, h, parsed, e));
+                        IMPORTER_HANDLER_ERROR, doc, h, parseState, e));
                 throw new ImporterException(
                         "Importer failure for handler: " + h, e);
             }
             eventManager.fire(ImporterEvent.create(
-                    IMPORTER_HANDLER_END, doc, h, parsed));
+                    IMPORTER_HANDLER_END, doc, h, parseState));
         }
 
         if (!includeResolver.passes()) {
@@ -416,8 +427,8 @@ public class Importer {
         }
 
         eventManager.fire(ImporterEvent.create(
-                IMPORTER_PARSER_BEGIN, doc, parser, false));
-        CachedOutputStream out = createOutputStream();
+                IMPORTER_PARSER_BEGIN, doc, parser, ParseState.PRE));
+        CachedOutputStream out = streamFactory.newOuputStream();
         OutputStreamWriter output = new OutputStreamWriter(
                 out, StandardCharsets.UTF_8);
 
@@ -446,7 +457,7 @@ public class Importer {
             }
         } catch (DocumentParserException e) {
             eventManager.fire(ImporterEvent.create(
-                    IMPORTER_PARSER_ERROR, doc, parser, false, e));
+                    IMPORTER_PARSER_ERROR, doc, parser, ParseState.PRE, e));
             try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             if (importerConfig.getParseErrorsSaveDir() != null) {
                 saveParseError(doc, e);
@@ -454,7 +465,7 @@ public class Importer {
             throw e;
         }
         eventManager.fire(ImporterEvent.create(
-                IMPORTER_PARSER_END, doc, parser, true));
+                IMPORTER_PARSER_END, doc, parser, ParseState.POST));
 
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {
@@ -535,19 +546,18 @@ public class Importer {
         }
     }
 
-    private void tagDocument(Doc doc, IDocumentTagger tagger,
-            boolean parsed) throws ImporterHandlerException {
-        tagger.tagDocument(doc.getReference(),
-                doc.getInputStream(), doc.getMetadata(), parsed);
+    private void tagDocument(HandlerDoc doc, InputStream input,
+            IDocumentTagger tagger, ParseState parseState)
+                    throws ImporterHandlerException {
+        tagger.tagDocument(doc, input, parseState);
     }
 
     private boolean acceptDocument(
-            Doc doc, IDocumentFilter filter, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input,
+            IDocumentFilter filter, ParseState parseState)
+                    throws ImporterHandlerException {
 
-        boolean accepted = filter.acceptDocument(
-                doc.getReference(),
-                doc.getInputStream(), doc.getMetadata(), parsed);
+        boolean accepted = filter.acceptDocument(doc, input, parseState);
 //        //TODO Is the next .rewind() necessary given next call to getContent()
 //        //will do it?
 //        doc.getInputStream().rewind();
@@ -558,15 +568,15 @@ public class Importer {
         return true;
     }
 
-    private void transformDocument(Doc doc,
-            IDocumentTransformer transformer, boolean parsed)
+    private void transformDocument(
+            HandlerDoc doc, MutableObject<CachedInputStream> input,
+            IDocumentTransformer transformer, ParseState parseState)
                     throws ImporterHandlerException, IOException {
 
-        CachedInputStream  in = doc.getInputStream();
-        CachedOutputStream out = createOutputStream();
+        CachedInputStream in = input.getValue();
+        CachedOutputStream out = streamFactory.newOuputStream();
 
-        transformer.transformDocument(
-                doc.getReference(), in, out, doc.getMetadata(), parsed);
+        transformer.transformDocument(doc, in, out, parseState);
 
         CachedInputStream newInputStream = null;
         if (out.isCacheEmpty()) {
@@ -575,49 +585,42 @@ public class Importer {
                         + "\" did not return any content for: {}.",
                         transformer.getClass(), doc.getReference());
             }
-            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
+            IOUtil.closeQuietly(out);
             newInputStream = in;
         } else {
             in.dispose();
             try {
                 newInputStream = out.getInputStream();
             } finally {
-                try { out.close(); } catch (IOException ie) { /*NOOP*/ }
+                IOUtil.closeQuietly(out);
             }
         }
-        doc.setInputStream(newInputStream);
+        input.setValue(newInputStream);
     }
 
-    private List<Doc> splitDocument(
-            Doc doc, IDocumentSplitter h, boolean parsed)
+    private List<Doc> splitDocument(HandlerDoc doc,
+            MutableObject<CachedInputStream> input,
+            IDocumentSplitter h, ParseState parseState)
                     throws ImporterHandlerException, IOException {
 
-        CachedInputStream  in = doc.getInputStream();
-        CachedOutputStream out = createOutputStream();
+        CachedInputStream in = input.getValue();
+        CachedOutputStream out = streamFactory.newOuputStream();
 
-        SplittableDocument sdoc = new SplittableDocument(
-                doc.getReference(), in, doc.getMetadata());
-
-        List<Doc> childDocs = h.splitDocument(
-                sdoc, out, streamFactory, parsed);
+        List<Doc> childDocs = h.splitDocument(doc, in, out, parseState);
         try {
             // If writing was performed, get new content
             if (!out.isCacheEmpty()) {
-                doc.setInputStream(out.getInputStream());
+                input.setValue(out.getInputStream());
                 in.dispose();
             }
         } finally {
-            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
+            IOUtil.closeQuietly(out);
         }
 
         if (childDocs == null) {
             return new ArrayList<>();
         }
         return childDocs;
-    }
-
-    private CachedOutputStream createOutputStream() {
-        return streamFactory.newOuputStream();
     }
 
     //--- Deprecated -----------------------------------------------------------

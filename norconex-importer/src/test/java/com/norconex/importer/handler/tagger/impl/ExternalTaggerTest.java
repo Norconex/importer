@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.tagger.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -28,7 +27,9 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.ExternalApp;
 
 public class ExternalTaggerTest {
@@ -37,7 +38,7 @@ public class ExternalTaggerTest {
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ExternalTagger t = new ExternalTagger();
         t.setCommand("my command");
         t.setInputDisabled(true);
@@ -61,14 +62,14 @@ public class ExternalTaggerTest {
 
     @Test
     public void testMetaInputMetaOutput()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT} "
                 + "-im ${INPUT_META} -om ${OUTPUT_META} "
                 + "-ref ${REFERENCE}");
     }
 
     private void testWithExternalApp(String command)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         InputStream input = inputAsStream();
         Properties metadata = new Properties();
         metadata.set(
@@ -83,7 +84,9 @@ public class ExternalTaggerTest {
         t.setMetadataInputFormat("properties");
         t.setMetadataOutputFormat("properties");
         t.setOnSet(PropertySetter.REPLACE);
-        t.tagDocument("N/A", input, metadata, false);
+
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "N/A", input, metadata), input, ParseState.PRE);
 
         assertMetadataFiles(metadata);
     }
@@ -115,7 +118,7 @@ public class ExternalTaggerTest {
         );
     }
 
-    private InputStream inputAsStream() throws IOException {
+    private InputStream inputAsStream() {
         return new ByteArrayInputStream(INPUT.getBytes());
     }
 }

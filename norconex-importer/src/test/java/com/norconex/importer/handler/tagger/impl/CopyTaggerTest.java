@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.PropertySetter;
@@ -25,7 +23,7 @@ import com.norconex.commons.lang.xml.XML;
 public class CopyTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         CopyTagger tagger = new CopyTagger();
         tagger.addCopyDetails(new TextMatcher("from1"), "to1",
                 PropertySetter.OPTIONAL);

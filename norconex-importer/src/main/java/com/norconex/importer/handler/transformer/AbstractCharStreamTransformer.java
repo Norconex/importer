@@ -31,11 +31,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class for transformers dealing with text documents only.
@@ -95,12 +96,12 @@ public abstract class AbstractCharStreamTransformer
 
     @Override
     protected final void transformApplicableDocument(
-            final String reference, final InputStream input,
-            final OutputStream output, final Properties metadata, final boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input,
+            OutputStream output, ParseState parseState)
+                    throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, input, metadata, parsed);
+                doc, input, sourceCharset, parseState);
         if (StringUtils.isBlank(inputCharset)) {
             LOG.warn("Character encoding could not be detected (will assume "
                     + "UTF-8). If this leads to a failure, it could be that "
@@ -108,15 +109,16 @@ public abstract class AbstractCharStreamTransformer
                     + "content. You can avoid this by applying "
                     + "restrictions or making sure it was parsed first. "
                     + "Reference: {}",
-                    getClass().getCanonicalName(), reference);
+                    getClass().getCanonicalName(), doc.getReference());
             inputCharset = StandardCharsets.UTF_8.toString();
         }
         try {
-            InputStreamReader is = new InputStreamReader(input, inputCharset);
-            OutputStreamWriter os =
+            InputStreamReader reader =
+                    new InputStreamReader(input, inputCharset);
+            OutputStreamWriter writer =
                     new OutputStreamWriter(output, inputCharset);
-            transformTextDocument(reference, is, os, metadata, parsed);
-            os.flush();
+            transformTextDocument(doc, reader, writer, parseState);
+            writer.flush();
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot transform character stream.", e);
@@ -124,8 +126,8 @@ public abstract class AbstractCharStreamTransformer
     }
 
     protected abstract void transformTextDocument(
-            String reference, Reader input,
-            Writer output, Properties metadata, boolean parsed)
+            HandlerDoc doc, Reader input,
+            Writer output, ParseState parseState)
                     throws ImporterHandlerException;
 
 

@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
  */
 package com.norconex.importer.util;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.util.regex.RegexFieldExtractor;
 import com.norconex.importer.util.regex.RegexUtil;
 
@@ -34,8 +31,7 @@ import com.norconex.importer.util.regex.RegexUtil;
 public class RegexUtilTest {
 
     @Test
-    public void testExtractFields()
-            throws IOException, ImporterHandlerException {
+    public void testExtractFields() {
 
         String xml = ResourceLoader.getXmlString(RegexUtilTest.class);
         Properties fields = null;

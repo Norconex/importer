@@ -23,9 +23,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -113,14 +115,14 @@ public class ScriptTagger extends AbstractStringTagger {
     }
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, int sectionIndex)
-            throws ImporterHandlerException {
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
         Bindings b = scriptRunner.createBindings();
-        b.put("reference", reference);
+        b.put("reference", doc.getReference());
         b.put("content", content.toString());
-        b.put("metadata", metadata);
-        b.put("parsed", parsed);
+        b.put("metadata", doc.getMetadata());
+        b.put("parsed", parseState);
         b.put("sectionIndex", sectionIndex);
         scriptRunner.eval(b);
     }

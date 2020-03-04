@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,17 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.io.NullInputStream;
 
+import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.handler.HandlerDoc;
+import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.tagger.IDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 public final class TestUtil {
 
@@ -63,5 +71,52 @@ public final class TestUtil {
             new XML(r).populate(config);
         }
         return new Importer(config);
+    }
+
+    public static boolean filter(IDocumentFilter filter, String ref,
+            Properties metadata, ParseState parseState)
+                    throws ImporterHandlerException {
+        return filter(filter, ref, null, metadata, parseState);
+    }
+    public static boolean filter(IDocumentFilter filter, String ref,
+            InputStream is, Properties metadata, ParseState parseState)
+                    throws ImporterHandlerException {
+        InputStream input = is == null ? new NullInputStream(0) : is;
+        return filter.acceptDocument(
+                toHandlerDoc(ref, input, metadata), input, parseState);
+    }
+
+    public static void tag(IDocumentTagger tagger, String ref,
+            Properties metadata, ParseState parseState)
+                    throws ImporterHandlerException {
+        tag(tagger, ref, null, metadata, parseState);
+    }
+    public static void tag(IDocumentTagger tagger, String ref,
+            InputStream is, Properties metadata, ParseState parseState)
+                    throws ImporterHandlerException {
+        InputStream input = is == null ? new NullInputStream(0) : is;
+        tagger.tagDocument(
+                toHandlerDoc(ref, input, metadata), input, parseState);
+    }
+
+
+    public static HandlerDoc toHandlerDoc() {
+        return toHandlerDoc("N/A", null, new Properties());
+    }
+    public static HandlerDoc toHandlerDoc(Properties meta) {
+        return toHandlerDoc("N/A", null, meta);
+    }
+    public static HandlerDoc toHandlerDoc(String ref) {
+        return toHandlerDoc(ref, null, new Properties());
+    }
+    public static HandlerDoc toHandlerDoc(String ref, Properties meta) {
+        return toHandlerDoc(ref, null, meta);
+    }
+    public static HandlerDoc toHandlerDoc(String ref, InputStream in) {
+        return toHandlerDoc(ref, in, new Properties());
+    }
+    public static HandlerDoc toHandlerDoc(
+            String ref, InputStream in, Properties meta) {
+        return new HandlerDoc(new Doc(ref, CachedInputStream.cache(in), meta));
     }
 }

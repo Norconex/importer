@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -30,10 +29,11 @@ import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.ImporterException;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus.Status;
 
@@ -48,56 +48,55 @@ public class RegexContentFilterTest {
 
     @Test
     public void testMatchesExclude()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
-        Assertions.assertFalse(filter.acceptDocument("n/a",
+        Assertions.assertFalse(TestUtil.filter(filter, "n/a",
                 IOUtils.toInputStream("a string that matches",
-                        StandardCharsets.UTF_8), null, false),
+                        StandardCharsets.UTF_8), null, ParseState.PRE),
                 "Should have been rejected.");
     }
     @Test
     public void testMatchesInclude()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                TestUtil.filter(filter, "n/a", IOUtils.toInputStream(
                         "a string that matches", StandardCharsets.UTF_8),
-                        null, false),
+                        null, ParseState.PRE),
                 "Should have been accepted.");
     }
     @Test
     public void testNoMatchesExclude()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                TestUtil.filter(filter, "n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
-                        null, false),
+                        null, ParseState.PRE),
                 "Should have been accepted.");
     }
     @Test
     public void testNoMatchesUniqueInclude()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
 
         RegexContentFilter filter = new RegexContentFilter();
         filter.setRegex(".*string.*");
         filter.setOnMatch(OnMatch.INCLUDE);
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", IOUtils.toInputStream(
+                TestUtil.filter(filter, "n/a", IOUtils.toInputStream(
                         "a text that does not match", StandardCharsets.UTF_8),
-                        null, false),
+                        null, ParseState.PRE),
                 "Should have been rejected.");
     }
 
     @Test
-    public void testMatchesOneOfManyIncludes()
-            throws IOException, ImporterException {
+    public void testMatchesOneOfManyIncludes() {
         RegexContentFilter filter1 = new RegexContentFilter();
         filter1.setRegex(".*string.*");
         filter1.setOnMatch(OnMatch.INCLUDE);
@@ -124,8 +123,7 @@ public class RegexContentFilterTest {
     }
 
     @Test
-    public void testNoMatchesOfManyIncludes()
-            throws IOException, ImporterException {
+    public void testNoMatchesOfManyIncludes() {
         RegexContentFilter filter1 = new RegexContentFilter();
         filter1.setRegex(".*zxcv.*");
         filter1.setOnMatch(OnMatch.INCLUDE);
@@ -151,7 +149,7 @@ public class RegexContentFilterTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         RegexContentFilter filter = new RegexContentFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("author"),

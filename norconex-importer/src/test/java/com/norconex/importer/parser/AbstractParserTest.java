@@ -33,7 +33,6 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.ImporterException;
 import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
@@ -62,15 +61,14 @@ public abstract class AbstractParserTest {
     protected ImporterResponse[] testParsing(
             String resourcePath, String contentType,
             String contentRegex, String extension, String family)
-                    throws IOException, ImporterException {
+                    throws IOException {
         return testParsing(resourcePath, contentType,
                 contentRegex, extension, family, false);
     }
     protected ImporterResponse[] testParsing(
             String resourcePath, String contentType,
             String contentRegex, String extension, String family,
-            boolean splitEmbedded)
-                    throws IOException, ImporterException {
+            boolean splitEmbedded) throws IOException {
 
         ImporterResponse[] responses = new ImporterResponse[2];
 

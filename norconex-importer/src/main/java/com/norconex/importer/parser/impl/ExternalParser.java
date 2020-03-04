@@ -17,6 +17,7 @@ package com.norconex.importer.parser.impl;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ExternalHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.ExternalTransformer;
 import com.norconex.importer.parser.DocumentParserException;
@@ -307,14 +309,13 @@ public class ExternalParser implements IDocumentParser, IXMLConfigurable {
     public List<Doc> parseDocument(Doc doc,
             Writer output) throws DocumentParserException {
         try {
-            h.handleDocument(doc.getReference(), doc.getInputStream(),
-                    new WriterOutputStream(output, StandardCharsets.UTF_8),
-                    doc.getMetadata());
+            h.handleDocument(new HandlerDoc(doc), doc.getInputStream(),
+                    new WriterOutputStream(output, StandardCharsets.UTF_8));
         } catch (ImporterHandlerException e) {
             throw new DocumentParserException(
                     "Could not parse document: " + doc.getReference(), e);
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

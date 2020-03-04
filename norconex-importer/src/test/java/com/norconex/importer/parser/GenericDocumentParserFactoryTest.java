@@ -28,7 +28,6 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.ImporterException;
 import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
@@ -37,7 +36,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
 public class GenericDocumentParserFactoryTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         GenericDocumentParserFactory f = new GenericDocumentParserFactory();
 
         // default read/write
@@ -62,8 +61,7 @@ public class GenericDocumentParserFactoryTest {
     }
 
     @Test
-    public void testIgnoringContentTypes()
-            throws IOException, ImporterException {
+    public void testIgnoringContentTypes() throws IOException {
 
         GenericDocumentParserFactory factory =
                 new GenericDocumentParserFactory();

@@ -32,12 +32,13 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.impl.StripBetweenTransformer.StripBetweenDetails;
+import com.norconex.importer.parser.ParseState;
 
 public class StripBetweenTransformerTest {
 
     @Test
     public void testTransformTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         StripBetweenTransformer t = new StripBetweenTransformer();
         addEndPoints(t, "<h2>", "</h2>");
         addEndPoints(t, "<P>", "</P>");
@@ -51,8 +52,8 @@ public class StripBetweenTransformerTest {
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(),
-                is, os, metadata, false);
+                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is, metadata),
+                is, os, ParseState.PRE);
 
         Assertions.assertEquals(458, os.toString().length(),
                 "Length of doc content after transformation is incorrect.");
@@ -64,7 +65,7 @@ public class StripBetweenTransformerTest {
 
     @Test
     public void testCollectorHttpIssue237()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         StripBetweenTransformer t = new StripBetweenTransformer();
         addEndPoints(t, "<body>", "<\\!-- START -->");
         addEndPoints(t, "<\\!-- END -->", "<\\!-- START -->");
@@ -82,7 +83,8 @@ public class StripBetweenTransformerTest {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.transformDocument("fake.html", is, os, metadata, false);
+        t.transformDocument(TestUtil.toHandlerDoc("fake.html", is, metadata),
+                is, os, ParseState.PRE);
         String output = os.toString();
         is.close();
         os.close();
@@ -93,7 +95,7 @@ public class StripBetweenTransformerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         StripBetweenTransformer t = new StripBetweenTransformer();
         addEndPoints(t, "<!-- NO INDEX", "/NOINDEX -->");
         addEndPoints(t, "<!-- HEADER START", "HEADER END -->");

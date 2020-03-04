@@ -27,11 +27,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Adds the document length (i.e., number of bytes) to
@@ -82,8 +83,8 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
     private PropertySetter onSet;
 
     @Override
-    protected void tagApplicableDocument(String reference,
-            InputStream document, Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
         if (StringUtils.isBlank(toField)) {
             throw new IllegalArgumentException("\"toField\" cannot be empty.");
@@ -102,7 +103,8 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
             length = is.getCount();
         }
 
-        PropertySetter.orDefault(onSet).apply(metadata, toField, length);
+        PropertySetter.orDefault(onSet).apply(
+                doc.getMetadata(), toField, length);
     }
 
     /**

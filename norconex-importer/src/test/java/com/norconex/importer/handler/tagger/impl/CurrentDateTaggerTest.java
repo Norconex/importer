@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -26,8 +25,10 @@ import com.norconex.commons.lang.Sleeper;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class CurrentDateTaggerTest {
 
@@ -43,7 +44,7 @@ public class CurrentDateTaggerTest {
         meta = new Properties();
         tagger = new CurrentDateTagger();
         tagger.setFormat("yyyy-MM-dd'T'HH:mm:ss");
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
         Assertions.assertTrue(
                 meta.getString(DocMetadata.IMPORTED_DATE).matches(
                         "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"),
@@ -53,7 +54,7 @@ public class CurrentDateTaggerTest {
         tagger = new CurrentDateTagger();
         tagger.setFormat("EEEE");
         tagger.setLocale(Locale.CANADA_FRENCH);
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
         Assertions.assertTrue(
                 ArrayUtils.contains(new String[]{
                         "lundi", "mardi", "mercredi", "jeudi", "vendredi",
@@ -66,7 +67,7 @@ public class CurrentDateTaggerTest {
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.REPLACE);
         tagger.setToField("existingField");
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
         Assertions.assertEquals(
                 1, meta.getLongs("existingField").size(),
                 "Invalid overwritten number of date values");
@@ -79,7 +80,7 @@ public class CurrentDateTaggerTest {
         tagger = new CurrentDateTagger();
         tagger.setOnSet(PropertySetter.APPEND);
         tagger.setToField("existingField");
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
         Assertions.assertEquals(
                 2, meta.getLongs("existingField").size(),
                 "Invalid added number of date values");
@@ -87,15 +88,14 @@ public class CurrentDateTaggerTest {
         for (Long dateLong : longs) {
             if (dateLong == 1002727941000L) {
                 continue;
-            } else {
-                Assertions.assertTrue(
-                        dateLong > now, "Invalid added date created");
             }
+            Assertions.assertTrue(
+                    dateLong > now, "Invalid added date created");
         }
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         CurrentDateTagger tagger = new CurrentDateTagger();
         tagger.setToField("field1");
         tagger.setFormat("yyyy-MM-dd");

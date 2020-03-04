@@ -32,6 +32,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class TitleGeneratorTaggerTest {
 
@@ -41,7 +42,7 @@ public class TitleGeneratorTaggerTest {
     // Test for: https://github.com/Norconex/importer/issues/74
     @Test
     public void testNullFromField()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
 
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setFromField("nullField");
@@ -49,7 +50,7 @@ public class TitleGeneratorTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
-        t.tagDocument("test.txt", null, metadata, true);
+        TestUtil.tag(t, "test.txt", metadata, ParseState.POST);
 
         Assertions.assertNull(
                 metadata.getString(DocMetadata.GENERATED_TITLE),
@@ -58,7 +59,7 @@ public class TitleGeneratorTaggerTest {
 
     @Test
     public void testSummarizeTitle()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setToField("mytitle");
@@ -68,8 +69,8 @@ public class TitleGeneratorTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
-        t.tagDocument(file.getAbsolutePath(), is, metadata, true);
-
+        t.tagDocument(TestUtil.toHandlerDoc(
+                file.getAbsolutePath(), is, metadata), is, ParseState.POST);
         is.close();
 
         String title = metadata.getString("mytitle");
@@ -83,7 +84,7 @@ public class TitleGeneratorTaggerTest {
 
     @Test
     public void testHeadingTitle()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setDetectHeading(true);
         t.setDetectHeadingMinLength(5);
@@ -93,8 +94,8 @@ public class TitleGeneratorTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
-        t.tagDocument(file.getAbsolutePath(), is, metadata, true);
-
+        t.tagDocument(TestUtil.toHandlerDoc(
+                file.getAbsolutePath(), is, metadata), is, ParseState.POST);
         is.close();
 
         String title = metadata.getString(DocMetadata.GENERATED_TITLE);
@@ -105,7 +106,7 @@ public class TitleGeneratorTaggerTest {
 
     @Test
     public void testFallbackTitle()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
 
         InputStream is = new ByteArrayInputStream(
@@ -113,8 +114,9 @@ public class TitleGeneratorTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/plain");
-        t.tagDocument("test.txt", is, metadata, true);
 
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "test.txt", is, metadata), is, ParseState.POST);
         is.close();
 
         String title = metadata.getString(DocMetadata.GENERATED_TITLE);
@@ -126,7 +128,7 @@ public class TitleGeneratorTaggerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TitleGeneratorTagger t = new TitleGeneratorTagger();
         t.setFromField("potato");
         t.setToField("banana");

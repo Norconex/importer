@@ -29,12 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 /**
  * <p>
  * Accepts or rejects a document based on the numeric value(s) of matching
@@ -221,15 +222,15 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
 
         if (fieldMatcher.getPattern() == null) {
             throw new IllegalArgumentException(
                     "\"fieldMatcher\" pattern cannot be empty.");
         }
-        for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+        for (String value : doc.getMetadata().matchKeys(fieldMatcher).valueList()) {
             if (meetsAllConditions(value)) {
                 return true;
             }

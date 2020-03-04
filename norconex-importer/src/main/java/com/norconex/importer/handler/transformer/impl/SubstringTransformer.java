@@ -24,11 +24,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.transformer.AbstractCharStreamTransformer;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Keep a substring of the content matching a begin and end character
@@ -98,9 +99,9 @@ public class SubstringTransformer extends AbstractCharStreamTransformer
     }
 
     @Override
-    protected void transformTextDocument(final String reference, final Reader input,
-            final Writer output, final Properties metadata, final boolean parsed)
-            throws ImporterHandlerException {
+    protected void transformTextDocument(HandlerDoc doc, Reader input,
+            Writer output, ParseState parseState)
+                    throws ImporterHandlerException {
         long length = -1;
         if (end > -1) {
             if (end < begin) {
@@ -114,7 +115,8 @@ public class SubstringTransformer extends AbstractCharStreamTransformer
             IOUtils.copyLarge(input, output, begin, length);
         } catch (IOException e) {
             throw new ImporterHandlerException(
-                    "Could not get a subtring of content for " + reference, e);
+                    "Could not get a subtring of content for "
+                            + doc.getReference(), e);
         }
     }
 

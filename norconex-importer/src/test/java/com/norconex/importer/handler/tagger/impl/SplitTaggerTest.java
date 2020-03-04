@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -27,13 +27,15 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.SplitTagger.SplitDetails;
+import com.norconex.importer.parser.ParseState;
 
 public class SplitTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         SplitTagger tagger = new SplitTagger();
         tagger.addSplitDetails(new SplitDetails(
                 new TextMatcher("fromName1"), "toName1", "sep1", false));
@@ -78,7 +80,7 @@ public class SplitTaggerTest {
         tagger.addSplitDetails(new SplitDetails(new TextMatcher(
                 "metaMultiNewField"), "multiNewField", ", ", false));
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         List<String> toSplitExpect = Arrays.asList(
                 "Joe", "Jack", "William", "Avrel");
@@ -114,7 +116,7 @@ public class SplitTaggerTest {
         tagger.addSplitDetails(new SplitDetails(
                 new TextMatcher("path2"), "file2", "[, ;]+", true));
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals(
                 Arrays.asList("a", "path", "file.doc"),
@@ -132,9 +134,11 @@ public class SplitTaggerTest {
 
         tagger.addSplitDetails(new SplitDetails(
                 (TextMatcher) null, "targetField", ", ", false));
-        tagger.tagDocument("n/a", IOUtils.toInputStream(
-                "Joe, Jack, William, Avrel", StandardCharsets.UTF_8),
-                meta, true);
+
+        InputStream is = IOUtils.toInputStream(
+                "Joe, Jack, William, Avrel", StandardCharsets.UTF_8);
+        tagger.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
 
         Assertions.assertEquals(
                 Arrays.asList("Joe", "Jack", "William", "Avrel"),
@@ -148,12 +152,13 @@ public class SplitTaggerTest {
         tagger.addSplitDetails(new SplitDetails(
                 (TextMatcher) null, "targetField", "[, ;]+", true));
 
-        tagger.tagDocument("n/a", IOUtils.toInputStream(
-                "a, b,c d;e, f", StandardCharsets.UTF_8),
-                meta, true);
+
+        InputStream is = IOUtils.toInputStream(
+                "a, b,c d;e, f", StandardCharsets.UTF_8);
+        tagger.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         Assertions.assertEquals(
                 Arrays.asList("a", "b", "c", "d", "e", "f"),
                 meta.getStrings("targetField"));
     }
-
 }

@@ -15,7 +15,10 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,16 +36,16 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.io.CachedInputStream;
-import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -122,11 +125,11 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     @Override
     protected List<Doc> splitApplicableDocument(
-            SplittableDocument doc, OutputStream output,
-            CachedStreamFactory streamFactory, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input,
+            OutputStream output, ParseState parseState)
+                    throws ImporterHandlerException {
         try {
-            return doSplitApplicableDocument(doc, streamFactory);
+            return doSplitApplicableDocument(doc, input);
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Could not split document: " + doc.getReference(), e);
@@ -134,17 +137,17 @@ public class CsvSplitter extends AbstractDocumentSplitter
     }
 
     private List<Doc> doSplitApplicableDocument(
-            SplittableDocument doc, CachedStreamFactory streamFactory)
-            throws IOException {
-
+            HandlerDoc doc, InputStream input) throws IOException {
 
         List<Doc> rows = new ArrayList<>();
 
         //TODO by default (or as an option), try to detect the format of the
         // file (read first few lines and count number of tabs vs coma,
         // quotes per line, etc.
-        try (CSVReader cvsreader = new CSVReader(doc.getReader(), separatorCharacter,
-                quoteCharacter, escapeCharacter, linesToSkip)) {
+        try (CSVReader cvsreader = new CSVReader(
+                new InputStreamReader(input, StandardCharsets.UTF_8),
+                    separatorCharacter, quoteCharacter,
+                    escapeCharacter, linesToSkip)) {
 
             String [] cols;
             String[] colNames = null;
@@ -186,11 +189,11 @@ public class CsvSplitter extends AbstractDocumentSplitter
                             doc.getReference() + "!" + childEmbedRef;
                     CachedInputStream content = null;
                     if (contentStr.length() > 0) {
-                        content = streamFactory.newInputStream(
+                        content = doc.getStreamFactory().newInputStream(
                                 contentStr.toString());
                         contentStr.setLength(0);
                     } else {
-                        content = streamFactory.newInputStream();
+                        content = doc.getStreamFactory().newInputStream();
                     }
                     Doc childDoc = new Doc(
                             childDocRef, content, childMeta);

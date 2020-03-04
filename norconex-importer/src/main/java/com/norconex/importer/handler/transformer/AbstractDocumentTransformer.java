@@ -17,10 +17,11 @@ package com.norconex.importer.handler.transformer;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -44,18 +45,18 @@ public abstract class AbstractDocumentTransformer
             implements IDocumentTransformer {
 
     @Override
-    public final void transformDocument(final String reference, final InputStream input,
-            final OutputStream output, final Properties metadata, final boolean parsed)
-            throws ImporterHandlerException {
+    public final void transformDocument(HandlerDoc doc, InputStream input,
+            OutputStream output, ParseState parseState)
+                    throws ImporterHandlerException {
 
-        if (!isApplicable(reference, metadata, parsed)) {
+        if (!isApplicable(doc, parseState)) {
             return;
         }
-        transformApplicableDocument(reference, input, output, metadata, parsed);
+        transformApplicableDocument(doc, input, output, parseState);
     }
 
     protected abstract void transformApplicableDocument(
-            String reference, InputStream input,
-            OutputStream output, Properties metadata, boolean parsed)
-            throws ImporterHandlerException;
+            HandlerDoc doc, InputStream input,
+            OutputStream output, ParseState parseState)
+                    throws ImporterHandlerException;
 }

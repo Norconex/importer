@@ -19,15 +19,16 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractCharStreamFilter;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.AbstractStringFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Filters a document based on a text pattern in a document content
@@ -126,9 +127,9 @@ public class TextFilter extends AbstractStringFilter {
     }
 
     @Override
-    protected boolean isStringContentMatching(String reference,
-            StringBuilder content, Properties metadata, boolean parsed,
-            int sectionIndex) throws ImporterHandlerException {
+    protected boolean isStringContentMatching(HandlerDoc doc,
+            StringBuilder content, ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
 
         // content
         if (fieldMatcher.getPattern() == null) {
@@ -136,7 +137,8 @@ public class TextFilter extends AbstractStringFilter {
         }
 
         // field(s)
-        return new PropertyMatcher(fieldMatcher, valueMatcher).matches(metadata);
+        return new PropertyMatcher(fieldMatcher, valueMatcher).matches(
+                doc.getMetadata());
     }
 
     @Override

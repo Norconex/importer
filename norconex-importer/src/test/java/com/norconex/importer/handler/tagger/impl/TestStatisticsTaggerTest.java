@@ -25,14 +25,16 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class TestStatisticsTaggerTest {
 
     @Test
     public void testTagTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         String txt =
             "White Rabbit checking watch"
@@ -56,7 +58,8 @@ public class TestStatisticsTaggerTest {
 
         Properties meta = new Properties();
         meta.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument("n/a", is, meta, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "n/a", is, meta), is, ParseState.PRE);
 
         is.close();
 
@@ -83,7 +86,7 @@ public class TestStatisticsTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TextStatisticsTagger tagger = new TextStatisticsTagger();
         tagger.setFieldMatcher(new TextMatcher("afield"));
         XML.assertWriteRead(tagger, "handler");

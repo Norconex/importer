@@ -34,8 +34,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Splits an existing metadata value into multiple values based on a given
@@ -98,16 +100,16 @@ public class SplitTagger extends AbstractCharStreamTagger {
     private final List<SplitDetails> splits = new ArrayList<>();
 
     @Override
-    protected void tagTextDocument(String reference, Reader input,
-            Properties metadata, boolean parsed)
+    protected void tagTextDocument(
+            HandlerDoc doc, Reader input, ParseState parseState)
             throws ImporterHandlerException {
 
         for (SplitDetails split : splits) {
 
             if (split.fieldMatcher.getPattern() == null) {
-                splitContent(split, input, metadata);
+                splitContent(split, input, doc.getMetadata());
             } else {
-                splitMetadata(split, metadata);
+                splitMetadata(split, doc.getMetadata());
             }
         }
     }

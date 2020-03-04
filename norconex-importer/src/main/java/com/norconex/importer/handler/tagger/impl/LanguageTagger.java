@@ -32,12 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Detects a document language based on Apache Tika language detection
@@ -211,10 +212,9 @@ public class LanguageTagger extends AbstractStringTagger
             (o1, o2) -> Float.compare(o2.getRawScore(), o1.getRawScore());
 
     @Override
-    protected void tagStringContent(
-            String reference, StringBuilder content,
-            Properties metadata, boolean parsed,
-            int sectionIndex) throws ImporterHandlerException {
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
 
         // For massive docs: only use first section of document to detect langs
         if (sectionIndex > 0) {
@@ -228,14 +228,15 @@ public class LanguageTagger extends AbstractStringTagger
         // leave now if no matches
         if (results.isEmpty()) {
             LOG.debug("No language found, using fallback language for {}.",
-                    reference);
-            metadata.set(DocMetadata.LANGUAGE, fallbackLanguage);
+                    doc.getReference());
+            doc.getMetadata().set(DocMetadata.LANGUAGE, fallbackLanguage);
 //            metadata.setLanguage(fallbackLanguage);
             return;
         }
 
         Collections.sort(results, langResultComparator);
-        metadata.set(DocMetadata.LANGUAGE, results.get(0).getLanguage());
+        doc.getMetadata().set(
+                DocMetadata.LANGUAGE, results.get(0).getLanguage());
 //        metadata.setLanguage(results.get(0).getLanguage());
 
         if (keepProbabilities) {
@@ -243,8 +244,9 @@ public class LanguageTagger extends AbstractStringTagger
             for (LanguageResult lang : results) {
                 count++;
                 String prefix = DocMetadata.LANGUAGE + "." + count;
-                metadata.set(prefix + ".tag", lang.getLanguage());
-                metadata.set(prefix + ".probability", lang.getRawScore());
+                doc.getMetadata().set(prefix + ".tag", lang.getLanguage());
+                doc.getMetadata().set(
+                        prefix + ".probability", lang.getRawScore());
             }
         }
     }

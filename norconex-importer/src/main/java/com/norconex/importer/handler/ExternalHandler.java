@@ -486,16 +486,17 @@ public class ExternalHandler {
 
     /**
      * Invoke the external application on a document.
-     * @param reference document reference
-     * @param input to be processed document input stream
+     * @param doc document
      * @param output processed document output stream
-     * @param metadata to be processed metadata
      * @throws ImporterHandlerException failed to handle the document
      */
     public void handleDocument(
-            String reference, InputStream input,
-            OutputStream output, Properties metadata)
+            HandlerDoc doc, InputStream input, OutputStream output)
             throws ImporterHandlerException {
+
+
+        //TODO eliminate output an set it back on doc???
+
         validate();
         String cmd = command;
         final ArgFiles files = new ArgFiles();
@@ -505,10 +506,10 @@ public class ExternalHandler {
         LOG.debug("Command before token replacement: {}", cmd);
         try {
             cmd = resolveInputToken(cmd, files, input);
-            cmd = resolveInputMetaToken(cmd, files, input, metadata);
+            cmd = resolveInputMetaToken(cmd, files, input, doc.getMetadata());
             cmd = resolveOutputToken(cmd, files, output);
             cmd = resolveOutputMetaToken(cmd, files, output);
-            cmd = resolveReferenceToken(cmd, reference);
+            cmd = resolveReferenceToken(cmd, doc.getReference());
 
             LOG.debug("Command after token replacement: {}", cmd);
 
@@ -541,7 +542,7 @@ public class ExternalHandler {
             }
             // Set extracted metadata on actual metadata
             externalMeta.forEach((k, v) -> {
-                PropertySetter.orDefault(onSet).apply(metadata, k, v);
+                PropertySetter.orDefault(onSet).apply(doc.getMetadata(), k, v);
             });
         } finally {
             files.deleteAll();

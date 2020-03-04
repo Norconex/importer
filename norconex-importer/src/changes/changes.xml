@@ -34,6 +34,9 @@
         New RegexTagger class.
       </action>
       <action dev="essiembre" type="add">
+        New HandlerDoc to ease handler implementations.
+      </action>
+      <action dev="essiembre" type="add">
         Importer now uses an EventManager and triggers several events:
         IMPORTER_HANDLER_BEGIN, IMPORTER_HANDLER_END, IMPORTER_HANDLER_ERROR,
         IMPORTER_PARSER_BEGIN, IMPORTER_PARSER_END, IMPORTER_PARSER_ERROR  
@@ -144,8 +147,19 @@
         isStringContentMatching(...) method invoked at least once, even 
         if there is no document content. 
       </action>
+      <action dev="essiembre" type="update">
+        "parsed" boolean arguments were replaced by ParseState.PRE and 
+        ParseState.POST. 
+      </action>
+      <action dev="essiembre" type="update">
+        Many methods with a combinations of reference, input stream, and 
+        metadata were updated to now accept a Doc instance instead. 
+      </action>
       <action dev="essiembre" type="remove">
         Removed some of the methods deprecated in previous releases.
+      </action>
+      <action dev="essiembre" type="remove">
+        Removed SplittableDocument.
       </action>
     </release>
 

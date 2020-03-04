@@ -37,8 +37,10 @@ import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Changes the character case of matching fields and values according to
@@ -179,8 +181,7 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
 
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
 
         if (StringUtils.isNotBlank(applyTo)
@@ -191,20 +192,20 @@ public class CharacterCaseTagger extends AbstractDocumentTagger {
         }
 
         for (Entry<String, List<String>> en :
-                metadata.matchKeys(fieldMatcher).entrySet()) {
+                doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
 
             String field = en.getKey();
             String newField = field;
 
             // Do field
             if (EqualsUtil.equalsAny(applyTo, APPLY_FIELD, APPLY_BOTH)) {
-                newField = changeFieldCase(field, metadata);
+                newField = changeFieldCase(field, doc.getMetadata());
             }
 
             // Do values
             if (StringUtils.isBlank(applyTo) || EqualsUtil.equalsAny(
                     applyTo, APPLY_VALUE, APPLY_BOTH)) {
-                changeValuesCase(newField, metadata);
+                changeValuesCase(newField, doc.getMetadata());
             }
         }
     }

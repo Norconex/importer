@@ -34,7 +34,7 @@ import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -51,7 +51,7 @@ import com.norconex.importer.util.CharsetUtil;
  *
  * <p>
  * Subclasses <b>must</b> test if a document is accepted using the
- * {@link #isApplicable(String, Properties, boolean)} method.
+ * {@link #isApplicable(String, Properties, ParseState)} method.
  * </p>
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.
@@ -91,6 +91,9 @@ import com.norconex.importer.util.CharsetUtil;
  */
 @SuppressWarnings("javadoc")
 public abstract class AbstractImporterHandler implements IXMLConfigurable {
+
+    //TODO consider having a more generic base class that has just restrictTo
+    // e.g., AbstractRetrictToConfigurable or something like that.
 
     private static final Logger LOG =
             LoggerFactory.getLogger(AbstractImporterHandler.class);
@@ -176,21 +179,20 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
     /**
      * Class to invoke by subclasses to find out if this handler should be
      * rejected or not based on the metadata restriction provided.
-     * @param reference document reference
-     * @param metadata document metadata.
-     * @param parsed if the document was parsed (i.e. imported) already
+     * @param doc document
+     * @param parseState if the document was parsed (i.e. imported) already
      * @return <code>true</code> if this handler is applicable to the document
      */
     protected final boolean isApplicable(
-            String reference, Properties metadata, boolean parsed) {
+            HandlerDoc doc, ParseState parseState) {
         if (restrictions.isEmpty()) {
             return true;
         }
-        if (restrictions.matches(metadata)) {
+        if (restrictions.matches(doc.getMetadata())) {
             return true;
         }
         LOG.debug("{} handler does not apply to: {} (parsed={}).",
-                getClass(), reference, parsed);
+                getClass(), doc.getReference(), parseState);
         return false;
     }
 
@@ -199,46 +201,38 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * if the explicitly provided encoding is blank.  Detection is only
      * attempted if parsing has not occurred (since parsing converts everything
      * to UTF-8 already).
+     * @param doc the document to detect charset on
+     * @param is the document input stream
      * @param charset the character encoding to test if blank
-     * @param reference the reference of the document to detect charset on
-     * @param document the document to detect charset on
-     * @param metadata the document metadata to check for declared encoding
-     * @param parsed whether the document has already been parsed or not.
+     * @param parseState whether the document has already been parsed or not.
      * @return detected and clean encoding.
      */
     protected final String detectCharsetIfBlank(
-            String charset,
-            String reference,
-            InputStream document,
-            Properties metadata,
-            boolean parsed) {
-        if (parsed) {
+            HandlerDoc doc, InputStream is,
+            String charset, ParseState parseState) {
+        if (parseState.isPost()) {
             LOG.debug("Document already parsed, assuming UTF-8 charset: {}",
-                    reference);
+                    doc.getReference());
             return StandardCharsets.UTF_8.toString();
         }
 
         String detectedCharset = charset;
         if (StringUtils.isNotBlank(detectedCharset)) {
             return CharsetUtils.clean(detectedCharset);
-        } else {
-            String declaredEncoding = null;
-            if (metadata != null) {
-                declaredEncoding = metadata.getString(
-                        DocMetadata.CONTENT_ENCODING);
-            }
-            try {
-                detectedCharset = CharsetUtil.detectCharset(
-                        document, declaredEncoding);
-            } catch (IOException e) {
-                detectedCharset = StandardCharsets.UTF_8.toString();
-                LOG.debug("Problem detecting encoding for: " + reference, e);
-            }
+        }
+        String declaredEncoding = doc.getDocInfo().getContentEncoding();
+        try {
+            detectedCharset = CharsetUtil.detectCharset(
+                    is, declaredEncoding);
+        } catch (IOException e) {
+            detectedCharset = StandardCharsets.UTF_8.toString();
+            LOG.debug("Problem detecting encoding for: {}",
+                    doc.getReference(), e);
         }
         if (StringUtils.isBlank(detectedCharset)) {
             detectedCharset = StandardCharsets.UTF_8.toString();
             LOG.debug("Cannot detect source encoding. UTF-8 will be "
-                    + "assumed for {}: ", reference);
+                    + "assumed for {}: ", doc.getReference());
         } else {
             detectedCharset = CharsetUtils.clean(detectedCharset);
         }

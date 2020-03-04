@@ -27,12 +27,14 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Extracts and add all text values matching the regular expression provided
@@ -116,9 +118,11 @@ public class TextPatternTagger
     private final List<RegexFieldValueExtractor> patterns = new ArrayList<>();
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, int sectionIndex) {
-        RegexFieldValueExtractor.extractFieldValues(metadata, content, patterns);
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
+        RegexFieldValueExtractor.extractFieldValues(
+                doc.getMetadata(), content, patterns);
     }
 
     /**

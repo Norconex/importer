@@ -30,8 +30,10 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Given a separator, split a field string into multiple segments
@@ -107,12 +109,12 @@ public class HierarchyTagger extends AbstractDocumentTagger {
     private final List<HierarchyDetails> list = new ArrayList<>();
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
 
         for (HierarchyDetails details : list) {
-            breakSegments(metadata, details);
+            breakSegments(doc.getMetadata(), details);
         }
     }
 

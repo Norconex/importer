@@ -120,14 +120,13 @@ abstract class ZipContainerDetectorBase {
 
             // Looks like a regular Jar Archive
             return MediaType.application("java-archive");
-        } else {
-            // Some Android APKs miss the default Manifest
-            if (entryNames.contains("AndroidManifest.xml")) {
-                return MediaType.application("vnd.android.package-archive");
-            }
-
-            return null;
         }
+        // Some Android APKs miss the default Manifest
+        if (entryNames.contains("AndroidManifest.xml")) {
+            return MediaType.application("vnd.android.package-archive");
+        }
+
+        return null;
     }
 
     static MediaType detectKmz(Set<String> entryFileNames) {

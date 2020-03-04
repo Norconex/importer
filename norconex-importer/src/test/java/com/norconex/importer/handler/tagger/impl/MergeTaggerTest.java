@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -25,13 +24,15 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.MergeTagger.Merge;
+import com.norconex.importer.parser.ParseState;
 
 public class MergeTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         MergeTagger tagger = new MergeTagger();
 
         Merge m = null;
@@ -85,7 +86,7 @@ public class MergeTaggerTest {
         m.setToField("fld4");
         tagger.addMerge(m);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Set<String> expected = new TreeSet<>(Arrays.asList(
                 "1.1", "1.2", "2", "3", "4", "6"));
@@ -110,7 +111,7 @@ public class MergeTaggerTest {
         m.setToField("field");
         tagger.addMerge(m);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals("12", meta.getString("field"));
     }

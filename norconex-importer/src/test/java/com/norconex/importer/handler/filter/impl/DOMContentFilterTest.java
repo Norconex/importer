@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -25,9 +24,11 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 @Deprecated
 public class DOMContentFilterTest {
@@ -41,7 +42,7 @@ public class DOMContentFilterTest {
 
     @Test
     public void testFilterHTML()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         Properties metadata = new Properties();
         metadata.set(
@@ -66,7 +67,7 @@ public class DOMContentFilterTest {
 
     @Test
     public void testFilterXML()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         DOMContentFilter filter = new DOMContentFilter();
         Properties metadata = new Properties();
         metadata.set(
@@ -94,13 +95,13 @@ public class DOMContentFilterTest {
 
     private boolean filter(DOMContentFilter filter,
             String content, Properties metadata)
-                    throws ImporterHandlerException, IOException {
-        return filter.acceptDocument("n/a", IOUtils.toInputStream(
-                content, StandardCharsets.UTF_8), metadata, false);
+                    throws ImporterHandlerException {
+        return TestUtil.filter(filter, "n/a", IOUtils.toInputStream(
+                content, StandardCharsets.UTF_8), metadata, ParseState.PRE);
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         DOMContentFilter filter = new DOMContentFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("document.contentType"),

@@ -30,12 +30,13 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class StripAfterTransformerTest {
 
     @Test
     public void testTransformTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         StripAfterTransformer t = new StripAfterTransformer();
         t.setStripAfterMatcher(TextMatcher.regex("<p>").setIgnoreCase(true));
         t.setInclusive(true);
@@ -47,8 +48,8 @@ public class StripAfterTransformerTest {
 
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(),
-                is, os, metadata, false);
+                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is, metadata),
+                is, os, ParseState.PRE);
 
         Assertions.assertEquals(
                 552, os.toString().length(),
@@ -60,7 +61,7 @@ public class StripAfterTransformerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         StripAfterTransformer t = new StripAfterTransformer();
         t.setInclusive(true);
         t.setStripAfterMatcher(TextMatcher.regex("<p>").setIgnoreCase(true));

@@ -28,10 +28,12 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterRequest;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus.Status;
 
@@ -76,9 +78,8 @@ public class OnMatchFilterTest {
             return onMatch;
         }
         @Override
-        public boolean acceptDocument(String reference, InputStream document,
-                Properties metadata, boolean parsed)
-                throws ImporterHandlerException {
+        public boolean acceptDocument(HandlerDoc doc, InputStream input,
+                ParseState parseState) throws ImporterHandlerException {
             return matched && onMatch == OnMatch.INCLUDE
                 || !matched && onMatch == OnMatch.EXCLUDE;
         }
@@ -90,9 +91,8 @@ public class OnMatchFilterTest {
             this.accept = accept;
         }
         @Override
-        public boolean acceptDocument(String reference, InputStream document,
-                Properties metadata, boolean parsed)
-                throws ImporterHandlerException {
+        public boolean acceptDocument(HandlerDoc doc, InputStream input,
+                ParseState parseState) throws ImporterHandlerException {
             return accept;
         }
     }

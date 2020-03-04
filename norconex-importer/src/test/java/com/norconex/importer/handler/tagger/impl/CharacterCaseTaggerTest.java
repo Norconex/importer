@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import static com.norconex.importer.handler.tagger.impl.CharacterCaseTagger.CASE
 import static com.norconex.importer.handler.tagger.impl.CharacterCaseTagger.CASE_WORDS;
 import static com.norconex.importer.handler.tagger.impl.CharacterCaseTagger.CASE_WORDS_FULLY;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.ArrayUtils;
@@ -38,29 +38,36 @@ import com.norconex.commons.lang.EqualsUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class CharacterCaseTaggerTest {
 
     @Test
     public void testUpperLowerValues()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("field1", "Doit être upper");
         meta.add("field1", "Must be upper");
         meta.set("field2", "DOIT ÊTRE LOWER");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("field1"));
         tagger.setCaseType(CASE_UPPER);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("field2"));
         tagger.setCaseType(CASE_LOWER);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals(
                 "DOIT ÊTRE UPPER", meta.getStrings("field1").get(0));
@@ -71,28 +78,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testUpperLowerField()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("fieldMustBeUpper", "value 1");
         meta.add("fieldMustBeLower", "value 2");
         meta.set("fieldMustBeCapitalized", "value 3");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("fieldMustBeUpper"));
         tagger.setCaseType(CASE_UPPER);
         tagger.setApplyTo(APPLY_FIELD);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("fieldMustBeLower"));
         tagger.setCaseType(CASE_LOWER);
         tagger.setApplyTo(APPLY_BOTH);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("fieldMustBeCapitalized"));
         tagger.setCaseType(CASE_WORDS);
         tagger.setApplyTo(APPLY_FIELD);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         String[] fields = meta.keySet().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
         for (String field : fields) {
@@ -104,17 +118,19 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testSwapCase()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("fieldMustBeSwapped", "ValUe Swap. \n  OK.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
-
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("fieldMustBeSwapped"));
         tagger.setCaseType(CASE_SWAP);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("vALuE sWAP. \n  ok.",
                 meta.getString("fieldMustBeSwapped"));
@@ -122,28 +138,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeString()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starting with a Space.");
         meta.add("string3", "1 string starting with a Number.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_STRING);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_STRING);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_STRING);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal String. another One.",
                 meta.getString("string1"));
@@ -155,28 +178,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeStringFully()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starting with a Space.");
         meta.add("string3", "1 string starting with a Number.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_STRING_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_STRING_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_STRING_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal string. another one.",
                 meta.getString("string1"));
@@ -188,28 +218,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeWords()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starTing with a Space.");
         meta.add("string3", "1 string starTing with a Number.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_WORDS);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_WORDS);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_WORDS);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal String. Another One.",
                 meta.getString("string1"));
@@ -221,28 +258,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeWordsFully()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starTing with a Space.");
         meta.add("string3", "1 string starTing with a Number.");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_WORDS_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_WORDS_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_WORDS_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal String. Another One.",
                 meta.getString("string1"));
@@ -254,28 +298,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeSentences()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starTing with a Space.");
         meta.add("string3", "1 string starTing with a Number. pLUS this");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_SENTENCES);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_SENTENCES);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_SENTENCES);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal String. Another One.",
                 meta.getString("string1"));
@@ -287,28 +338,35 @@ public class CharacterCaseTaggerTest {
 
     @Test
     public void testCapitalizeSentencesFully()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("string1", "normal String. another One.");
         meta.add("string2", " string starTing with a Space.");
         meta.add("string3", "1 string starTing with a Number. pLUS this");
 
         CharacterCaseTagger tagger = new CharacterCaseTagger();
+        InputStream is;
 
         tagger.setFieldMatcher(TextMatcher.basic("string1"));
         tagger.setCaseType(CASE_SENTENCES_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string2"));
         tagger.setCaseType(CASE_SENTENCES_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         tagger.setFieldMatcher(TextMatcher.basic("string3"));
         tagger.setCaseType(CASE_SENTENCES_FULLY);
         tagger.setApplyTo(APPLY_VALUE);
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        is = new NullInputStream(0);
+        tagger.tagDocument(TestUtil.toHandlerDoc(
+                "blah", is, meta), is, ParseState.PRE);
 
         Assertions.assertEquals("Normal string. Another one.",
                 meta.getString("string1"));
@@ -319,7 +377,7 @@ public class CharacterCaseTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         CharacterCaseTagger tagger = new CharacterCaseTagger();
         tagger.setCaseType(CASE_UPPER);
         tagger.setApplyTo(APPLY_BOTH);

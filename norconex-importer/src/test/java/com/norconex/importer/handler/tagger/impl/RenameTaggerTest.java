@@ -17,8 +17,6 @@ package com.norconex.importer.handler.tagger.impl;
 import static com.norconex.commons.lang.map.PropertySetter.APPEND;
 import static com.norconex.commons.lang.map.PropertySetter.REPLACE;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -27,7 +25,9 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class RenameTaggerTest {
 
@@ -35,7 +35,7 @@ public class RenameTaggerTest {
             LoggerFactory.getLogger(RenameTaggerTest.class);
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         RenameTagger tagger = new RenameTagger();
         tagger.addRename(TextMatcher.basic("from1"), "to1", REPLACE);
         tagger.addRename(TextMatcher.basic("from2"), "to2", APPEND);
@@ -44,7 +44,7 @@ public class RenameTaggerTest {
     }
 
     @Test
-    public void testRename() throws IOException, ImporterHandlerException {
+    public void testRename() throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("regularFrom1", "value1");
         meta.add("regexFrom2", "value2");
@@ -58,7 +58,7 @@ public class RenameTaggerTest {
         tagger.addRename(
                 TextMatcher.regex(".*(From)(\\d+).*"), "$1Regex$2", APPEND);
 
-        tagger.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
         Assertions.assertEquals(4, meta.size());
         Assertions.assertEquals("value1", meta.getString("regularTo1"));

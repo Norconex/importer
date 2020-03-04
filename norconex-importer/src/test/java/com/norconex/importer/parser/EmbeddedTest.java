@@ -33,7 +33,6 @@ import org.junit.jupiter.api.io.TempDir;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
-import com.norconex.importer.ImporterException;
 import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -54,8 +53,7 @@ public class EmbeddedTest {
     static Path folder;
 
     @Test
-    public void testEmbeddedDefaultMerged()
-            throws IOException, ImporterException {
+    public void testEmbeddedDefaultMerged() throws IOException {
 
         // Make sure merge works (extracting all embedded)
 
@@ -87,8 +85,7 @@ public class EmbeddedTest {
     }
 
     @Test
-    public void testEmbeddedDefaultSplit()
-            throws IOException, ImporterException {
+    public void testEmbeddedDefaultSplit() throws IOException {
 
         // Make sure split works (extracting all embedded)
 
@@ -129,8 +126,7 @@ public class EmbeddedTest {
     }
 
     @Test
-    public void testEmbeddedSplitZipOnly()
-            throws IOException, ImporterException {
+    public void testEmbeddedSplitZipOnly() throws IOException {
 
         // Split embedded files in zip but no deeper (PowerPoint embedded files
         // must not be split).
@@ -167,8 +163,7 @@ public class EmbeddedTest {
     }
 
     @Test
-    public void testNoExtractContainerZipMerged()
-            throws IOException, ImporterException {
+    public void testNoExtractContainerZipMerged() throws IOException {
 
         // Extract zip content, but not its embedded files.  So should just
         // get file names as zip content.
@@ -207,8 +202,7 @@ public class EmbeddedTest {
     }
 
     @Test
-    public void testNoExtractContainerZipSplit()
-            throws IOException, ImporterException {
+    public void testNoExtractContainerZipSplit() throws IOException {
 
         // Extract zip content, but not its embedded files.  So should just
         // get file names as zip content.
@@ -260,8 +254,7 @@ public class EmbeddedTest {
 
 
     @Test
-    public void testNoExtractContainerPowerPointMerged()
-            throws IOException, ImporterException {
+    public void testNoExtractContainerPowerPointMerged() throws IOException {
 
         // Extract zip content and its embedded files, except for its
         // PowerPoint, which should not see its embedded files extracted.
@@ -314,8 +307,7 @@ public class EmbeddedTest {
 
 
     @Test
-    public void testNoExtractContainerPowerPointSplit()
-            throws IOException, ImporterException {
+    public void testNoExtractContainerPowerPointSplit() throws IOException {
 
         // Extract zip content and its embedded files, except for its
         // PowerPoint, which should not see its embedded files extracted.
@@ -389,8 +381,7 @@ public class EmbeddedTest {
 
 
     @Test
-    public void testNoExtractEmbeddedExcelMerged()
-            throws IOException, ImporterException {
+    public void testNoExtractEmbeddedExcelMerged() throws IOException {
 
         // Extract zip content and all its embedded except for its excel file.
 
@@ -429,8 +420,7 @@ public class EmbeddedTest {
     }
 
     @Test
-    public void testNoExtractEmbeddedExcelSplit()
-            throws IOException, ImporterException {
+    public void testNoExtractEmbeddedExcelSplit() throws IOException {
 
         // Extract zip content and all its embedded except for its excel file.
 
@@ -523,7 +513,7 @@ public class EmbeddedTest {
     }
 
     private ImporterResponse importFileZipFile(GenericDocumentParserFactory f)
-            throws IOException, ImporterException {
+            throws IOException {
 
         Properties metadata = new Properties();
         ImporterConfig config = new ImporterConfig();

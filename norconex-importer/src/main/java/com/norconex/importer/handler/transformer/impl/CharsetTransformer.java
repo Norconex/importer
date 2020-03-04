@@ -28,12 +28,13 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.CharsetTagger;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.CharsetUtil;
 
 /**
@@ -104,12 +105,12 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     private String sourceCharset = null;
 
     @Override
-    protected void transformApplicableDocument(final String reference,
-            final InputStream input, final OutputStream output, final Properties metadata,
-            final boolean parsed) throws ImporterHandlerException {
+    protected void transformApplicableDocument(
+            HandlerDoc doc, final InputStream input, final OutputStream output,
+            final ParseState parseState) throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, input, metadata, false);
+                doc, input, sourceCharset, ParseState.PRE);
 
         //--- Get target charset ---
         String outputCharset = targetCharset;
@@ -120,10 +121,8 @@ public class CharsetTransformer extends AbstractDocumentTransformer
 
         // Do not proceed if encoding is already what we want
         if (inputCharset.equals(outputCharset)) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Source and target encodings are the same for "
-                        + reference);
-            }
+            LOG.debug("Source and target encodings are the same for {}",
+                    doc.getReference());
             return;
         }
 
@@ -132,10 +131,9 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             CharsetUtil.convertCharset(
                     input, inputCharset, output, outputCharset);
         } catch (IOException e) {
-            LOG.warn("Cannot convert character encoding from " + inputCharset
-                    + " to " + outputCharset
-                    + ". Encoding will remain unchanged. "
-                    + "Reference: " + reference, e);
+            LOG.warn("Cannot convert character encoding from {} to {}. "
+                    + "Encoding will remain unchanged. Reference: {}",
+                    inputCharset, outputCharset, doc.getReference(), e);
         }
     }
 

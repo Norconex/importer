@@ -19,6 +19,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import com.norconex.commons.lang.event.Event;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * An Importer event.
@@ -38,7 +39,7 @@ public class ImporterEvent extends Event<Doc> {
     public static final String IMPORTER_PARSER_ERROR = "IMPORTER_PARSER_ERROR";
 
 
-    private final boolean parsed;
+    private final ParseState parseState;
     private final transient Object subject;
 
     /**
@@ -47,38 +48,41 @@ public class ImporterEvent extends Event<Doc> {
      * @param source document for which the event was triggered
      * @param subject other relevant source related to the event
      *                (e.g. handler used)
-     * @param parsed whether the document was parsed
+     * @param parseState whether the document was parsed
      * @param exception exception tied to this event (may be <code>null</code>)
      */
     public ImporterEvent(
             String name,
             Doc source,
             Object subject,
-            boolean parsed,
+            ParseState parseState,
             Throwable exception) {
         super(name, source, exception);
-        this.parsed = parsed;
+        this.parseState = parseState;
         this.subject = subject;
     }
 
     public boolean isParsed() {
-        return parsed;
+        return ParseState.isPost(parseState);
+    }
+    public ParseState getParseState() {
+        return parseState;
     }
     public Object getSubject() {
         return subject;
     }
 
     public static ImporterEvent create(
-            String name, Doc doc, boolean parsed) {
-        return create(name, doc, null, parsed, null);
+            String name, Doc doc, ParseState parseState) {
+        return create(name, doc, null, parseState, null);
     }
     public static ImporterEvent create(String name, Doc doc,
-            Object subject, boolean parsed) {
-        return create(name, doc, subject, parsed, null);
+            Object subject, ParseState parseState) {
+        return create(name, doc, subject, parseState, null);
     }
     public static ImporterEvent create(String name, Doc doc,
-            Object subject, boolean parsed, Throwable exception) {
-        return new ImporterEvent(name, doc, subject, parsed, exception);
+            Object subject, ParseState parseState, Throwable exception) {
+        return new ImporterEvent(name, doc, subject, parseState, exception);
     }
     @Override
     public boolean equals(final Object other) {
@@ -97,7 +101,7 @@ public class ImporterEvent extends Event<Doc> {
         if (b.length() > 0) {
             b.append(" ");
         }
-        b.append("(parsed:").append(parsed).append(')');
+        b.append("(parseState:").append(parseState).append(')');
         if (subject != null) {
             b.append(" - ");
             b.append(subject.toString());

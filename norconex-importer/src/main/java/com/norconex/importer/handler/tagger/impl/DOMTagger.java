@@ -37,8 +37,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -258,16 +260,16 @@ public class DOMTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    protected void tagApplicableDocument(String reference,
-            InputStream document, Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
-
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
+                    throws ImporterHandlerException {
         try {
             List<Document> jsoupDocs = new ArrayList<>();
 
             // Use "fromField" as content
             if (StringUtils.isNotBlank(getFromField())) {
-                List<String> htmls = metadata.getStrings(getFromField());
+                List<String> htmls =
+                        doc.getMetadata().getStrings(getFromField());
                 if (htmls.isEmpty()) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Field \"" + getFromField() + "\" has no "
@@ -276,17 +278,18 @@ public class DOMTagger extends AbstractDocumentTagger {
                     return;
                 }
                 for (String html : htmls) {
-                    jsoupDocs.add(Jsoup.parse(html,
-                            reference, DOMUtil.toJSoupParser(getParser())));
+                    jsoupDocs.add(Jsoup.parse(html, doc.getReference(),
+                            DOMUtil.toJSoupParser(getParser())));
                 }
             // Use doc content
             } else {
                 String inputCharset = detectCharsetIfBlank(
-                        sourceCharset, reference, document, metadata, parsed);
+                        doc, document, sourceCharset, parseState);
                 jsoupDocs.add(Jsoup.parse(document, inputCharset,
-                        reference, DOMUtil.toJSoupParser(getParser())));
+                        doc.getReference(),
+                        DOMUtil.toJSoupParser(getParser())));
             }
-            domExtractDocList(jsoupDocs, metadata);
+            domExtractDocList(jsoupDocs, doc.getMetadata());
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot extract DOM element(s) from DOM-tree.", e);

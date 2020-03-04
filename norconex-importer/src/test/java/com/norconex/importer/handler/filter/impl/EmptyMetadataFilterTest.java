@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
+import static com.norconex.importer.parser.ParseState.PRE;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
@@ -30,7 +31,7 @@ import com.norconex.importer.handler.filter.OnMatch;
 public class EmptyMetadataFilterTest {
 
     @Test
-    public void testAcceptDocument() throws IOException, ImporterHandlerException {
+    public void testAcceptDocument() throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("field1", "a string to match");
         meta.add("field2", "");
@@ -40,22 +41,22 @@ public class EmptyMetadataFilterTest {
         filter.setFields("field1");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false),
+        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field1 not filtered properly.");
 
         filter.setFields("field2");
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field2 not filtered properly.");
 
         filter.setFields("field3");
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field3 not filtered properly.");
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         EmptyMetadataFilter filter = new EmptyMetadataFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("author"),

@@ -25,11 +25,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class for taggers dealing with the body of text documents only.
@@ -78,29 +79,27 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
 
     @Override
     protected final void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream input, ParseState parseState)
                     throws ImporterHandlerException {
-        InputStream nonNullDocument = document;
+        InputStream nonNullDocument = input;
         if (nonNullDocument == null) {
             nonNullDocument = new NullInputStream(0);
         }
 
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, nonNullDocument, metadata, parsed);
+                doc, nonNullDocument, sourceCharset, parseState);
         try {
-            InputStreamReader is =
+            InputStreamReader reader =
                     new InputStreamReader(nonNullDocument, inputCharset);
-            tagTextDocument(reference, is, metadata, parsed);
+            tagTextDocument(doc, reader, parseState);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);
         }
     }
 
     protected abstract void tagTextDocument(
-            String reference, Reader input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException;
+            HandlerDoc doc, Reader input, ParseState parseState)
+                    throws ImporterHandlerException;
 
 
     @Override

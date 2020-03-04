@@ -30,12 +30,13 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class StripBeforeTransformerTest {
 
     @Test
     public void testTransformTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setStripBeforeMatcher(
                 TextMatcher.regex("So she set to work").setIgnoreCase(true));
@@ -47,8 +48,8 @@ public class StripBeforeTransformerTest {
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(),
-                is, os, metadata, false);
+                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is),
+                is, os, ParseState.PRE);
 
         Assertions.assertEquals(371, os.toString().length(),
                 "Length of doc content after transformation is incorrect.");
@@ -59,7 +60,7 @@ public class StripBeforeTransformerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         StripBeforeTransformer t = new StripBeforeTransformer();
         t.setInclusive(false);
         t.setStripBeforeMatcher(

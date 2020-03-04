@@ -25,9 +25,10 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Reduces specified consecutive characters or strings to only one
@@ -86,8 +87,8 @@ public class ReduceConsecutivesTransformer extends AbstractStringTransformer {
     private final List<String> reductions = new ArrayList<>();
 
     @Override
-    protected void transformStringContent(final String reference,
-            final StringBuilder content, final Properties metadata, final boolean parsed,
+    protected void transformStringContent(HandlerDoc doc,
+            final StringBuilder content, final ParseState parseState,
             final int sectionIndex) {
 
         String text = content.toString();

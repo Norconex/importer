@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class ReduceConsecutivesTransformerTest {
 
@@ -53,7 +54,8 @@ public class ReduceConsecutivesTransformerTest {
                 text, StandardCharsets.UTF_8);
                 ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             t.transformDocument(
-                    "dummyRef", is, os, new Properties(), true);
+                    TestUtil.toHandlerDoc("dummyRef", is),
+                    is, os, ParseState.POST);
             String response = os.toString();
 //            System.out.println(response);
             Assertions.assertEquals(
@@ -64,7 +66,7 @@ public class ReduceConsecutivesTransformerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() throws IOException {
         ReduceConsecutivesTransformer t = new ReduceConsecutivesTransformer();
         Reader reader = new InputStreamReader(
                 IOUtils.toInputStream(xml, StandardCharsets.UTF_8));

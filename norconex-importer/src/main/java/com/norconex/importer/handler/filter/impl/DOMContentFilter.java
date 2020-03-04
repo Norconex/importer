@@ -26,14 +26,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -323,17 +324,15 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
-
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, input, metadata, parsed);
-
+                doc, input, sourceCharset, parseState);
         try {
-            Document doc = Jsoup.parse(input, inputCharset,
-                    reference, DOMUtil.toJSoupParser(getParser()));
-            Elements elms = doc.select(selector);
+            Document jdoc = Jsoup.parse(input, inputCharset,
+                    doc.getReference(), DOMUtil.toJSoupParser(getParser()));
+            Elements elms = jdoc.select(selector);
             // no elements matching
             if (elms.isEmpty()) {
                 return false;

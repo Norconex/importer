@@ -28,13 +28,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.StringUtil;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -234,13 +235,13 @@ public class TruncateTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
 
         List<String> allTargetValues = new ArrayList<>();
         for (Entry<String, List<String>> en :
-                metadata.matchKeys(fieldMatcher).entrySet()) {
+                doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             String fromField = en.getKey();
             List<String> sourceValues = en.getValue();
             List<String> targetValues = new ArrayList<>();
@@ -259,7 +260,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
             if (StringUtils.isBlank(getToField())) {
                 // overwrite source field
                 PropertySetter.REPLACE.apply(
-                        metadata, fromField, targetValues);
+                        doc.getMetadata(), fromField, targetValues);
             } else {
                 allTargetValues.addAll(targetValues);
             }
@@ -267,7 +268,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
         if (StringUtils.isNotBlank(getToField())) {
             // set on target field
             PropertySetter.orDefault(getOnSet()).apply(
-                    metadata, getToField(), allTargetValues);
+                    doc.getMetadata(), getToField(), allTargetValues);
         }
     }
 

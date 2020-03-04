@@ -17,7 +17,7 @@ package com.norconex.importer.handler.tagger.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
@@ -26,12 +26,14 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class KeepOnlyTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         KeepOnlyTagger tagger = new KeepOnlyTagger();
         tagger.getFieldMatcher().setPattern("field1|field2|field3");
         XML.assertWriteRead(tagger, "handler");
@@ -49,7 +51,7 @@ public class KeepOnlyTaggerTest {
         KeepOnlyTagger tagger = new KeepOnlyTagger();
         tagger.getFieldMatcher()
                 .setPattern("(key1|key2|key3)").setMethod(Method.REGEX);
-        tagger.tagDocument("reference", null, metadata, true);
+        TestUtil.tag(tagger, "reference", metadata, ParseState.POST);
 
         assertEquals(3, metadata.size());
     }
@@ -65,7 +67,7 @@ public class KeepOnlyTaggerTest {
         // Should only keep key1
         KeepOnlyTagger tagger = new KeepOnlyTagger();
         tagger.getFieldMatcher().setPattern("key1");
-        tagger.tagDocument("reference", null, metadata, true);
+        TestUtil.tag(tagger, "reference", metadata, ParseState.POST);
 
         assertEquals(1, metadata.size());
         assertTrue(metadata.containsKey("key1"));
@@ -83,14 +85,14 @@ public class KeepOnlyTaggerTest {
         // deleted
         KeepOnlyTagger tagger = new KeepOnlyTagger();
         tagger.getFieldMatcher().setPattern("IAmNotThere");
-        tagger.tagDocument("reference", null, metadata, true);
+        TestUtil.tag(tagger, "reference", metadata, ParseState.POST);
 
         assertTrue(metadata.isEmpty());
     }
 
     @Test
     public void testKeepFieldsRegexViaXMLConfig()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("content-type", "blah");
         meta.add("x-access-level", "blah");
@@ -107,7 +109,8 @@ public class KeepOnlyTaggerTest {
                 "<tagger><fieldMatcher method=\"regex\">"
               + "[Xx]-.*</fieldMatcher></tagger>"));
 
-        tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+        InputStream is = new NullInputStream(0);
+        TestUtil.tag(tagger, "blah", is, meta, ParseState.PRE);
 
         Assertions.assertEquals(5, meta.size(), "Invalid field count");
     }

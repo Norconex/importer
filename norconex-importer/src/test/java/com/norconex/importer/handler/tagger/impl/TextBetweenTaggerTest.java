@@ -35,12 +35,13 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.TextBetweenTagger.TextBetweenDetails;
+import com.norconex.importer.parser.ParseState;
 
 public class TextBetweenTaggerTest {
 
     @Test
     public void testExtractFromMetadata()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         // use it in a way that one of the end point is all we want to match
         TextBetweenTagger t = new TextBetweenTagger();
         addDetails(t, "target", "x", "y", false, false, null)
@@ -53,7 +54,7 @@ public class TextBetweenTaggerTest {
         metadata.add("fld4", "7"); //ignored
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
 
-        t.tagDocument("n/a", null, metadata, false);
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
 
         List<String> targetValues = metadata.getStrings("target");
         Collections.sort(targetValues);
@@ -63,7 +64,7 @@ public class TextBetweenTaggerTest {
 
     @Test
     public void testExtractMatchingRegex()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         // use it in a way that one of the end point is all we want to match
         TextBetweenTagger t = new TextBetweenTagger();
         addDetails(t, "field", "http://www\\..*?02a\\.gif", "\\b",
@@ -74,7 +75,9 @@ public class TextBetweenTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -85,7 +88,7 @@ public class TextBetweenTaggerTest {
 
     @Test
     public void testTagTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TextBetweenTagger t = new TextBetweenTagger();
 
         addDetails(t, "headings", "<h1>", "</H1>", true, false, null);
@@ -98,7 +101,8 @@ public class TextBetweenTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -116,7 +120,7 @@ public class TextBetweenTaggerTest {
 
     @Test
     public void testExtractFirst100ContentChars()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TextBetweenTagger t = new TextBetweenTagger();
 
         addDetails(t, "mytitle", "^", ".{0,100}", true, false, null);
@@ -125,7 +129,8 @@ public class TextBetweenTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -134,7 +139,7 @@ public class TextBetweenTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TextBetweenTagger tagger = new TextBetweenTagger();
         addDetails(tagger, "name", "start", "end", true,
                 true, PropertySetter.PREPEND);

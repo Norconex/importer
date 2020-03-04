@@ -31,6 +31,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * @author Pascal Essiembre
@@ -42,7 +43,7 @@ public class TextPatternTaggerTest {
 
     @Test
     public void testTagTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TextPatternTagger t = new TextPatternTagger();
         t.addPattern("headings", "<h2>(.*?)</h2>" , 1);
         t.addPattern("country", "\\w+\\sZealand");
@@ -51,7 +52,8 @@ public class TextPatternTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -71,7 +73,7 @@ public class TextPatternTaggerTest {
 
     @Test
     public void testExtractFirst100ContentChars()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         TextPatternTagger t = new TextPatternTagger();
         t.addPattern("mytitle", "^.{0,100}");
         File htmlFile = TestUtil.getAliceHtmlFile();
@@ -79,7 +81,8 @@ public class TextPatternTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -88,7 +91,7 @@ public class TextPatternTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TextPatternTagger tagger = new TextPatternTagger();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);

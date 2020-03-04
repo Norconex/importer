@@ -38,66 +38,86 @@ public final class CommonRestrictions {
     }
 
     /**
-     * Default content-types defining a DOM document. That is, documents that
+     * <p>
+     * Common content-types defining a DOM document. That is, documents that
      * are HTML, XHTML, or XML-based. The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
-     * <pre>
-     * text/html, application/xhtml+xml, vnd.wap.xhtml+xml, application/x-asp,
-     * application/xml, text/xml, application/atom+xml, application/xslt+xml,
-     * image/svg+xml, application/mathml+xml, application/rss+xml
-     * </pre>
+     * </p>
+     * <ul>
+     *   <li>application/atom+xml</li>
+     *   <li>application/mathml+xml</li>
+     *   <li>application/rss+xml</li>
+     *   <li>application/vnd.wap.xhtml+xml</li>
+     *   <li>application/x-asp</li>
+     *   <li>application/xhtml+xml</li>
+     *   <li>application/xml</li>
+     *   <li>application/xslt+xml</li>
+     *   <li>image/svg+xml</li>
+     *   <li>text/html</li>
+     *   <li>text/xml</li>
+     * </ul>
      * @return list of restrictions
      */
     public static PropertyMatchers domContentTypes() {
         return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
-                "text/html",
-                "application/xhtml\\+xml",
+                "application/atom\\+xml",
+                "application/mathml\\+xml",
+                "application/rss\\+xml",
                 "application/vnd\\.wap.xhtml\\+xml",
                 "application/x-asp",
+                "application/xhtml\\+xml",
                 "application/xml",
-                "text/xml",
-                "application/atom\\+xml",
                 "application/xslt\\+xml",
                 "image/svg\\+xml",
-                "application/mathml\\+xml",
-                "application/rss\\+xml");
+                "text/html",
+                "text/xml");
     }
 
     /**
+     * <p>
      * Default content-types defining an HTML or XHTML document.
      * The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
-     * <pre>
-     * text/html, application/xhtml+xml, application/vnd.wap.xhtml+xml
-     * </pre>
+     * </p>
+     * <ul>
+     *   <li>application/vnd.wap.xhtml+xml</li>
+     *   <li>application/xhtml+xml</li>
+     *   <li>text/html</li>
+     * </ul>
      * @return list of restrictions
      * @since 2.8.0
      */
     public static PropertyMatchers htmlContentTypes() {
         return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
-                "text/html",
+                "application/vnd\\.wap.xhtml\\+xml",
                 "application/xhtml\\+xml",
-                "application/vnd\\.wap.xhtml\\+xml");
+                "text/html");
     }
 
     /**
-     * Content types of standard image format supported by all ImageIO
+     * <p>
+     * Content types of standard image format supported by all Java ImageIO
      * implementations: JPEG, PNG, GIF, BMP, WBMP.
      * The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
-     * <pre>
-     * image/jpeg, image/png, image/vnd.wap.wbmp, image/bmp,
-     * image/x-windows-bmp, image/gif
-     * </pre>
+     * </p>
+     * <ul>
+     *   <li>image/bmp</li>
+     *   <li>image/gif</li>
+     *   <li>image/jpeg</li>
+     *   <li>image/png</li>
+     *   <li>image/vnd.wap.wbmp</li>
+     *   <li>image/x-windows-bmp</li>
+     * </ul>
      * @return list of restrictions
      * @since 3.0.0
      */
     public static PropertyMatchers imageIOStandardContentTypes() {
         return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
+                "image/bmp",
+                "image/gif",
                 "image/jpeg",
                 "image/png",
-                "image/gif",
-                "image/bmp",
                 "image/vnd.wap.wbmp",
                 "image/x-windows-bmp");
     }

@@ -39,8 +39,10 @@ import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>A utility tagger that reports in a CSV file the fields discovered
@@ -140,10 +142,10 @@ public class FieldReportTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
-        reportFields(metadata);
+        reportFields(doc.getMetadata());
     }
 
     private synchronized void reportFields(Properties metadata) {

@@ -26,13 +26,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -261,29 +262,28 @@ public class DOMFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
 
         try {
             if (fieldMatcher.getPattern() != null) {
                 // Dealing with field values
                 for (String value :
-                        metadata.matchKeys(fieldMatcher).valueList()) {
-                    if (isDocumentMatched(Jsoup.parse(value, reference,
+                        doc.getMetadata().matchKeys(fieldMatcher).valueList()) {
+                    if (isDocumentMatched(Jsoup.parse(value, doc.getReference(),
                             DOMUtil.toJSoupParser(getParser())))) {
                         return true;
                     }
                 }
                 return false;
-            } else {
-                // Dealing with doc content
-                String inputCharset = detectCharsetIfBlank(
-                        sourceCharset, reference, input, metadata, parsed);
-                return isDocumentMatched(Jsoup.parse(input, inputCharset,
-                        reference, DOMUtil.toJSoupParser(getParser())));
             }
-
+            // Dealing with doc content
+            String inputCharset = detectCharsetIfBlank(
+                    doc, input, sourceCharset, parseState);
+            return isDocumentMatched(Jsoup.parse(
+                    input, inputCharset, doc.getReference(),
+                    DOMUtil.toJSoupParser(getParser())));
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot parse document into a DOM-tree.", e);

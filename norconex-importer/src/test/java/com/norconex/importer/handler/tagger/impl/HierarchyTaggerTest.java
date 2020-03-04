@@ -1,4 +1,4 @@
-/* Copyright 2014-2019 Norconex Inc.
+/* Copyright 2014-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.ArrayUtils;
@@ -24,13 +24,15 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.HierarchyTagger.HierarchyDetails;
+import com.norconex.importer.parser.ParseState;
 
 public class HierarchyTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         HierarchyTagger tagger = new HierarchyTagger();
         tagger.addHierarcyDetails(new HierarchyDetails(
                 "fromField1", "toField1", "fromSep1", "toSep1"));
@@ -47,8 +49,7 @@ public class HierarchyTaggerTest {
     }
 
     @Test
-    public void testDiffToAndFromSeparators()
-            throws IOException, ImporterHandlerException {
+    public void testDiffToAndFromSeparators() {
         tagAndAssert("/",  "~~~",
                 "~~~vegetable",
                 "~~~vegetable~~~potato",
@@ -56,8 +57,7 @@ public class HierarchyTaggerTest {
     }
 
     @Test
-    public void testSameOrNoToSeparators()
-            throws IOException, ImporterHandlerException {
+    public void testSameOrNoToSeparators() {
         tagAndAssert("/",  "/",
                 "/vegetable", "/vegetable/potato", "/vegetable/potato/sweet");
         tagAndAssert("/",  null,
@@ -197,7 +197,9 @@ public class HierarchyTaggerTest {
     }
     private String[] tag(HierarchyTagger tagger, Properties meta) {
         try {
-            tagger.tagDocument("blah", new NullInputStream(0), meta, false);
+            InputStream is = new NullInputStream(0);
+            tagger.tagDocument(TestUtil.toHandlerDoc(
+                    "blah", is, meta), is, ParseState.PRE);
             return meta.getStrings("targetField").toArray(new String[] {});
         } catch (ImporterHandlerException e) {
             throw new RuntimeException(e);

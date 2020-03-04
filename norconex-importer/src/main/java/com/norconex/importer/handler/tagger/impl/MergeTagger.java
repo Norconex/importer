@@ -27,12 +27,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -114,9 +115,8 @@ public class MergeTagger extends AbstractDocumentTagger {
 
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream document, ParseState parseState)
+                    throws ImporterHandlerException {
 
         for (Merge merge : merges) {
 
@@ -124,7 +124,7 @@ public class MergeTagger extends AbstractDocumentTagger {
             List<String> mergedValues = new ArrayList<>();
 
             for (Entry<String, List<String>> en :
-                    metadata.matchKeys(merge.fieldMatcher).entrySet()) {
+                doc.getMetadata().matchKeys(merge.fieldMatcher).entrySet()) {
 
                 String field = en.getKey();
                 List<String> values = en.getValue();
@@ -134,16 +134,16 @@ public class MergeTagger extends AbstractDocumentTagger {
 
                 // Delete if necessary
                 if (merge.isDeleteFromFields()) {
-                    metadata.remove(field);
+                    doc.getMetadata().remove(field);
                 }
             }
 
             // Store in target field
             if (merge.isSingleValue()) {
-                metadata.set(merge.getToField(), StringUtils.join(
+                doc.getMetadata().set(merge.getToField(), StringUtils.join(
                         mergedValues, merge.getSingleValueSeparator()));
             } else {
-                metadata.put(merge.getToField(), mergedValues);
+                doc.getMetadata().put(merge.getToField(), mergedValues);
             }
         }
     }

@@ -1,4 +1,4 @@
-/* Copyright 2017-2019 Norconex Inc.
+/* Copyright 2017-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@ package com.norconex.importer.handler.transformer.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.junit.jupiter.api.Assertions;
@@ -25,13 +24,15 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.ImporterException;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class SubstringTransformerTest {
 
     @Test
     public void testTransformTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         String content = "1234567890";
 
         Assertions.assertEquals("", substring(0, 0, content));
@@ -56,12 +57,13 @@ public class SubstringTransformerTest {
         t.setEnd(end);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         t.transformDocument(
-                "N/A", input, output, new Properties(), false);
+                TestUtil.toHandlerDoc("N/A", input, new Properties()),
+                input, output, ParseState.PRE);
         return new String(output.toByteArray());
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         SubstringTransformer t = new SubstringTransformer();
         t.setBegin(1000);
         t.setEnd(5000);

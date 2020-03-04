@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.PropertySetter;
@@ -24,7 +22,7 @@ import com.norconex.commons.lang.xml.XML;
 public class UUIDTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         UUIDTagger tagger = new UUIDTagger();
         tagger.setToField("field1");
         tagger.setOnSet(PropertySetter.REPLACE);

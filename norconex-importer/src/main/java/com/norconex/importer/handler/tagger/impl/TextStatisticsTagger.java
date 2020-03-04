@@ -35,8 +35,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractCharStreamTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Analyzes the content of the supplied document and adds statistical
@@ -138,23 +140,21 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     private final TextMatcher fieldMatcher = new TextMatcher();
 
     @Override
-    protected void tagTextDocument(String reference, Reader input,
-            Properties metadata, boolean parsed)
+    protected void tagTextDocument(
+            HandlerDoc doc, Reader input, ParseState parseState)
                     throws ImporterHandlerException {
         if (fieldMatcher.getPattern() == null) {
-            analyze(input, metadata, null);
+            analyze(input, doc.getMetadata(), null);
         } else {
             for (Entry<String, List<String>> en :
-                    metadata.matchKeys(fieldMatcher).entrySet()) {
+                    doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
                 analyze(new StringReader(StringUtils.join(
-                        en.getValue(), "\n\n")), metadata, en.getKey());
+                       en.getValue(), "\n\n")), doc.getMetadata(), en.getKey());
             }
         }
     }
 
-    protected void analyze(
-            Reader input, Properties metadata, String field)
-                    throws ImporterHandlerException {
+    protected void analyze(Reader input, Properties metadata, String field) {
         long charCount = 0;
         long wordCharCount = 0;
         long wordCount = 0;

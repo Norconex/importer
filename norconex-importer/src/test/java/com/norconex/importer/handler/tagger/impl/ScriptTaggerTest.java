@@ -30,11 +30,12 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
+import com.norconex.importer.parser.ParseState;
 
 public class ScriptTaggerTest {
 
     @Test
-    public void testLua() throws IOException, ImporterHandlerException {
+    public void testLua() throws ImporterHandlerException, IOException {
         testScriptTagger("lua",
                 "metadata:add('test', {'success'});"
               + "local story = content:gsub('Alice', 'Roger');"
@@ -43,7 +44,7 @@ public class ScriptTaggerTest {
     }
 
     @Test
-    public void testJavaScript() throws IOException, ImporterHandlerException {
+    public void testJavaScript() throws ImporterHandlerException, IOException {
         testScriptTagger(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
                 "metadata.add('test', 'success');"
               + "var story = content.replace(/Alice/g, 'Roger');"
@@ -52,7 +53,7 @@ public class ScriptTaggerTest {
     }
 
     private void testScriptTagger(String engineName, String script)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         ScriptTagger t = new ScriptTagger();
         t.setEngineName(engineName);
         t.setScript(script);
@@ -62,7 +63,9 @@ public class ScriptTaggerTest {
 
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.tagDocument(htmlFile.getAbsolutePath(), is, metadata, false);
+
+        t.tagDocument(TestUtil.toHandlerDoc(
+                htmlFile.getAbsolutePath(), is, metadata), is, ParseState.PRE);
 
         is.close();
 
@@ -75,7 +78,7 @@ public class ScriptTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         ScriptTagger tagger = new ScriptTagger();
         tagger.setScript("a script");
         tagger.setEngineName("an engine name");

@@ -51,7 +51,7 @@ public class ImporterTest {
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
         config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (
-                reference, input, output, metadata, parsed) -> {
+                doc, input, output, parseState) -> {
             try {
                // Clean up what we know is extra noise for a given format
                Pattern pattern = Pattern.compile("[^a-zA-Z ]");
@@ -75,7 +75,7 @@ public class ImporterTest {
     }
 
     @Test
-    public void testImportDocument() throws IOException, ImporterException {
+    public void testImportDocument() throws IOException {
 
         // MS Doc
         File docxOutput = File.createTempFile("ImporterTest-doc-", ".txt");
@@ -119,7 +119,7 @@ public class ImporterTest {
     }
 
     @Test
-    public void testImportRejected() throws IOException, ImporterException {
+    public void testImportRejected() {
         ImporterConfig config = new ImporterConfig();
         config.setPostParseHandlers(Arrays.asList(new TextFilter(
                 TextMatcher.basic("Content-Type").setPartial(true),

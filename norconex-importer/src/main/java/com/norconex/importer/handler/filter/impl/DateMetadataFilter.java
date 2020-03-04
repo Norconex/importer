@@ -38,12 +38,13 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.FormatUtil;
 /**
  * <p>Accepts or rejects a document based on whether field values correspond
@@ -316,16 +317,16 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
 
         if (fieldMatcher.getPattern() == null) {
             throw new IllegalArgumentException(
                     "\"fieldMatcher\" pattern cannot be empty.");
         }
         for (Entry<String, List<String>> en :
-                metadata.matchKeys(fieldMatcher).entrySet()) {
+                doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             for (String value : en.getValue()) {
                 if (meetsAllConditions(en.getKey(), value)) {
                     return true;

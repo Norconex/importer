@@ -23,12 +23,13 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Strips any content found after first match found for given pattern.</p>
@@ -75,9 +76,9 @@ public class StripAfterTransformer extends AbstractStringTransformer
     private final TextMatcher stripAfterMatcher = new TextMatcher();
 
     @Override
-    protected void transformStringContent(final String reference,
-            final StringBuilder content, final Properties metadata,
-            final boolean parsed, final int sectionIndex) {
+    protected void transformStringContent(HandlerDoc doc,
+            final StringBuilder content, final ParseState parseState,
+            final int sectionIndex) {
         if (stripAfterMatcher.getPattern() == null) {
             LOG.error("No matcher pattern provided.");
             return;

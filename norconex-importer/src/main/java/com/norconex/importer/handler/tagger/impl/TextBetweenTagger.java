@@ -32,7 +32,10 @@ import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Extracts and add values found between a matching start and
@@ -104,13 +107,14 @@ public class TextBetweenTagger
     private final List<TextBetweenDetails> betweens = new ArrayList<>();
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, int sectionIndex) {
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
         for (TextBetweenDetails between : betweens) {
             if (between.fieldMatcher.getPattern() == null) {
-                betweenContent(between, content, metadata);
+                betweenContent(between, content, doc.getMetadata());
             } else {
-                betweenMetadata(between, metadata);
+                betweenMetadata(between, doc.getMetadata());
             }
         }
     }

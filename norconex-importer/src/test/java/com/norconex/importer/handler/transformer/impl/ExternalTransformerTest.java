@@ -15,7 +15,6 @@
 package com.norconex.importer.handler.transformer.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -29,8 +28,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.ExternalApp;
 
 public class ExternalTransformerTest {
@@ -39,7 +40,7 @@ public class ExternalTransformerTest {
     public static final String EXPECTED_OUTPUT = "3 2 1\n6 5 4\n9 8 7";
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ExternalTransformer t = new ExternalTransformer();
         t.setCommand("my command");
         t.setTempDir(Paths.get("/some/path"));
@@ -63,39 +64,39 @@ public class ExternalTransformerTest {
 
     @Test
     public void testInFileOutFile()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testInFileStdout()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT}");
     }
     @Test
     public void testStdinOutFile()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("-oc ${OUTPUT} -ref ${REFERENCE}");
     }
     @Test
     public void testStdinStdout()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("");
     }
 
     @Test
     public void testMetaInputOutputFiles()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp("-ic ${INPUT} -oc ${OUTPUT} "
                 + "-im ${INPUT_META} -om ${OUTPUT_META} "
                 + "-ref ${REFERENCE}", true);
     }
 
     private void testWithExternalApp(String command)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         testWithExternalApp(command, false);
     }
     private void testWithExternalApp(String command, boolean metaFiles)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         InputStream input = inputAsStream();
         ByteArrayOutputStream output = outputAsStream();
         Properties metadata = new Properties();
@@ -113,8 +114,9 @@ public class ExternalTransformerTest {
         t.setMetadataInputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
         t.setMetadataOutputFormat(ExternalHandler.META_FORMAT_PROPERTIES);
         t.setOnSet(PropertySetter.REPLACE);
-        t.transformDocument("c:\\ref with spaces\\doc.txt",
-                input, output, metadata, false);
+        t.transformDocument(TestUtil.toHandlerDoc(
+                "c:\\ref with spaces\\doc.txt", input, metadata),
+                input, output, ParseState.PRE);
 
         String content = output.toString();
         // remove any stdout content that could be mixed with output to
@@ -169,10 +171,10 @@ public class ExternalTransformerTest {
         );
     }
 
-    private InputStream inputAsStream() throws IOException {
+    private InputStream inputAsStream() {
         return new ByteArrayInputStream(INPUT.getBytes());
     }
-    private ByteArrayOutputStream outputAsStream() throws IOException {
+    private ByteArrayOutputStream outputAsStream() {
         return new ByteArrayOutputStream();
     }
 }

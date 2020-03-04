@@ -14,7 +14,8 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.input.NullInputStream;
@@ -24,14 +25,16 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class CharsetTaggerTest {
 
     @Test
     public void testCharsetTagger()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, UnsupportedEncodingException {
 
         testCharsetTagger("ISO-8859-1",   "ISO-8859-1");
         testCharsetTagger("ISO-8859-2",   "ISO-8859-1");
@@ -61,7 +64,7 @@ public class CharsetTaggerTest {
 
 
     private void testCharsetTagger(String fromCharset, String toCharset)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, UnsupportedEncodingException {
 
         byte[] sourceBytes = "En télécommunications".getBytes(fromCharset);
         byte[] targetBytes = "En télécommunications".getBytes(toCharset);
@@ -75,10 +78,10 @@ public class CharsetTaggerTest {
         metadata.set("field1", new String(sourceBytes, fromCharset));
         metadata.set(DocMetadata.CONTENT_ENCODING, fromCharset);
 
-        t.tagDocument(
-                "ref-" + fromCharset + "-" + toCharset,
-                new NullInputStream(0),
-                metadata, false);
+        InputStream is = new NullInputStream(0);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "ref-" + fromCharset + "-" + toCharset, is, metadata),
+                is, ParseState.PRE);
 
         String convertedValue = metadata.getString("field1");
         byte[] convertedBytes = convertedValue.getBytes(toCharset);
@@ -98,7 +101,7 @@ public class CharsetTaggerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         CharsetTagger t = new CharsetTagger();
         t.setTargetCharset(StandardCharsets.ISO_8859_1.toString());
         t.setFieldMatcher(TextMatcher.regex(".*"));

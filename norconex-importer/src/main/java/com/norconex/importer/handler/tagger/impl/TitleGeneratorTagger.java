@@ -32,13 +32,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Attempts to generate a title from the document content (default) or
@@ -153,8 +154,8 @@ public class TitleGeneratorTagger
     private PropertySetter onSet;
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, int sectionIndex)
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
                     throws ImporterHandlerException {
 
         // The first chunk already did the title generation.
@@ -164,14 +165,14 @@ public class TitleGeneratorTagger
 
         // If title already exists and not overwriting, leave now
         if (PropertySetter.OPTIONAL == onSet && StringUtils.isNotBlank(
-                metadata.getString(getTargetField()))) {
+                doc.getMetadata().getString(getTargetField()))) {
             return;
         }
 
         // Get the text to evaluate
         String text = null;
         if (StringUtils.isNotBlank(fromField)) {
-            text = metadata.getString(fromField);
+            text = doc.getMetadata().getString(fromField);
         } else {
             text = content.toString();
         }
@@ -200,7 +201,7 @@ public class TitleGeneratorTagger
                 title += "[...]";
             }
             PropertySetter.orDefault(onSet).apply(
-                    metadata, getTargetField(), title);
+                    doc.getMetadata(), getTargetField(), title);
         }
     }
 

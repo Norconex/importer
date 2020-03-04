@@ -23,11 +23,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Replaces every occurrences of the given replacements
@@ -75,9 +76,9 @@ public class ReplaceTransformer extends AbstractStringTransformer
     private List<Replacement> replacements = new ArrayList<>();
 
     @Override
-    protected void transformStringContent(final String reference,
-            final StringBuilder content, final Properties metadata,
-            final boolean parsed, final int sectionIndex) {
+    protected void transformStringContent(HandlerDoc doc,
+            final StringBuilder content, final ParseState parseState,
+            final int sectionIndex) {
 
         String text = content.toString();
         content.setLength(0);

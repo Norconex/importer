@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
@@ -23,12 +23,14 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class ConstantTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         ConstantTagger tagger = new ConstantTagger();
         tagger.addConstant("constant1", "value1");
         tagger.addConstant("constant1", "value2");
@@ -40,7 +42,7 @@ public class ConstantTaggerTest {
     }
 
     @Test
-    public void testOnSet() throws IOException, ImporterHandlerException {
+    public void testOnSet() throws ImporterHandlerException {
         Properties m = new Properties();
         m.add("test1", "1");
         m.add("test1", "2");
@@ -52,33 +54,42 @@ public class ConstantTaggerTest {
         m.add("test4", "2");
 
         ConstantTagger t = new ConstantTagger();
+        InputStream is;
 
         // APPEND
         t.setOnSet(PropertySetter.APPEND);
         t.addConstant("test1", "3");
         t.addConstant("test1", "4");
-        t.tagDocument("n/a", new NullInputStream(0), m, false);
+        is = new NullInputStream(0);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, m), is, ParseState.PRE);
         Assertions.assertArrayEquals(new String[]{
                 "1", "2", "3", "4"}, m.getStrings("test1").toArray());
         // REPLACE
         t.setOnSet(PropertySetter.REPLACE);
         t.addConstant("test2", "3");
         t.addConstant("test2", "4");
-        t.tagDocument("n/a", new NullInputStream(0), m, false);
+        is = new NullInputStream(0);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, m), is, ParseState.PRE);
         Assertions.assertArrayEquals(new String[]{
                 "3", "4"}, m.getStrings("test2").toArray());
         // OPTIONAL
         t.setOnSet(PropertySetter.OPTIONAL);
         t.addConstant("test3", "3");
         t.addConstant("test3", "4");
-        t.tagDocument("n/a", new NullInputStream(0), m, false);
+        is = new NullInputStream(0);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, m), is, ParseState.PRE);
         Assertions.assertArrayEquals(new String[]{
                 "1", "2"}, m.getStrings("test3").toArray());
         // PREPEND
         t.setOnSet(PropertySetter.PREPEND);
         t.addConstant("test4", "3");
         t.addConstant("test4", "4");
-        t.tagDocument("n/a", new NullInputStream(0), m, false);
+        is = new NullInputStream(0);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, m), is, ParseState.PRE);
         Assertions.assertArrayEquals(new String[]{
                 "3", "4", "1", "2"}, m.getStrings("test4").toArray());
     }

@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,9 @@ import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class LanguageTaggerTest {
 
@@ -57,8 +58,9 @@ public class LanguageTaggerTest {
         tagger.setLanguages(Arrays.asList("fr", "it"));
         Doc doc = new Doc(
                 "n/a", factory.newInputStream(sampleTexts.get("en")));
-        tagger.tagDocument(doc.getReference(),
-                doc.getInputStream(), doc.getMetadata(), true);
+
+        tagger.tagDocument(
+                new HandlerDoc(doc), doc.getInputStream(), ParseState.POST);
         Assertions.assertNotEquals(
                 "en", doc.getMetadata().get(DocMetadata.LANGUAGE));
     }
@@ -73,15 +75,15 @@ public class LanguageTaggerTest {
         for (String lang : sampleTexts.keySet()) {
             Doc doc = new Doc(
                     "n/a", factory.newInputStream(sampleTexts.get(lang)));
-            tagger.tagDocument(doc.getReference(),
-                    doc.getInputStream(), doc.getMetadata(), true);
+            tagger.tagDocument(
+                    new HandlerDoc(doc), doc.getInputStream(), ParseState.POST);
             Assertions.assertEquals(
                     lang, doc.getMetadata().getString(DocMetadata.LANGUAGE));
         }
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         LanguageTagger tagger = new LanguageTagger();
         tagger.setKeepProbabilities(true);
         tagger.setFallbackLanguage("fr");
@@ -112,8 +114,8 @@ public class LanguageTaggerTest {
           + "plötzlich ein weißes Kaninchen mit rothen Augen dicht an ihr "
           + "vorbeirannte.\n\n"
           + "This last line is purposely in English."));
-        tagger.tagDocument(doc.getReference(),
-                doc.getInputStream(), doc.getMetadata(), true);
+        tagger.tagDocument(
+                new HandlerDoc(doc), doc.getInputStream(), ParseState.POST);
         Assertions.assertEquals("nl",
                 doc.getMetadata().getString(DocMetadata.LANGUAGE));
     }

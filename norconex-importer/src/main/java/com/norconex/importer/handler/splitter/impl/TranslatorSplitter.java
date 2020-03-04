@@ -53,9 +53,10 @@ import com.norconex.importer.ImporterRuntimeException;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Translate documents using one of the supported translation API.  The
@@ -276,9 +277,8 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
     @Override
     protected List<Doc> splitApplicableDocument(
-            SplittableDocument doc, OutputStream output,
-            CachedStreamFactory streamFactory, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, InputStream input, OutputStream output,
+            ParseState parseState) throws ImporterHandlerException {
 
         // Do not re-translate a document already translated
         if (doc.getMetadata().containsKey(
@@ -290,12 +290,11 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
         List<Doc> translatedDocs = new ArrayList<>();
 
-        InputStream is = doc.getInput();
         CachedInputStream cachedInput = null;
-        if (is instanceof CachedInputStream) {
-            cachedInput = (CachedInputStream) is;
+        if (input instanceof CachedInputStream) {
+            cachedInput = (CachedInputStream) input;
         } else {
-            cachedInput = streamFactory.newInputStream(is);
+            cachedInput = doc.getStreamFactory().newInputStream(input);
         }
 
         for (String lang : targetLanguages) {
@@ -307,7 +306,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
                     new InputStreamReader(cachedInput, StandardCharsets.UTF_8),
                     getTranslatorStrategy().getReadSize())) {
                 translatedDocs.add(
-                        translateDocument(doc, streamFactory, lang, reader));
+                        translateDocument(doc, doc.getStreamFactory(), lang, reader));
             } catch (Exception e) {
                 String extra = "";
                 if (API_GOOGLE.equals(api)
@@ -409,7 +408,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         return strategy;
     }
 
-    private Doc translateDocument(SplittableDocument doc,
+    private Doc translateDocument(HandlerDoc doc,
             CachedStreamFactory streamFactory, String targetLang,
             TextReader reader) throws Exception {
 
@@ -464,7 +463,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
 
     private Properties translateFields(
-            SplittableDocument doc, Translator translator,
+            HandlerDoc doc, Translator translator,
             String sourceLang, String targetLang) throws Exception {
         Properties childMeta = new Properties();
         if (ignoreNonTranslatedFields) {
@@ -509,7 +508,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         return childMeta;
     }
 
-    private void validateProperties(SplittableDocument doc)
+    private void validateProperties(HandlerDoc doc)
             throws ImporterHandlerException {
         if (StringUtils.isBlank(getApi())) {
             throw new ImporterHandlerException(
@@ -534,7 +533,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         getTranslatorStrategy().validateProperties();
     }
 
-    private String getResolvedSourceLanguage(SplittableDocument doc) {
+    private String getResolvedSourceLanguage(HandlerDoc doc) {
         String lang = doc.getMetadata().getString(sourceLanguageField);
         if (StringUtils.isBlank(lang)) {
             lang = sourceLanguage;
@@ -564,7 +563,8 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     }
 
     public static void main(String[] args) throws ImporterHandlerException {
-        new TranslatorSplitter().splitApplicableDocument(null, null, null, false);
+        new TranslatorSplitter().splitApplicableDocument(
+                null, null, null, ParseState.PRE);
     }
 
     @Override

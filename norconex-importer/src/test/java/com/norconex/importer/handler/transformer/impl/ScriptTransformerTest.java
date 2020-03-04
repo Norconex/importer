@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -33,11 +34,12 @@ import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
+import com.norconex.importer.parser.ParseState;
 
 public class ScriptTransformerTest {
 
     @Test
-    public void testLua() throws IOException, ImporterHandlerException {
+    public void testLua() throws ImporterHandlerException, IOException {
         testScriptTransformer("lua",
                 "metadata:add('test', {'success'});"
               + "local text = content:gsub('Alice', 'Roger');"
@@ -47,7 +49,7 @@ public class ScriptTransformerTest {
 
     @Test
     public void testJavaScript()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         testScriptTransformer(ScriptRunner.DEFAULT_SCRIPT_ENGINE,
                 "metadata.add('test', 'success');"
               + "text = content.replace(/Alice/g, 'Roger');"
@@ -58,7 +60,7 @@ public class ScriptTransformerTest {
     // https://github.com/Norconex/collector-http/issues/665
     @Test
     public void testContentModify()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, UnsupportedEncodingException {
 
         ScriptTransformer t = new ScriptTransformer();
         t.setEngineName(ScriptRunner.DEFAULT_SCRIPT_ENGINE);
@@ -72,14 +74,17 @@ public class ScriptTransformerTest {
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        t.transformDocument("N/A", IOUtils.toInputStream("World!" ,
-                StandardCharsets.UTF_8), out, metadata, true);
+        InputStream is = IOUtils.toInputStream(
+                "World!", StandardCharsets.UTF_8);
+        t.transformDocument(
+                TestUtil.toHandlerDoc("N/A", is, metadata),
+                is, out, ParseState.POST);
         String content = out.toString(StandardCharsets.UTF_8.toString());
         Assertions.assertEquals("Hello World!", content);
     }
 
     private void testScriptTransformer(String engineName, String script)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         ScriptTransformer t = new ScriptTransformer();
         t.setEngineName(engineName);
         t.setScript(script);
@@ -92,7 +97,8 @@ public class ScriptTransformerTest {
         Properties metadata = new Properties();
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
         t.transformDocument(
-                htmlFile.getAbsolutePath(), is, out, metadata, false);
+                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is, metadata),
+                is, out, ParseState.PRE);
         is.close();
 
         String successField = metadata.getString("test");
@@ -105,7 +111,7 @@ public class ScriptTransformerTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         ScriptTransformer t = new ScriptTransformer();
         t.setScript("a script");
         t.setEngineName("an engine name");

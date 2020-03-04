@@ -28,11 +28,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.FormatUtil;
 
 /**
@@ -124,12 +125,12 @@ public class DateFormatTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
+                    throws ImporterHandlerException {
         validateArguments();
 
-        List<String> fromDates = metadata.getStrings(fromField);
+        List<String> fromDates = doc.getMetadata().getStrings(fromField);
         List<String> toDates = new ArrayList<>(fromDates.size());
         for (String fromDate : fromDates) {
             String toDate = formatDate(fromDate);
@@ -141,9 +142,10 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         }
 
         if (StringUtils.isBlank(toField)) {
-            PropertySetter.REPLACE.apply(metadata, fromField, toDates);
+            PropertySetter.REPLACE.apply(doc.getMetadata(), fromField, toDates);
         } else {
-            PropertySetter.orDefault(onSet).apply(metadata, toField, toDates);
+            PropertySetter.orDefault(onSet).apply(
+                    doc.getMetadata(), toField, toDates);
         }
     }
 

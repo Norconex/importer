@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +21,10 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * @deprecated
@@ -34,24 +34,24 @@ public class RegexReferenceFilterTest {
 
     @Test
     public void testAcceptDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         RegexReferenceFilter filter = new RegexReferenceFilter();
 
         filter.setRegex(".*/login.*");
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertFalse(filter.acceptDocument(
-                "http://www.example.com/login", null, meta, false),
+        Assertions.assertFalse(TestUtil.filter(filter,
+                "http://www.example.com/login", null, meta, ParseState.PRE),
                 "URL not filtered properly.");
 
-        Assertions.assertTrue(filter.acceptDocument(
-                "http://www.example.com/blah", null, meta, false),
+        Assertions.assertTrue(TestUtil.filter(filter,
+                "http://www.example.com/blah", null, meta, ParseState.PRE),
                 "URL not filtered properly.");
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         RegexReferenceFilter filter = new RegexReferenceFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("author"),

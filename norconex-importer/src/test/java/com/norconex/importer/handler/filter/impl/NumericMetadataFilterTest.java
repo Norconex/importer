@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
+import static com.norconex.importer.parser.ParseState.PRE;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.NumericMetadataFilter.Operator;
@@ -30,7 +31,7 @@ public class NumericMetadataFilterTest {
 
     @Test
     public void testAcceptDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
 
         Properties meta = new Properties();
         meta.add("lowerthan", "-4.25");
@@ -50,33 +51,33 @@ public class NumericMetadataFilterTest {
 
         filter.setFieldMatcher(TextMatcher.basic("lowerthan"));
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
 
         filter.setFieldMatcher(TextMatcher.basic("inrange"));
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
 
         filter.setFieldMatcher(TextMatcher.basic("greaterthan"));
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
 
         filter.setFieldMatcher(TextMatcher.basic("multivalInrange"));
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
 
         filter.setFieldMatcher(TextMatcher.basic("multivalOutrange"));
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
 
         filter.setConditions(new NumericMetadataFilter.Condition(
                 Operator.EQUALS, 6.5));
         filter.setFieldMatcher(TextMatcher.basic("equal"));
         Assertions.assertTrue(
-                filter.acceptDocument("n/a", null, meta, false));
+                TestUtil.filter(filter, "n/a", null, meta, PRE));
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         NumericMetadataFilter filter = new NumericMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setOnMatch(OnMatch.EXCLUDE);

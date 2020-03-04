@@ -23,10 +23,11 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.TextReader;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class to facilitate creating taggers based on text content, loading
@@ -72,9 +73,8 @@ public abstract class AbstractStringTagger
 
     @Override
     protected final void tagTextDocument(
-            String reference, Reader input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+            HandlerDoc doc, Reader input, ParseState parseState)
+                    throws ImporterHandlerException {
 
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
@@ -83,7 +83,7 @@ public abstract class AbstractStringTagger
         try (TextReader reader = new TextReader(input, maxReadSize)) {
             while ((text = reader.readText()) != null) {
                 b.append(text);
-                tagStringContent(reference, b, metadata, parsed, sectionIndex);
+                tagStringContent(doc, b, parseState, sectionIndex);
                 sectionIndex++;
                 b.setLength(0);
                 atLeastOnce = true;
@@ -92,7 +92,7 @@ public abstract class AbstractStringTagger
             // supports has metadata-related operations that should work
             // even if no content exists.
             if (!atLeastOnce) {
-                tagStringContent(reference, b, metadata, parsed, 0);
+                tagStringContent(doc, b, parseState, 0);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(
@@ -120,9 +120,8 @@ public abstract class AbstractStringTagger
     }
 
     protected abstract void tagStringContent(
-           String reference, StringBuilder content, Properties metadata,
-           boolean parsed, int sectionIndex)
-                   throws ImporterHandlerException;
+           HandlerDoc doc, StringBuilder content, ParseState parseState,
+           int sectionIndex) throws ImporterHandlerException;
 
     @Override
     protected final void saveCharStreamTaggerToXML(XML xml) {

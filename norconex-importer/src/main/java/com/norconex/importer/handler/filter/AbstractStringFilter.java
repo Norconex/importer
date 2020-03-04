@@ -27,7 +27,9 @@ import com.norconex.commons.lang.io.TextReader;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class to facilitate creating filters based on text content, loading
@@ -51,7 +53,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  *
  * <p>
  * <b>Since 3.0.0</b> the
- * {@link #isStringContentMatching(String, StringBuilder, Properties, boolean, int)}
+ * {@link #isStringContentMatching(String, StringBuilder, Properties, ParseState, int)}
  * method is invoked at least once, even if there is no content. This gives
  * subclasses a chance to act on metadata even if there is no content.
  * </p>
@@ -82,8 +84,7 @@ public abstract class AbstractStringFilter
 
     @Override
     protected final boolean isTextDocumentMatching(
-            String reference, Reader input,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, Reader input, ParseState parseState)
             throws ImporterHandlerException {
 
         int sectionIndex = 0;
@@ -94,7 +95,7 @@ public abstract class AbstractStringFilter
             while ((text = reader.readText()) != null) {
                 b.append(text);
                 boolean matched = isStringContentMatching(
-                        reference, b, metadata, parsed, sectionIndex);
+                        doc, b, parseState, sectionIndex);
                 sectionIndex++;
                 b.setLength(0);
                 if (matched) {
@@ -104,7 +105,7 @@ public abstract class AbstractStringFilter
             // should have been incremented at least once if there is content
             if (sectionIndex == 0) {
                 return isStringContentMatching(
-                        reference, b, metadata, parsed, sectionIndex);
+                        doc, b, parseState, sectionIndex);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(
@@ -133,8 +134,8 @@ public abstract class AbstractStringFilter
     }
 
     protected abstract boolean isStringContentMatching(
-           String reference, StringBuilder content, Properties metadata,
-           boolean parsed, int sectionIndex)
+            HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
                    throws ImporterHandlerException;
 
 

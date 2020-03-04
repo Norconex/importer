@@ -36,13 +36,14 @@ import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
+import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus.Status;
 
 public class ScriptFilterTest {
 
     @Test
-    public void testLua() throws IOException, ImporterHandlerException {
+    public void testLua() throws ImporterHandlerException, IOException {
         testScriptFilter(ScriptRunner.LUA_ENGINE,
                 "local test = metadata:getString('fruit') == 'apple' "
               + " and content:find('Alice') ~= nil; "
@@ -51,7 +52,7 @@ public class ScriptFilterTest {
     }
 
     @Test
-    public void testJavaScript() throws IOException, ImporterHandlerException {
+    public void testJavaScript() throws ImporterHandlerException, IOException {
         testScriptFilter(ScriptRunner.JAVASCRIPT_ENGINE,
                 "var test = metadata.getString('fruit') == 'apple'"
               + "  && content.indexOf('Alice') > -1;"
@@ -60,7 +61,7 @@ public class ScriptFilterTest {
     }
 
     private void testScriptFilter(String engineName, String script)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         ScriptFilter f = new ScriptFilter();
         f.setEngineName(engineName);
@@ -73,8 +74,8 @@ public class ScriptFilterTest {
         metadata.set("fruit", "apple");
         metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
 
-        Assertions.assertTrue(f.acceptDocument(
-                htmlFile.getAbsolutePath(), is, metadata, false),
+        Assertions.assertTrue(TestUtil.filter(f,
+                htmlFile.getAbsolutePath(), is, metadata, ParseState.PRE),
                 "Filter returned false.");
 
         is.close();
@@ -98,7 +99,7 @@ public class ScriptFilterTest {
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         ScriptFilter f = new ScriptFilter();
         f.setScript("a script");
         f.setEngineName("an engine name");

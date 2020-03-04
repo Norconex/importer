@@ -14,7 +14,8 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
+import static com.norconex.importer.parser.ParseState.PRE;
+
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.Operator;
@@ -35,7 +37,7 @@ public class DateMetadataFilterTest {
 
     @Test
     public void testAcceptDocument()
-            throws IOException, ImporterHandlerException, ParseException {
+            throws ImporterHandlerException, ParseException {
 
         Properties meta = new Properties();
         meta.add("field1", "1980-12-21T12:22:01.123");
@@ -49,7 +51,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
-        Assertions.assertFalse(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertFalse(TestUtil.filter(filter, "n/a", null, meta, PRE));
 
 
         filter = new DateMetadataFilter();
@@ -58,7 +60,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-21"));
-        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE));
 
 
         filter = new DateMetadataFilter();
@@ -67,7 +69,7 @@ public class DateMetadataFilterTest {
         filter.addCondition(Operator.LOWER_EQUAL,
                 DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                         "1980-12-22"));
-        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE));
 
 
         Calendar now = Calendar.getInstance();
@@ -81,12 +83,12 @@ public class DateMetadataFilterTest {
                 Operator.GREATER_THAN, TimeUnit.MINUTE, -1, true);
         filter.addConditionFromNow(
                 Operator.LOWER_THAN, TimeUnit.MINUTE, +1, true);
-        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false));
+        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE));
 
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         DateMetadataFilter filter = new DateMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd");

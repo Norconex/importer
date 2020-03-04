@@ -25,11 +25,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.IOUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.AbstractImporterHandler;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Base class for filters dealing with the body of text documents only.
@@ -83,24 +84,22 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
 
     @Override
     protected final boolean isDocumentMatched(
-            String reference, InputStream input,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream input, ParseState parseState)
             throws ImporterHandlerException {
 
         String inputCharset = detectCharsetIfBlank(
-                sourceCharset, reference, input, metadata, parsed);
+                doc, input, sourceCharset, parseState);
         try {
-            InputStreamReader is = new InputStreamReader(
+            InputStreamReader reader = new InputStreamReader(
                     IOUtil.toNonNullInputStream(input), inputCharset);
-            return isTextDocumentMatching(reference, is, metadata, parsed);
+            return isTextDocumentMatching(doc, reader, parseState);
         } catch (UnsupportedEncodingException e) {
             throw new ImporterHandlerException(e);
         }
     }
 
     protected abstract boolean isTextDocumentMatching(
-            String reference, Reader input,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, Reader input, ParseState parseState)
             throws ImporterHandlerException;
 
 

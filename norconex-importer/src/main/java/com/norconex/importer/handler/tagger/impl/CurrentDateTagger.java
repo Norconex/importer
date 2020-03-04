@@ -25,12 +25,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.DocMetadata;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Adds the current computer UTC date to the specified <code>field</code>.
@@ -104,16 +105,16 @@ public class CurrentDateTagger extends AbstractDocumentTagger {
     }
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
-
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
+                    throws ImporterHandlerException {
         String date = formatDate(System.currentTimeMillis());
         String finalField = toField;
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
-        PropertySetter.orDefault(onSet).apply(metadata, finalField, date);
+        PropertySetter.orDefault(onSet).apply(
+                doc.getMetadata(), finalField, date);
     }
 
     private String formatDate(long time) {

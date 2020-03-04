@@ -14,7 +14,7 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
+import static com.norconex.importer.parser.ParseState.PRE;
 
 import org.apache.tika.io.NullInputStream;
 import org.junit.jupiter.api.Assertions;
@@ -24,13 +24,14 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 
 public class EmptyFilterTest {
 
     @Test
-    public void testEmptyFields() throws IOException, ImporterHandlerException {
+    public void testEmptyFields() throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("field1", "a string to match");
         meta.add("field2", "");
@@ -40,40 +41,40 @@ public class EmptyFilterTest {
         filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertTrue(filter.acceptDocument("n/a", null, meta, false),
+        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field1 not filtered properly.");
 
         filter.setFieldMatcher(TextMatcher.basic("field2"));
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field2 not filtered properly.");
 
         filter.setFieldMatcher(TextMatcher.basic("field3"));
         Assertions.assertFalse(
-                filter.acceptDocument("n/a", null, meta, false),
+                TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "field3 not filtered properly.");
     }
 
     @Test
     public void testEmptyContent()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
 
         EmptyFilter filter = new EmptyFilter();
         filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertTrue(filter.acceptDocument(
-                "n/a", new NullInputStream(5, true, false), meta, false),
+        Assertions.assertTrue(TestUtil.filter(filter,
+                "n/a", new NullInputStream(5, true, false), meta, PRE),
                 "Non-empty stream should be accepted.");
-        Assertions.assertFalse(filter.acceptDocument(
-                "n/a", new NullInputStream(0, true, false), meta, false),
+        Assertions.assertFalse(TestUtil.filter(filter,
+                "n/a", new NullInputStream(0, true, false), meta, PRE),
                 "Empty stream should be rejected.");
-        Assertions.assertFalse(filter.acceptDocument("n/a", null, meta, false),
+        Assertions.assertFalse(TestUtil.filter(filter, "n/a", null, meta, PRE),
                 "Null stream should be rejected.");
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         EmptyFilter filter = new EmptyFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("author"), TextMatcher.regex("Pascal.*")));

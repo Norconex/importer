@@ -27,11 +27,12 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Define and add constant values to documents.  To add multiple constant
@@ -82,12 +83,11 @@ public class ConstantTagger extends AbstractDocumentTagger{
 
     @Override
     public void tagApplicableDocument(
-            String reference, InputStream document,
-            Properties metadata, boolean parsed)
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
         for (Entry<String, List<String>> entry : constants.entrySet()) {
             PropertySetter.orDefault(onSet).apply(
-                    metadata, entry.getKey(), entry.getValue());
+                    doc.getMetadata(), entry.getKey(), entry.getValue());
         }
     }
 

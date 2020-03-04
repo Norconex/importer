@@ -14,7 +14,6 @@
  */
 package com.norconex.importer.handler.filter.impl;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
@@ -25,9 +24,11 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.parser.ParseState;
 
 public class DOMFilterTest {
 
@@ -40,7 +41,7 @@ public class DOMFilterTest {
 
     @Test
     public void testFilterHTML()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
@@ -65,7 +66,7 @@ public class DOMFilterTest {
 
     @Test
     public void testFilterXML()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
@@ -93,7 +94,7 @@ public class DOMFilterTest {
 
     @Test
     public void testFilterXMLFromField()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         DOMFilter filter = new DOMFilter();
         Properties metadata = new Properties();
         metadata.set(
@@ -123,13 +124,13 @@ public class DOMFilterTest {
 
     private boolean filter(DOMFilter filter,
             String content, Properties metadata)
-                    throws ImporterHandlerException, IOException {
-        return filter.acceptDocument("n/a", IOUtils.toInputStream(
-                content, StandardCharsets.UTF_8), metadata, false);
+                    throws ImporterHandlerException {
+        return TestUtil.filter(filter, "n/a", IOUtils.toInputStream(
+                content, StandardCharsets.UTF_8), metadata, ParseState.PRE);
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         DOMFilter filter = new DOMFilter();
         filter.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("document.contentType"),

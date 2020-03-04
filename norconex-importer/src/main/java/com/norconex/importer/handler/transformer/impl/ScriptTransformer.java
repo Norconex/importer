@@ -26,9 +26,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
 import com.norconex.importer.handler.transformer.AbstractStringTransformer;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -119,17 +121,16 @@ public class ScriptTransformer extends AbstractStringTransformer
     }
 
     @Override
-    protected void transformStringContent(final String reference,
-            final StringBuilder content, final Properties metadata,
-            final boolean parsed, final int sectionIndex)
-                    throws ImporterHandlerException {
+    protected void transformStringContent(HandlerDoc doc,
+            final StringBuilder content, final ParseState parseState,
+            final int sectionIndex) throws ImporterHandlerException {
 
         String originalContent = content.toString();
         Bindings b = scriptRunner.createBindings();
-        b.put("reference", reference);
+        b.put("reference", doc.getReference());
         b.put("content", originalContent);
-        b.put("metadata", metadata);
-        b.put("parsed", parsed);
+        b.put("metadata", doc.getMetadata());
+        b.put("parsed", parseState);
         b.put("sectionIndex", sectionIndex);
         String modifiedContent = scriptRunner.eval(b);
         if (!Objects.equals(originalContent, modifiedContent)) {

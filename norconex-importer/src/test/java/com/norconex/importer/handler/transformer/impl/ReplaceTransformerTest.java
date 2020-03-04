@@ -28,7 +28,9 @@ import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class ReplaceTransformerTest {
 
@@ -69,7 +71,7 @@ public class ReplaceTransformerTest {
 
     @Test
     public void testTransformRestrictedTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         String response = transformTextDocument(
                 restrictionTestConfig, "rejectme.html", restrictionTestContent);
         Assertions.assertEquals(StringUtils.EMPTY, response.toLowerCase());
@@ -77,7 +79,7 @@ public class ReplaceTransformerTest {
 
     @Test
     public void testTransformUnrestrictedTextDocument()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         String response = transformTextDocument(
                 restrictionTestConfig, "test.html", restrictionTestContent);
         Assertions.assertEquals(
@@ -87,7 +89,7 @@ public class ReplaceTransformerTest {
 
     private String transformTextDocument(
             String config, String reference, String content)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         ReplaceTransformer t = new ReplaceTransformer();
 
@@ -102,7 +104,9 @@ public class ReplaceTransformerTest {
         Properties metadata = new Properties();
         metadata.set("document.reference", reference);
 
-        t.transformDocument(reference, is, os, metadata, true);
+        t.transformDocument(
+                TestUtil.toHandlerDoc(reference, is, metadata),
+                is, os, ParseState.POST);
 
         String response = os.toString();
         is.close();
@@ -112,7 +116,7 @@ public class ReplaceTransformerTest {
 
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() throws IOException {
         ReplaceTransformer t = new ReplaceTransformer();
         t.setMaxReadSize(128);
         Reader reader = new InputStreamReader(IOUtils.toInputStream(

@@ -15,6 +15,7 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.ResourceLoader;
-import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.text.TextMatcher;
@@ -32,7 +32,7 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * @author Pascal Essiembre
@@ -42,7 +42,7 @@ public class DOMSplitterTest {
 
     @Test
     public void testHtmlDOMSplit()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
         String html = ResourceLoader.getHtmlString(getClass());
         DOMSplitter splitter = new DOMSplitter();
         splitter.setSelector("div.person");
@@ -56,7 +56,7 @@ public class DOMSplitterTest {
 
     @Test
     public void testXmlDOMSplit()
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException, IOException {
 
         String xml = ResourceLoader.getXmlString(getClass());
 
@@ -71,19 +71,17 @@ public class DOMSplitterTest {
     }
 
     private List<Doc> split(String text, DOMSplitter splitter)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties metadata = new Properties();
-        SplittableDocument doc = new SplittableDocument("n/a",
-                IOUtils.toInputStream(text, StandardCharsets.UTF_8), metadata);
-        CachedStreamFactory factory = new CachedStreamFactory(
-                100 * 1024,  100 * 1024);
+        InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
         List<Doc> docs = splitter.splitApplicableDocument(
-                doc, new NullOutputStream(), factory, false);
+                TestUtil.toHandlerDoc("n/a", is, metadata),
+                is, new NullOutputStream(), ParseState.PRE);
         return docs;
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         DOMSplitter splitter = new DOMSplitter();
         splitter.setSelector("blah");
         splitter.addRestriction(new PropertyMatcher(

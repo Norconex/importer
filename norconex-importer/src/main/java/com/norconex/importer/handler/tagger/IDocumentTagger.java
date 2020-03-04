@@ -1,4 +1,4 @@
-/* Copyright 2010-2014 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@ package com.norconex.importer.handler.tagger;
 
 import java.io.InputStream;
 
-import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * Tags a document with extra metadata information, or manipulate existing
@@ -30,13 +31,12 @@ public interface IDocumentTagger extends IImporterHandler {
     /**
      * Tags a document with extra metadata information.
      * @param reference document reference (e.g. URL)
-     * @param document document
-     * @param metadata document metadata
-     * @param parsed whether the document has been parsed already or not (a 
+     * @param doc document
+     * @param input document content
+     * @param parseState whether the document has been parsed already or not (a
      *        parsed document should normally be text-based)
      * @throws ImporterHandlerException problem tagging the document
      */
-    void tagDocument(String reference, InputStream document, 
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException;
+    void tagDocument(HandlerDoc doc, InputStream input,
+            ParseState parseState) throws ImporterHandlerException;
 }

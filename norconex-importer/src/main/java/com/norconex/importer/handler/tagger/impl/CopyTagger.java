@@ -24,12 +24,13 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>Copies metadata fields.</p>
@@ -80,12 +81,13 @@ public class CopyTagger extends AbstractDocumentTagger {
     private final List<CopyDetails> copyDetailsList = new ArrayList<>();
 
     @Override
-    public void tagApplicableDocument(String reference, InputStream document,
-            Properties metadata, boolean parsed)
+    public void tagApplicableDocument(
+            HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
         for (CopyDetails copy : copyDetailsList) {
-            PropertySetter.orDefault(copy.onSet).apply(metadata, copy.toField,
-                    metadata.matchKeys(copy.fieldMatcher).valueList());
+            PropertySetter.orDefault(copy.onSet).apply(
+                    doc.getMetadata(), copy.toField,
+                    doc.getMetadata().matchKeys(copy.fieldMatcher).valueList());
         }
     }
 

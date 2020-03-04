@@ -27,13 +27,15 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.collection.CollectionUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.RegexFieldValueExtractor;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
+import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractStringTagger;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
@@ -113,15 +115,17 @@ public class RegexTagger
     private final List<RegexFieldValueExtractor> patterns = new ArrayList<>();
 
     @Override
-    protected void tagStringContent(String reference, StringBuilder content,
-            Properties metadata, boolean parsed, int sectionIndex) {
+    protected void tagStringContent(HandlerDoc doc, StringBuilder content,
+            ParseState parseState, int sectionIndex)
+                    throws ImporterHandlerException {
         if (fieldMatcher.getPattern() == null) {
             RegexFieldValueExtractor.extractFieldValues(
-                    metadata, content, patterns);
+                    doc.getMetadata(), content, patterns);
         } else {
-            for (String value : metadata.matchKeys(fieldMatcher).valueList()) {
+            for (String value :
+                    doc.getMetadata().matchKeys(fieldMatcher).valueList()) {
                 RegexFieldValueExtractor.extractFieldValues(
-                        metadata, value, patterns);
+                        doc.getMetadata(), value, patterns);
             }
         }
     }

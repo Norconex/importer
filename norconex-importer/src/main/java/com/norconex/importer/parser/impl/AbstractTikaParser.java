@@ -1,4 +1,4 @@
-/* Copyright 2010-2019 Norconex Inc.
+/* Copyright 2010-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,9 +221,8 @@ public class AbstractTikaParser implements IHintsAwareParser {
                 && contentType.matches(splitRegex)) {
             return new SplitEmbbededParser(
                     reference, this.parser, metadata, streamFactory);
-        } else {
-            return new MergeEmbeddedParser(this.parser, writer, metadata);
         }
+        return new MergeEmbeddedParser(this.parser, writer, metadata);
     }
 
     private TesseractOCRConfig toTesseractConfig(OCRConfig ocrConfig) {

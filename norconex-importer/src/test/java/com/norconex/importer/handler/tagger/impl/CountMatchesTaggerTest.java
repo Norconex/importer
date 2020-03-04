@@ -18,19 +18,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class CountMatchesTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         CountMatchesTagger t = new CountMatchesTagger();
         t.getFieldMatcher().setPattern("fromFiel1");
         t.setToField("toField1");
@@ -41,20 +43,23 @@ public class CountMatchesTaggerTest {
 
     @Test
     public void testMatchesCount()
-            throws ImporterHandlerException, IOException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("url", "http://domain/url/test");
         meta.add("fruits", "grapefruit, apple, orange, APPLE");
         String content = "potato carrot Potato";
 
         CountMatchesTagger t;
+        InputStream is;
 
         // Count slashes with substrings (4)
         t = new CountMatchesTagger();
         t.getFieldMatcher().setPattern("url");
         t.setToField("slashesCountNormal");
         t.getCountMatcher().setPattern("/").setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(4, (int) meta.getInteger("slashesCountNormal"));
         // Count slashes with regex (4)
         t = new CountMatchesTagger();
@@ -62,7 +67,9 @@ public class CountMatchesTaggerTest {
         t.setToField("slashesCountRegex");
         t.getCountMatcher().setPattern("/")
                 .setMethod(Method.REGEX).setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(4, (int) meta.getInteger("slashesCountRegex"));
         // Count URL segments (3)
         t = new CountMatchesTagger();
@@ -70,7 +77,9 @@ public class CountMatchesTaggerTest {
         t.setToField("segmentCountRegex");
         t.getCountMatcher().setPattern("/[^/]+")
                 .setMethod(Method.REGEX).setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(3, (int) meta.getInteger("segmentCountRegex"));
 
         // Count fruits with substrings case-sensitive (1)
@@ -78,14 +87,18 @@ public class CountMatchesTaggerTest {
         t.getFieldMatcher().setPattern("fruits");
         t.setToField("appleCountSensitiveNormal");
         t.getCountMatcher().setPattern("apple");
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(1, (int) meta.getInteger("appleCountSensitiveNormal"));
         // Count fruits with substrings case-insensitive (2)
         t = new CountMatchesTagger();
         t.getFieldMatcher().setPattern("fruits");
         t.setToField("appleCountInsensitiveNormal");
         t.getCountMatcher().setPattern("apple").setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(2, (int) meta.getInteger("appleCountInsensitiveNormal"));
         // Count fruits with regex case-sensitive (3)
         t = new CountMatchesTagger();
@@ -93,7 +106,9 @@ public class CountMatchesTaggerTest {
         t.setToField("fruitsCountSensitiveRegex");
         t.getCountMatcher().setPattern("(apple|orange|grapefruit)")
                 .setMethod(Method.REGEX);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(3, (int) meta.getInteger("fruitsCountSensitiveRegex"));
         // Count fruits with regex case-insensitive (4)
         t = new CountMatchesTagger();
@@ -101,41 +116,51 @@ public class CountMatchesTaggerTest {
         t.setToField("fruitsCountInsensitiveRegex");
         t.getCountMatcher().setPattern("(apple|orange|grapefruit)")
                 .setMethod(Method.REGEX).setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(4, (int) meta.getInteger("fruitsCountInsensitiveRegex"));
 
         // Count vegetables with substrings case-sensitive (1)
         t = new CountMatchesTagger();
         t.setToField("potatoCountSensitiveNormal");
         t.getCountMatcher().setPattern("potato");
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(1, (int) meta.getInteger("potatoCountSensitiveNormal"));
         // Count vegetables  with substrings case-insensitive (2)
         t = new CountMatchesTagger();
         t.setToField("potatoCountInsensitiveNormal");
         t.getCountMatcher().setPattern("potato").setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(2, (int) meta.getInteger("potatoCountInsensitiveNormal"));
         // Count vegetables  with regex case-sensitive (2)
         t = new CountMatchesTagger();
         t.setToField("vegetableCountSensitiveRegex");
         t.getCountMatcher().setPattern("(potato|carrot)")
                 .setMethod(Method.REGEX);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(2, (int) meta.getInteger("vegetableCountSensitiveRegex"));
         // Count vegetables  with regex case-insensitive (3)
         t = new CountMatchesTagger();
         t.setToField("vegetableCountInsensitiveRegex");
         t.getCountMatcher().setPattern("(potato|carrot)")
                 .setMethod(Method.REGEX).setIgnoreCase(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(3,
                 (int) meta.getInteger("vegetableCountInsensitiveRegex"));
     }
 
     @Test
     public void testLargeContent()
-            throws ImporterHandlerException, IOException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("fruits", "orange orange");
         String content = "potato whatever whatever whatever whatever"
@@ -143,12 +168,16 @@ public class CountMatchesTaggerTest {
 
 
         CountMatchesTagger t = null;
+        InputStream is;
 
         t = new CountMatchesTagger();
         t.setMaxReadSize(20);
         t.setToField("potatoCount");
         t.getCountMatcher().setPattern("potato").setPartial(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(2, (int) meta.getInteger("potatoCount"));
 
         t = new CountMatchesTagger();
@@ -156,13 +185,15 @@ public class CountMatchesTaggerTest {
         t.getFieldMatcher().setPattern("fruits");
         t.setToField("orangeCount");
         t.getCountMatcher().setPattern("orange").setPartial(true);
-        t.tagDocument("n/a", toInputStream(content, UTF_8), meta, true);
+        is = toInputStream(content, UTF_8);
+        t.tagDocument(
+                TestUtil.toHandlerDoc("n/a", is, meta), is, ParseState.POST);
         assertEquals(2, (int) meta.getInteger("orangeCount"));
     }
 
     @Test
     public void testAddToSameFieldAndNoMatch()
-            throws ImporterHandlerException, IOException {
+            throws ImporterHandlerException {
         Properties meta = new Properties();
         meta.add("orange", "orange orange");
         meta.add("apple", "apple apple apple");
@@ -177,7 +208,8 @@ public class CountMatchesTaggerTest {
         t.setToField("fruitCount");
         t.getCountMatcher().setPattern("(orange|apple)")
                 .setMethod(Method.REGEX).setPartial(true);
-        t.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(t, "n/a", meta, ParseState.POST);
+
         // we should get the sum of both oranges and apples
         assertEquals(5, (int) meta.getInteger("fruitCount"));
 
@@ -186,7 +218,7 @@ public class CountMatchesTaggerTest {
         t.getFieldMatcher().setPattern("potato");
         t.setToField("potatoCount");
         t.getCountMatcher().setPattern("potato").setPartial(true);
-        t.tagDocument("n/a", null, meta, true);
+        TestUtil.tag(t, "n/a", meta, ParseState.POST);
         // we should get zero (use string to make sure).
         assertEquals("0", meta.getString("potatoCount"));
     }

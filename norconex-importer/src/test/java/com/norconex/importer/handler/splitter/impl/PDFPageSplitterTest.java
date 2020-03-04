@@ -1,4 +1,4 @@
-/* Copyright 2018-2019 Norconex Inc.
+/* Copyright 2018-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.norconex.commons.lang.io.CachedStreamFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.splitter.SplittableDocument;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * @author Pascal Essiembre
@@ -40,7 +40,7 @@ public class PDFPageSplitterTest {
     private InputStream input;
 
     @BeforeEach
-    public void setup() throws IOException {
+    public void setup() {
         input = PDFPageSplitterTest.class.getResourceAsStream(
                 PDFPageSplitterTest.class.getSimpleName() + ".pdf");
     }
@@ -50,7 +50,7 @@ public class PDFPageSplitterTest {
     }
 
     @Test
-    public void testSplit() throws IOException, ImporterHandlerException {
+    public void testSplit() throws ImporterHandlerException {
         PDFPageSplitter s = new PDFPageSplitter();
         List<Doc> pages = split(s);
 
@@ -60,27 +60,23 @@ public class PDFPageSplitterTest {
         Assertions.assertEquals(3, getPageNo(pages.get(2)));
     }
 
-    private int getPageNo(Doc doc) throws IOException {
+    private int getPageNo(Doc doc) {
         return doc.getMetadata().getInteger(PDFPageSplitter.DOC_PDF_PAGE_NO);
     }
 
     @Test
-    public void testWriteRead() throws IOException {
+        public void testWriteRead() {
         PDFPageSplitter splitter = new PDFPageSplitter();
         splitter.setReferencePagePrefix("#page");
         XML.assertWriteRead(splitter, "handler");
     }
 
     private List<Doc> split(PDFPageSplitter splitter)
-            throws IOException, ImporterHandlerException {
+            throws ImporterHandlerException {
         Properties metadata = new Properties();
-        SplittableDocument doc = new SplittableDocument("n/a", input, metadata);
-
-        CachedStreamFactory factory = new CachedStreamFactory(
-                100 * 1024,  100 * 1024);
-
         List<Doc> docs = splitter.splitApplicableDocument(
-                doc, new NullOutputStream(), factory, false);
+                TestUtil.toHandlerDoc("n/a", input, metadata),
+                input, new NullOutputStream(), ParseState.PRE);
         return docs;
     }
 }

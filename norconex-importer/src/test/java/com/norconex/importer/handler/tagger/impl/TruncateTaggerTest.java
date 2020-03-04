@@ -14,8 +14,6 @@
  */
 package com.norconex.importer.handler.tagger.impl;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -24,12 +22,14 @@ import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
+import com.norconex.importer.parser.ParseState;
 
 public class TruncateTaggerTest {
 
     @Test
-    public void testWriteRead() throws IOException {
+    public void testWriteRead() {
         TruncateTagger t = new TruncateTagger();
         t.setAppendHash(true);
         t.setFieldMatcher(TextMatcher.basic("fromField"));
@@ -62,7 +62,7 @@ public class TruncateTaggerTest {
         // hash + suffix
         t.setAppendHash(true);
         t.setSuffix("!");
-        t.tagDocument("N/A", null, metadata, false);
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
         Assertions.assertEquals(
                 "Please truncate me before you start thi!0996700004",
                 metadata.getStrings("to").get(0));
@@ -73,7 +73,7 @@ public class TruncateTaggerTest {
         // no hash + suffix
         t.setAppendHash(false);
         t.setSuffix("...");
-        t.tagDocument("N/A", null, metadata, false);
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
         Assertions.assertEquals(
                 "Another long string to test similar with suffix...",
                 metadata.getStrings("to").get(1));
@@ -81,7 +81,7 @@ public class TruncateTaggerTest {
         // no hash + suffix
         t.setAppendHash(true);
         t.setSuffix(null);
-        t.tagDocument("N/A", null, metadata, false);
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
         Assertions.assertEquals(
                 "Another long string to test similar with0939281732",
                 metadata.getStrings("to").get(2));
@@ -89,7 +89,7 @@ public class TruncateTaggerTest {
         // no hash + no suffix
         t.setAppendHash(false);
         t.setSuffix(null);
-        t.tagDocument("N/A", null, metadata, false);
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
         Assertions.assertEquals(
                 "Another long string to test similar without suffix",
                 metadata.getStrings("to").get(3));
@@ -97,7 +97,8 @@ public class TruncateTaggerTest {
         // too small for truncate
         t.setAppendHash(false);
         t.setSuffix(null);
-        t.tagDocument("N/A", null, metadata, false);
-        Assertions.assertEquals("A small one", metadata.getStrings("to").get(4));
+        TestUtil.tag(t, "n/a", metadata, ParseState.PRE);
+        Assertions.assertEquals(
+                "A small one", metadata.getStrings("to").get(4));
     }
 }

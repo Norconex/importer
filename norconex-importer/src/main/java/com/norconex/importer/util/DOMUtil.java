@@ -1,4 +1,4 @@
-/* Copyright 2016-2017 Norconex Inc.
+/* Copyright 2016-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,15 +120,14 @@ public final class DOMUtil {
             String attr = StringUtils.substringBetween(ext, "(", ")");
             if (StringUtils.isNotBlank(attr)) {
                 return element.attr(attr);
-            } else {
-                LOG.warn("\"" + ext + "\" attribute is not valid.");
-                return null;
             }
+            LOG.warn("\"{}\" attribute is not valid.", ext);
+            return null;
         }
 
         // if it reaches here... extract is not supported
-        LOG.warn("\"" + extract + "\" is not a supported extract type. "
-                + "\"text\" will be used.");
+        LOG.warn("\"{}\" is not a supported extract type. "
+                + "\"text\" will be used.", extract);
         return element.text();
     }
 }

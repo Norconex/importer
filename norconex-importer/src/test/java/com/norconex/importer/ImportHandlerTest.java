@@ -44,7 +44,7 @@ public class ImportHandlerTest {
     }
 
     @Test
-    public void testHandlers() throws IOException, ImporterException {
+    public void testHandlers() throws IOException {
         InputStream is = new BufferedInputStream(
                 new FileInputStream(TestUtil.getAliceHtmlFile()));
         importer.importDocument(new ImporterRequest(is)

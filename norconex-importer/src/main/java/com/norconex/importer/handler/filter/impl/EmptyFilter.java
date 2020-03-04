@@ -27,11 +27,12 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.IOUtil;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
+import com.norconex.importer.parser.ParseState;
 /**
  * <p>Accepts or rejects a document based on whether its content (default) or
  * any of the specified metadata fields are empty or not.  For metadata fields,
@@ -86,9 +87,9 @@ public class EmptyFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(String reference, InputStream input,
-            Properties metadata, boolean parsed)
-            throws ImporterHandlerException {
+    protected boolean isDocumentMatched(
+            HandlerDoc doc, InputStream input, ParseState parseState)
+                    throws ImporterHandlerException {
 
         // do content
         if (fieldMatcher.getPattern() == null) {
@@ -102,7 +103,7 @@ public class EmptyFilter extends AbstractDocumentFilter {
 
         // If no values returned, call it empty
         Set<Entry<String, List<String>>> entrySet =
-                metadata.matchKeys(fieldMatcher).entrySet();
+                doc.getMetadata().matchKeys(fieldMatcher).entrySet();
         if (entrySet.isEmpty()) {
             return true;
         }
@@ -110,7 +111,7 @@ public class EmptyFilter extends AbstractDocumentFilter {
         // if fome fields are returned, check them all for emptiness
         // one at a time
         for (Entry<String, List<String>> en :
-                metadata.matchKeys(fieldMatcher).entrySet()) {
+                doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             boolean isPropEmpty = true;
             for (String value : en.getValue()) {
                 if (!StringUtils.isBlank(StringUtils.trim(value))) {
