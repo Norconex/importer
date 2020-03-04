@@ -28,7 +28,6 @@ import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
@@ -51,7 +50,7 @@ import com.norconex.importer.util.CharsetUtil;
  *
  * <p>
  * Subclasses <b>must</b> test if a document is accepted using the
- * {@link #isApplicable(String, Properties, ParseState)} method.
+ * {@link #isApplicable(HandlerDoc, ParseState)} method.
  * </p>
  * <p>
  * Subclasses can safely be used as either pre-parse or post-parse handlers.

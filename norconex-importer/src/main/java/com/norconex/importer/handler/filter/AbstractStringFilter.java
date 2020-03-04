@@ -24,7 +24,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.io.TextReader;
-import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.HandlerDoc;
@@ -53,7 +52,7 @@ import com.norconex.importer.parser.ParseState;
  *
  * <p>
  * <b>Since 3.0.0</b> the
- * {@link #isStringContentMatching(String, StringBuilder, Properties, ParseState, int)}
+ * {@link #isStringContentMatching(HandlerDoc, StringBuilder, ParseState, int)}
  * method is invoked at least once, even if there is no content. This gives
  * subclasses a chance to act on metadata even if there is no content.
  * </p>

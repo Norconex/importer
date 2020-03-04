@@ -30,7 +30,6 @@ public interface IDocumentTagger extends IImporterHandler {
 
     /**
      * Tags a document with extra metadata information.
-     * @param reference document reference (e.g. URL)
      * @param doc document
      * @param input document content
      * @param parseState whether the document has been parsed already or not (a

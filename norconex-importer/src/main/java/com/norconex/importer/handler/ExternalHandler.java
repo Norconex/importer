@@ -487,6 +487,7 @@ public class ExternalHandler {
     /**
      * Invoke the external application on a document.
      * @param doc document
+     * @param input document content
      * @param output processed document output stream
      * @throws ImporterHandlerException failed to handle the document
      */
