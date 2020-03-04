@@ -117,6 +117,14 @@ public final class TestUtil {
     }
     public static HandlerDoc toHandlerDoc(
             String ref, InputStream in, Properties meta) {
-        return new HandlerDoc(new Doc(ref, CachedInputStream.cache(in), meta));
+        // Remove document.reference for tests that need the same count
+        // as values they entered in metadata. Just keep it if explicitely
+        // passed.
+        boolean hasRef = meta != null && meta.containsKey("document.reference");
+        Doc doc = new Doc(ref, CachedInputStream.cache(in), meta);
+        if (!hasRef) {
+            doc.getMetadata().remove("document.reference");
+        }
+        return new HandlerDoc(doc);
     }
 }

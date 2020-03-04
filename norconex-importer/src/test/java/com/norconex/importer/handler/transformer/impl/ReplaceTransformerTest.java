@@ -116,7 +116,7 @@ public class ReplaceTransformerTest {
 
 
     @Test
-        public void testWriteRead() throws IOException {
+    public void testWriteRead() throws IOException {
         ReplaceTransformer t = new ReplaceTransformer();
         t.setMaxReadSize(128);
         Reader reader = new InputStreamReader(IOUtils.toInputStream(
