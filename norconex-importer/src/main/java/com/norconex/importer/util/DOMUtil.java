@@ -55,7 +55,7 @@ public final class DOMUtil {
      * <p>Gets an element value based on JSoup DOM.  You control what gets
      * extracted exactly thanks to the "extract" argument.
      * Possible values are:</p>
-     * @{nx.block #extract
+     * {@nx.block #extract
      * <ul>
      *   <li><b>text</b>: Default option when extract is blank. The text of
      *       the element, including combined children.</li>
