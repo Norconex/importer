@@ -45,7 +45,7 @@ public final class DOMUtil {
      * @since 2.8.0
      */
     public static Parser toJSoupParser(String parser) {
-        if ("xml".equalsIgnoreCase(parser)) {
+        if (PARSER_XML.equalsIgnoreCase(parser)) {
             return Parser.xmlParser();
         }
         return Parser.htmlParser();
@@ -55,6 +55,7 @@ public final class DOMUtil {
      * <p>Gets an element value based on JSoup DOM.  You control what gets
      * extracted exactly thanks to the "extract" argument.
      * Possible values are:</p>
+     * @{nx.block #extract
      * <ul>
      *   <li><b>text</b>: Default option when extract is blank. The text of
      *       the element, including combined children.</li>
@@ -79,6 +80,16 @@ public final class DOMUtil {
      *       attribute matching your replacement for "attributeKey"
      *       (e.g. "attr(title)" will extract the "title" attribute).</li>
      * </ul>
+     * }
+     * <p>
+     * Typically, when specified as an attribute, implementors can use the
+     * following:
+     * </p>
+     * {@nx.xml #attributes
+     * extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
+     * }
+     *
+     *
      * @param element the element to extract value on
      * @param extract the type of extraction to perform
      * @return the element value

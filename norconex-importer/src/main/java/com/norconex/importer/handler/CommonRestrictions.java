@@ -39,10 +39,43 @@ public final class CommonRestrictions {
 
     /**
      * <p>
+     * Common content-types defining an XML feed (RSS, Atom).
+     * The <code>document.contentType</code>
+     * field has to contain one of these for the restriction to apply:
+     * </p>
+     * {@nx.block #xmlFeedContentTypes
+     * <ul>
+     *   <li>application/atom+xml</li>
+     *   <li>application/rdf+xml</li>
+     *   <li>application/rss+xml</li>
+     *   <li>application/xml</li>
+     *   <li>text/xml</li>
+     * </ul>
+     * }
+     * @return list of restrictions
+     */
+    public static PropertyMatchers xmlFeedContentTypes() {
+        return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
+                "application/atom\\+xml",
+                "application/mathml\\+xml",
+                "application/rss\\+xml",
+                "application/vnd\\.wap.xhtml\\+xml",
+                "application/x-asp",
+                "application/xhtml\\+xml",
+                "application/xml",
+                "application/xslt\\+xml",
+                "image/svg\\+xml",
+                "text/html",
+                "text/xml");
+    }
+
+    /**
+     * <p>
      * Common content-types defining a DOM document. That is, documents that
      * are HTML, XHTML, or XML-based. The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
      * </p>
+     * {@nx.block #domContentTypes
      * <ul>
      *   <li>application/atom+xml</li>
      *   <li>application/mathml+xml</li>
@@ -56,6 +89,7 @@ public final class CommonRestrictions {
      *   <li>text/html</li>
      *   <li>text/xml</li>
      * </ul>
+     * }
      * @return list of restrictions
      */
     public static PropertyMatchers domContentTypes() {
@@ -79,11 +113,13 @@ public final class CommonRestrictions {
      * The <code>document.contentType</code>
      * field has to contain one of these for the restriction to apply:
      * </p>
+     * {@nx.block #htmlContentTypes
      * <ul>
      *   <li>application/vnd.wap.xhtml+xml</li>
      *   <li>application/xhtml+xml</li>
      *   <li>text/html</li>
      * </ul>
+     * }
      * @return list of restrictions
      * @since 2.8.0
      */

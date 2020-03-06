@@ -89,30 +89,8 @@ import com.norconex.importer.util.DOMUtil;
  * <p>It is possible to control what gets extracted
  * exactly for matching purposes thanks to the "extract" argument of the
  * new method {@link #setExtract(String)}. Possible values are:</p>
- * <ul>
- *   <li><b>text</b>: Default option when extract is blank. The text of
- *       the element, including combined children.</li>
- *   <li><b>html</b>: Extracts an element inner
- *       HTML (including children).</li>
- *   <li><b>outerHtml</b>: Extracts an element outer
- *       HTML (like "html", but includes the "current" tag).</li>
- *   <li><b>ownText</b>: Extracts the text owned by this element only;
- *       does not get the combined text of all children.</li>
- *   <li><b>data</b>: Extracts the combined data of a data-element (e.g.
- *       &lt;script&gt;).</li>
- *   <li><b>id</b>: Extracts the ID attribute of the element (if any).</li>
- *   <li><b>tagName</b>: Extract the name of the tag of the element.</li>
- *   <li><b>val</b>: Extracts the value of a form element
- *       (input, textarea, etc).</li>
- *   <li><b>className</b>: Extracts the literal value of the element's
- *       "class" attribute, which may include multiple class names,
- *       space separated.</li>
- *   <li><b>cssSelector</b>: Extracts a CSS selector that will uniquely
- *       select (identify) this element.</li>
- *   <li><b>attr(attributeKey)</b>: Extracts the value of the element
- *       attribute matching your replacement for "attributeKey"
- *       (e.g. "attr(title)" will extract the "title" attribute).</li>
- * </ul>
+ *
+ * {@nx.include com.norconex.importer.util.DOMUtil#extract}
  *
  * <p>You can specify which parser to use when reading
  * documents. The default is "html" and will normalize the content

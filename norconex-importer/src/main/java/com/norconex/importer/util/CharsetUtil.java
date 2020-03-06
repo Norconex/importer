@@ -32,11 +32,14 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
+import org.apache.tika.utils.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.importer.doc.Doc;
+import com.norconex.importer.doc.DocInfo;
 
 /**
  * Character set utility methods.
@@ -185,6 +188,56 @@ public final class CharsetUtil {
         LOG.debug("Detected encoding: {}", charset);
         return charset;
     }
+
+    //TODO perform calls to these next two methods from Importer class
+    // early on in the process then we always have the charset?
+    // Or can it change often so we do not want to set it for the entire
+    // run?
+
+    /**
+     * Detects a document character encoding. It first checks if it is defined
+     * in the document {@link DocInfo#getContentEncoding()}. If not,
+     * it will attempt to detect it from the document input stream.
+     * This method will NOT set the detected encoding on the {@link DocInfo}.
+     * If unable to detect, <code>UTF-8</code> is assumed.
+     * @param doc document to detect encoding on
+     * @return string representation of character encoding
+     * @throws IOException problem detecting charset
+     * @since 3.0.0
+     */
+    public static String detectsCharset(Doc doc) throws IOException {
+        return detectCharsetIfNotBlank(null, doc);
+    }
+    /**
+     * Detects a document character encoding if the supplied
+     * <code>charset</code> is blank. When blank, it checks if it is defined
+     * in the document {@link DocInfo#getContentEncoding()}. If not,
+     * it will attempt to detect it from the document input stream.
+     * This method will NOT set the detected encoding on the {@link DocInfo}.
+     * If unable to detect, <code>UTF-8</code> is assumed.
+     * @param charset character encoding to use if not blank
+     * @param doc document to detect encoding on
+     * @return supplied charset if not <code>null</code>,
+     *         or the detected charset
+     * @throws IOException problem detecting charset
+     * @since 3.0.0
+     */
+    public static String detectCharsetIfNotBlank(String charset, Doc doc)
+            throws IOException {
+        if (StringUtils.isNotBlank(charset)) {
+            return charset;
+        }
+        String detectedCharset = doc.getDocInfo().getContentEncoding();
+        if (StringUtils.isBlank(detectedCharset)) {
+            detectedCharset = CharsetUtil.detectCharset(doc.getInputStream());
+        }
+        if (StringUtils.isBlank(detectedCharset)) {
+            detectedCharset = StandardCharsets.UTF_8.toString();
+        }
+        detectedCharset = CharsetUtils.clean(detectedCharset);
+        return detectedCharset;
+    }
+
 
     private static void rewind(InputStream is) {
         //MAYBE: investigate why regular reset on CachedInputStream has
