@@ -64,7 +64,7 @@ import com.norconex.importer.util.DOMUtil;
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
- * {@link CommonRestrictions#domContentTypes()}.
+ * {@link CommonRestrictions#domContentTypes(String)}.
  * You can specify your own content types if you know they represent a file
  * with HTML or XML-like markup tags.
  * </p>
