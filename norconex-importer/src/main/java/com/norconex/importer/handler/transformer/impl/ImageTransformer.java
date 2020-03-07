@@ -53,7 +53,7 @@ import com.norconex.importer.parser.ParseState;
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
- * {@link CommonRestrictions#imageIOStandardContentTypes()}.
+ * {@link CommonRestrictions#imageIOStandardContentTypes(String)}.
  * You can specify your own content types if you know they represent a supported
  * image.
  * </p>
