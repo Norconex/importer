@@ -28,6 +28,7 @@ import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -150,7 +151,8 @@ public class DOMFilter extends AbstractDocumentFilter {
 
     public DOMFilter() {
         setOnMatch(OnMatch.INCLUDE);
-        addRestrictions(CommonRestrictions.domContentTypes());
+        addRestrictions(
+                CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
     }
 
 

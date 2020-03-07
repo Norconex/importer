@@ -14,15 +14,15 @@
  */
 package com.norconex.importer.handler;
 
+import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.commons.lang.text.TextMatcher.Method;
 import com.norconex.importer.doc.DocMetadata;
 
 /**
- * Commonly encountered restrictions that can be applied to subclass instances
- * of {@link AbstractImporterHandler}. Each method return a newly created
+ * Commonly encountered restrictions that can be applied to {@link Properties}
+ * instances. Each method return a newly created
  * list that can safely be modified without impacting subsequent calls.
  *
  * @author Pascal Essiembre
@@ -30,11 +30,8 @@ import com.norconex.importer.doc.DocMetadata;
  */
 public final class CommonRestrictions {
 
-    private static final TextMatcher RX_NOCASE_PROTO =
-            new TextMatcher(Method.REGEX).setIgnoreCase(true);
-
-
     private CommonRestrictions() {
+        super();
     }
 
     /**
@@ -52,19 +49,21 @@ public final class CommonRestrictions {
      *   <li>text/xml</li>
      * </ul>
      * }
+     * @param name name of Properties field
      * @return list of restrictions
+     * @since 3.0.0
      */
-    public static PropertyMatchers xmlFeedContentTypes() {
-        return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
-                "application/atom\\+xml",
-                "application/mathml\\+xml",
-                "application/rss\\+xml",
-                "application/vnd\\.wap.xhtml\\+xml",
+    public static PropertyMatchers xmlFeedContentTypes(String name) {
+        return basicMatcherIgnoreCase(DocMetadata.CONTENT_TYPE,
+                "application/atom+xml",
+                "application/mathml+xml",
+                "application/rss+xml",
+                "application/vnd.wap.xhtml+xml",
                 "application/x-asp",
-                "application/xhtml\\+xml",
+                "application/xhtml+xml",
                 "application/xml",
-                "application/xslt\\+xml",
-                "image/svg\\+xml",
+                "application/xslt+xml",
+                "image/svg+xml",
                 "text/html",
                 "text/xml");
     }
@@ -90,19 +89,20 @@ public final class CommonRestrictions {
      *   <li>text/xml</li>
      * </ul>
      * }
+     * @param name name of Properties field
      * @return list of restrictions
      */
-    public static PropertyMatchers domContentTypes() {
-        return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
-                "application/atom\\+xml",
-                "application/mathml\\+xml",
-                "application/rss\\+xml",
-                "application/vnd\\.wap.xhtml\\+xml",
+    public static PropertyMatchers domContentTypes(String name) {
+        return basicMatcherIgnoreCase(name,
+                "application/atom+xml",
+                "application/mathml+xml",
+                "application/rss+xml",
+                "application/vnd.wap.xhtml+xml",
                 "application/x-asp",
-                "application/xhtml\\+xml",
+                "application/xhtml+xml",
                 "application/xml",
-                "application/xslt\\+xml",
-                "image/svg\\+xml",
+                "application/xslt+xml",
+                "image/svg+xml",
                 "text/html",
                 "text/xml");
     }
@@ -120,13 +120,14 @@ public final class CommonRestrictions {
      *   <li>text/html</li>
      * </ul>
      * }
+     * @param name name of Properties field
      * @return list of restrictions
      * @since 2.8.0
      */
-    public static PropertyMatchers htmlContentTypes() {
-        return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
-                "application/vnd\\.wap.xhtml\\+xml",
-                "application/xhtml\\+xml",
+    public static PropertyMatchers htmlContentTypes(String name) {
+        return basicMatcherIgnoreCase(name,
+                "application/vnd.wap.xhtml+xml",
+                "application/xhtml+xml",
                 "text/html");
     }
 
@@ -145,11 +146,12 @@ public final class CommonRestrictions {
      *   <li>image/vnd.wap.wbmp</li>
      *   <li>image/x-windows-bmp</li>
      * </ul>
+     * @param name name of Properties field
      * @return list of restrictions
      * @since 3.0.0
      */
-    public static PropertyMatchers imageIOStandardContentTypes() {
-        return regexesIgnoreCase(DocMetadata.CONTENT_TYPE,
+    public static PropertyMatchers imageIOStandardContentTypes(String name) {
+        return basicMatcherIgnoreCase(name,
                 "image/bmp",
                 "image/gif",
                 "image/jpeg",
@@ -158,13 +160,13 @@ public final class CommonRestrictions {
                 "image/x-windows-bmp");
     }
 
-    private static PropertyMatchers regexesIgnoreCase(
+    private static PropertyMatchers basicMatcherIgnoreCase(
             String key, String... regexes) {
         PropertyMatchers matchers = new PropertyMatchers();
         for (String regex : regexes) {
             matchers.add(new PropertyMatcher(
-                    TextMatcher.basic(key),
-                    RX_NOCASE_PROTO.withPattern(regex)));
+                    TextMatcher.basic(key).setIgnoreCase(true),
+                    TextMatcher.basic(regex).setIgnoreCase(true)));
         }
         return matchers;
     }

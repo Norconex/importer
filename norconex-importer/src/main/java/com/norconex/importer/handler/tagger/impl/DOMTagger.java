@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertySetter;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
@@ -203,7 +204,8 @@ public class DOMTagger extends AbstractDocumentTagger {
      */
     public DOMTagger() {
         super();
-        addRestrictions(CommonRestrictions.domContentTypes());
+        addRestrictions(
+                CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
     }
 
     /**

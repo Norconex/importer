@@ -29,6 +29,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import com.norconex.commons.lang.convert.DimensionConverter;
 import com.norconex.commons.lang.img.MutableImage;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.ExternalHandler;
 import com.norconex.importer.handler.HandlerDoc;
@@ -116,7 +117,8 @@ public class ImageTransformer extends AbstractDocumentTransformer {
 
     public ImageTransformer() {
         super();
-        addRestrictions(CommonRestrictions.imageIOStandardContentTypes());
+        addRestrictions(CommonRestrictions.imageIOStandardContentTypes(
+                DocMetadata.CONTENT_TYPE));
     }
 
     public String getTargetFormat() {

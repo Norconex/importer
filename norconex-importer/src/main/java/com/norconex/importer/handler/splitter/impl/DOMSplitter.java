@@ -119,7 +119,8 @@ public class DOMSplitter extends AbstractDocumentSplitter
 
     public DOMSplitter() {
         super();
-        addRestrictions(CommonRestrictions.domContentTypes());
+        addRestrictions(
+                CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
     }
 
     public String getSelector() {
