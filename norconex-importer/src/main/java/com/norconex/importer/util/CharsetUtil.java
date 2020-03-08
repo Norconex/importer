@@ -217,8 +217,7 @@ public final class CharsetUtil {
      * If unable to detect, <code>UTF-8</code> is assumed.
      * @param charset character encoding to use if not blank
      * @param doc document to detect encoding on
-     * @return supplied charset if not <code>null</code>,
-     *         or the detected charset
+     * @return supplied charset if not blank, or the detected charset
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
@@ -238,6 +237,30 @@ public final class CharsetUtil {
         return detectedCharset;
     }
 
+    /**
+     * Detects a document character encoding if the supplied
+     * <code>charset</code> is blank. When blank,
+     * it will attempt to detect it from the input stream.
+     * If unable to detect, <code>UTF-8</code> is assumed.
+     * @param charset character encoding to use if not blank
+     * @param is input stream
+     * @return supplied charset if not blank, or the detected charset
+     * @throws IOException problem detecting charset
+     * @since 3.0.0
+     */
+    public static String detectCharsetIfNotBlank(String charset, InputStream is)
+            throws IOException {
+        if (StringUtils.isNotBlank(charset)) {
+            return charset;
+        }
+
+        String detectedCharset = detectCharset(is);
+        if (StringUtils.isBlank(detectedCharset)) {
+            detectedCharset = StandardCharsets.UTF_8.toString();
+        }
+        detectedCharset = CharsetUtils.clean(detectedCharset);
+        return detectedCharset;
+    }
 
     private static void rewind(InputStream is) {
         //MAYBE: investigate why regular reset on CachedInputStream has

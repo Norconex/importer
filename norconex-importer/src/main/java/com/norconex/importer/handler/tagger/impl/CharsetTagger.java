@@ -122,7 +122,7 @@ public class CharsetTagger extends AbstractDocumentTagger
 
         if (fieldMatcher.getPattern() == null) {
             throw new ImporterHandlerException(
-                    "\"fieldsRegex\" cannot be blank on CharsetTagger.");
+                    "\"fieldMatcher\" cannot be blank on CharsetTagger.");
         }
 
         for (Entry<String, List<String>> en :
