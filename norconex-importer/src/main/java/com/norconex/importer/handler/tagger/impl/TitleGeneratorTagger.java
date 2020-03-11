@@ -98,7 +98,6 @@ import com.norconex.importer.parser.ParseState;
  *     fromField="(field of text to use/default uses document content)"
  *     toField="(target field where to store generated title)"
  *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}
- *     overwrite="[false|true]"
  *     titleMaxLength="(max num of chars for generated title)"
  *     detectHeading="[false|true]"
  *     detectHeadingMinLength="(min length a heading title can have)"
@@ -200,7 +199,7 @@ public class TitleGeneratorTagger
                 title = StringUtils.substring(title, 0, titleMaxLength);
                 title += "[...]";
             }
-            PropertySetter.orDefault(onSet).apply(
+            PropertySetter.orAppend(onSet).apply(
                     doc.getMetadata(), getTargetField(), title);
         }
     }

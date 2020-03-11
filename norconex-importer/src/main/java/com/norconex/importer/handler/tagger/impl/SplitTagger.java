@@ -127,7 +127,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
         while (scanner.hasNext()) {
             targetValues.add(scanner.next());
         }
-        PropertySetter.orDefault(split.getOnSet()).apply(
+        PropertySetter.orAppend(split.getOnSet()).apply(
                 metadata, split.getToField(), targetValues);
     }
     private void splitMetadata(SplitDetails split, Properties metadata) {
@@ -160,7 +160,7 @@ public class SplitTagger extends AbstractCharStreamTagger {
         }
         if (StringUtils.isNotBlank(split.getToField())) {
             // set on target field
-            PropertySetter.orDefault(split.getOnSet()).apply(
+            PropertySetter.orAppend(split.getOnSet()).apply(
                     metadata, split.getToField(), allTargetValues);
         }
     }

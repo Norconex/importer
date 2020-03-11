@@ -267,7 +267,7 @@ public class TruncateTagger extends AbstractDocumentTagger {
         }
         if (StringUtils.isNotBlank(getToField())) {
             // set on target field
-            PropertySetter.orDefault(getOnSet()).apply(
+            PropertySetter.orAppend(getOnSet()).apply(
                     doc.getMetadata(), getToField(), allTargetValues);
         }
     }

@@ -86,7 +86,7 @@ public class ConstantTagger extends AbstractDocumentTagger{
             HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
         for (Entry<String, List<String>> entry : constants.entrySet()) {
-            PropertySetter.orDefault(onSet).apply(
+            PropertySetter.orAppend(onSet).apply(
                     doc.getMetadata(), entry.getKey(), entry.getValue());
         }
     }

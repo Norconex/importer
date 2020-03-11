@@ -543,7 +543,7 @@ public class ExternalHandler {
             }
             // Set extracted metadata on actual metadata
             externalMeta.forEach((k, v) -> {
-                PropertySetter.orDefault(onSet).apply(doc.getMetadata(), k, v);
+                PropertySetter.orAppend(onSet).apply(doc.getMetadata(), k, v);
             });
         } finally {
             files.deleteAll();

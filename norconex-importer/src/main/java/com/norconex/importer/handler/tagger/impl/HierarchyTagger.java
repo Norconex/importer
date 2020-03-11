@@ -192,7 +192,7 @@ public class HierarchyTagger extends AbstractDocumentTagger {
 
         if (StringUtils.isNotBlank(details.toField)) {
             // set on target field
-            PropertySetter.orDefault(details.onSet).apply(
+            PropertySetter.orAppend(details.onSet).apply(
                     metadata, details.toField, paths);
         } else {
             // overwrite source field

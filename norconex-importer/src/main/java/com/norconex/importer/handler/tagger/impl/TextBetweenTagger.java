@@ -121,7 +121,7 @@ public class TextBetweenTagger
 
     private void betweenContent(TextBetweenDetails between,
             StringBuilder content, Properties metadata) {
-        PropertySetter.orDefault(between.onSet).apply(metadata,
+        PropertySetter.orAppend(between.onSet).apply(metadata,
                 between.toField, betweenText(between, content.toString()));
     }
     private void betweenMetadata(
@@ -148,7 +148,7 @@ public class TextBetweenTagger
         }
         if (StringUtils.isNotBlank(between.getToField())) {
             // set on target field
-            PropertySetter.orDefault(between.onSet).apply(
+            PropertySetter.orAppend(between.onSet).apply(
                     metadata, between.toField, allTargetValues);
         }
     }

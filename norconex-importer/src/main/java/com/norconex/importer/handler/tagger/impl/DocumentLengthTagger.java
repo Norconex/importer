@@ -103,7 +103,7 @@ public class DocumentLengthTagger extends AbstractDocumentTagger {
             length = is.getCount();
         }
 
-        PropertySetter.orDefault(onSet).apply(
+        PropertySetter.orAppend(onSet).apply(
                 doc.getMetadata(), toField, length);
     }
 

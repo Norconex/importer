@@ -34,6 +34,9 @@
         New RegexTagger class.
       </action>
       <action dev="essiembre" type="add">
+        New URLExtractorTagger class.
+      </action>
+      <action dev="essiembre" type="add">
         New HandlerDoc to ease handler implementations.
       </action>
       <action dev="essiembre" type="add">

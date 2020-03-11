@@ -144,7 +144,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
         if (StringUtils.isBlank(toField)) {
             PropertySetter.REPLACE.apply(doc.getMetadata(), fromField, toDates);
         } else {
-            PropertySetter.orDefault(onSet).apply(
+            PropertySetter.orAppend(onSet).apply(
                     doc.getMetadata(), toField, toDates);
         }
     }

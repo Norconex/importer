@@ -306,7 +306,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                 domExtractDoc(extractedValues, doc, details);
             }
             if (!extractedValues.isEmpty()) {
-                PropertySetter.orDefault(details.getOnSet()).apply(
+                PropertySetter.orAppend(details.getOnSet()).apply(
                         metadata, details.toField, extractedValues);
             }
         }

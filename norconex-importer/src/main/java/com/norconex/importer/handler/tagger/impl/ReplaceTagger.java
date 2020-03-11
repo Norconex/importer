@@ -136,7 +136,7 @@ public class ReplaceTagger extends AbstractDocumentTagger {
 
         if (StringUtils.isNotBlank(r.toField)) {
             // set on target field
-            PropertySetter.orDefault(r.getOnSet()).apply(
+            PropertySetter.orAppend(r.getOnSet()).apply(
                     metadata, r.toField, newValues);
         } else {
             // overwrite source field

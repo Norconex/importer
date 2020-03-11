@@ -94,7 +94,7 @@ public class UUIDTagger extends AbstractDocumentTagger {
         if (StringUtils.isBlank(finalField)) {
             finalField = DEFAULT_FIELD;
         }
-        PropertySetter.orDefault(onSet).apply(
+        PropertySetter.orAppend(onSet).apply(
                 doc.getMetadata(), finalField, uuid);
     }
 

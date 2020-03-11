@@ -60,7 +60,6 @@
   </dependencyManagement>
 
   <dependencies>
-
     <dependency>
       <groupId>org.apache.tika</groupId>
       <artifactId>tika-core</artifactId>
@@ -86,6 +85,13 @@
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
     </dependency>
+    
+    <!-- this logging impl needed by PDF box -->
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+    </dependency>
+    
 
     <!-- Required for JPEG JJ200 support.
      -->

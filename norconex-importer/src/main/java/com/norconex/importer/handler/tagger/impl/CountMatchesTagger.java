@@ -126,7 +126,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
             count = countFieldMatches(doc.getMetadata());
         }
 
-        PropertySetter.orDefault(onSet).apply(
+        PropertySetter.orAppend(onSet).apply(
                 doc.getMetadata(), getToField(), count);
     }
 

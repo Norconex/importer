@@ -98,7 +98,7 @@ public class RenameTagger extends AbstractDocumentTagger {
                 String newField = ren.fieldMatcher.replace(field, ren.toField);
                 if (!Objects.equals(field, newField)) {
                     doc.getMetadata().remove(field);
-                    PropertySetter.orDefault(ren.onSet).apply(
+                    PropertySetter.orAppend(ren.onSet).apply(
                             doc.getMetadata(), newField, values);
                 }
             }

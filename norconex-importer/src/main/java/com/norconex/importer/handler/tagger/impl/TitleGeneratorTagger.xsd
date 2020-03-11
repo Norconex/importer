@@ -24,7 +24,6 @@
         <xs:extension base="AbstractStringTagger"> 
           <xs:attribute name="fromField" type="xs:string"/>
           <xs:attribute name="toField" type="xs:string"/>
-          <xs:attribute name="overwrite" type="xs:boolean"/>
           <xs:attribute name="titleMaxLength" type="xs:int"/>
           <xs:attribute name="detectHeading" type="xs:boolean"/>
           <xs:attribute name="detectHeadingMinLength" type="xs:int"/>

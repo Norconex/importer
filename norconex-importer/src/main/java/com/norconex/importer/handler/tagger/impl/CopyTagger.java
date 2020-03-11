@@ -85,7 +85,7 @@ public class CopyTagger extends AbstractDocumentTagger {
             HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
         for (CopyDetails copy : copyDetailsList) {
-            PropertySetter.orDefault(copy.onSet).apply(
+            PropertySetter.orAppend(copy.onSet).apply(
                     doc.getMetadata(), copy.toField,
                     doc.getMetadata().matchKeys(copy.fieldMatcher).valueList());
         }

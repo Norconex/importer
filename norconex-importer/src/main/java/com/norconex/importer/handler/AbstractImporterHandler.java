@@ -74,11 +74,11 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  *
  * {@nx.xml.example
- * <restrictTo
- *     field="document.contentType"
- *     method="wildcard"
- *     matchWhole="true">
+ * <restrictTo>
+ *   <fieldMatcher>document.contentType</fieldMatcher>
+ *   <valueMatcher method="wildcard" matchWhole="true">
  *     text/*
+ *   </valueMatcher>
  * </restrictTo>
  * }
  * <p>
