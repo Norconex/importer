@@ -1,6 +1,8 @@
 TODO:
 ==============
 
+- Modify ImporterEvent so that Importer is the source, as it should (as opposed to the doc).
+
 - Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
   WildCard matches/replacements.
      - Write tests for it
