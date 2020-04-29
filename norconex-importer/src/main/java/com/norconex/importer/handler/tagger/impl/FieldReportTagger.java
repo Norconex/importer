@@ -18,6 +18,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.collections4.Transformer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.lang3.StringUtils;
@@ -59,6 +59,10 @@ import com.norconex.importer.parser.ParseState;
  * <p>
  * This handler does not impact the data being imported at all
  * (it only reads it). It also do not store the "content" as a field.
+ * </p>
+ * <p>
+ * When not specified with {@link #setFile(Path)}, a file called
+ * "field-report.csv" will be created in the working directory.
  * </p>
  *
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
@@ -95,6 +99,7 @@ public class FieldReportTagger extends AbstractDocumentTagger {
             LoggerFactory.getLogger(FieldReportTagger.class);
 
     public static final int DEFAULT_MAX_SAMPLES = 3;
+    public static final Path DEFAULT_FILE = Paths.get("./file-report.csv");
 
     private int maxSamples = DEFAULT_MAX_SAMPLES;
     private Path file;
@@ -103,8 +108,7 @@ public class FieldReportTagger extends AbstractDocumentTagger {
     private int truncateSamplesAt = -1;
 
     private final Map<String, FieldData> fields = MapUtils.lazyMap(
-            new TreeMap<String, FieldData>(),
-            (Transformer<String, FieldData>) fieldName -> new FieldData(fieldName));
+            new TreeMap<String, FieldData>(), FieldData::new);
 
     public Path getFile() {
         return file;
@@ -173,8 +177,9 @@ public class FieldReportTagger extends AbstractDocumentTagger {
     }
 
     private void saveReport() {
+        Path f = file == null ? DEFAULT_FILE : file;
         try (CSVPrinter printer = new CSVPrinter(
-                new FileWriter(file.toFile()), CSVFormat.DEFAULT)) {
+                new FileWriter(f.toFile()), CSVFormat.DEFAULT)) {
             if (withHeaders) {
                 printer.print("Field Name");
                 if (withOccurences) {
