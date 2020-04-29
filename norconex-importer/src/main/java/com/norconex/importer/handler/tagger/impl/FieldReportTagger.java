@@ -99,7 +99,7 @@ public class FieldReportTagger extends AbstractDocumentTagger {
             LoggerFactory.getLogger(FieldReportTagger.class);
 
     public static final int DEFAULT_MAX_SAMPLES = 3;
-    public static final Path DEFAULT_FILE = Paths.get("./file-report.csv");
+    public static final Path DEFAULT_FILE = Paths.get("./field-report.csv");
 
     private int maxSamples = DEFAULT_MAX_SAMPLES;
     private Path file;
