@@ -12,6 +12,9 @@
         New ImageTransformer class.
       </action>
       <action dev="essiembre" type="add">
+        New NoContentTransformer class.
+      </action>
+      <action dev="essiembre" type="add">
         New -f or "outputMetaFormat" command-line argument for saving
         exported metadata fields in alternate formats.
       </action>
