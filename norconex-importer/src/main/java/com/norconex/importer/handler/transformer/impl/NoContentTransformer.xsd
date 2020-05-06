@@ -16,12 +16,12 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractDocumentTagger.xsd"></xs:include>
+  <xs:include schemaLocation="../AbstractDocumentTransformer.xsd"/>
   
   <xs:element name="handler">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractDocumentTagger"> 
+        <xs:extension base="AbstractDocumentTransformer"> 
           <xs:attribute name="toField" type="xs:string"/>
           <xs:attribute name="onSet" type="PropertySetterMethodType"/>
         </xs:extension>
