@@ -91,8 +91,9 @@ public class ExternalParserTest {
         Doc doc = new Doc(
                 "c:\\ref with spaces\\doc.txt",
                 new CachedStreamFactory(
-                        (int) DataUnit.KB.toBytes(10),
-                        (int) DataUnit.KB.toBytes(5)).newInputStream(input));
+                        DataUnit.KB.toBytes(10).intValue(),
+                        DataUnit.KB.toBytes(5).intValue())
+                                .newInputStream(input));
         Properties metadata = doc.getMetadata();
         if (metaFiles) {
             metadata.set(

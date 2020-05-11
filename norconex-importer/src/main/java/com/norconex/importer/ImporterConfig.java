@@ -44,9 +44,9 @@ public class ImporterConfig implements IXMLConfigurable {
     public static final String DEFAULT_TEMP_DIR_PATH =
             FileUtils.getTempDirectoryPath();
     public static final int DEFAULT_MAX_MEM_INSTANCE =
-            (int) DataUnit.MB.toBytes(100);
+            DataUnit.MB.toBytes(100).intValue();
     public static final int DEFAULT_MAX_MEM_POOL =
-            (int) DataUnit.GB.toBytes(1);
+            DataUnit.GB.toBytes(1).intValue();
 
     private IDocumentParserFactory documentParserFactory =
             new GenericDocumentParserFactory();

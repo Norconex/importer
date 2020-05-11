@@ -625,7 +625,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
 
     private abstract static class TranslatorStrategy {
         private static final int DEFAULT_READ_SIZE =
-                (int) DataUnit.KB.toBytes(2);
+                DataUnit.KB.toBytes(2).intValue();
         private Translator translator;
         public int getReadSize() {
             return DEFAULT_READ_SIZE;
