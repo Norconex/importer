@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -61,7 +62,8 @@ import com.norconex.importer.parser.ParseState;
  *  <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
  *          logFields="(CSV list of fields to log)"
  *          logContent="[false|true]"
- *          logLevel="[FATAL|ERROR|WARN|INFO|DEBUG|TRACE]" >
+ *          logLevel="[ERROR|WARN|INFO|DEBUG|TRACE]"
+ *          prefix="(optional log prefix to further help you locate it)" >
  *
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
@@ -88,6 +90,7 @@ public class DebugTagger extends AbstractDocumentTagger {
     private final List<String> logFields = new ArrayList<>();
     private boolean logContent;
     private String logLevel;
+    private String prefix;
 
     @Override
     public void tagApplicableDocument(
@@ -110,7 +113,8 @@ public class DebugTagger extends AbstractDocumentTagger {
 
         if (logContent) {
             try {
-                SLF4JUtil.log(LOG, level, "CONTENT={}",
+                SLF4JUtil.log(LOG, level,
+                        StringUtils.trimToEmpty(prefix) + "CONTENT={}",
                         IOUtils.toString(document, StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new ImporterHandlerException(
@@ -131,7 +135,8 @@ public class DebugTagger extends AbstractDocumentTagger {
                 b.append(value);
             }
         }
-        SLF4JUtil.log(LOG, level, "{}={}", fieldName, b.toString());
+        SLF4JUtil.log(LOG, level, StringUtils.trimToEmpty(prefix)
+                + "{}={}", fieldName, b.toString());
     }
 
     public List<String> getLogFields() {
@@ -155,11 +160,29 @@ public class DebugTagger extends AbstractDocumentTagger {
         this.logLevel = logLevel;
     }
 
+    /**
+     * Gets the prefix to print before the actual log message.
+     * @return log entry prefix
+     * @since 3.0.0
+     */
+    public String getPrefix() {
+        return prefix;
+    }
+    /**
+     * Sets the prefix to print before the actual log message.
+     * @param prefix log entry prefix
+     * @since 3.0.0
+     */
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
     @Override
     protected void loadHandlerFromXML(XML xml) {
         setLogContent(xml.getBoolean("@logContent", logContent));
         setLogFields(xml.getDelimitedStringList("@logFields", logFields));
         setLogLevel(xml.getString("@logLevel", logLevel));
+        setPrefix(xml.getString("@prefix", prefix));
     }
 
     @Override
@@ -167,6 +190,7 @@ public class DebugTagger extends AbstractDocumentTagger {
         xml.setAttribute("logContent", logContent);
         xml.setDelimitedAttributeList("logFields", logFields);
         xml.setAttribute("logLevel", logLevel);
+        xml.setAttribute("prefix", prefix);
     }
 
     @Override

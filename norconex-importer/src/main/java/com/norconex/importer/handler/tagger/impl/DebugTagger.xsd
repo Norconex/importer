@@ -27,10 +27,11 @@
           <xs:attribute name="logLevel">
             <xs:simpleType>
               <xs:restriction base="xs:string">
-                <xs:pattern value="FATAL|ERROR|WARN|INFO|DEBUG|TRACE" />
+                <xs:pattern value="ERROR|error|WARN|warn|INFO|info|DEBUG|debug|TRACE|trace" />
               </xs:restriction>
             </xs:simpleType>
           </xs:attribute>
+          <xs:attribute name="prefix" type="xs:string"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
