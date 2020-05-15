@@ -283,6 +283,7 @@ public class ExternalApp {
             "commons-beanutils",
             "commons-logging",
             "commons-lang3",
+            "commons-text",
             "commons-collections4"
     };
     private static boolean keepPath(String path) {
