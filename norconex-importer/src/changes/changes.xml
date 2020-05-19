@@ -40,6 +40,9 @@
         New URLExtractorTagger class.
       </action>
       <action dev="essiembre" type="add">
+        New DOMTransformer class. 
+      </action>
+      <action dev="essiembre" type="add">
         New HandlerDoc to ease handler implementations.
       </action>
       <action dev="essiembre" type="add">
@@ -68,6 +71,9 @@
       </action>
       <action dev="essiembre" type="add">
         New ImporterRequest class.
+      </action>
+      <action dev="essiembre" type="add">
+        New option in DOMTagger to delete elements matched by a selector. 
       </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.

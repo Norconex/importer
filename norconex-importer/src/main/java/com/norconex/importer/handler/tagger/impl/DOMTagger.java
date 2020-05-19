@@ -41,17 +41,19 @@ import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
+import com.norconex.importer.handler.transformer.impl.DOMTransformer;
 import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
  * <p>Extract the value of one or more elements or attributes into
- * a target field, from and HTML, XHTML, or XML document.</p>
+ * a target field, or delete matching elements. Applies to
+ * HTML, XHTML, or XML document.</p>
  * <p>
- * This class constructs a DOM tree from the document content. That DOM tree
- * is loaded entirely into memory. Use this tagger with caution if you know
- * you'll need to parse huge files. It may be preferable to use
- * {@link TextPatternTagger} if this is a concern. Also, to help performance
+ * This class constructs a DOM tree from a document or field content.
+ * That DOM tree is loaded entirely into memory. Use this tagger with caution
+ * if you know you'll need to parse huge files. It may be preferable to use
+ * {@link RegexTagger} if this is a concern. Also, to help performance
  * and avoid re-creating DOM tree before every DOM extraction you want to
  * perform, try to combine multiple extractions in a single instance
  * of this Tagger.
@@ -89,7 +91,7 @@ import com.norconex.importer.util.DOMUtil;
  * used as a post-parse handler.
  * </p>
  *
- * <p>It is possible to control what gets extracted
+ * <p>You can control what gets extracted
  * exactly thanks to the "extract" argument of the new method
  * {@link DOMExtractDetails#setExtract(String)}. Possible values are:</p>
  * <ul>
@@ -117,13 +119,13 @@ import com.norconex.importer.util.DOMUtil;
  *       (e.g. "attr(title)" will extract the "title" attribute).</li>
  * </ul>
  *
- * <p>It is possible to specify a <code>fromField</code>
+ * <p>You can specify a <code>fromField</code>
  * as the source of the HTML to parse instead of using the document content.
  * If multiple values are present for that source field, DOM extraction will be
  * applied to each value.
  * </p>
  *
- * <p>It is possible to specify a <code>defaultValue</code>
+ * <p>You can specify a <code>defaultValue</code>
  * on each DOM extraction details. When no match occurred for a given selector,
  * the default value will be stored in the <code>toField</code> (as opposed
  * to not storing anything).  When matching blanks (see below) you will get
@@ -150,6 +152,16 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
+ * <h3>Content deletion from fields</h3>
+ * <p>
+ * As of 3.0.0, you can specify whether to delete any elements
+ * matched by the selector. You can use with a "toField" or on its own.
+ * Some options are ignored by deletions, such as
+ * "extract" or "defaultValue".  Because taggers cannot modify the document
+ * content, deletion only applies to metadata fields. Use {@link DOMTransformer}
+ * to modify the document content.
+ * </p>
+ *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger"
  *         fromField="(optional source field)"
@@ -164,6 +176,7 @@ import com.norconex.importer.util.DOMUtil;
  *       extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]"
  *       matchBlanks="[false|true]"
  *       defaultValue="(optional value to use when no match)"
+ *       delete="[false|true]"
  *       {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}/>
  *
  * </handler>
@@ -188,6 +201,7 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  * @author Pascal Essiembre
  * @since 2.4.0
+ * @see DOMTransformer
  */
 @SuppressWarnings("javadoc")
 public class DOMTagger extends AbstractDocumentTagger {
@@ -265,51 +279,50 @@ public class DOMTagger extends AbstractDocumentTagger {
     public void tagApplicableDocument(
             HandlerDoc doc, InputStream document, ParseState parseState)
                     throws ImporterHandlerException {
+        String ref = doc.getReference();
+        Properties meta = doc.getMetadata();
         try {
-            List<Document> jsoupDocs = new ArrayList<>();
-
             // Use "fromField" as content
             if (StringUtils.isNotBlank(getFromField())) {
-                List<String> htmls =
-                        doc.getMetadata().getStrings(getFromField());
-                if (htmls.isEmpty()) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Field \"" + getFromField() + "\" has no "
-                                + "value. No DOM extraction performed.");
-                    }
+                List<String> fromValues = meta.getStrings(getFromField());
+                if (fromValues.isEmpty()) {
+                    LOG.debug("Field \"{}\" has no value. No DOM "
+                            + "extraction performed.", getFromField());
                     return;
                 }
-                for (String html : htmls) {
-                    jsoupDocs.add(Jsoup.parse(html, doc.getReference(),
-                            DOMUtil.toJSoupParser(getParser())));
+                for (int i = 0; i < fromValues.size(); i++) {
+                    String fromValue = fromValues.get(i);
+                    if (StringUtils.isNotBlank(fromValue)) {
+                        fromValues.set(i, handle(Jsoup.parse(fromValue, ref,
+                                DOMUtil.toJSoupParser(getParser())), meta));
+                    }
                 }
+                meta.setList(getFromField(), fromValues);
             // Use doc content
             } else {
                 String inputCharset = detectCharsetIfBlank(
                         doc, document, sourceCharset, parseState);
-                jsoupDocs.add(Jsoup.parse(document, inputCharset,
-                        doc.getReference(),
-                        DOMUtil.toJSoupParser(getParser())));
+                handle(Jsoup.parse(document, inputCharset, ref,
+                        DOMUtil.toJSoupParser(getParser())), meta);
             }
-            domExtractDocList(jsoupDocs, doc.getMetadata());
         } catch (IOException e) {
             throw new ImporterHandlerException(
-                    "Cannot extract DOM element(s) from DOM-tree.", e);
+                    "Cannot process DOM element(s) from DOM-tree.", e);
         }
     }
 
-    private void domExtractDocList(
-            List<Document> jsoupDocs, Properties metadata) {
+
+    private String handle(Document jsoupDoc, Properties metadata) {
         for (DOMExtractDetails details : extractions) {
             List<String> extractedValues = new ArrayList<>();
-            for (Document doc : jsoupDocs) {
-                domExtractDoc(extractedValues, doc, details);
-            }
+            domExtractDoc(extractedValues, jsoupDoc, details);
             if (!extractedValues.isEmpty()) {
                 PropertySetter.orAppend(details.getOnSet()).apply(
                         metadata, details.toField, extractedValues);
             }
         }
+
+        return jsoupDoc.toString();
     }
 
     private void domExtractDoc(List<String> extractedValues,
@@ -327,16 +340,21 @@ public class DOMTagger extends AbstractDocumentTagger {
 
         // one or more elements matching
         for (Element elm : elms) {
-            String value = DOMUtil.getElementValue(elm, details.extract);
-            // JSoup normalizes white spaces and should always trim them,
-            // but we force it here to ensure 100% consistency.
-            value = StringUtils.trim(value);
-            boolean matches = !(value == null
-                    || !details.matchBlanks && StringUtils.isBlank(value));
-            if (matches) {
-                extractedValues.add(value);
-            } else if (hasDefault) {
-                extractedValues.add(details.getDefaultValue());
+            if (StringUtils.isNotBlank(details.toField)) {
+                String value = DOMUtil.getElementValue(elm, details.extract);
+                // JSoup normalizes white spaces and should always trim them,
+                // but we force it here to ensure 100% consistency.
+                value = StringUtils.trim(value);
+                boolean matches = !(value == null
+                        || !details.matchBlanks && StringUtils.isBlank(value));
+                if (matches) {
+                    extractedValues.add(value);
+                } else if (hasDefault) {
+                    extractedValues.add(details.getDefaultValue());
+                }
+            }
+            if (details.delete) {
+                elm.remove();
             }
         }
     }
@@ -395,6 +413,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     PropertySetter.fromXML(node, null),
                     node.getString("@extract", null));
             details.setMatchBlanks(node.getBoolean("@matchBlanks", false));
+            details.setDelete(node.getBoolean("@delete", false));
             details.setDefaultValue(node.getString("@defaultValue", null));
             addDOMExtractDetails(details);
         }
@@ -411,6 +430,7 @@ public class DOMTagger extends AbstractDocumentTagger {
                     .setAttribute("toField", details.getToField())
                     .setAttribute("extract", details.getExtract())
                     .setAttribute("matchBlanks", details.isMatchBlanks())
+                    .setAttribute("delete", details.isDelete())
                     .setAttribute("defaultValue", details.getDefaultValue());
             PropertySetter.toXML(node, details.getOnSet());
         }
@@ -441,6 +461,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         private PropertySetter onSet;
         private String extract;
         private boolean matchBlanks;
+        private boolean delete;
         private String defaultValue;
 
         public DOMExtractDetails() {
@@ -473,15 +494,19 @@ public class DOMTagger extends AbstractDocumentTagger {
         public String getSelector() {
             return selector;
         }
-        public void setSelector(String selector) {
+        public DOMExtractDetails setSelector(String selector) {
             this.selector = selector;
+            return this;
         }
+
         public String getToField() {
             return toField;
         }
-        public void setToField(String toField) {
+        public DOMExtractDetails setToField(String toField) {
             this.toField = toField;
+            return this;
         }
+
         /**
          * Gets whether existing value for the same field should be overwritten.
          * @return <code>true</code> if overwriting existing value.
@@ -497,10 +522,12 @@ public class DOMTagger extends AbstractDocumentTagger {
          * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
          */
         @Deprecated
-        public void setOverwrite(boolean overwrite) {
+        public DOMExtractDetails setOverwrite(boolean overwrite) {
             this.onSet = overwrite
                     ? PropertySetter.REPLACE : PropertySetter.APPEND;
+            return this;
         }
+
         /**
          * Gets the property setter to use when a value is set.
          * @return property setter
@@ -514,15 +541,19 @@ public class DOMTagger extends AbstractDocumentTagger {
          * @param onSet property setter
          * @since 3.0.0
          */
-        public void setOnSet(PropertySetter onSet) {
+        public DOMExtractDetails setOnSet(PropertySetter onSet) {
             this.onSet = onSet;
+            return this;
         }
+
         public String getExtract() {
             return extract;
         }
-        public void setExtract(String extract) {
+        public DOMExtractDetails setExtract(String extract) {
             this.extract = extract;
+            return this;
         }
+
         /**
          * Gets whether elements with blank values should be considered a
          * match and have an empty string returned as opposed to nothing at all.
@@ -540,14 +571,37 @@ public class DOMTagger extends AbstractDocumentTagger {
          *                    blank values
          * @since 2.6.1
          */
-        public void setMatchBlanks(boolean matchBlanks) {
+        public DOMExtractDetails setMatchBlanks(boolean matchBlanks) {
             this.matchBlanks = matchBlanks;
+            return this;
         }
+
+        /**
+         * Gets whether to delete DOM attributes/elements matching the
+         * specified selector.
+         * @return <code>true</code> if deleting
+         * @since 3.0.0
+         */
+        public boolean isDelete() {
+            return delete;
+        }
+        /**
+         * Sets whether to delete DOM attributes/elements matching the
+         * specified selector.
+         * @param delete <code>true</code> if deleting
+         * @since 3.0.0
+         */
+        public DOMExtractDetails setDelete(boolean delete) {
+            this.delete = delete;
+            return this;
+        }
+
         public String getDefaultValue() {
             return defaultValue;
         }
-        public void setDefaultValue(String defaultValue) {
+        public DOMExtractDetails setDefaultValue(String defaultValue) {
             this.defaultValue = defaultValue;
+            return this;
         }
 
         @Override

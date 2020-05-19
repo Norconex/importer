@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
@@ -48,6 +49,78 @@ import com.norconex.importer.util.DOMUtil;
  * @since 2.4.0
  */
 public class DOMTaggerTest {
+
+    @Test
+    public void testDelete() throws ImporterHandlerException {
+
+        String child1 = "<div id=\"childOneId\" class=\"childClass\">"
+                + "<a href=\"http://example.org/doc.html\">"
+                + "Child1 Link</a></div>";
+        String child2 = "<div class=\"childClass\">Child2 text</div>";
+
+        String full = "<div id=\"parentId\" class=\"parentClass\">"
+                + child1 + child2 + "</div>";
+
+        String fullMinusChild1 = "<div id=\"parentId\" class=\"parentClass\">"
+                + child2 + "</div>";
+
+
+        DOMTagger t = new DOMTagger();
+        t.setParser(DOMUtil.PARSER_XML);
+        t.setFromField("fromField1");
+
+        Properties metadata = new Properties();
+        metadata.set("fromField1", full);
+        t.addDOMExtractDetails(new DOMExtractDetails()
+                .setDelete(true)
+                .setSelector("#childOneId")
+                .setExtract("outerHtml")
+                .setToField("toField1"));
+
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
+        InputStream content = new NullInputStream(0);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "n/a", content, metadata), content, ParseState.PRE);
+
+        String fromXml = metadata.getString("fromField1");
+        String toXml = metadata.getString("toField1");
+
+        Assertions.assertEquals(child1, cleanHTML(toXml));
+        Assertions.assertEquals(fullMinusChild1, cleanHTML(fromXml));
+
+    }
+
+    @Test
+    public void testNestedDelete() throws ImporterHandlerException {
+
+        String child1 = "<div id=\"childOneId\" class=\"childClass\">"
+                + "<a href=\"http://example.org/doc.html\">"
+                + "Child1 Link</a></div>";
+        String child2 = "<div class=\"childClass\">Child2 text</div>";
+
+        String full = "<div id=\"parentId\" class=\"parentClass\">"
+                + child1 + child2 + "</div>";
+
+        DOMTagger t = new DOMTagger();
+        t.setParser(DOMUtil.PARSER_XML);
+        t.setFromField("fromField1");
+
+        Properties metadata = new Properties();
+        metadata.set("fromField1", full);
+        t.addDOMExtractDetails(new DOMExtractDetails()
+                .setDelete(true)
+                .setSelector("div"));
+
+        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
+        InputStream content = new NullInputStream(0);
+        t.tagDocument(TestUtil.toHandlerDoc(
+                "n/a", content, metadata), content, ParseState.PRE);
+
+        String fromXml = metadata.getString("fromField1");
+
+        Assertions.assertEquals("", cleanHTML(fromXml));
+
+    }
 
     // This is a test for: https://github.com/Norconex/collector-http/issues/381
     @Test
@@ -345,7 +418,8 @@ public class DOMTaggerTest {
     private String cleanHTML(String html) {
         String clean = html;
         clean = clean.replaceAll("[\\r\\n]", "");
-        clean = clean.replaceAll(">\\s+<", "><");
+        clean = clean.replaceAll(">\\s+", ">");
+        clean = clean.replaceAll("\\s+<", "<");
         return clean;
     }
 
@@ -424,7 +498,7 @@ public class DOMTaggerTest {
     }
 
     @Test
-        public void testWriteRead() {
+    public void testWriteRead() {
         DOMTagger tagger = new DOMTagger();
         tagger.addDOMExtractDetails(new DOMExtractDetails(
                 "p.blah > a", "myField", REPLACE));
@@ -432,6 +506,7 @@ public class DOMTaggerTest {
         DOMExtractDetails details = new DOMExtractDetails(
                 "div.blah > a", "myOtherField", REPLACE, "html");
         details.setDefaultValue("myDefaultValue");
+        details.setDelete(true);
         tagger.addDOMExtractDetails(details);
         tagger.addRestriction(new PropertyMatcher(
                 TextMatcher.basic("afield"),

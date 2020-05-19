@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-   Copyright 2017-2020 Norconex Inc.
+   Copyright 2020 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,16 +16,15 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <xs:include schemaLocation="../AbstractDocumentTagger.xsd"></xs:include>
+  <xs:include schemaLocation="../AbstractDocumentTransformer.xsd"></xs:include>
   
   <xs:element name="handler">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractDocumentTagger"> 
+        <xs:extension base="AbstractDocumentTransformer"> 
           <xs:all>
               <xs:element ref="dom" minOccurs="1" maxOccurs="unbounded" />
           </xs:all>
-          <xs:attribute name="fromField" type="xs:string"></xs:attribute>
           <xs:attribute name="parser">
             <xs:simpleType>
               <xs:restriction base="xs:string">
@@ -45,32 +44,6 @@
   <xs:element name="dom">
     <xs:complexType>
       <xs:attribute name="selector" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="toField" type="xs:string" use="required"></xs:attribute>
-      <xs:attribute name="onSet">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:enumeration value="APPEND"/>
-            <xs:enumeration value="append"/>
-            <xs:enumeration value="PREPEND"/>
-            <xs:enumeration value="prepend"/>
-            <xs:enumeration value="REPLACE"/>
-            <xs:enumeration value="replace"/>
-            <xs:enumeration value="OPTIONAL"/>
-            <xs:enumeration value="optional"/>
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="extract">
-        <xs:simpleType>
-          <xs:restriction base="xs:string">
-            <xs:pattern
-              value="text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|(attr\(.*\))" />
-          </xs:restriction>
-        </xs:simpleType>
-      </xs:attribute>
-      <xs:attribute name="matchBlanks" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="delete" type="xs:boolean"></xs:attribute>
-      <xs:attribute name="defaultValue" type="xs:string"></xs:attribute>
     </xs:complexType>
   </xs:element>
 
