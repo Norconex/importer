@@ -40,7 +40,7 @@
         New URLExtractorTagger class.
       </action>
       <action dev="essiembre" type="add">
-        New DOMTransformer class. 
+        New DOMDeleteTransformer class. 
       </action>
       <action dev="essiembre" type="add">
         New HandlerDoc to ease handler implementations.

@@ -38,7 +38,7 @@ import com.norconex.importer.util.DOMUtil;
  * @author Pascal Essiembre
  * @since 3.0.0
  */
-public class DOMTransformerTest {
+public class DOMDeleteTransformerTest {
 
     @Test
     public void testDelete() throws ImporterHandlerException, IOException {
@@ -55,7 +55,7 @@ public class DOMTransformerTest {
                 + child2 + "</div>";
 
 
-        DOMTransformer t = new DOMTransformer();
+        DOMDeleteTransformer t = new DOMDeleteTransformer();
         t.setParser(DOMUtil.PARSER_XML);
         t.setSourceCharset("UTF-8");
 
@@ -87,7 +87,7 @@ public class DOMTransformerTest {
         String full = "<div id=\"parentId\" class=\"parentClass\">"
                 + child1 + child2 + "</div>";
 
-        DOMTransformer t = new DOMTransformer();
+        DOMDeleteTransformer t = new DOMDeleteTransformer();
         t.setParser(DOMUtil.PARSER_XML);
         t.setSourceCharset("UTF-8");
 
@@ -115,7 +115,7 @@ public class DOMTransformerTest {
 
     @Test
     public void testWriteRead() {
-        DOMTransformer tagger = new DOMTransformer();
+        DOMDeleteTransformer tagger = new DOMDeleteTransformer();
         tagger.addSelector("p.blah > a");
         tagger.setParser("xml");
         tagger.setSourceCharset("UTF-8");

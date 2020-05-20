@@ -93,7 +93,7 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.transformer.impl.DOMTransformer"
+ * <handler class="com.norconex.importer.handler.transformer.impl.DOMDeleteTransformer"
  *         parser="[html|xml]"
  *         sourceCharset="(character encoding)">
  *
@@ -106,7 +106,7 @@ import com.norconex.importer.util.DOMUtil;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.DOMTransformer">
+ * <handler class="com.norconex.importer.handler.transformer.impl.DOMDeleteTransformer">
  *   <dom selector="div.firstName" />
  * </handler>
  * }
@@ -125,7 +125,7 @@ import com.norconex.importer.util.DOMUtil;
  * @see DOMTagger
  */
 @SuppressWarnings("javadoc")
-public class DOMTransformer extends AbstractDocumentTransformer {
+public class DOMDeleteTransformer extends AbstractDocumentTransformer {
 
     private List<String> selectors = new ArrayList<>();
     private String sourceCharset = null;
@@ -134,7 +134,7 @@ public class DOMTransformer extends AbstractDocumentTransformer {
     /**
      * Constructor.
      */
-    public DOMTransformer() {
+    public DOMDeleteTransformer() {
         super();
         addRestrictions(
                 CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));

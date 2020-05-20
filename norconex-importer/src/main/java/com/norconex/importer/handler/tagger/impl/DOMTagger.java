@@ -41,7 +41,7 @@ import com.norconex.importer.handler.CommonRestrictions;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
-import com.norconex.importer.handler.transformer.impl.DOMTransformer;
+import com.norconex.importer.handler.transformer.impl.DOMDeleteTransformer;
 import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
@@ -158,7 +158,7 @@ import com.norconex.importer.util.DOMUtil;
  * matched by the selector. You can use with a "toField" or on its own.
  * Some options are ignored by deletions, such as
  * "extract" or "defaultValue".  Because taggers cannot modify the document
- * content, deletion only applies to metadata fields. Use {@link DOMTransformer}
+ * content, deletion only applies to metadata fields. Use {@link DOMDeleteTransformer}
  * to modify the document content.
  * </p>
  *
@@ -201,7 +201,7 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  * @author Pascal Essiembre
  * @since 2.4.0
- * @see DOMTransformer
+ * @see DOMDeleteTransformer
  */
 @SuppressWarnings("javadoc")
 public class DOMTagger extends AbstractDocumentTagger {
