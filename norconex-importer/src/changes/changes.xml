@@ -43,6 +43,9 @@
         New DOMDeleteTransformer class. 
       </action>
       <action dev="essiembre" type="add">
+        New XMLStreamSplitter class. 
+      </action>
+      <action dev="essiembre" type="add">
         New HandlerDoc to ease handler implementations.
       </action>
       <action dev="essiembre" type="add">

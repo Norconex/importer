@@ -18,7 +18,6 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.map.PropertyMatcher;
 import com.norconex.commons.lang.map.PropertyMatchers;
 import com.norconex.commons.lang.text.TextMatcher;
-import com.norconex.importer.doc.DocMetadata;
 
 /**
  * Commonly encountered restrictions that can be applied to {@link Properties}
@@ -37,8 +36,7 @@ public final class CommonRestrictions {
     /**
      * <p>
      * Common content-types defining an XML feed (RSS, Atom).
-     * The <code>document.contentType</code>
-     * field has to contain one of these for the restriction to apply:
+     * The field has to contain one of these for the restriction to apply:
      * </p>
      * {@nx.block #xmlFeedContentTypes
      * <ul>
@@ -49,12 +47,12 @@ public final class CommonRestrictions {
      *   <li>text/xml</li>
      * </ul>
      * }
-     * @param name name of Properties field
+     * @param field name of Properties field
      * @return list of restrictions
      * @since 3.0.0
      */
-    public static PropertyMatchers xmlFeedContentTypes(String name) {
-        return basicMatcherIgnoreCase(DocMetadata.CONTENT_TYPE,
+    public static PropertyMatchers xmlFeedContentTypes(String field) {
+        return basicMatcherIgnoreCase(field,
                 "application/atom+xml",
                 "application/mathml+xml",
                 "application/rss+xml",
@@ -71,8 +69,8 @@ public final class CommonRestrictions {
     /**
      * <p>
      * Common content-types defining a DOM document. That is, documents that
-     * are HTML, XHTML, or XML-based. The <code>document.contentType</code>
-     * field has to contain one of these for the restriction to apply:
+     * are HTML, XHTML, or XML-based.
+     * The field has to contain one of these for the restriction to apply:
      * </p>
      * {@nx.block #domContentTypes
      * <ul>
@@ -89,11 +87,11 @@ public final class CommonRestrictions {
      *   <li>text/xml</li>
      * </ul>
      * }
-     * @param name name of Properties field
+     * @param field name of Properties field
      * @return list of restrictions
      */
-    public static PropertyMatchers domContentTypes(String name) {
-        return basicMatcherIgnoreCase(name,
+    public static PropertyMatchers domContentTypes(String field) {
+        return basicMatcherIgnoreCase(field,
                 "application/atom+xml",
                 "application/mathml+xml",
                 "application/rss+xml",
@@ -110,8 +108,7 @@ public final class CommonRestrictions {
     /**
      * <p>
      * Default content-types defining an HTML or XHTML document.
-     * The <code>document.contentType</code>
-     * field has to contain one of these for the restriction to apply:
+     * The field has to contain one of these for the restriction to apply:
      * </p>
      * {@nx.block #htmlContentTypes
      * <ul>
@@ -120,12 +117,12 @@ public final class CommonRestrictions {
      *   <li>text/html</li>
      * </ul>
      * }
-     * @param name name of Properties field
+     * @param field name of Properties field
      * @return list of restrictions
      * @since 2.8.0
      */
-    public static PropertyMatchers htmlContentTypes(String name) {
-        return basicMatcherIgnoreCase(name,
+    public static PropertyMatchers htmlContentTypes(String field) {
+        return basicMatcherIgnoreCase(field,
                 "application/vnd.wap.xhtml+xml",
                 "application/xhtml+xml",
                 "text/html");
@@ -133,10 +130,41 @@ public final class CommonRestrictions {
 
     /**
      * <p>
+     * Common content-types defining an XML document.
+     * The field has to contain one of these for the restriction to apply:
+     * </p>
+     * {@nx.block #domContentTypes
+     * <ul>
+     *   <li>application/atom+xml</li>
+     *   <li>application/mathml+xml</li>
+     *   <li>application/rss+xml</li>
+     *   <li>application/xhtml+xml</li>
+     *   <li>application/xml</li>
+     *   <li>application/xslt+xml</li>
+     *   <li>image/svg+xml</li>
+     *   <li>text/xml</li>
+     * </ul>
+     * }
+     * @param field name of Properties field
+     * @return list of restrictions
+     */
+    public static PropertyMatchers xmlContentTypes(String field) {
+        return basicMatcherIgnoreCase(field,
+                "application/atom+xml",
+                "application/mathml+xml",
+                "application/rss+xml",
+                "application/xhtml+xml",
+                "application/xml",
+                "application/xslt+xml",
+                "image/svg+xml",
+                "text/xml");
+    }
+
+    /**
+     * <p>
      * Content types of standard image format supported by all Java ImageIO
      * implementations: JPEG, PNG, GIF, BMP, WBMP.
-     * The <code>document.contentType</code>
-     * field has to contain one of these for the restriction to apply:
+     * The field has to contain one of these for the restriction to apply:
      * </p>
      * <ul>
      *   <li>image/bmp</li>
@@ -146,12 +174,12 @@ public final class CommonRestrictions {
      *   <li>image/vnd.wap.wbmp</li>
      *   <li>image/x-windows-bmp</li>
      * </ul>
-     * @param name name of Properties field
+     * @param field name of Properties field
      * @return list of restrictions
      * @since 3.0.0
      */
-    public static PropertyMatchers imageIOStandardContentTypes(String name) {
-        return basicMatcherIgnoreCase(name,
+    public static PropertyMatchers imageIOStandardContentTypes(String field) {
+        return basicMatcherIgnoreCase(field,
                 "image/bmp",
                 "image/gif",
                 "image/jpeg",

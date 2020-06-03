@@ -44,13 +44,14 @@ import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.DOMUtil;
 
 /**
- * <p>Splits HTML, XHTML, or XML document on a specific element.
+ * <p>Splits HTML, XHTML, or XML document on elements matching a given
+ * selector.
  * </p>
  * <p>
  * This class constructs a DOM tree from the document content. That DOM tree
  * is loaded entirely into memory. Use this splitter with caution if you know
  * you'll need to parse huge files. It may be preferable to use a stream-based
- * approach if this is a concern.
+ * approach if this is a concern (e.g., {@link XMLStreamSplitter}).
  * </p>
  * <p>
  * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load a
@@ -108,6 +109,7 @@ import com.norconex.importer.util.DOMUtil;
  *
  * @author Pascal Essiembre
  * @since 2.4.0
+ * @see XMLStreamSplitter
  */
 @SuppressWarnings("javadoc")
 public class DOMSplitter extends AbstractDocumentSplitter

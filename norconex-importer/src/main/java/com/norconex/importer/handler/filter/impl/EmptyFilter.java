@@ -51,7 +51,7 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ * <handler class="com.norconex.importer.handler.filter.impl.EmptyFilter"
  *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}>
  *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
@@ -62,7 +62,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *  <handler class="com.norconex.importer.handler.filter.impl.EmptyFilter"
  *          onMatch="exclude">
  *    <fieldMatcher method="regex">(title|dc:title)</fieldMatcher>
  *  </handler>
