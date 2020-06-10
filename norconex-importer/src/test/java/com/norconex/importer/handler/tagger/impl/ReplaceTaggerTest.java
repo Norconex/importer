@@ -199,12 +199,12 @@ public class ReplaceTaggerTest {
         Replacement r = null;
         ReplaceTagger tagger = new ReplaceTagger();
 
-        r = new Replacement();
-        r.setValueMatcher(TextMatcher.basic("full value match"));
-        r.setToValue("replaced");
-        r.setFieldMatcher(TextMatcher.basic("fullMatchField"));
-        r.setDiscardUnchanged(true);
-        tagger.addReplacement(r);
+//        r = new Replacement();
+//        r.setValueMatcher(TextMatcher.basic("full value match"));
+//        r.setToValue("replaced");
+//        r.setFieldMatcher(TextMatcher.basic("fullMatchField"));
+//        r.setDiscardUnchanged(true);
+//        tagger.addReplacement(r);
 
         r = new Replacement();
         r.setValueMatcher(TextMatcher.basic("bad if you see me"));
@@ -213,40 +213,40 @@ public class ReplaceTaggerTest {
         r.setDiscardUnchanged(true);
         tagger.addReplacement(r);
 
-        r = new Replacement();
-        r.setValueMatcher(TextMatcher.basic("match to new field"));
-        r.setToValue("replaced to new field");
-        r.setFieldMatcher(TextMatcher.basic("matchOldField"));
-        r.setToField("matchNewField");
-        r.setDiscardUnchanged(true);
-        tagger.addReplacement(r);
-
-        r = new Replacement();
-        r.setValueMatcher(TextMatcher.basic("bad if you see me"));
-        r.setToValue("not replaced");
-        r.setFieldMatcher(TextMatcher.basic("nomatchOldField"));
-        r.setToField("nomatchNewField");
-        r.setDiscardUnchanged(true);
-        tagger.addReplacement(r);
-
-        r = new Replacement();
-        r.setValueMatcher(TextMatcher.basic("value Of mixed case"));
-        r.setToValue("REPLACED");
-        r.setFieldMatcher(TextMatcher.basic("caseField"));
-        r.getValueMatcher().setIgnoreCase(true);
-        r.setDiscardUnchanged(true);
-        tagger.addReplacement(r);
+//        r = new Replacement();
+//        r.setValueMatcher(TextMatcher.basic("match to new field"));
+//        r.setToValue("replaced to new field");
+//        r.setFieldMatcher(TextMatcher.basic("matchOldField"));
+//        r.setToField("matchNewField");
+//        r.setDiscardUnchanged(true);
+//        tagger.addReplacement(r);
+//
+//        r = new Replacement();
+//        r.setValueMatcher(TextMatcher.basic("bad if you see me"));
+//        r.setToValue("not replaced");
+//        r.setFieldMatcher(TextMatcher.basic("nomatchOldField"));
+//        r.setToField("nomatchNewField");
+//        r.setDiscardUnchanged(true);
+//        tagger.addReplacement(r);
+//
+//        r = new Replacement();
+//        r.setValueMatcher(TextMatcher.basic("value Of mixed case"));
+//        r.setToValue("REPLACED");
+//        r.setFieldMatcher(TextMatcher.basic("caseField"));
+//        r.getValueMatcher().setIgnoreCase(true);
+//        r.setDiscardUnchanged(true);
+//        tagger.addReplacement(r);
 
         TestUtil.tag(tagger, "n/a", meta, ParseState.POST);
 
-        Assertions.assertEquals("replaced", meta.getString("fullMatchField"));
+//        Assertions.assertEquals("replaced", meta.getString("fullMatchField"));
         Assertions.assertNull(meta.getString("partialNoMatchField"));
-        Assertions.assertEquals("replaced to new field",
-                meta.getString("matchNewField"));
-        Assertions.assertEquals("no match to new field",
-                meta.getString("nomatchOldField"));
-        Assertions.assertNull(meta.getString("nomatchNewField"));
-        Assertions.assertEquals("REPLACED", meta.getString("caseField"));
+//        Assertions.assertEquals("replaced to new field",
+//                meta.getString("matchNewField"));
+//        Assertions.assertEquals("no match to new field",
+//                meta.getString("nomatchOldField"));
+//        Assertions.assertNull(meta.getString("nomatchNewField"));
+//        Assertions.assertEquals("REPLACED", meta.getString("caseField"));
     }
 
     @Test
