@@ -126,21 +126,25 @@ public class ReplaceTagger extends AbstractDocumentTagger {
             String sourceField, List<String> metaValues) {
         List<String> newValues = new ArrayList<>(metaValues.size());
         String toValue = r.toValue == null ? "" : r.toValue;
+        boolean nothingToDo = r.isDiscardUnchanged();
         for (String metaValue : metaValues) {
             String newValue = r.valueMatcher.replace(metaValue, toValue);
             if (newValue != null && (!r.isDiscardUnchanged()
                     || !Objects.equals(metaValue, newValue))) {
                 newValues.add(newValue);
+                nothingToDo = false;
             }
         }
 
-        if (StringUtils.isNotBlank(r.toField)) {
-            // set on target field
-            PropertySetter.orAppend(r.getOnSet()).apply(
-                    metadata, r.toField, newValues);
-        } else {
-            // overwrite source field
-            PropertySetter.REPLACE.apply(metadata, sourceField, newValues);
+        if (!nothingToDo) {
+            if (StringUtils.isNotBlank(r.toField)) {
+                // set on target field
+                PropertySetter.orAppend(r.getOnSet()).apply(
+                        metadata, r.toField, newValues);
+            } else {
+                // overwrite source field
+                PropertySetter.REPLACE.apply(metadata, sourceField, newValues);
+            }
         }
     }
 
