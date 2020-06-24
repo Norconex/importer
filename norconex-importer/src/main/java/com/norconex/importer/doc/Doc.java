@@ -72,7 +72,6 @@ public class Doc {
     /**
      * Creates a blank importer document using the supplied input stream
      * to handle content.
-     * The document reference automatically gets added to the metadata.
      * @param docInfo document details
      * @param content content input stream
      * @param metadata importer document metadata
@@ -89,7 +88,6 @@ public class Doc {
         } else {
             this.metadata = metadata;
         }
-        this.metadata.set(DocMetadata.REFERENCE, docInfo.getReference());
     }
 
     /**
