@@ -295,6 +295,7 @@
                 <artifactId>sonar-maven-plugin</artifactId>
                 <version>2.6</version>
             </plugin>
+            <!-- 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -325,6 +326,7 @@
                   </dependency>
                 </dependencies>    
             </plugin>
+             -->
         </plugins>
     </pluginManagement>
     <plugins>
@@ -389,7 +391,7 @@
           <detectLinks>false</detectLinks>
           <links>
             <link>https://tika.apache.org/${tika.version}/api/</link>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
           </links>
           <source>1.7</source>
           <excludePackageNames>org.apache.tika.*</excludePackageNames>
@@ -461,6 +463,7 @@
           </execution>
         </executions>
       </plugin>
+      <!-- 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -484,6 +487,7 @@
           </execution>
         </executions>
       </plugin>
+       -->
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -522,7 +526,7 @@
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
-      <url>${site.baseurl}/collectors/importer/latest</url>
+      <url>${site.baseurl}/importer/v2</url>
     </site>
     <snapshotRepository>
       <id>ossrh</id>
@@ -533,7 +537,8 @@
       <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
-  
+
+<!-- 
   <reporting>
     <plugins>
       <plugin>
@@ -559,7 +564,7 @@
           <header><![CDATA[
             <style>div.aboutLanguage .siteLink {font-size: 2em;}</style>
             <span class="siteLink">
-              <a target="_top" href="https://www.norconex.com/collectors/importer">Norconex Importer</a>
+              <a target="_top" href="https://opensource.norconex.com/importer">Norconex Importer</a>
             </span>
             ]]>
           </header>
@@ -584,7 +589,7 @@
           <detectLinks>false</detectLinks>
           <links>
             <link>https://tika.apache.org/${tika.version}/api/</link>
-            <link>https://www.norconex.com/product/commons-lang/apidocs/</link>
+            <link>https://opensource.norconex.com/commons/lang/v1/apidocs/</link>
           </links>
           <source>1.7</source>
           <excludePackageNames>org.apache.tika.*</excludePackageNames>
@@ -602,12 +607,13 @@
       </plugin>
     </plugins>
   </reporting>  
+ -->  
 
   <organization>
   	<name>Norconex Inc.</name>
   	<url>https://www.norconex.com</url>
   </organization>
-  <url>https://norconex.com/collectors/importer</url>
+  <url>https://opensource.norconex.com/importer</url>
   <description>Norconex Importer is a Java library and command-line application meant to &quot;parse&quot; and &quot;extract&quot; content out of a computer file as plain text, whatever its format (HTML, PDF, Word, etc). In addition, it allows you to perform any manipulation on the extracted text before importing/using it in your own service or application.</description>
   <issueManagement>
   	<system>GitHub</system>
