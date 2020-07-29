@@ -1,6 +1,9 @@
 TODO:
 ==============
 
+- Replace DOMDeleteTransformer with DOMTransformer that gives the option
+  to only keep what is matching, deleting the rest, or delete what is matching.
+
 - Add a TrimTagger/TrimTransformer
 - Add a more convinient way to collapse on white spaces.
 

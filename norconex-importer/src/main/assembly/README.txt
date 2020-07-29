@@ -8,7 +8,7 @@ For any inquiries about Norconex Importer,
 please contact Norconex Inc. at info@norconex.com.
 
 This product website and documentation is located at:
-http://www.norconex.com/collectors/importer/
+https://opensource.norconex.com/importer/
 
 Norconex licenses:
 ==================
