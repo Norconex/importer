@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map.Entry;
@@ -259,8 +260,12 @@ public class ExternalApp {
                 b.append(path);
             }
         }
+
         cp = b.toString();
         cp = StringUtils.stripEnd(cp, ":;");
+
+        cp += getTestClassPath();
+
         cp = cp.replace("\\", "\\\\");
         if (isQuoted) {
             cp = "\"" + cp + "\"";
@@ -268,6 +273,17 @@ public class ExternalApp {
         cmd = cmd.replaceFirst("(.*\\s+-cp\\s+)(.*)(\\s+"
                 + ExternalApp.class.getName() + ".*)", "$1" + cp + "$3");
         return cmd;
+    }
+
+    private static String getTestClassPath() {
+        try {
+            return File.pathSeparatorChar + new File(
+                    ExternalApp.class.getProtectionDomain()
+                            .getCodeSource().getLocation().toURI())
+                    .getAbsolutePath();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Could not obtain test classpath.", e);
+        }
     }
 
     private static final String[] KEEPERS = new String[] {
