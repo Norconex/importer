@@ -18,4 +18,4 @@ export IMPORTER_ROOT_DIR=$(realpath $(dirname $0))
 #
 #     -Xmx2G
 
-java -Dlog4j.configuration="file:${IMPORTER_ROOT_DIR}/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"
+java -Dlog4j2.configurationFile="file:${IMPORTER_ROOT_DIR}/log4j.properties" -Dfile.encoding=UTF8 -cp "./lib/*:./classes" com.norconex.importer.Importer "$@"
