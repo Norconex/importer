@@ -519,6 +519,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         /**
          * Sets whether existing value for the same field should be overwritten.
          * @param overwrite <code>true</code> if overwriting existing value.
+         * @return DOM extraction details
          * @deprecated Since 3.0.0 use {@link #setOnSet(PropertySetter)}.
          */
         @Deprecated
@@ -539,6 +540,7 @@ public class DOMTagger extends AbstractDocumentTagger {
         /**
          * Sets the property setter to use when a value is set.
          * @param onSet property setter
+         * @return DOM extraction details
          * @since 3.0.0
          */
         public DOMExtractDetails setOnSet(PropertySetter onSet) {
@@ -569,6 +571,7 @@ public class DOMTagger extends AbstractDocumentTagger {
          * match and have an empty string returned as opposed to nothing at all.
          * @param matchBlanks <code>true</code> to support elements with
          *                    blank values
+         * @return DOM extraction details
          * @since 2.6.1
          */
         public DOMExtractDetails setMatchBlanks(boolean matchBlanks) {
@@ -589,6 +592,7 @@ public class DOMTagger extends AbstractDocumentTagger {
          * Sets whether to delete DOM attributes/elements matching the
          * specified selector.
          * @param delete <code>true</code> if deleting
+         * @return DOM extraction details
          * @since 3.0.0
          */
         public DOMExtractDetails setDelete(boolean delete) {
