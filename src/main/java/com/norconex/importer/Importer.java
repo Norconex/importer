@@ -337,8 +337,11 @@ public class Importer {
         HandlerDoc hdoc = new HandlerDoc(doc);
         MutableObject<CachedInputStream> input = new MutableObject<>();
         for (IImporterHandler h : handlers) {
-            eventManager.fire(ImporterEvent.create(
-                    IMPORTER_HANDLER_BEGIN, doc, h, parseState));
+            eventManager.fire(
+                    new ImporterEvent.Builder(IMPORTER_HANDLER_BEGIN, doc)
+                        .subject(h)
+                        .parseState(parseState)
+                        .build());
             input.setValue(doc.getInputStream());
             try {
                 if (h instanceof IDocumentTagger) {
@@ -371,17 +374,28 @@ public class Importer {
                     LOG.error("Unsupported Import Handler: {}", h);
                 }
             } catch (ImporterException e) {
-                eventManager.fire(ImporterEvent.create(
-                        IMPORTER_HANDLER_ERROR, doc, h, parseState, e));
+                eventManager.fire(
+                        new ImporterEvent.Builder(IMPORTER_HANDLER_ERROR, doc)
+                            .subject(h)
+                            .parseState(parseState)
+                            .exception(e)
+                            .build());
                 throw e;
             } catch (IOException | RuntimeException e) {
-                eventManager.fire(ImporterEvent.create(
-                        IMPORTER_HANDLER_ERROR, doc, h, parseState, e));
+                eventManager.fire(
+                        new ImporterEvent.Builder(IMPORTER_HANDLER_ERROR, doc)
+                            .subject(h)
+                            .parseState(parseState)
+                            .exception(e)
+                            .build());
                 throw new ImporterException(
                         "Importer failure for handler: " + h, e);
             }
-            eventManager.fire(ImporterEvent.create(
-                    IMPORTER_HANDLER_END, doc, h, parseState));
+            eventManager.fire(
+                    new ImporterEvent.Builder(IMPORTER_HANDLER_END, doc)
+                        .subject(h)
+                        .parseState(parseState)
+                        .build());
         }
 
         if (!includeResolver.passes()) {
@@ -426,8 +440,11 @@ public class Importer {
             return;
         }
 
-        eventManager.fire(ImporterEvent.create(
-                IMPORTER_PARSER_BEGIN, doc, parser, ParseState.PRE));
+        eventManager.fire(
+                new ImporterEvent.Builder(IMPORTER_PARSER_BEGIN, doc)
+                    .subject(parser)
+                    .parseState(ParseState.PRE)
+                    .build());
         CachedOutputStream out = streamFactory.newOuputStream();
         OutputStreamWriter output = new OutputStreamWriter(
                 out, StandardCharsets.UTF_8);
@@ -456,16 +473,23 @@ public class Importer {
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
-            eventManager.fire(ImporterEvent.create(
-                    IMPORTER_PARSER_ERROR, doc, parser, ParseState.PRE, e));
+            eventManager.fire(
+                    new ImporterEvent.Builder(IMPORTER_PARSER_ERROR, doc)
+                        .subject(parser)
+                        .parseState(ParseState.PRE)
+                        .exception(e)
+                        .build());
             try { out.close(); } catch (IOException ie) { /*NOOP*/ }
             if (importerConfig.getParseErrorsSaveDir() != null) {
                 saveParseError(doc, e);
             }
             throw e;
         }
-        eventManager.fire(ImporterEvent.create(
-                IMPORTER_PARSER_END, doc, parser, ParseState.POST));
+        eventManager.fire(
+                new ImporterEvent.Builder(IMPORTER_PARSER_END, doc)
+                    .subject(parser)
+                    .parseState(ParseState.POST)
+                    .build());
 
         if (out.isCacheEmpty()) {
             if (LOG.isDebugEnabled()) {

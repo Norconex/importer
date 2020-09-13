@@ -76,7 +76,7 @@ public class DOMSplitterTest {
         InputStream is = IOUtils.toInputStream(text, StandardCharsets.UTF_8);
         List<Doc> docs = splitter.splitApplicableDocument(
                 TestUtil.toHandlerDoc("n/a", is, metadata),
-                is, new NullOutputStream(), ParseState.PRE);
+                is, NullOutputStream.NULL_OUTPUT_STREAM, ParseState.PRE);
         return docs;
     }
 

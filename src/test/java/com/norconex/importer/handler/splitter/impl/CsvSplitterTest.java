@@ -116,7 +116,7 @@ public class CsvSplitterTest {
         Properties metadata = new Properties();
         List<Doc> docs = splitter.splitApplicableDocument(
                 TestUtil.toHandlerDoc("n/a", input, metadata),
-                input, new NullOutputStream(), ParseState.PRE);
+                input, NullOutputStream.NULL_OUTPUT_STREAM, ParseState.PRE);
         return docs;
 
     }

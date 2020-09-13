@@ -26,7 +26,7 @@ import com.norconex.importer.parser.ParseState;
  * @author Pascal Essiembre
  * @since 3.0.0
  */
-public class ImporterEvent extends Event<Doc> {
+public class ImporterEvent extends Event {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,24 +42,43 @@ public class ImporterEvent extends Event<Doc> {
     private final ParseState parseState;
     private final transient Object subject;
 
+    public static class Builder extends Event.Builder<Builder> {
+
+        private ParseState parseState;
+        private Object subject;
+
+        public Builder(String name, Doc source) {
+            super(name, source);
+        }
+
+        public Builder parseState(ParseState parseState) {
+            this.parseState = parseState;
+            return this;
+        }
+        public Builder subject(Object subject) {
+            this.subject = subject;
+            return this;
+        }
+
+        @Override
+        public ImporterEvent build() {
+            return new ImporterEvent(this);
+        }
+    }
+
     /**
-     * New Importer event.
-     * @param name event name
-     * @param source document for which the event was triggered
-     * @param subject other relevant source related to the event
-     *                (e.g. handler used)
-     * @param parseState whether the document was parsed
-     * @param exception exception tied to this event (may be <code>null</code>)
+     * New event.
+     * @param b builder
      */
-    public ImporterEvent(
-            String name,
-            Doc source,
-            Object subject,
-            ParseState parseState,
-            Throwable exception) {
-        super(name, source, exception);
-        this.parseState = parseState;
-        this.subject = subject;
+    protected ImporterEvent(Builder b) {
+        super(b);
+        this.parseState = b.parseState;
+        this.subject = b.subject;
+    }
+
+    @Override
+    public Doc getSource() {
+        return (Doc) super.getSource();
     }
 
     public boolean isParsed() {
@@ -72,18 +91,6 @@ public class ImporterEvent extends Event<Doc> {
         return subject;
     }
 
-    public static ImporterEvent create(
-            String name, Doc doc, ParseState parseState) {
-        return create(name, doc, null, parseState, null);
-    }
-    public static ImporterEvent create(String name, Doc doc,
-            Object subject, ParseState parseState) {
-        return create(name, doc, subject, parseState, null);
-    }
-    public static ImporterEvent create(String name, Doc doc,
-            Object subject, ParseState parseState, Throwable exception) {
-        return new ImporterEvent(name, doc, subject, parseState, exception);
-    }
     @Override
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
