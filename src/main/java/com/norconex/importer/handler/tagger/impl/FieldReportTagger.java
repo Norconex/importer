@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,8 +241,18 @@ public class FieldReportTagger extends AbstractDocumentTagger {
     }
     @Override
     public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        int fieldSize = 0;
+        synchronized (fields) {
+            fieldSize = fields.size();
+        }
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .append("file", file)
+                .append("maxSamples", maxSamples)
+                .append("withHeaders", withHeaders)
+                .append("withOccurences", withOccurences)
+                .append("truncateSamplesAt", truncateSamplesAt)
+                .append("fields", "<size=" + fieldSize + ">")
+                .toString();
     }
 
     class FieldData {

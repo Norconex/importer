@@ -105,14 +105,19 @@ public class ImporterEvent extends Event {
         if (getSource() != null) {
             b.append(getSource().getReference());
         }
-        if (b.length() > 0) {
-            b.append(" ");
+
+        if (parseState != null) {
+            if (b.length() > 0) {
+                b.append(" - ");
+            }
+            b.append(parseState.isPre() ? "PRE-parse" : "POST-parse");
         }
-        b.append("(parseState:").append(parseState).append(')');
+
         if (subject != null) {
             b.append(" - ");
             b.append(subject.toString());
         }
+
         return b.toString();
     }
 }

@@ -281,13 +281,12 @@ public class AbstractTikaParser implements IHintsAwareParser {
 
     @Override
     public String toString() {
-        Class<?> thisParserClass = null;
+        String thisParserClass = null;
         if (parser != null) {
-            thisParserClass = parser.getClass();
+            thisParserClass = parser.getClass().getSimpleName();
         }
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .append("thisParserClass", thisParserClass)
-                .append("parseHints", parseHints)
+                .append("tika", thisParserClass)
                 .toString();
     }
 
