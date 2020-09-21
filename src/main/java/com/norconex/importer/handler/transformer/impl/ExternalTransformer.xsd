@@ -38,7 +38,7 @@
       <xs:sequence>
         <xs:element 
             name="pattern" 
-            type="RegexKeyValueExtractorType" 
+            type="RegexFieldValueExtractorType" 
             minOccurs="1" 
             maxOccurs="unbounded"/>
       </xs:sequence>

@@ -21,7 +21,7 @@
   <xs:include schemaLocation="/com/norconex/commons/lang/Lang.xsd"></xs:include>
   <xs:include schemaLocation="/com/norconex/commons/lang/text/TextMatcher.xsd"></xs:include>
   <!-- This one also includes Regex.xsd -->
-  <xs:include schemaLocation="/com/norconex/commons/lang/text/RegexKeyValueExtractor.xsd"></xs:include>
+  <xs:include schemaLocation="/com/norconex/commons/lang/text/RegexFieldValueExtractor.xsd"></xs:include>
 
 
   <xs:element name="restrictTo">
