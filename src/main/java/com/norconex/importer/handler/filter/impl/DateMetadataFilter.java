@@ -38,6 +38,7 @@ import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.HandlerDoc;
@@ -134,7 +135,6 @@ import com.norconex.importer.util.FormatUtil;
  * @author Pascal Essiembre
  * @since 2.2.0
  */
-@SuppressWarnings("javadoc")
 public class DateMetadataFilter extends AbstractDocumentFilter {
     private static final Logger LOG =
             LoggerFactory.getLogger(DateMetadataFilter.class);
@@ -372,8 +372,8 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             }
             Condition condition = Condition.parse(operator, date);
             if (condition == null) {
-                LOG.debug("Not a valid date value: {}", date);
-                break;
+                throw new ConfigurationException(
+                        "Not a valid condition date value: " + date);
             }
             conditions.add(condition);
         }
@@ -446,7 +446,9 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 if (today) {
                     cal = DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
                 }
-                cal.add(unit.field, amount);
+                if (unit != null) {
+                    cal.add(unit.field, amount);
+                }
                 this.epochDate = cal.getTimeInMillis();
             } else {
                 this.type = Type.DYN_FLOAT;
@@ -465,11 +467,13 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             } else {
                 b.append("NOW");
             }
-            if (amount >= 0) {
-                b.append('+');
+            if (unit != null) {
+                if (amount >= 0) {
+                    b.append('+');
+                }
+                b.append(amount);
+                b.append(unit.toString());
             }
-            b.append(amount);
-            b.append(unit.toString());
             if (type == Type.DYN_FLOAT) {
                 b.append('*');
             }
@@ -490,29 +494,32 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
 
         private static final Pattern RELATIVE_PARTS = Pattern.compile(
-                "^(\\w{3,5})([-+]{1})(\\d+)([YMDhms]{1})(\\*{0,1})$");
+                //1              23            4         5
+                "^(NOW|TODAY)\\s*(([-+]{1})\\s*(\\d+)\\s*([YMDhms]{1})\\s*)?"
+                //6
+               + "(\\*{0,1})$");
         public static Condition parse(Operator operator, String dateString) {
             try {
                 String d = dateString.trim();
 
                 // NOW[-+]9[YMDhms][*]
                 // TODAY[-+]9[YMDhms][*]
-                if (d.startsWith("NOW") || d.startsWith("TODAY")) {
-                    Matcher m = RELATIVE_PARTS.matcher(d);
-                    if (!m.matches() || m.groupCount() != 5) {
-                        LOG.debug("Invalid format for value: {}", dateString);
-                        return null;
+                Matcher m = RELATIVE_PARTS.matcher(d);
+                if (m.matches()) {
+                    TimeUnit unit = null;
+                    int amount = NumberUtils.toInt(m.group(4), -1);
+                    if (amount > -1) {
+                        if  ("-".equals(m.group(3))) {
+                            amount = -amount;
+                        }
+                        String unitStr = m.group(5);
+                        unit = TimeUnit.getTimeUnit(unitStr);
+                        if (unit == null) {
+                            throw new ConfigurationException(
+                                    "Invalid time unit: " + unitStr);
+                        }
                     }
-                    int amount = NumberUtils.toInt(m.group(3));
-                    if  ("-".equals(m.group(2))) {
-                        amount = -amount;
-                    }
-                    String unitStr = m.group(4);
-                    TimeUnit unit = TimeUnit.getTimeUnit(unitStr);
-                    if (unit == null) {
-                        LOG.debug("Invalid time unit: {}", unitStr);
-                    }
-                    boolean fixed = !"*".equals(m.group(5));
+                    boolean fixed = !"*".equals(m.group(6));
                     boolean today = "TODAY".equals(m.group(1));
                     return new Condition(operator, unit, amount, fixed, today);
                 }
@@ -528,15 +535,14 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                             .ISO_8601_EXTENDED_DATETIME_FORMAT.parse(
                                     d).getTime());
                 }
-
                 // yyyy-MM-dd
                 return new Condition(operator,
                         DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
                                 d).getTime());
             } catch (ParseException e) {
-                LOG.debug("Date parse error for value: " + dateString, e);
+                throw new ConfigurationException(
+                        "Date parse error for value: " + dateString, e);
             }
-            return null;
         }
 
         @Override

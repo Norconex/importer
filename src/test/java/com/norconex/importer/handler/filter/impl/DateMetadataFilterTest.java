@@ -1,4 +1,4 @@
-/* Copyright 2015-2019 Norconex Inc.
+/* Copyright 2015-2020 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
 package com.norconex.importer.handler.filter.impl;
 
 import static com.norconex.importer.parser.ParseState.PRE;
+import static org.apache.commons.lang3.time.DateUtils.truncate;
 
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.jupiter.api.Assertions;
@@ -30,13 +32,14 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.handler.filter.impl.DateMetadataFilter.Condition;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.Operator;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.TimeUnit;
 
-public class DateMetadataFilterTest {
+class DateMetadataFilterTest {
 
     @Test
-    public void testAcceptDocument()
+    void testAcceptDocument()
             throws ImporterHandlerException, ParseException {
 
         Properties meta = new Properties();
@@ -88,7 +91,7 @@ public class DateMetadataFilterTest {
     }
 
     @Test
-        public void testWriteRead() {
+    void testWriteRead() {
         DateMetadataFilter filter = new DateMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd");
@@ -100,5 +103,43 @@ public class DateMetadataFilterTest {
         // time will vary. So test with last argument false.
         filter.addConditionFromNow(Operator.EQUALS, TimeUnit.YEAR, -2, false);
         XML.assertWriteRead(filter, "handler");
+    }
+
+    @Test
+    void testOperatorDateParsing() {
+
+        XML xml = XML.of(
+                  "<handler\n"
+                + "    class=\"DateMetadataFilter\""
+                + "    format=\"yyyy-MM-dd'T'HH:mm:ss'Z'\""
+                + "    onMatch=\"exclude\">"
+                + "  <fieldMatcher>scan_timestamp</fieldMatcher>"
+                + "  <condition operator=\"lt\" date=\"TODAY\"/>"
+                + "  <condition operator=\"lt\" date=\"2020-09-27T12:34:56\"/>"
+                + "  <condition operator=\"lt\" date=\"2020-09-27\"/>"
+                + "</handler>").create();
+        DateMetadataFilter f = new DateMetadataFilter();
+        f.loadFromXML(xml);
+
+        List<Condition> conds = f.getConditions();
+
+        // Assert valid date strings
+        Assertions.assertEquals("TODAY", conds.get(0).getDateString());
+        Assertions.assertEquals(
+                "2020-09-27T12:34:56.000", conds.get(1).getDateString());
+        Assertions.assertEquals(
+                "2020-09-27T00:00:00.000", conds.get(2).getDateString());
+
+        // Assert valid EPOCH
+        Calendar cal = Calendar.getInstance();
+        long today = truncate(cal, Calendar.DAY_OF_MONTH).getTimeInMillis();
+
+        cal.set(2020, 9-1, 27, 12, 34, 56);
+        long dateTime = truncate(cal, Calendar.SECOND).getTimeInMillis();
+        long date = truncate(cal, Calendar.DAY_OF_MONTH).getTimeInMillis();
+
+        Assertions.assertEquals(today, conds.get(0).getEpochDate());
+        Assertions.assertEquals(dateTime, conds.get(1).getEpochDate());
+        Assertions.assertEquals(date, conds.get(2).getEpochDate());
     }
 }
