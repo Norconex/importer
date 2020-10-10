@@ -471,6 +471,12 @@ public class Importer {
                         DocMetadata.CONTENT_ENCODING));
             }
             if (nestedDocs != null) {
+                for (int i = 0; i < nestedDocs.size() ; i++) {
+                    Properties meta = nestedDocs.get(i).getMetadata();
+                    meta.add(DocMetadata.EMBEDDED_INDEX, i);
+                    meta.add(DocMetadata.EMBEDDED_PARENT_REFERENCES,
+                            doc.getReference());
+                }
                 embeddedDocs.addAll(nestedDocs);
             }
         } catch (DocumentParserException e) {
@@ -644,6 +650,13 @@ public class Importer {
 
         if (childDocs == null) {
             return new ArrayList<>();
+        }
+
+        for (int i = 0; i < childDocs.size(); i++) {
+            Properties meta = childDocs.get(i).getMetadata();
+            meta.add(DocMetadata.EMBEDDED_INDEX, i);
+            meta.add(DocMetadata.EMBEDDED_PARENT_REFERENCES,
+                    doc.getReference());
         }
         return childDocs;
     }

@@ -76,7 +76,7 @@ import com.norconex.importer.util.CharsetUtil;
  * {@nx.xml.example
  * <restrictTo>
  *   <fieldMatcher>document.contentType</fieldMatcher>
- *   <valueMatcher method="wildcard" matchWhole="true">
+ *   <valueMatcher method="wildcard">
  *     text/*
  *   </valueMatcher>
  * </restrictTo>

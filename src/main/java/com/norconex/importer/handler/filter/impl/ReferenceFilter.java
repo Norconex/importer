@@ -44,10 +44,10 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
- *          onMatch="exclude">
- *      <valueMatcher method="regex">.*&#47;login/.*</valueMatcher>
- *  </handler>
+ * <handler class="com.norconex.importer.handler.filter.impl.ReferenceFilter"
+ *     onMatch="exclude">
+ *   <valueMatcher method="regex">.*&#47;login/.*</valueMatcher>
+ * </handler>
  * }
  * <p>
  * The above eample reject documents having "/login/" in their reference.
@@ -56,7 +56,6 @@ import com.norconex.importer.parser.ParseState;
  * @author Pascal Essiembre
  * @since 3.0.0
  */
-@SuppressWarnings("javadoc")
 public class ReferenceFilter extends AbstractDocumentFilter {
 
     private final TextMatcher valueMatcher = new TextMatcher();

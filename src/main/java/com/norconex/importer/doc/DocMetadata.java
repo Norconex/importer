@@ -60,6 +60,9 @@ public final class DocMetadata {
     /** Type of embedded file (from a zip, a word doc, etc.). */
     public static final String EMBEDDED_TYPE =
             EMBEDDED_PREFIX + "type";
+    /** Zero-based index of this embedded document in relation to siblings. */
+    public static final String EMBEDDED_INDEX =
+            EMBEDDED_PREFIX + "index";
 
     private DocMetadata() {
         super();
