@@ -15,14 +15,20 @@
 package com.norconex.importer.handler.filter.impl;
 
 import java.io.InputStream;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,9 +38,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,34 +52,53 @@ import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.FormatUtil;
 /**
  * <p>Accepts or rejects a document based on whether field values correspond
- * to a valid date, based on date conditions and date format.
+ * to a date matching supplied conditions and format.
  * If multiple values are
  * found for a field, only one of them needs to match for this filter to
  * take effect. If the value cannot be parsed to a valid date, it is
- * considered not to be matching.
+ * considered not to be matching (no exception is thrown).
  * </p>
  *
  * <h3>Metadata date field format:</h3>
  * <p>To successfully parse a date, you can specify a date format,
- * as per the formatting options found on {@link SimpleDateFormat}.
+ * as per the formatting options found on {@link DateTimeFormatter}.
  * The default format when not specified is EPOCH (the difference, measured in
  * milliseconds, between the date and midnight, January 1, 1970).</p>
  *
- * <h3>Dynamic vs static dates:</h3>
- * <p>When adding a condition, you can specify a static date (i.e. a constant
- * date value), or you can tell this filter you want to use a date
- * relative to the current type. There is a distinction to be made between
- * TODAY and NOW.  TODAY is the current day without the hours, minutes, and
+ * <h3>Absolute date conditions:</h3>
+ * <p>When defining a filter condition, you can specify an absolute
+ * date (i.e. a constant date value) to be used for comparison.
+ * Supported formats for specifying a condition date are:
+ * </p>
+ * <pre>
+ *   yyyy-MM-dd                -> date (e.g. 2015-05-31)
+ *   yyyy-MM-ddThh:mm:ss[.SSS] -> date and time with optional
+ *                                milliseconds (e.g. 2015-05-31T22:44:15)
+ * </pre>
+ *
+ * <h3>Relative date conditions:</h3>
+ * <P>Filter conditions can also specify a moment in time relative to the
+ * current date using TODAY or NOW, optionally followed by
+ * a number of time units to add/remove.
+ * TODAY is the current day without the hours, minutes, and
  * seconds, where as NOW is the current day with the hours, minutes, and
  * seconds. You can also decide whether you want the current date to be fixed
  * (does not change after being set for the first time), or whether
- * it should be refreshed on every call to reflect system date time changes.
+ * it should be refreshed on every invocation to reflect system date
+ * time changes.
+ * </p>
+ *
+ * <h3>Time zones:</h3>
+ * <p>
+ * ... TODO ............................................................................................
  * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
  *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
- *     format="(date format)">
+ *     format="(document field date format)"
+ *     docZoneId="(force a time zone on evaluated fields.)"
+ *     conditionZoneId="(time zone of condition dates.)">
  *
  *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
@@ -91,7 +113,7 @@ import com.norconex.importer.util.FormatUtil;
  *         gt -> greater than
  *         ge -> greater equal
  *         lt -> lower than
- *         le -> lowe equal
+ *         le -> lower equal
  *         eq -> equals
  *
  *       Condition date value format are either one of:
@@ -121,6 +143,8 @@ import com.norconex.importer.util.FormatUtil;
  *
  * {@nx.xml.example
  * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ *     format="yyyy-MM-dd'T'HH:mm:ssZ"
+ *     conditionZoneId="America/New_York"
  *     onMatch="include">
  *   <fieldMatcher>publish_date</fieldMatcher>
  *   <condition operator="ge" date="TODAY-7" />
@@ -141,24 +165,24 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
     public enum Operator {
         GREATER_THAN("gt") {@Override
-        public boolean evaluate(long fieldDate, long conditionDate) {
-            return fieldDate > conditionDate;
+        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
+            return fldDate.isAfter(cndDate);
         }},
         GREATER_EQUAL("ge") {@Override
-        public boolean evaluate(long fieldDate, long conditionDate) {
-            return fieldDate >= conditionDate;
+        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
+            return fldDate.isAfter(cndDate) || fldDate.isEqual(cndDate);
         }},
         EQUALS("eq") {@Override
-        public boolean evaluate(long fieldDate, long conditionDate) {
-            return fieldDate == conditionDate;
+        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
+            return fldDate.isEqual(cndDate);
         }},
         LOWER_EQUAL("le") {@Override
-        public boolean evaluate(long fieldDate, long conditionDate) {
-            return fieldDate <= conditionDate;
+        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
+            return fldDate.isBefore(cndDate) || fldDate.isEqual(cndDate);
         }},
         LOWER_THAN("lt") {@Override
-        public boolean evaluate(long fieldDate, long conditionDate) {
-            return fieldDate < conditionDate;
+        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
+            return fldDate.isBefore(cndDate);
         }};
         String abbr;
         private Operator(String abbr) {
@@ -180,24 +204,24 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             return abbr;
         }
         public abstract boolean evaluate(
-                long fieldDate, long conditionDate);
+                ZonedDateTime fieldDate, ZonedDateTime conditionDate);
     }
 
     public enum TimeUnit {
-        YEAR(Calendar.YEAR, "Y"),
-        MONTH(Calendar.MONTH, "M"),
-        DAY(Calendar.DAY_OF_MONTH, "D"),
-        HOUR(Calendar.HOUR, "h"),
-        MINUTE(Calendar.MINUTE, "m"),
-        SECOND(Calendar.SECOND, "s");
-        private final int field;
+        YEAR(ChronoUnit.YEARS, "Y"),
+        MONTH(ChronoUnit.MONTHS, "M"),
+        DAY(ChronoUnit.DAYS, "D"),
+        HOUR(ChronoUnit.HOURS, "h"),
+        MINUTE(ChronoUnit.MINUTES, "m"),
+        SECOND(ChronoUnit.SECONDS, "s");
+        private final TemporalUnit temporalUnit;
         private final String abbr;
-        private TimeUnit(int field, String abbr) {
-            this.field = field;
+        private TimeUnit(TemporalUnit temporalUnit, String abbr) {
+            this.temporalUnit = temporalUnit;
             this.abbr = abbr;
         }
-        public int getField() {
-            return field;
+        public TemporalUnit toTemporal() {
+            return temporalUnit;
         }
         @Override
         public String toString() {
@@ -219,6 +243,10 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     private final TextMatcher fieldMatcher = new TextMatcher();
     private String format;
     private final List<Condition> conditions = new ArrayList<>(2);
+
+    private ZoneId docZoneId;
+    // condition zoneId is only kept here for when we save to XML.
+    private ZoneId conditionZoneId;
 
     public DateMetadataFilter() {
         super();
@@ -283,6 +311,23 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         this.fieldMatcher.setPattern(field);
     }
 
+    /**
+     * Gets the time zone id documents are considered to be.
+     * @return zone id
+     * @since 3.0.0
+     */
+    public ZoneId getDocZoneId() {
+        return docZoneId;
+    }
+    /**
+     * Sets the time zone id documents are considered to be.
+     * @param docZoneId zone id
+     * @since 3.0.0
+     */
+    public void setDocZoneId(ZoneId docZoneId) {
+        this.docZoneId = docZoneId;
+    }
+
     public TextMatcher getFieldMatcher() {
         return fieldMatcher;
     }
@@ -296,17 +341,31 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     public void setFormat(String format) {
         this.format = format;
     }
+
+    // Uses system default time zone.
+    @Deprecated
     public void addCondition(Operator operator, Date date) {
-        conditions.add(new Condition(operator, date.getTime()));
+
+        conditions.add(new Condition(operator, new StaticDateTimeSupplier(
+                ZonedDateTime.ofInstant(Instant.ofEpochMilli(
+                        date.getTime()), ZoneId.systemDefault()))));
     }
-    public void addConditionFromNow(
-            Operator operator, TimeUnit timeUnit, int value, boolean fixed) {
-        conditions.add(new Condition(operator, timeUnit, value, fixed, false));
+    public void addCondition(Operator operator, ZonedDateTime dateTime) {
+        Objects.requireNonNull(dateTime, "'dateTime' must not be null.");
+        conditions.add(new Condition(
+                operator, new StaticDateTimeSupplier(dateTime)));
     }
-    public void addConditionFromToday(
-            Operator operator, TimeUnit timeUnit, int value, boolean fixed) {
-        conditions.add(new Condition(operator, timeUnit, value, fixed, true));
+    public void addCondition(Operator operator,
+            Supplier<ZonedDateTime> dateTimeSupplier) {
+        Objects.requireNonNull(dateTimeSupplier,
+                "'dateTimeSupplier' must not be null.");
+        conditions.add(new Condition(operator, dateTimeSupplier));
     }
+    public void addCondition(Condition condition) {
+        Objects.requireNonNull(condition, "'condition' must not be null.");
+        conditions.add(condition);
+    }
+
     /**
      * Gets the date filter conditions.
      * @return conditions
@@ -337,15 +396,22 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
     private boolean meetsAllConditions(String fieldName, String fieldValue) {
-        String epochString = FormatUtil.formatDateString(
-                fieldValue, format, null, fieldName);
-        if (StringUtils.isBlank(epochString)) {
+
+
+        ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+                fieldValue, format, null, fieldName, docZoneId);
+        if (dt == null) {
             return false;
         }
-        long fieldEpoch = Long.parseLong(epochString);
         for (Condition condition : conditions) {
-            if (!condition.operator.evaluate(
-                    fieldEpoch, condition.getEpochDate())) {
+            boolean evalResult = condition.operator.evaluate(
+                    dt, condition.getDateTime());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("{}: {} [{}] {} = {}",
+                        fieldName, fieldValue, condition.operator,
+                        condition.getDateTime(), evalResult);
+            }
+            if (!evalResult) {
                 return false;
             }
         }
@@ -357,11 +423,26 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         xml.checkDeprecated("@field", "fieldMatcher", true);
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         setFormat(xml.getString("@format", format));
+
+        ZoneId dZoneId = null;
+        String dZoneIdStr = xml.getString("@docZoneId", null);
+        if (StringUtils.isNotBlank(dZoneIdStr)) {
+            dZoneId = ZoneId.of(dZoneIdStr);
+        }
+        setDocZoneId(dZoneId);
+
+        ZoneId cZoneId = null;
+        String cZoneIdStr = xml.getString("@conditionZoneId", null);
+        if (StringUtils.isNotBlank(cZoneIdStr)) {
+            cZoneId = ZoneId.of(cZoneIdStr);
+        }
+        this.conditionZoneId = cZoneId;
+
         List<XML> nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
             String op = node.getString("@operator", null);
-            String date = node.getString("@date", null);
-            if (StringUtils.isBlank(op) || StringUtils.isBlank(date)) {
+            String dateStr = node.getString("@date", null);
+            if (StringUtils.isBlank(op) || StringUtils.isBlank(dateStr)) {
                 LOG.warn("Both \"operator\" and \"date\" must be provided.");
                 break;
             }
@@ -370,22 +451,20 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 LOG.warn("Unsupported operator: {}", op);
                 break;
             }
-            Condition condition = Condition.parse(operator, date);
-            if (condition == null) {
-                throw new ConfigurationException(
-                        "Not a valid condition date value: " + date);
-            }
-            conditions.add(condition);
+            conditions.add(toCondition(operator, dateStr, cZoneId));
         }
     }
 
     @Override
     protected void saveFilterToXML(XML xml) {
         xml.setAttribute("format", format);
+        xml.setAttribute("docZoneId", docZoneId);
+        xml.setAttribute("conditionZoneId", conditionZoneId);
         for (Condition condition : conditions) {
             xml.addElement("condition")
                     .setAttribute("operator", condition.operator.abbr)
-                    .setAttribute("date", condition.getDateString());
+                    .setAttribute("date",
+                            condition.dateTimeSupplier.toString());
         }
         fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
     }
@@ -404,145 +483,81 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 
-    public static class Condition {
-        private enum Type { STATIC, DYN_FIXED, DYN_FLOAT }
-        private final Operator operator;
-        private final Type type;
+    private static final Pattern RELATIVE_PARTS = Pattern.compile(
+            //1              23            4         5
+            "^(NOW|TODAY)\\s*(([-+]{1})\\s*(\\d+)\\s*([YMDhms]{1})\\s*)?"
+            //6
+           + "(\\*{0,1})$");
+    public static Condition toCondition(
+            Operator operator, String dateString, ZoneId zoneId) {
+        try {
+            String d = dateString.trim();
 
-        // static date fields
-        private final long epochDate;
+            // NOW[-+]9[YMDhms][*]
+            // TODAY[-+]9[YMDhms][*]
+            Matcher m = RELATIVE_PARTS.matcher(d);
+            if (m.matches()) {
+                //--- Dynamic ---
+                TimeUnit unit = null;
+                int amount = NumberUtils.toInt(m.group(4), -1);
+                if (amount > -1) {
+                    if  ("-".equals(m.group(3))) {
+                        amount = -amount;
+                    }
+                    String unitStr = m.group(5);
+                    unit = TimeUnit.getTimeUnit(unitStr);
+                    if (unit == null) {
+                        throw new ConfigurationException(
+                                "Invalid time unit: " + unitStr);
+                    }
+                }
+                boolean fixed = !"*".equals(m.group(6));
+                boolean today = "TODAY".equals(m.group(1));
 
-        // dynamic date fields
-        private final TimeUnit unit;
-        private final int amount;
-        private final boolean today; // default is false == NOW
+                if (fixed) {
+                    return new Condition(operator,
+                            new DynamicFixedDateTimeSupplier(
+                                    unit, amount, today, zoneId));
+                }
+                return new Condition(operator,
+                        new DynamicFloatingDateTimeSupplier(
+                                unit, amount, today, zoneId));
+            }
 
-
-        // static date constructor
-        public Condition(Operator operator, long epochDate) {
-            super();
-            this.operator = operator;
-            this.epochDate = epochDate;
-            this.type = Type.STATIC;
-            this.unit = null;
-            this.amount = -1;
-            this.today = false;
+            //--- Static ---
+            String dateFormat = null;
+            if (d.contains(".")) {
+                dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+            } else if (d.contains("T")) {
+                dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+            } else {
+                dateFormat = "yyyy-MM-dd";
+            }
+            ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+                    dateString, dateFormat, null, null, zoneId);
+            return new Condition(operator, new StaticDateTimeSupplier(dt));
+        } catch (DateTimeParseException e) {
+            throw new ConfigurationException(
+                    "Date parse error for value: " + dateString, e);
         }
-        // dynamic date constructor
+    }
+
+
+    protected static class Condition {
+        private final Operator operator;
+        private final Supplier<ZonedDateTime> dateTimeSupplier;
         public Condition(
                 Operator operator,
-                TimeUnit unit,
-                int amount,
-                boolean fixed,
-                boolean today) {
+                Supplier<ZonedDateTime> dateTimeSupplier) {
             super();
             this.operator = operator;
-            this.unit = unit;
-            this.amount = amount;
-            this.today = today;
-            if (fixed) {
-                this.type = Type.DYN_FIXED;
-                Calendar cal = Calendar.getInstance();
-                if (today) {
-                    cal = DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
-                }
-                if (unit != null) {
-                    cal.add(unit.field, amount);
-                }
-                this.epochDate = cal.getTimeInMillis();
-            } else {
-                this.type = Type.DYN_FLOAT;
-                this.epochDate = -1;
-            }
+            this.dateTimeSupplier = dateTimeSupplier;
         }
-
-        public String getDateString() {
-            if (type == Type.STATIC) {
-                return FastDateFormat.getInstance(
-                        "yyyy-MM-dd'T'HH:mm:ss.SSS").format(epochDate);
-            }
-            StringBuilder b = new StringBuilder();
-            if (today) {
-                b.append("TODAY");
-            } else {
-                b.append("NOW");
-            }
-            if (unit != null) {
-                if (amount >= 0) {
-                    b.append('+');
-                }
-                b.append(amount);
-                b.append(unit.toString());
-            }
-            if (type == Type.DYN_FLOAT) {
-                b.append('*');
-            }
-            return b.toString();
+        public ZonedDateTime getDateTime() {
+            return dateTimeSupplier.get();
         }
-
-        public long getEpochDate() {
-            if (type == Type.STATIC || type == Type.DYN_FIXED) {
-                return epochDate;
-            }
-            // has to be DYN_FLOAT at this point
-            Calendar cal = Calendar.getInstance();
-            if (today) {
-                cal = DateUtils.truncate(cal, Calendar.DAY_OF_MONTH);
-            }
-            cal.add(unit.field, amount);
-            return cal.getTimeInMillis();
-        }
-
-        private static final Pattern RELATIVE_PARTS = Pattern.compile(
-                //1              23            4         5
-                "^(NOW|TODAY)\\s*(([-+]{1})\\s*(\\d+)\\s*([YMDhms]{1})\\s*)?"
-                //6
-               + "(\\*{0,1})$");
-        public static Condition parse(Operator operator, String dateString) {
-            try {
-                String d = dateString.trim();
-
-                // NOW[-+]9[YMDhms][*]
-                // TODAY[-+]9[YMDhms][*]
-                Matcher m = RELATIVE_PARTS.matcher(d);
-                if (m.matches()) {
-                    TimeUnit unit = null;
-                    int amount = NumberUtils.toInt(m.group(4), -1);
-                    if (amount > -1) {
-                        if  ("-".equals(m.group(3))) {
-                            amount = -amount;
-                        }
-                        String unitStr = m.group(5);
-                        unit = TimeUnit.getTimeUnit(unitStr);
-                        if (unit == null) {
-                            throw new ConfigurationException(
-                                    "Invalid time unit: " + unitStr);
-                        }
-                    }
-                    boolean fixed = !"*".equals(m.group(6));
-                    boolean today = "TODAY".equals(m.group(1));
-                    return new Condition(operator, unit, amount, fixed, today);
-                }
-
-                // yyyy-MM-ddThh:mm:ss.SSS
-                if (d.contains(".")) {
-                    return new Condition(operator, FastDateFormat.getInstance(
-                            "yyyy-MM-dd'T'HH:mm:ss.SSS").parse(d).getTime());
-                }
-                // yyyy-MM-ddThh:mm:ss
-                if (d.contains("T")) {
-                    return new Condition(operator, DateFormatUtils
-                            .ISO_8601_EXTENDED_DATETIME_FORMAT.parse(
-                                    d).getTime());
-                }
-                // yyyy-MM-dd
-                return new Condition(operator,
-                        DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.parse(
-                                d).getTime());
-            } catch (ParseException e) {
-                throw new ConfigurationException(
-                        "Date parse error for value: " + dateString, e);
-            }
+        protected Supplier<ZonedDateTime> getDateTimeSupplier() {
+            return dateTimeSupplier;
         }
 
         @Override
@@ -558,6 +573,154 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             return new ReflectionToStringBuilder(this,
                     ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
+    }
+
+    // Static local date, assumed to be of the zone Id supplied
+    // (the ZoneId argument is ignored).
+    public static class StaticDateTimeSupplier
+            implements Supplier<ZonedDateTime> {
+        private final ZonedDateTime dateTime;
+        private final String toString;
+        public StaticDateTimeSupplier(ZonedDateTime dateTime) {
+            super();
+            this.dateTime = Objects.requireNonNull(
+                    dateTime, "'dateTime' must not be null.");
+            this.toString = dateTime.format(DateTimeFormatter.ofPattern(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS"));
+        }
+        @Override
+        public ZonedDateTime get() {
+            return dateTime;
+        }
+        @Override
+        public String toString() {
+            return toString;
+        }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+    }
+
+    // Dynamically generated date time, that changes with every invocation.
+    public static class DynamicFloatingDateTimeSupplier
+            implements Supplier<ZonedDateTime> {
+        private final TimeUnit unit;
+        private final int amount;
+        private final boolean today; // default is false == NOW
+        private final ZoneId zoneId;
+        public DynamicFloatingDateTimeSupplier(
+                TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
+            super();
+            this.unit = unit;
+            this.amount = amount;
+            this.today = today;
+            this.zoneId = zoneId;
+        }
+        @Override
+        public ZonedDateTime get() {
+            return dynamicDateTime(unit, amount, today, zoneId);
+        }
+        @Override
+        public String toString() {
+            return dynamicToString(unit, amount, today, true);
+        }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+    }
+
+    // Dynamically generated date time, that once generated, never changes
+    public static class DynamicFixedDateTimeSupplier
+            implements Supplier<ZonedDateTime> {
+        private final TimeUnit unit;
+        private final int amount;
+        private final boolean today; // default is false == NOW
+        private final ZoneId zoneId;
+        private final String toString;
+        private ZonedDateTime dateTime;
+        public DynamicFixedDateTimeSupplier(
+                TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
+            super();
+            this.unit = unit;
+            this.amount = amount;
+            this.today = today;
+            this.zoneId = zoneId;
+            this.toString = dynamicToString(unit, amount, today, false);
+        }
+        @Override
+        public ZonedDateTime get() {
+            if (dateTime == null) {
+                dateTime = createDateTime(zoneId);
+            }
+            return dateTime;
+        }
+        public synchronized ZonedDateTime createDateTime(ZoneId zoneId) {
+            if (dateTime == null) {
+                return dynamicDateTime(unit, amount, today, zoneId);
+            }
+            return dateTime;
+        }
+        @Override
+        public String toString() {
+            return toString;
+        }
+        @Override
+        public boolean equals(final Object other) {
+            return EqualsBuilder.reflectionEquals(this, other);
+        }
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+    }
+
+    private static ZonedDateTime dynamicDateTime(
+            TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
+        ZonedDateTime dt = ZonedDateTime.now();
+        if (zoneId != null) {
+            dt = dt.withZoneSameLocal(zoneId);
+        }
+
+        if (today) {
+            dt = dt.truncatedTo(ChronoUnit.DAYS);
+        }
+        if (unit != null) {
+            dt = dt.plus(amount, unit.toTemporal());
+        }
+        return dt;
+    }
+    private static String dynamicToString(
+            TimeUnit unit,
+            int amount,
+            boolean today,
+            boolean floating) {
+        StringBuilder b = new StringBuilder();
+        if (today) {
+            b.append("TODAY");
+        } else {
+            b.append("NOW");
+        }
+        if (unit != null) {
+            if (amount >= 0) {
+                b.append('+');
+            }
+            b.append(amount);
+            b.append(unit.toString());
+        }
+        if (floating) {
+            b.append('*');
+        }
+        return b.toString();
     }
 }
 
