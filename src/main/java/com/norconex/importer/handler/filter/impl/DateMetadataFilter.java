@@ -78,19 +78,34 @@ import com.norconex.importer.util.FormatUtil;
  *
  * <h3>Relative date conditions:</h3>
  * <P>Filter conditions can also specify a moment in time relative to the
- * current date using TODAY or NOW, optionally followed by
- * a number of time units to add/remove.
- * TODAY is the current day without the hours, minutes, and
- * seconds, where as NOW is the current day with the hours, minutes, and
- * seconds. You can also decide whether you want the current date to be fixed
- * (does not change after being set for the first time), or whether
- * it should be refreshed on every invocation to reflect system date
- * time changes.
+ * current date using the <code>TODAY</code> or <code>NOW</code> keyword,
+ * optionally followed by a number of time units to add/remove.
+ * <code>TODAY</code> is the current day without the hours, minutes, and
+ * seconds, where as <code>NOW</code> is the current day with the hours,
+ * minutes, and seconds. You can also decide whether you want the
+ * current date to be fixed for life time of this filter (does not change
+ * after being set for the first time), or whether
+ * it should be refreshed on every invocation to reflect the passing of time.
  * </p>
  *
  * <h3>Time zones:</h3>
  * <p>
- * ... TODO ............................................................................................
+ * When comparing dates at a more granular level (e.g., hours, minutes,
+ * seconds), it may be important to take time zones into account.
+ * If the time zone (id or offset) is part of a document field date value
+ * and this filter configured format supports time zones, it will be be
+ * interpreted as a date in the encountered time zone.
+ * </p>
+ * <p>
+ * In cases where you want to overwrite the value existing time zone or
+ * specify one for field dates without time zones, you can do so with
+ * the {@link #setDocZoneId(ZoneId)} method.
+ * Explicitly setting a time zone will not "convert" a date to that time zone,
+ * but will rather assume it was created in the supplied time zone.
+ * </p>
+ * <p>
+ * When using XML configuration to define the condition dates, you can
+ * specify the time zone using the <code>conditionTimeZone</code> option.
  * </p>
  *
  * {@nx.xml.usage
