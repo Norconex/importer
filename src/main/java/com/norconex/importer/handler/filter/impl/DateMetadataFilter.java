@@ -71,8 +71,8 @@ import com.norconex.importer.util.FormatUtil;
  * Supported formats for specifying a condition date are:
  * </p>
  * <pre>
- *   yyyy-MM-dd                -> date (e.g. 2015-05-31)
- *   yyyy-MM-ddThh:mm:ss[.SSS] -> date and time with optional
+ *   yyyy-MM-dd                -&gt; date (e.g. 2015-05-31)
+ *   yyyy-MM-ddThh:mm:ss[.SSS] -&gt; date and time with optional
  *                                milliseconds (e.g. 2015-05-31T22:44:15)
  * </pre>
  *
