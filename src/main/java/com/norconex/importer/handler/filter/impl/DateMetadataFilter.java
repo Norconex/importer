@@ -592,7 +592,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
 
-    protected static class Condition {
+    public static class Condition {
         private final Operator operator;
         private final Supplier<ZonedDateTime> dateTimeSupplier;
         public Condition(
