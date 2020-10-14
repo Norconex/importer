@@ -41,6 +41,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
@@ -380,15 +381,48 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         Objects.requireNonNull(condition, "'condition' must not be null.");
         conditions.add(condition);
     }
-
     /**
-     * Gets the date filter conditions.
+     * Adds a list of conditions, appending them to the list of already
+     * defined conditions in this filter (if any).
+     * @param conditions list of conditions
+     * @since 3.0.0
+     */
+    public void addConditions(List<Condition> conditions) {
+        this.conditions.addAll(conditions);
+    }
+    /**
+     * Sets a list of conditions, overwriting any existing ones in this filter.
+     * @param conditions list of conditions
+     * @since 3.0.0
+     */
+    public void setConditions(List<Condition> conditions) {
+        CollectionUtil.setAll(this.conditions, conditions);
+    }
+    /**
+     * Gets the list date filter conditions for this filter.
      * @return conditions
      * @since 3.0.0
      */
     public List<Condition> getConditions() {
         return Collections.unmodifiableList(conditions);
     }
+    /**
+     * Removes a condition, if it part of already defined conditions.
+     * @param condition the condition to remove
+     * @return <code>true</code> if the filter contained the condition
+     * @since 3.0.0
+     */
+    public boolean removeCondition(Condition condition) {
+        return this.conditions.remove(condition);
+    }
+    /**
+     * Removes all conditions from this filter.
+     * @since 3.0.0
+     */
+    public void removeAllConditions() {
+        this.conditions.clear();
+    }
+
 
     @Override
     protected boolean isDocumentMatched(
