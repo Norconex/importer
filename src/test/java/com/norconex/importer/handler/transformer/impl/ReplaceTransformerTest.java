@@ -62,7 +62,7 @@ public class ReplaceTransformerTest {
                 + "<replace><valueMatcher method=\"regex\" ignoreCase=\"true\" "
                 + "partial=\"true\" replaceAll=\"true\">"
                 + "[\\r\\n]+</valueMatcher>"
-                + "<toValue> </toValue></replace>"
+                + "<toValue xml:space=\"preserve\"> </toValue></replace>"
                 + "</handler>";
         String response1 = transformTextDocument(
                 preserveTestConfig, "N/A", input);
