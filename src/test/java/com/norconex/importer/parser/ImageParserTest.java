@@ -1,4 +1,4 @@
-/* Copyright 2016-2019 Norconex Inc.
+/* Copyright 2016-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,10 @@ import com.norconex.importer.response.ImporterResponse;
 
 public class ImageParserTest extends AbstractParserTest {
 
+    @Test
+    public void testWEBP() throws Exception {
+        testParsing("image/webp", "webp");
+    }
     @Test
     public void testBMP() throws Exception {
         testParsing("image/bmp", "bmp");

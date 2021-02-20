@@ -103,6 +103,13 @@
       <version>3.0.1</version>
     </dependency>
 
+    <!-- image/webp format -->
+    <dependency>
+        <groupId>org.sejda.imageio</groupId>
+        <artifactId>webp-imageio</artifactId>
+        <version>0.1.6</version>
+    </dependency>
+
     <!-- jai-imageio deps are required for JPEG2000 and TIFF support
          (including for PDFBox 2.x containing those images).
       -->

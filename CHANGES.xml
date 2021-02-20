@@ -81,6 +81,9 @@
       <action dev="essiembre" type="add">
         Added time zone support to DateMetadataFilter.  
       </action>
+      <action dev="essiembre" type="add">
+        Added support for Webp image format.
+      </action>
       <action dev="essiembre" type="update">
         Now requires Java 8 or higher.
       </action>
