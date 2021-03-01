@@ -1,5 +1,5 @@
 <!-- 
-   Copyright 2010-2020 Norconex Inc.
+   Copyright 2010-2021 Norconex Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@
   <parent>
     <groupId>com.norconex.commons</groupId>
     <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-M1</version>
   </parent>  
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-importer</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.0.0-M1</version>
   <name>Norconex Importer</name>
   
   <properties>
