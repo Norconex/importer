@@ -9,6 +9,10 @@
 
     <release version="2.11.0-SNAPSHOT" date="2021-??-??" description="Feature release">
       <action dev="essiembre" type="add">
+        TitleGeneratorTagger now defaults to the first 10,000 characters
+        for analysis to improve performance on large files.
+      </action>
+      <action dev="essiembre" type="add">
         New NoContentTransformer ported from version 3.0.0.
       </action>
     </release>
