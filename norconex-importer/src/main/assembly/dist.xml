@@ -65,6 +65,13 @@
       </includes>
       <outputDirectory>third-party</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${basedir}</directory>
+      <includes>
+        <include>CHANGES.xml</include>
+      </includes>
+      <outputDirectory>./</outputDirectory>
+    </fileSet>    
   </fileSets>
   <files>
     <file>
