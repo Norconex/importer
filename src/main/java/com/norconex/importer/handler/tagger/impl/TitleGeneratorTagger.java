@@ -92,6 +92,14 @@ import com.norconex.importer.parser.ParseState;
  * accurate titles generated.
  * </p>
  *
+ * <h3>Max read size</h3>
+ * <p>This tagger will only analyze up to the first
+ * 10,000 characters. You can change this maximum
+ * with {@link #setMaxReadSize(int)}. Given this class is not
+ * optimized for large content analysis, setting a huge maximum number
+ * of characters could cause serious performance issues on large
+ * large files.</p>
+ *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
  *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}
@@ -140,6 +148,7 @@ public class TitleGeneratorTagger
     public static final int UNLIMITED_TITLE_LENGTH = -1;
     public static final int DEFAULT_HEADING_MIN_LENGTH = 10;
     public static final int DEFAULT_HEADING_MAX_LENGTH = 150;
+    public static final int DEFAULT_MAX_READ_SIZE = 10000;
 
     private static final Pattern PATTERN_HEADING = Pattern.compile(
             "^.*?([^\\n\\r]+)[\\n\\r]", Pattern.DOTALL);
@@ -151,6 +160,11 @@ public class TitleGeneratorTagger
     private int detectHeadingMinLength = DEFAULT_HEADING_MIN_LENGTH;
     private int detectHeadingMaxLength = DEFAULT_HEADING_MAX_LENGTH;
     private PropertySetter onSet;
+
+    public TitleGeneratorTagger() {
+        super();
+        setMaxReadSize(DEFAULT_MAX_READ_SIZE);
+    }
 
     @Override
     protected void tagStringContent(HandlerDoc doc, StringBuilder content,
