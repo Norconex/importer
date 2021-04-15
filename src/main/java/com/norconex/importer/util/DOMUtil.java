@@ -33,7 +33,7 @@ public class DOMUtil {
     /** @since 2.8.0 */
     public static final String PARSER_XML = "xml";
     
-    public static final DOMUtil instance = new DOMUtil();
+    private static final DOMUtil instance = new DOMUtil();
 
     private DOMUtil() {
     }
