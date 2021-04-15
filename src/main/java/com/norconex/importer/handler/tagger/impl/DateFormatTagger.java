@@ -157,7 +157,7 @@ public class DateFormatTagger extends AbstractDocumentTagger {
             formats.addAll(fromFormats);
         }
         for (String fromFormat : formats) {
-            String toDate = FormatUtil.formatDateString(
+            String toDate = FormatUtil.getInstance().formatDateString(
                     fromDate, fromFormat, fromLocale,
                     toFormat, toLocale, fromField);
             if (StringUtils.isNotBlank(toDate)) {

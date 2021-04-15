@@ -42,11 +42,13 @@ import org.slf4j.LoggerFactory;
  * @author Pascal Essiembre
  * @since 2.2.0
  */
-public final class FormatUtil {
+public class FormatUtil {
 //TODO consider moving to Norconex Commons Lang
 
     private static final Logger LOG = LoggerFactory.getLogger(FormatUtil.class);
 
+    private static final FormatUtil instance = new FormatUtil();
+    
     private FormatUtil() {
     }
 
@@ -59,7 +61,7 @@ public final class FormatUtil {
      * @param toFormat target format (<code>null</code> means EPOCH)
      * @return formatted date string, or <code>null</code> if unable to format
      */
-    public static String formatDateString(
+    public String formatDateString(
             String dateString, String fromFormat, String toFormat) {
         return formatDateString(dateString, fromFormat, toFormat, null);
     }
@@ -73,7 +75,7 @@ public final class FormatUtil {
      * @param fieldName optional field name for referencing in error messages
      * @return formatted date string
      */
-    public static String formatDateString(
+    public String formatDateString(
             String dateString, String fromFormat,
             String toFormat, String fieldName) {
         return formatDateString(
@@ -93,7 +95,7 @@ public final class FormatUtil {
      * @return formatted date string
      * @since 2.5.2
      */
-    public static String formatDateString(String dateString,
+    public String formatDateString(String dateString,
             String fromFormat, Locale fromLocale,
             String toFormat, Locale toLocale, String subjectName) {
         if (StringUtils.isBlank(dateString)) {
@@ -165,7 +167,7 @@ public final class FormatUtil {
     //TODO move somewhere else? Nx Commons Lang?
     //TODO Make it a builder, with option to throw exception
     //     (and/or set loglevel?)
-    public static ZonedDateTime parseZonedDateTimeString(
+    public ZonedDateTime parseZonedDateTimeString(
             String dateString,
             String fromFormat,
             Locale fromLocale,
@@ -237,11 +239,11 @@ public final class FormatUtil {
     }
 
     // returns true if blank or "EPOCH" (case insensitive).
-    private static boolean isEpochFormat(String format) {
+    private boolean isEpochFormat(String format) {
         return StringUtils.isBlank(format) || "EPOCH".equalsIgnoreCase(format);
     }
 
-    private static String formatSubjectMsg(String subject) {
+    private String formatSubjectMsg(String subject) {
         String fieldMsg = ". ";
         if (StringUtils.isNotBlank(subject)) {
             fieldMsg = " for '" + subject + "'. ";
@@ -249,8 +251,12 @@ public final class FormatUtil {
         return fieldMsg;
     }
 
-    private static ZoneId safeZoneId(ZoneId nullableZoneId) {
+    private ZoneId safeZoneId(ZoneId nullableZoneId) {
         return Optional.ofNullable(
                 nullableZoneId).orElse(ZoneId.systemDefault()).normalized();
+    }
+    
+    public static FormatUtil getInstance() {
+    	return instance;
     }
 }

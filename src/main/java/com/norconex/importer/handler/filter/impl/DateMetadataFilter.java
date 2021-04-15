@@ -447,7 +447,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     private boolean meetsAllConditions(String fieldName, String fieldValue) {
 
 
-        ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+        ZonedDateTime dt = FormatUtil.getInstance().parseZonedDateTimeString(
                 fieldValue, format, null, fieldName, docZoneId);
         if (dt == null) {
             return false;
@@ -582,7 +582,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             } else {
                 dateFormat = "yyyy-MM-dd";
             }
-            ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+            ZonedDateTime dt = FormatUtil.getInstance().parseZonedDateTimeString(
                     dateString, dateFormat, null, null, zoneId);
             return new Condition(operator, new StaticDateTimeSupplier(dt));
         } catch (DateTimeParseException e) {
