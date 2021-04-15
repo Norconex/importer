@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * Utility methods related to JSoup/DOM manipulation.
  * @since 2.6.0
  */
-public final class DOMUtil {
+public class DOMUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(DOMUtil.class);
 
@@ -32,6 +32,8 @@ public final class DOMUtil {
     public static final String PARSER_HTML = "html";
     /** @since 2.8.0 */
     public static final String PARSER_XML = "xml";
+    
+    public static final DOMUtil instance = new DOMUtil();
 
     private DOMUtil() {
     }
@@ -44,7 +46,7 @@ public final class DOMUtil {
      * @return JSoup parser
      * @since 2.8.0
      */
-    public static Parser toJSoupParser(String parser) {
+    public Parser toJSoupParser(String parser) {
         if (PARSER_XML.equalsIgnoreCase(parser)) {
             return Parser.xmlParser();
         }
@@ -95,7 +97,7 @@ public final class DOMUtil {
      * @return the element value
      * @see Element
      */
-    public static String getElementValue(Element element, String extract) {
+    public String getElementValue(Element element, String extract) {
         String ext = StringUtils.lowerCase(extract);
         if (StringUtils.isBlank(ext) || "text".equals(ext)) {
             return element.text();
@@ -140,5 +142,9 @@ public final class DOMUtil {
         LOG.warn("\"{}\" is not a supported extract type. "
                 + "\"text\" will be used.", extract);
         return element.text();
+    }
+    
+    public static DOMUtil getInstance() {
+    	return instance;
     }
 }

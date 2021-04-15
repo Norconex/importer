@@ -147,7 +147,7 @@ public class DOMFilter extends AbstractDocumentFilter {
     private String selector;
     private String extract;
     private String sourceCharset = null;
-    private String parser = DOMUtil.PARSER_HTML;
+    private String parser = DOMUtil.getInstance().PARSER_HTML;
 
     public DOMFilter() {
         setOnMatch(OnMatch.INCLUDE);
@@ -252,7 +252,7 @@ public class DOMFilter extends AbstractDocumentFilter {
                 for (String value :
                         doc.getMetadata().matchKeys(fieldMatcher).valueList()) {
                     if (isDocumentMatched(Jsoup.parse(value, doc.getReference(),
-                            DOMUtil.toJSoupParser(getParser())))) {
+                            DOMUtil.getInstance().toJSoupParser(getParser())))) {
                         return true;
                     }
                 }
@@ -263,7 +263,7 @@ public class DOMFilter extends AbstractDocumentFilter {
                     doc, input, sourceCharset, parseState);
             return isDocumentMatched(Jsoup.parse(
                     input, inputCharset, doc.getReference(),
-                    DOMUtil.toJSoupParser(getParser())));
+                    DOMUtil.getInstance().toJSoupParser(getParser())));
         } catch (IOException e) {
             throw new ImporterHandlerException(
                     "Cannot parse document into a DOM-tree.", e);
@@ -278,7 +278,7 @@ public class DOMFilter extends AbstractDocumentFilter {
         }
         // one or more elements matching
         for (Element elm : elms) {
-            String value = DOMUtil.getElementValue(elm, getExtract());
+            String value = DOMUtil.getInstance().getElementValue(elm, getExtract());
             if (valueMatcher.getPattern() == null
                     || valueMatcher.matches(value)) {
                 return true;

@@ -164,7 +164,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     private String selector;
     private String extract;
     private String sourceCharset = null;
-    private String parser = DOMUtil.PARSER_HTML;
+    private String parser = DOMUtil.getInstance().PARSER_HTML;
 
     public DOMContentFilter() {
         setOnMatch(OnMatch.INCLUDE);
@@ -334,7 +334,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
                 doc, input, sourceCharset, parseState);
         try {
             Document jdoc = Jsoup.parse(input, inputCharset,
-                    doc.getReference(), DOMUtil.toJSoupParser(getParser()));
+                    doc.getReference(), DOMUtil.getInstance().toJSoupParser(getParser()));
             Elements elms = jdoc.select(selector);
             // no elements matching
             if (elms.isEmpty()) {
@@ -342,7 +342,7 @@ public class DOMContentFilter extends AbstractDocumentFilter {
             }
             // one or more elements matching
             for (Element elm : elms) {
-                String value = DOMUtil.getElementValue(elm, getExtract());
+                String value = DOMUtil.getInstance().getElementValue(elm, getExtract());
                 if (valueMatcher.matches(value)) {
                     return true;
                 }
