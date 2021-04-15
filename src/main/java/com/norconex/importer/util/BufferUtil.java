@@ -25,6 +25,8 @@ public final class BufferUtil {
 
     public static final int MAX_CONTENT_FROM_END_TO_CUT = 1000;
     
+    private static final BufferUtil instance = new BufferUtil();
+    
     private BufferUtil() {
         super();
     }
@@ -43,7 +45,7 @@ public final class BufferUtil {
      * @param cutWisely whether to "cut" wisely the buffer content
      * @throws IOException when there is a problem flushing the buffer
      */
-    public static void flushBuffer(
+    public void flushBuffer(
             StringBuilder buffer, Writer out, boolean cutWisely)
             throws IOException {
         String remainingText = null;
@@ -82,5 +84,9 @@ public final class BufferUtil {
         if (remainingText != null) {
             buffer.append(remainingText);
         }
+    }
+    
+    public static BufferUtil getInstance() {
+    	return instance;
     }
 }
