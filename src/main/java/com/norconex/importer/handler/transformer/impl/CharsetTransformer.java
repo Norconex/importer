@@ -128,7 +128,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
 
         //--- Convert ---
         try {
-            CharsetUtil.convertCharset(
+            CharsetUtil.getInstance().convertCharset(
                     input, inputCharset, output, outputCharset);
         } catch (IOException e) {
             LOG.warn("Cannot convert character encoding from {} to {}. "

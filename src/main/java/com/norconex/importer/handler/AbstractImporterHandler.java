@@ -221,7 +221,7 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
         }
         String declaredEncoding = doc.getDocInfo().getContentEncoding();
         try {
-            detectedCharset = CharsetUtil.detectCharset(
+            detectedCharset = CharsetUtil.getInstance().detectCharset(
                     is, declaredEncoding);
         } catch (IOException e) {
             detectedCharset = StandardCharsets.UTF_8.toString();

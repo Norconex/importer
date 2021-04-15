@@ -46,10 +46,12 @@ import com.norconex.importer.doc.DocInfo;
  * @author Pascal Essiembre
  * @since 2.5.0
  */
-public final class CharsetUtil {
+public class CharsetUtil {
 
     private static final Logger LOG =
             LoggerFactory.getLogger(CharsetUtil.class);
+    
+    private static final CharsetUtil instance = new CharsetUtil();
 
     /**
      * Constructor.
@@ -65,7 +67,7 @@ public final class CharsetUtil {
      * @return the converted value
      * @throws IOException problem converting character set
      */
-    public static String convertCharset(
+    public String convertCharset(
             String input, String inputCharset,
             String outputCharset) throws IOException {
         try (ByteArrayInputStream is =
@@ -85,7 +87,7 @@ public final class CharsetUtil {
      * @param outputCharset desired character set of the output stream
      * @throws IOException problem converting character set
      */
-    public static void convertCharset(
+    public void convertCharset(
             InputStream input, String inputCharset,
             OutputStream output, String outputCharset) throws IOException {
         CharsetDecoder decoder = Charset.forName(inputCharset).newDecoder();
@@ -108,7 +110,7 @@ public final class CharsetUtil {
      *         if the input is null or blank
      * @throws IOException if there is a problem find the character encoding
      */
-    public static String detectCharset(String input) throws IOException {
+    public String detectCharset(String input) throws IOException {
         return detectCharset(input, null);
     }
 
@@ -121,7 +123,7 @@ public final class CharsetUtil {
      * @return the character encoding official name or <code>null</code>
      *         if the input is null or blank
      */
-    public static String detectCharset(
+    public String detectCharset(
             String input, String declaredEncoding) {
         if (StringUtils.isBlank(input)) {
             return null;
@@ -148,7 +150,7 @@ public final class CharsetUtil {
      *         if input is null
      * @throws IOException if there is a problem find the character encoding
      */
-    public static String detectCharset(InputStream input) throws IOException {
+    public String detectCharset(InputStream input) throws IOException {
         return detectCharset(input, null);
     }
 
@@ -164,7 +166,7 @@ public final class CharsetUtil {
      *         if input is null
      * @throws IOException if there is a problem find the character encoding
      */
-    public static String detectCharset(
+    public String detectCharset(
             InputStream input, String declaredEncoding) throws IOException {
         if (input == null) {
             return null;
@@ -205,7 +207,7 @@ public final class CharsetUtil {
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
-    public static String detectsCharset(Doc doc) throws IOException {
+    public String detectsCharset(Doc doc) throws IOException {
         return detectCharsetIfNotBlank(null, doc);
     }
     /**
@@ -221,7 +223,7 @@ public final class CharsetUtil {
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
-    public static String detectCharsetIfNotBlank(String charset, Doc doc)
+    public String detectCharsetIfNotBlank(String charset, Doc doc)
             throws IOException {
         if (StringUtils.isNotBlank(charset)) {
             return charset;
@@ -248,7 +250,7 @@ public final class CharsetUtil {
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
-    public static String detectCharsetIfNotBlank(String charset, InputStream is)
+    public String detectCharsetIfNotBlank(String charset, InputStream is)
             throws IOException {
         if (StringUtils.isNotBlank(charset)) {
             return charset;
@@ -262,12 +264,16 @@ public final class CharsetUtil {
         return detectedCharset;
     }
 
-    private static void rewind(InputStream is) {
+    private void rewind(InputStream is) {
         //MAYBE: investigate why regular reset on CachedInputStream has
         //no effect and returns an empty stream when read again. Fix that
         //instead of having this method.
         if (is instanceof CachedInputStream) {
             ((CachedInputStream) is).rewind();;
         }
+    }
+    
+    public static CharsetUtil getInstance() {
+    	return instance;
     }
 }

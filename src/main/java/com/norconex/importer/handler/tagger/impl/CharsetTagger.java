@@ -191,7 +191,7 @@ public class CharsetTagger extends AbstractDocumentTagger
         //--- Get source charset ---
         String inputCharset = sourceCharset;
         if (StringUtils.isBlank(inputCharset)) {
-            inputCharset = CharsetUtil.detectCharset(value, declaredEncoding);
+            inputCharset = CharsetUtil.getInstance().detectCharset(value, declaredEncoding);
         }
         // Do not attempt conversion of no source charset is found
         if (StringUtils.isBlank(inputCharset)) {
@@ -217,7 +217,7 @@ public class CharsetTagger extends AbstractDocumentTagger
 
         //--- Convert ---
         try {
-            value = CharsetUtil.convertCharset(
+            value = CharsetUtil.getInstance().convertCharset(
                     value, inputCharset, outputCharset);
         } catch (IOException e) {
             LOG.warn("Cannot convert character encoding from " + inputCharset
