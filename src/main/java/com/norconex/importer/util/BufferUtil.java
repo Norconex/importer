@@ -21,7 +21,7 @@ import java.io.Writer;
  * Buffer related utility methods.
  * @author Pascal Essiembre
  */
-public final class BufferUtil {
+public class BufferUtil {
 
     public static final int MAX_CONTENT_FROM_END_TO_CUT = 1000;
     
