@@ -575,13 +575,16 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
             //--- Static ---
             String dateFormat = null;
-            if (d.contains(".")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-            } else if (d.contains("T")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
-            } else {
-                dateFormat = "yyyy-MM-dd";
-            }
+//             if (d.contains(".")) {
+//                 dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+//             } else if (d.contains("T")) {
+//                 dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+//             } else {
+//                 dateFormat = "yyyy-MM-dd";
+//             }
+            
+            dateFormat = new DateTypeFactory().generateDateType(d).getDateType();
+            
             ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
                     dateString, dateFormat, null, null, zoneId);
             return new Condition(operator, new StaticDateTimeSupplier(dt));
