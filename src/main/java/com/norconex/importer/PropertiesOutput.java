@@ -1,4 +1,6 @@
 // Written by Tom Pritchard (tom.pritchard1@ucalgary.ca), April 2021
+//
+// Handles metadata output not formatted in JSON or XML
 
 package com.norconex.importer;
 

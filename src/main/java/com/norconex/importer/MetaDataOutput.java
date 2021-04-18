@@ -1,4 +1,6 @@
 // Written by Tom Pritchard (tom.pritchard1@ucalgary.ca), April 2021
+//
+// Abstract class that handles metadata outputs
 
 package com.norconex.importer;
 

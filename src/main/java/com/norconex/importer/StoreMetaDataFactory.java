@@ -1,4 +1,6 @@
 // Written by Tom Pritchard (tom.pritchard1@ucalgary.ca), April 2021
+//
+// Creates output type based on outputFormat
 
 package com.norconex.importer;
 

@@ -1,4 +1,6 @@
 // Written by Tom Pritchard (tom.pritchard1@ucalgary.ca), April 2021
+//
+// Uses StoreMetaDataFactory to create output objects and store the metadata
 
 package com.norconex.importer;
 
