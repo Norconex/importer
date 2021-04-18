@@ -193,6 +193,10 @@ public final class ImporterLauncher {
                 try { docInStream.close(); } catch (IOException ie) { /*NOOP*/ }
 
                 // Write metadata file
+                /*
+                    The code below to write the metadata file has been commented out
+                    and replaced by a factory pattern implementation 
+
                 if ("json".equalsIgnoreCase(outputFormat)) {
                     File metafile = new File(path.toString() + ".json");
                     metaOut = new FileOutputStream(metafile);
@@ -206,6 +210,11 @@ public final class ImporterLauncher {
                     metaOut = new FileOutputStream(metafile);
                     doc.getMetadata().storeToProperties(metaOut);
                 }
+                */
+
+                StoreMetaData store = new StoreMetaData();
+                store.storeOutput(doc, path, outputFormat);
+
                 System.out.println("IMPORTED: " + response.getReference());
             } catch (IOException e) {
                 System.err.println(
