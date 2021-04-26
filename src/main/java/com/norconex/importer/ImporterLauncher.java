@@ -17,9 +17,11 @@ package com.norconex.importer;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -30,6 +32,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableBiConsumer;
 
 import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.file.ContentType;
@@ -159,8 +162,7 @@ public final class ImporterLauncher {
     }
 
     private static void writeResponse(ImporterResponse response,
-            String outputPath, String outputFormat, int depth, int index)
-                    throws IOException {
+            String outputPath, String outputFormat, int depth, int index) {
         if (!response.isSuccess()) {
             String statusLabel = "REJECTED: ";
             if (response.getImporterStatus().isError()) {
@@ -182,30 +184,13 @@ public final class ImporterLauncher {
             }
             File docfile = new File(path.toString());
 
-            // Write document file
-            FileOutputStream docOutStream = new FileOutputStream(docfile);
-            CachedInputStream docInStream = doc.getInputStream();
-
-            FileOutputStream metaOut = null;
-            try {
+            try (FileOutputStream docOutStream = new FileOutputStream(docfile);
+                 CachedInputStream docInStream = doc.getInputStream()) {
+                // Write document file
                 IOUtils.copy(docInStream, docOutStream);
-                try { docOutStream.close(); } catch (IOException ie){ /*NOOP*/ }
-                try { docInStream.close(); } catch (IOException ie) { /*NOOP*/ }
-
                 // Write metadata file
-                if ("json".equalsIgnoreCase(outputFormat)) {
-                    File metafile = new File(path.toString() + ".json");
-                    metaOut = new FileOutputStream(metafile);
-                    doc.getMetadata().storeToJSON(metaOut);
-                } else if ("xml".equalsIgnoreCase(outputFormat)) {
-                    File metafile = new File(path.toString() + ".xml");
-                    metaOut = new FileOutputStream(metafile);
-                    doc.getMetadata().storeToXML(metaOut);
-                } else {
-                    File metafile = new File(path.toString() + ".properties");
-                    metaOut = new FileOutputStream(metafile);
-                    doc.getMetadata().storeToProperties(metaOut);
-                }
+                MetaFileWriter.of(outputFormat).writeMeta(
+                        doc.getMetadata(), docfile);
                 System.out.println("IMPORTED: " + response.getReference());
             } catch (IOException e) {
                 System.err.println(
@@ -213,8 +198,6 @@ public final class ImporterLauncher {
                 e.printStackTrace(System.err);
                 System.err.println();
                 System.err.flush();
-            } finally {
-                try { metaOut.close(); } catch (IOException ie) { /*NOOP*/ }
             }
         }
 
@@ -271,5 +254,28 @@ public final class ImporterLauncher {
             System.exit(-1);
         }
         return cmd;
+    }
+
+    private enum MetaFileWriter {
+        JSON((meta, out) -> meta.storeToJSON(out)),
+        XML((meta, out) -> meta.storeToXML(out)),
+        PROPERTIES((meta, out) -> meta.storeToProperties(out));
+        private FailableBiConsumer<Properties, OutputStream, IOException> c;
+        MetaFileWriter(
+                FailableBiConsumer<Properties, OutputStream, IOException> c) {
+            this.c = c;
+        }
+        private void writeMeta(Properties meta, File file)
+                throws IOException {
+            try (FileOutputStream metaOut = new FileOutputStream(
+                    file.getAbsolutePath() + "." + this.name().toLowerCase())) {
+                c.accept(meta, metaOut);
+            }
+        }
+        static final MetaFileWriter of(String outputFormat) {
+            return Arrays.stream(values())
+                .filter(fw -> fw.name().equalsIgnoreCase(outputFormat))
+                .findFirst().orElse(PROPERTIES);
+        }
     }
 }
