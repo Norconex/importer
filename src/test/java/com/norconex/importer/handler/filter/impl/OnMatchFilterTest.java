@@ -18,7 +18,6 @@ import static com.norconex.importer.response.ImporterStatus.Status.REJECTED;
 import static com.norconex.importer.response.ImporterStatus.Status.SUCCESS;
 
 import java.io.InputStream;
-import java.util.Arrays;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,6 +27,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterRequest;
+import com.norconex.importer.handler.HandlerConsumer;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.IDocumentFilter;
@@ -57,7 +57,7 @@ public class OnMatchFilterTest {
         InputStream is = new CachedStreamFactory(10, 10).newInputStream();
         Properties meta = new Properties();
         ImporterConfig cfg = new ImporterConfig();
-        cfg.setPreParseHandlers(Arrays.asList(f));
+        cfg.setPreParseConsumer(HandlerConsumer.fromHandlers(f));
         Importer importer = new Importer(cfg);
         ImporterResponse r = importer.importDocument(
                 new ImporterRequest(is).setReference("N/A").setMetadata(meta));

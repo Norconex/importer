@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 Norconex Inc.
+/* Copyright 2017-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.parser.ParseState;
 
 /**
- * @deprecated
+ * @deprecated to be removed
  */
 @Deprecated
 public class RegexReferenceFilterTest {

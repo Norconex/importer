@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2015-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,6 +175,7 @@ import com.norconex.importer.util.FormatUtil;
  * @author Pascal Essiembre
  * @since 2.2.0
  */
+@SuppressWarnings("javadoc")
 public class DateMetadataFilter extends AbstractDocumentFilter {
     private static final Logger LOG =
             LoggerFactory.getLogger(DateMetadataFilter.class);
@@ -201,7 +202,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             return fldDate.isBefore(cndDate);
         }};
         String abbr;
-        private Operator(String abbr) {
+        Operator(String abbr) {
             this.abbr = abbr;
         }
         public static Operator getOperator(String op) {
@@ -232,7 +233,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         SECOND(ChronoUnit.SECONDS, "s");
         private final TemporalUnit temporalUnit;
         private final String abbr;
-        private TimeUnit(TemporalUnit temporalUnit, String abbr) {
+        TimeUnit(TemporalUnit temporalUnit, String abbr) {
             this.temporalUnit = temporalUnit;
             this.abbr = abbr;
         }

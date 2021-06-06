@@ -16,7 +16,6 @@ package com.norconex.importer.handler.filter.impl;
 
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -31,6 +30,7 @@ import com.norconex.importer.Importer;
 import com.norconex.importer.ImporterConfig;
 import com.norconex.importer.ImporterRequest;
 import com.norconex.importer.TestUtil;
+import com.norconex.importer.handler.HandlerConsumer;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.parser.ParseState;
@@ -103,7 +103,8 @@ public class TextFilterTest {
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
-        config.setPreParseHandlers(Arrays.asList(filter1, filter2, filter3));
+        config.setPreParseConsumer(
+                HandlerConsumer.fromHandlers(filter1, filter2, filter3));
 
         ImporterResponse response = new Importer(config).importDocument(
                 new ImporterRequest(new ReaderInputStream(
@@ -131,7 +132,8 @@ public class TextFilterTest {
         filter3.setOnMatch(OnMatch.INCLUDE);
 
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList(filter1, filter2, filter3));
+        config.setPostParseConsumer(
+                HandlerConsumer.fromHandlers(filter1, filter2, filter3));
 
         ImporterResponse response = new Importer(config).importDocument(
                 new ImporterRequest(new ReaderInputStream(

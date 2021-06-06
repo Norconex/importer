@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -37,6 +36,7 @@ import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.doc.Doc;
+import com.norconex.importer.handler.HandlerConsumer;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.handler.filter.impl.TextFilter;
@@ -50,7 +50,8 @@ public class ImporterTest {
     @BeforeEach
     public void setUp() throws Exception {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList((IDocumentTransformer) (
+        config.setPostParseConsumer(HandlerConsumer.fromHandlers(
+                (IDocumentTransformer) (
                 doc, input, output, parseState) -> {
             try {
                // Clean up what we know is extra noise for a given format
@@ -121,7 +122,8 @@ public class ImporterTest {
     @Test
     public void testImportRejected() {
         ImporterConfig config = new ImporterConfig();
-        config.setPostParseHandlers(Arrays.asList(new TextFilter(
+        config.setPostParseConsumer(
+                HandlerConsumer.fromHandlers(new TextFilter(
                 TextMatcher.basic("Content-Type").setPartial(true),
                 TextMatcher.basic("application/pdf").setPartial(true),
                 OnMatch.EXCLUDE)));

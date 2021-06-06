@@ -1,4 +1,4 @@
-/* Copyright 2014 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 package com.norconex.importer;
 
 /**
- * RuntimeException thrown when a an issue prevented the proper importation of a 
+ * RuntimeException thrown when a an issue prevented the proper importation of a
  * file.
  * @author Pascal Essiembre
  * @since 2.0.0

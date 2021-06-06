@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -26,10 +27,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
+import com.norconex.commons.lang.xml.flow.XMLFlow;
+import com.norconex.importer.handler.HandlerConsumer;
+import com.norconex.importer.handler.HandlerContext;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
@@ -51,8 +56,18 @@ public class ImporterConfig implements IXMLConfigurable {
     private IDocumentParserFactory documentParserFactory =
             new GenericDocumentParserFactory();
 
-    private final List<IImporterHandler> preParseHandlers = new ArrayList<>();
-    private final List<IImporterHandler> postParseHandlers = new ArrayList<>();
+    private XMLFlow<HandlerContext> xmlFlow = new XMLFlow<>(
+            HandlerConsumer.class, null);
+
+
+//    @Deprecated
+//    private final List<IImporterHandler> preParseHandlers = new ArrayList<>();
+//    @Deprecated
+//    private final List<IImporterHandler> postParseHandlers = new ArrayList<>();
+
+    private Consumer<HandlerContext> preParseConsumer;
+    private Consumer<HandlerContext> postParseConsumer;
+
     private final List<IImporterResponseProcessor> responseProcessors =
             new ArrayList<>();
 
@@ -60,9 +75,6 @@ public class ImporterConfig implements IXMLConfigurable {
     private int maxFileCacheSize = DEFAULT_MAX_MEM_INSTANCE;
     private int maxFilePoolCacheSize = DEFAULT_MAX_MEM_POOL;
     private Path parseErrorsSaveDir;
-
-//    private int maxMemoryPool;
-//    private int maxMemoryInstance;
 
     public IDocumentParserFactory getParserFactory() {
         return documentParserFactory;
@@ -94,18 +106,55 @@ public class ImporterConfig implements IXMLConfigurable {
         this.parseErrorsSaveDir = parseErrorsSaveDir;
     }
 
-    public List<IImporterHandler> getPreParseHandlers() {
-        return Collections.unmodifiableList(preParseHandlers);
+    //TODO document that this is mainly for XML configuration and
+    // is overwritten when using set/get pre/post handler (which are no longer
+    // loaded by configuration.
+    //TODO Document to use HandlerConsumer#fromImporterHanders(...)
+    // or FunctionUtil.allConsumers(...)
+
+    public Consumer<HandlerContext> getPreParseConsumer() {
+        return preParseConsumer;
     }
-    public void setPreParseHandlers(List<IImporterHandler> preParseHandlers) {
-        CollectionUtil.setAll(this.preParseHandlers, preParseHandlers);
+    public void setPreParseConsumer(Consumer<HandlerContext> consumer) {
+        this.preParseConsumer = consumer;
+    }
+    public Consumer<HandlerContext> getPostParseConsumer() {
+        return postParseConsumer;
+    }
+    public void setPostParseConsumer(Consumer<HandlerContext> consumer) {
+        this.postParseConsumer = consumer;
     }
 
-    public List<IImporterHandler> getPostParseHandlers() {
-        return Collections.unmodifiableList(postParseHandlers);
+    //TODO document it is now unreliable if you use XMLFlow
+    @Deprecated
+    public List<IImporterHandler> getPreParseHandlers() {
+        //TODO Document behavior (walking through all impls)
+        // Document this will break any flow usage.
+        List<IImporterHandler> handlers = new ArrayList<>();
+        BeanUtil.visitAll(
+                preParseConsumer, handlers::add, IImporterHandler.class);
+        return Collections.unmodifiableList(handlers);
+        //return Collections.unmodifiableList(preParseHandlers);
     }
+    //TODO document it is now unreliable if you use XMLFlow
+    @Deprecated
+    public void setPreParseHandlers(List<IImporterHandler> preParseHandlers) {
+        setPreParseConsumer(HandlerConsumer.fromHandlers(preParseHandlers));
+        //CollectionUtil.setAll(this.preParseHandlers, preParseHandlers);
+    }
+
+    @Deprecated
+    public List<IImporterHandler> getPostParseHandlers() {
+        List<IImporterHandler> handlers = new ArrayList<>();
+        BeanUtil.visitAll(
+                postParseConsumer, handlers::add, IImporterHandler.class);
+        return Collections.unmodifiableList(handlers);
+//        return Collections.unmodifiableList(postParseHandlers);
+    }
+    @Deprecated
     public void setPostParseHandlers(List<IImporterHandler> postParseHandlers) {
-        CollectionUtil.setAll(this.postParseHandlers, postParseHandlers);
+        setPostParseConsumer(HandlerConsumer.fromHandlers(postParseHandlers));
+        //CollectionUtil.setAll(this.postParseHandlers, postParseHandlers);
     }
 
     public List<IImporterResponseProcessor> getResponseProcessors() {
@@ -138,12 +187,20 @@ public class ImporterConfig implements IXMLConfigurable {
                 xml.getInteger("maxFileCacheSize", maxFileCacheSize));
         setMaxFilePoolCacheSize(
                 xml.getInteger("maxFilePoolCacheSize", maxFilePoolCacheSize));
-        setPreParseHandlers(xml.getObjectListImpl(
-                IImporterHandler.class, "preParseHandlers/*", preParseHandlers));
+
+        //TODO what to call the new tag?  preParseFlow?  Keep it preParseHandlers?
+        //TODO maybe do not deprecate the XML at all, just the methods?  Yeah, probably best
+        //xml.checkDeprecated("preParseHandlers", "preParseFlow", false);
+
+        setPreParseConsumer(xmlFlow.parse(xml.getXML("preParseHandlers")));
+//        setPreParseHandlers(xml.getObjectListImpl(
+//                IImporterHandler.class, "preParseHandlers/*", preParseHandlers));
         setParserFactory(xml.getObjectImpl(IDocumentParserFactory.class,
                 "documentParserFactory", documentParserFactory));
-        setPostParseHandlers(xml.getObjectListImpl(IImporterHandler.class,
-                "postParseHandlers/*", postParseHandlers));
+//        setPostParseHandlers(xml.getObjectListImpl(IImporterHandler.class,
+//                "postParseHandlers/*", postParseHandlers));
+        setPostParseConsumer(xmlFlow.parse(xml.getXML("postParseHandlers")));
+
         setResponseProcessors(xml.getObjectListImpl(
                 IImporterResponseProcessor.class,
                 "responseProcessors/responseProcessor", responseProcessors));
@@ -155,9 +212,11 @@ public class ImporterConfig implements IXMLConfigurable {
         xml.addElement("parseErrorsSaveDir", parseErrorsSaveDir);
         xml.addElement("maxFileCacheSize", maxFileCacheSize);
         xml.addElement("maxFilePoolCacheSize", maxFilePoolCacheSize);
-        xml.addElementList("preParseHandlers", "handler", preParseHandlers);
+        xmlFlow.write(xml.addElement("preParseHandlers"), preParseConsumer);
+//        xml.addElementList("preParseHandlers", "handler", preParseHandlers);
         xml.addElement("documentParserFactory", documentParserFactory);
-        xml.addElementList("postParseHandlers", "handler", postParseHandlers);
+//        xml.addElementList("postParseHandlers", "handler", postParseHandlers);
+        xmlFlow.write(xml.addElement("postParseHandlers"), preParseConsumer);
         xml.addElementList(
                 "responseProcessors", "responseProcessor", responseProcessors);
     }

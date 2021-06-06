@@ -1,4 +1,4 @@
-/* Copyright 2010-2020 Norconex Inc.
+/* Copyright 2010-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  */
 package com.norconex.importer;
 
-import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_BEGIN;
-import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_END;
-import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_ERROR;
 import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_BEGIN;
 import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_END;
 import static com.norconex.importer.ImporterEvent.IMPORTER_PARSER_ERROR;
@@ -27,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,10 +32,10 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,21 +45,14 @@ import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
 import com.norconex.commons.lang.io.CachedStreamFactory;
-import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.map.Properties;
+import com.norconex.importer.ImporterEvent.Builder;
 import com.norconex.importer.doc.ContentTypeDetector;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
 import com.norconex.importer.doc.DocMetadata;
-import com.norconex.importer.handler.HandlerDoc;
-import com.norconex.importer.handler.IImporterHandler;
+import com.norconex.importer.handler.HandlerContext;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.IDocumentFilter;
-import com.norconex.importer.handler.filter.IOnMatchFilter;
-import com.norconex.importer.handler.filter.OnMatch;
-import com.norconex.importer.handler.splitter.IDocumentSplitter;
-import com.norconex.importer.handler.tagger.IDocumentTagger;
-import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.DocumentParserException;
 import com.norconex.importer.parser.IDocumentParser;
 import com.norconex.importer.parser.IDocumentParserFactory;
@@ -137,8 +128,6 @@ public class Importer {
         return INSTANCE.get();
     }
 
-
-
     /**
      * Invokes the importer from the command line.
      * @param args Invoke it once without any arguments to get a
@@ -195,39 +184,12 @@ public class Importer {
     public ImporterResponse importDocument(Doc document) {
         // Note: Doc reference, InputStream and metadata are all null-safe.
 
-        DocInfo docInfo = document.getDocInfo();
-
-        //--- Ensure non-null content Type on Doc ---
-        ContentType ct = docInfo.getContentType();
-        if (ct == null || StringUtils.isBlank(ct.toString())) {
-            try {
-                ct = ContentTypeDetector.detect(
-                        document.getInputStream(), document.getReference());
-            } catch (IOException e) {
-                LOG.warn("Could not detect content type. Defaulting to "
-                        + "\"application/octet-stream\".", e);
-                ct = ContentType.valueOf("application/octet-stream");
-            }
-            docInfo.setContentType(ct);
-        }
-
-        //--- Add basic metadata already ---
-        Properties meta = document.getMetadata();
-        meta.set(DocMetadata.REFERENCE, document.getReference());
-        meta.set(DocMetadata.CONTENT_TYPE, ct.toString());
-        ContentFamily contentFamily = ContentFamily.forContentType(ct);
-        if (contentFamily != null) {
-            meta.set(DocMetadata.CONTENT_FAMILY, contentFamily.toString());
-        }
-        if (StringUtils.isNotBlank(docInfo.getContentEncoding())) {
-            meta.set(DocMetadata.CONTENT_ENCODING,
-                    docInfo.getContentEncoding());
-        }
+        prepareDocumentForImporting(document);
 
         //--- Document Handling ---
         try {
             List<Doc> nestedDocs = new ArrayList<>();
-            ImporterStatus filterStatus = importDocument(document, nestedDocs);
+            ImporterStatus filterStatus = doImportDocument(document, nestedDocs);
             ImporterResponse response = null;
             if (filterStatus.isRejected()) {
                 response = new ImporterResponse(
@@ -256,6 +218,36 @@ public class Importer {
         }
     }
 
+    private void prepareDocumentForImporting(Doc document) {
+        DocInfo docInfo = document.getDocInfo();
+
+        //--- Ensure non-null content Type on Doc ---
+        ContentType ct = docInfo.getContentType();
+        if (ct == null || StringUtils.isBlank(ct.toString())) {
+            try {
+                ct = ContentTypeDetector.detect(
+                        document.getInputStream(), document.getReference());
+            } catch (IOException e) {
+                LOG.warn("Could not detect content type. Defaulting to "
+                        + "\"application/octet-stream\".", e);
+                ct = ContentType.valueOf("application/octet-stream");
+            }
+            docInfo.setContentType(ct);
+        }
+
+        //--- Add basic metadata already ---
+        Properties meta = document.getMetadata();
+        meta.set(DocMetadata.REFERENCE, document.getReference());
+        meta.set(DocMetadata.CONTENT_TYPE, ct.toString());
+        ContentFamily contentFamily = ContentFamily.forContentType(ct);
+        if (contentFamily != null) {
+            meta.set(DocMetadata.CONTENT_FAMILY, contentFamily.toString());
+        }
+        if (StringUtils.isNotBlank(docInfo.getContentEncoding())) {
+            meta.set(DocMetadata.CONTENT_ENCODING,
+                    docInfo.getContentEncoding());
+        }
+    }
 
     // We deal with stream, but since only one of stream or file can be set,
     // convert file to stream only if set.
@@ -293,14 +285,17 @@ public class Importer {
         return new Doc(info, is, req.getMetadata());
     }
 
-    private ImporterStatus importDocument(
+    private ImporterStatus doImportDocument(
             Doc document, List<Doc> nestedDocs)
                     throws ImporterException, IOException {
         ImporterStatus filterStatus = null;
 
         //--- Pre-handlers ---
-        filterStatus = executeHandlers(document, nestedDocs,
-                importerConfig.getPreParseHandlers(), ParseState.PRE);
+        filterStatus = executeHandlers(
+                document,
+                nestedDocs,
+                importerConfig.getPreParseConsumer(),
+                ParseState.PRE);
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
@@ -309,8 +304,11 @@ public class Importer {
         //the need for pre and post handlers?
         parseDocument(document, nestedDocs);
         //--- Post-handlers ---
-        filterStatus = executeHandlers(document, nestedDocs,
-                importerConfig.getPostParseHandlers(), ParseState.POST);
+        filterStatus = executeHandlers(
+                document,
+                nestedDocs,
+                importerConfig.getPostParseConsumer(),
+                ParseState.POST);
         if (!filterStatus.isSuccess()) {
             return filterStatus;
         }
@@ -326,79 +324,26 @@ public class Importer {
     }
 
     private ImporterStatus executeHandlers(
-            Doc doc, List<Doc> childDocsHolder,
-            List<IImporterHandler> handlers, ParseState parseState)
-                    throws ImporterException {
-        if (handlers == null) {
+            Doc doc,
+            List<Doc> childDocsHolder,
+            Consumer<HandlerContext> consumer,
+            ParseState parseState) throws ImporterException {
+
+        if (consumer == null) {
             return PASSING_FILTER_STATUS;
         }
-
-        IncludeMatchResolver includeResolver = new IncludeMatchResolver();
-        HandlerDoc hdoc = new HandlerDoc(doc);
-        MutableObject<CachedInputStream> input = new MutableObject<>();
-        for (IImporterHandler h : handlers) {
-            eventManager.fire(
-                    new ImporterEvent.Builder(IMPORTER_HANDLER_BEGIN, doc)
-                        .subject(h)
-                        .parseState(parseState)
-                        .build());
-            input.setValue(doc.getInputStream());
-            try {
-                if (h instanceof IDocumentTagger) {
-                    tagDocument(hdoc, input.getValue(),
-                            (IDocumentTagger) h, parseState);
-                } else if (h instanceof IDocumentTransformer) {
-                    transformDocument(
-                            hdoc, input, (IDocumentTransformer) h, parseState);
-                    doc.setInputStream(input.getValue());
-                } else if (h instanceof IDocumentSplitter) {
-                    childDocsHolder.addAll(splitDocument(
-                            hdoc, input, (IDocumentSplitter) h, parseState));
-                    doc.setInputStream(input.getValue());
-                } else if (h instanceof IDocumentFilter) {
-                    IDocumentFilter filter = (IDocumentFilter) h;
-                    boolean accepted = acceptDocument(
-                            hdoc, input.getValue(), filter, parseState);
-                    if (isMatchIncludeFilter(filter)) {
-                        includeResolver.hasIncludes = true;
-                        if (accepted) {
-                            includeResolver.atLeastOneIncludeMatch = true;
-                        }
-                        continue;
-                    }
-                    // Deal with exclude and non-OnMatch filters
-                    if (!accepted){
-                        return new ImporterStatus(filter);
-                    }
-                } else {
-                    LOG.error("Unsupported Import Handler: {}", h);
-                }
-            } catch (ImporterException e) {
-                eventManager.fire(
-                        new ImporterEvent.Builder(IMPORTER_HANDLER_ERROR, doc)
-                            .subject(h)
-                            .parseState(parseState)
-                            .exception(e)
-                            .build());
-                throw e;
-            } catch (IOException | RuntimeException e) {
-                eventManager.fire(
-                        new ImporterEvent.Builder(IMPORTER_HANDLER_ERROR, doc)
-                            .subject(h)
-                            .parseState(parseState)
-                            .exception(e)
-                            .build());
-                throw new ImporterException(
-                        "Importer failure for handler: " + h, e);
-            }
-            eventManager.fire(
-                    new ImporterEvent.Builder(IMPORTER_HANDLER_END, doc)
-                        .subject(h)
-                        .parseState(parseState)
-                        .build());
+        HandlerContext ctx = new HandlerContext(doc, eventManager, parseState);
+        try {
+            consumer.accept(ctx);
+        } catch (UndeclaredThrowableException e) {
+            throw (ImporterHandlerException) e.getCause();
         }
+        childDocsHolder.addAll(ctx.getChildDocs());
 
-        if (!includeResolver.passes()) {
+        if (ctx.isRejected()) {
+            return new ImporterStatus(ctx.getRejectedBy());
+        }
+        if (!ctx.getIncludeResolver().passes()) {
             return new ImporterStatus(Status.REJECTED,
                     "None of the filters with onMatch being INCLUDE got "
                   + "matched.");
@@ -406,23 +351,10 @@ public class Importer {
         return PASSING_FILTER_STATUS;
     }
 
-    private static class IncludeMatchResolver {
-        private boolean hasIncludes = false;
-        private boolean atLeastOneIncludeMatch = false;
-        public boolean passes() {
-            return !(hasIncludes && !atLeastOneIncludeMatch);
-        }
-    }
-
-
-    private boolean isMatchIncludeFilter(IDocumentFilter filter) {
-        return filter instanceof IOnMatchFilter
-                && OnMatch.INCLUDE == ((IOnMatchFilter) filter).getOnMatch();
-    }
-
     private void parseDocument(
-            final Doc doc, final List<Doc> embeddedDocs)
-            throws IOException, ImporterException {
+            final Doc doc,
+            final List<Doc> embeddedDocs)
+                    throws IOException, ImporterException {
 
         IDocumentParserFactory factory = importerConfig.getParserFactory();
         IDocumentParser parser = factory.getParser(
@@ -440,31 +372,24 @@ public class Importer {
             return;
         }
 
-        eventManager.fire(
-                new ImporterEvent.Builder(IMPORTER_PARSER_BEGIN, doc)
-                    .subject(parser)
-                    .parseState(ParseState.PRE)
-                    .build());
+        fire(IMPORTER_PARSER_BEGIN, doc,
+                b -> b.subject(parser).parseState(ParseState.PRE));
 
-        CachedOutputStream out = streamFactory.newOuputStream();
-        OutputStreamWriter output = new OutputStreamWriter(
-                out, StandardCharsets.UTF_8);
+        try (   CachedOutputStream out = streamFactory.newOuputStream();
+                OutputStreamWriter output = new OutputStreamWriter(
+                        out, StandardCharsets.UTF_8)) {
 
-        try {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Parser \"{}\" about to parse \"{}\".",
                         parser.getClass().getCanonicalName(),
                         doc.getReference());
             }
-            List<Doc> nestedDocs =
-                    parser.parseDocument(doc, output);
+            List<Doc> nestedDocs = parser.parseDocument(doc, output);
             output.flush();
             if (doc.getDocInfo().getContentType() == null) {
-                String ct = doc.getMetadata().getString(
-                                DocMetadata.CONTENT_TYPE);
-                if (StringUtils.isNotBlank(ct)) {
-                    doc.getDocInfo().setContentType(ContentType.valueOf(ct));
-                }
+                doc.getDocInfo().setContentType(ContentType.valueOf(
+                        StringUtils.trimToNull(doc.getMetadata().getString(
+                                DocMetadata.CONTENT_TYPE))));
             }
             if (StringUtils.isBlank(doc.getDocInfo().getContentEncoding())) {
                 doc.getDocInfo().setContentEncoding(doc.getMetadata().getString(
@@ -479,44 +404,27 @@ public class Importer {
                 }
                 embeddedDocs.addAll(nestedDocs);
             }
+            fire(IMPORTER_PARSER_END, doc,
+                    b -> b.subject(parser).parseState(ParseState.POST));
+
+            if (out.isCacheEmpty()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Parser \"{}\" did not produce new "
+                            + "content for: {}",
+                            parser.getClass(), doc.getReference());
+                }
+                doc.setInputStream(streamFactory.newInputStream());
+            } else {
+                CachedInputStream newInputStream = out.getInputStream();
+                doc.setInputStream(newInputStream);
+            }
         } catch (DocumentParserException e) {
-            eventManager.fire(
-                    new ImporterEvent.Builder(IMPORTER_PARSER_ERROR, doc)
-                        .subject(parser)
-                        .parseState(ParseState.PRE)
-                        .exception(e)
-                        .build());
-            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
+            fire(IMPORTER_PARSER_ERROR, doc, b -> b
+                    .subject(parser).parseState(ParseState.PRE).exception(e));
             if (importerConfig.getParseErrorsSaveDir() != null) {
                 saveParseError(doc, e);
             }
             throw e;
-        }
-        eventManager.fire(
-                new ImporterEvent.Builder(IMPORTER_PARSER_END, doc)
-                    .subject(parser)
-                    .parseState(ParseState.POST)
-                    .build());
-
-        if (out.isCacheEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Parser \"{}\" did not produce new content for: {}",
-                        parser.getClass(), doc.getReference());
-            }
-            try { out.close(); } catch (IOException ie) { /*NOOP*/ }
-
-//            doc.getInputStream().dispose();
-            doc.setInputStream(streamFactory.newInputStream());
-        } else {
-//            doc.getInputStream().dispose();
-            CachedInputStream newInputStream = null;
-            try {
-                newInputStream = out.getInputStream();
-            } finally {
-                try { out.close(); } catch (IOException ie) { /*NOOP*/ }
-            }
-
-            doc.setInputStream(newInputStream);
         }
     }
 
@@ -577,88 +485,13 @@ public class Importer {
         }
     }
 
-    private void tagDocument(HandlerDoc doc, InputStream input,
-            IDocumentTagger tagger, ParseState parseState)
-                    throws ImporterHandlerException {
-        tagger.tagDocument(doc, input, parseState);
-    }
-
-    private boolean acceptDocument(
-            HandlerDoc doc, InputStream input,
-            IDocumentFilter filter, ParseState parseState)
-                    throws ImporterHandlerException {
-
-        boolean accepted = filter.acceptDocument(doc, input, parseState);
-//        //TODO Is the next .rewind() necessary given next call to getContent()
-//        //will do it?
-//        doc.getInputStream().rewind();
-        if (!accepted) {
-            LOG.debug("Document import rejected. Filter: {}", filter);
-            return false;
+    private void fire(
+            String eventName, Doc doc, Consumer<ImporterEvent.Builder> c) {
+        Builder b = new ImporterEvent.Builder(eventName, doc);
+        if (c != null) {
+            c.accept(b);
         }
-        return true;
-    }
-
-    private void transformDocument(
-            HandlerDoc doc, MutableObject<CachedInputStream> input,
-            IDocumentTransformer transformer, ParseState parseState)
-                    throws ImporterHandlerException, IOException {
-
-        CachedInputStream in = input.getValue();
-        CachedOutputStream out = streamFactory.newOuputStream();
-
-        transformer.transformDocument(doc, in, out, parseState);
-
-        CachedInputStream newInputStream = null;
-        if (out.isCacheEmpty()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Transformer \"{}"
-                        + "\" did not return any content for: {}.",
-                        transformer.getClass(), doc.getReference());
-            }
-            IOUtil.closeQuietly(out);
-            newInputStream = in;
-        } else {
-            in.dispose();
-            try {
-                newInputStream = out.getInputStream();
-            } finally {
-                IOUtil.closeQuietly(out);
-            }
-        }
-        input.setValue(newInputStream);
-    }
-
-    private List<Doc> splitDocument(HandlerDoc doc,
-            MutableObject<CachedInputStream> input,
-            IDocumentSplitter h, ParseState parseState)
-                    throws ImporterHandlerException, IOException {
-
-        CachedInputStream in = input.getValue();
-        CachedOutputStream out = streamFactory.newOuputStream();
-
-        List<Doc> childDocs = h.splitDocument(doc, in, out, parseState);
-        try {
-            // If writing was performed, get new content
-            if (!out.isCacheEmpty()) {
-                input.setValue(out.getInputStream());
-                in.dispose();
-            }
-        } finally {
-            IOUtil.closeQuietly(out);
-        }
-
-        if (childDocs == null) {
-            return new ArrayList<>();
-        }
-
-        for (int i = 0; i < childDocs.size(); i++) {
-            Properties meta = childDocs.get(i).getMetadata();
-            meta.add(DocMetadata.EMBEDDED_INDEX, i);
-            meta.add(DocMetadata.EMBEDDED_PARENT_REFERENCES,
-                    doc.getReference());
-        }
-        return childDocs;
+        eventManager.fire(b.build());
     }
 
     //--- Deprecated -----------------------------------------------------------
