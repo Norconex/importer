@@ -8,7 +8,14 @@
   <body>
 
     <release version="3.0.0-SNAPSHOT" date="2021-??-??" 
-        description="Major release.">
+        description="Next major release (since latest milestone)">
+      <action dev="essiembre" type="add">
+        New CharsetUtil#firstNonBlankOrUTF8(...) methods.
+      </action>
+      <action dev="essiembre" type="add">
+        When not already set, an attempt to detect document character encoding 
+        is now always made before invoking handlers.
+      </action>
     </release>
 
     <release version="3.0.0-M1" date="2021-03-01" 

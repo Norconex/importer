@@ -61,6 +61,7 @@ import com.norconex.importer.response.IImporterResponseProcessor;
 import com.norconex.importer.response.ImporterResponse;
 import com.norconex.importer.response.ImporterStatus;
 import com.norconex.importer.response.ImporterStatus.Status;
+import com.norconex.importer.util.CharsetUtil;
 
 /**
  * Principal class responsible for importing documents.
@@ -235,7 +236,18 @@ public class Importer {
             docInfo.setContentType(ct);
         }
 
-        //--- Add basic metadata already ---
+        //--- Try to detect content encoding if not already set ---
+        String encoding = docInfo.getContentEncoding();
+        try {
+            encoding = CharsetUtil.detectCharsetIfBlank(
+                    encoding, document.getInputStream());
+            docInfo.setContentEncoding(encoding);
+        } catch (IOException e) {
+            LOG.debug("Problem detecting encoding for: {}",
+                    docInfo.getReference(), e);
+        }
+
+        //--- Add basic metadata for what we know so far ---
         Properties meta = document.getMetadata();
         meta.set(DocMetadata.REFERENCE, document.getReference());
         meta.set(DocMetadata.CONTENT_TYPE, ct.toString());
@@ -243,9 +255,8 @@ public class Importer {
         if (contentFamily != null) {
             meta.set(DocMetadata.CONTENT_FAMILY, contentFamily.toString());
         }
-        if (StringUtils.isNotBlank(docInfo.getContentEncoding())) {
-            meta.set(DocMetadata.CONTENT_ENCODING,
-                    docInfo.getContentEncoding());
+        if (StringUtils.isNotBlank(encoding)) {
+            meta.set(DocMetadata.CONTENT_ENCODING, encoding);
         }
     }
 

@@ -40,6 +40,7 @@ import com.norconex.commons.lang.io.ByteArrayOutputStream;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocInfo;
+import com.norconex.importer.parser.ParseState;
 
 /**
  * Character set utility methods.
@@ -113,9 +114,9 @@ public final class CharsetUtil {
     }
 
     /**
-     * Detects the character encoding of a string. When the character
-     * encoding of what the input is supposed to be is known, specifying
-     * it as a declared encoding will influence the detection result.
+     * Detects the character encoding of a string. If the string has
+     * a declared character encoding, specifying
+     * it will influence the detection result.
      * @param input the input to detect encoding on
      * @param declaredEncoding declared input encoding, if known
      * @return the character encoding official name or <code>null</code>
@@ -153,9 +154,9 @@ public final class CharsetUtil {
     }
 
     /**
-     * Detects the character encoding of an input stream. When the character
-     * encoding of what the input is supposed to be is known, specifying
-     * it as a declared encoding will influence the detection result.
+     * Detects the character encoding of an input stream.  If the string has
+     * a declared character encoding, specifying
+     * it will influence the detection result.
      * {@link InputStream#markSupported()} must return <code>true</code>
      * otherwise no decoding will be attempted.
      * @param input the input to detect encoding on
@@ -206,7 +207,7 @@ public final class CharsetUtil {
      * @since 3.0.0
      */
     public static String detectsCharset(Doc doc) throws IOException {
-        return detectCharsetIfNotBlank(null, doc);
+        return detectCharsetIfBlank(null, doc);
     }
     /**
      * Detects a document character encoding if the supplied
@@ -221,7 +222,7 @@ public final class CharsetUtil {
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
-    public static String detectCharsetIfNotBlank(String charset, Doc doc)
+    public static String detectCharsetIfBlank(String charset, Doc doc)
             throws IOException {
         if (StringUtils.isNotBlank(charset)) {
             return charset;
@@ -248,7 +249,7 @@ public final class CharsetUtil {
      * @throws IOException problem detecting charset
      * @since 3.0.0
      */
-    public static String detectCharsetIfNotBlank(String charset, InputStream is)
+    public static String detectCharsetIfBlank(String charset, InputStream is)
             throws IOException {
         if (StringUtils.isNotBlank(charset)) {
             return charset;
@@ -262,12 +263,44 @@ public final class CharsetUtil {
         return detectedCharset;
     }
 
+    /**
+     * Returns the first non-blank character encoding, or returns UTF-8 if they
+     * are all blank.
+     * @param charsets character encodings to test
+     * @return first non-blank, or UTF-8
+     * @since 3.0.0
+     */
+    public static String firstNonBlankOrUTF8(String... charsets) {
+        String encoding = StringUtils.firstNonBlank(charsets);
+        if (StringUtils.isBlank(encoding)) {
+            encoding = StandardCharsets.UTF_8.toString();
+        }
+        return encoding;
+    }
+    /**
+     * Returns the first non-blank character encoding, or returns UTF-8 if they
+     * are all blank or in post-parse state.  That is, UTF-8 is always
+     * returned if parsing has already occurred (since parsing converts
+     * content encoding to UTF-8).
+     * @param parseState document parsing state
+     * @param charsets character encodings to test
+     * @return first non-blank, or UTF-8
+     * @since 3.0.0
+     */
+    public static String firstNonBlankOrUTF8(
+            ParseState parseState, String... charsets) {
+        if (ParseState.isPost(parseState)) {
+            return StandardCharsets.UTF_8.toString();
+        }
+        return firstNonBlankOrUTF8(charsets);
+    }
+
     private static void rewind(InputStream is) {
         //MAYBE: investigate why regular reset on CachedInputStream has
         //no effect and returns an empty stream when read again. Fix that
         //instead of having this method.
         if (is instanceof CachedInputStream) {
-            ((CachedInputStream) is).rewind();;
+            ((CachedInputStream) is).rewind();
         }
     }
 }
