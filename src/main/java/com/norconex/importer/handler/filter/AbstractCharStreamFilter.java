@@ -31,6 +31,7 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 
 /**
  * <p>Base class for filters dealing with the body of text documents only.
@@ -39,7 +40,7 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * <p>When used as a pre-parse handler,
- * this class attempts to detect the content character
+ * this class uses the detected or previously set content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
  * parsing converts content to UTF-8, UTF-8 is always assumed when
@@ -87,8 +88,10 @@ public abstract class AbstractCharStreamFilter extends AbstractDocumentFilter {
             HandlerDoc doc, InputStream input, ParseState parseState)
             throws ImporterHandlerException {
 
-        String inputCharset = detectCharsetIfBlank(
-                doc, input, sourceCharset, parseState);
+        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                parseState,
+                sourceCharset,
+                doc.getDocInfo().getContentEncoding());
         try {
             InputStreamReader reader = new InputStreamReader(
                     IOUtil.toNonNullInputStream(input), inputCharset);

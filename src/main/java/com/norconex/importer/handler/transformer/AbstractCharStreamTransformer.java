@@ -21,15 +21,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
@@ -37,6 +33,7 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 
 /**
  * <p>Base class for transformers dealing with text documents only.
@@ -72,9 +69,6 @@ import com.norconex.importer.parser.ParseState;
 public abstract class AbstractCharStreamTransformer
             extends AbstractDocumentTransformer {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(AbstractCharStreamTransformer.class);
-
     private String sourceCharset = null;
 
     /**
@@ -100,18 +94,10 @@ public abstract class AbstractCharStreamTransformer
             OutputStream output, ParseState parseState)
                     throws ImporterHandlerException {
 
-        String inputCharset = detectCharsetIfBlank(
-                doc, input, sourceCharset, parseState);
-        if (StringUtils.isBlank(inputCharset)) {
-            LOG.warn("Character encoding could not be detected (will assume "
-                    + "UTF-8). If this leads to a failure, it could be that "
-                    + "you are using this transformer ({}) with binary "
-                    + "content. You can avoid this by applying "
-                    + "restrictions or making sure it was parsed first. "
-                    + "Reference: {}",
-                    getClass().getCanonicalName(), doc.getReference());
-            inputCharset = StandardCharsets.UTF_8.toString();
-        }
+        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                parseState,
+                sourceCharset,
+                doc.getDocInfo().getContentEncoding());
         try {
             InputStreamReader reader =
                     new InputStreamReader(input, inputCharset);
@@ -129,7 +115,6 @@ public abstract class AbstractCharStreamTransformer
             HandlerDoc doc, Reader input,
             Writer output, ParseState parseState)
                     throws ImporterHandlerException;
-
 
     @Override
     protected final void saveHandlerToXML(final XML xml) {

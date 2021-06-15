@@ -31,6 +31,7 @@ import com.norconex.importer.handler.AbstractImporterHandler;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 
 /**
  * <p>Base class for taggers dealing with the body of text documents only.
@@ -86,8 +87,10 @@ public abstract class AbstractCharStreamTagger extends AbstractDocumentTagger {
             nonNullDocument = new NullInputStream(0);
         }
 
-        String inputCharset = detectCharsetIfBlank(
-                doc, nonNullDocument, sourceCharset, parseState);
+        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                parseState,
+                sourceCharset,
+                doc.getDocInfo().getContentEncoding());
         try {
             InputStreamReader reader =
                     new InputStreamReader(nonNullDocument, inputCharset);

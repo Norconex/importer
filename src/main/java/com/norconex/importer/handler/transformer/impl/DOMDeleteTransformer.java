@@ -41,6 +41,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.impl.DOMTagger;
 import com.norconex.importer.handler.transformer.AbstractDocumentTransformer;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -175,8 +176,10 @@ public class DOMDeleteTransformer extends AbstractDocumentTransformer {
             InputStream document, OutputStream output, ParseState parseState)
                     throws ImporterHandlerException {
         try {
-            String inputCharset = detectCharsetIfBlank(
-                    doc, document, sourceCharset, parseState);
+            String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                    parseState,
+                    sourceCharset,
+                    doc.getDocInfo().getContentEncoding());
             IOUtils.write(handle(Jsoup.parse(document, inputCharset,
                     doc.getReference(), DOMUtil.toJSoupParser(getParser()))),
                     output, inputCharset);

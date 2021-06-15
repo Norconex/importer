@@ -43,6 +43,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.handler.transformer.impl.DOMDeleteTransformer;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -300,8 +301,10 @@ public class DOMTagger extends AbstractDocumentTagger {
                 meta.setList(getFromField(), fromValues);
             // Use doc content
             } else {
-                String inputCharset = detectCharsetIfBlank(
-                        doc, document, sourceCharset, parseState);
+                String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                        parseState,
+                        sourceCharset,
+                        doc.getDocInfo().getContentEncoding());
                 handle(Jsoup.parse(document, inputCharset, ref,
                         DOMUtil.toJSoupParser(getParser())), meta);
             }
