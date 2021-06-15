@@ -29,14 +29,14 @@ import com.norconex.importer.handler.condition.AbstractStringCondition;
 import com.norconex.importer.parser.ParseState;
 
 /**
- * <p>A condition based on a text pattern matching a document content
+ * <p>
+ * A condition based on a text pattern matching a document content
  * (default), or matching specific field(s).
  * When used on very large content, it is possible the pattern matching will
  * be done in chunks, sometimes not achieving expected results.  Consider
  * creating your own condition from {@link AbstractCharStreamCondition}
  * if this is a concern.
  * </p>
- * <p>
  *
  * {@nx.xml.usage
  * <condition class="com.norconex.importer.handler.condition.impl.TextCondition"
@@ -53,7 +53,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <condition class="com.norconex.importer.handler.condition.TextCondition">
+ *  <condition class="TextCondition">
  *    <valueMatcher>apple</valueMatcher>
  *  </condition>
  * }

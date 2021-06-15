@@ -1,4 +1,4 @@
-/* Copyright 2017-2021 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.filter.impl;
+package com.norconex.importer.handler.condition.impl;
 
 import java.io.InputStream;
 
@@ -22,31 +22,31 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractDocumentFilter;
+import com.norconex.importer.handler.condition.IImporterCondition;
 import com.norconex.importer.parser.ParseState;
+
 /**
- * <p>Accepts or rejects a document based on its reference (e.g. URL).
+ * <p
+ * A condition based on a text pattern matching a document reference (e.g. URL).
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.filter.impl.ReferenceFilter"
- *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}>
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * <condition class="com.norconex.importer.handler.condition.impl.ReferenceCondition">
  *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
  *     (expression of reference value to match)
  *   </valueMatcher>
- * </handler>
+ * </condition>
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.filter.impl.ReferenceFilter"
- *     onMatch="exclude">
+ * <condition class="ReferenceCondition">
  *   <valueMatcher method="regex">.*&#47;login/.*</valueMatcher>
- * </handler>
+ * </condition>
  * }
  * <p>
  * The above eample reject documents having "/login/" in their reference.
@@ -56,15 +56,16 @@ import com.norconex.importer.parser.ParseState;
  * @since 3.0.0
  */
 @SuppressWarnings("javadoc")
-public class ReferenceFilter extends AbstractDocumentFilter {
+public class ReferenceCondition
+        implements IImporterCondition, IXMLConfigurable {
 
     private final TextMatcher valueMatcher = new TextMatcher();
 
-    public ReferenceFilter() {
+    public ReferenceCondition() {
         super();
     }
-    public ReferenceFilter(TextMatcher textMatcher) {
-        setValueMatcher(textMatcher);
+    public ReferenceCondition(TextMatcher valueMatcher) {
+        setValueMatcher(valueMatcher);
     }
 
     /**
@@ -83,20 +84,16 @@ public class ReferenceFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected boolean isDocumentMatched(
-            HandlerDoc doc, InputStream input, ParseState parseState)
-                    throws ImporterHandlerException {
+    public boolean testDocument(HandlerDoc doc, InputStream input,
+            ParseState parseState) throws ImporterHandlerException {
         return valueMatcher.matches(doc.getReference());
     }
-
-
     @Override
-    protected void loadFilterFromXML(XML xml) {
+    public void loadFromXML(XML xml) {
         valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
     }
-
     @Override
-    protected void saveFilterToXML(XML xml) {
+    public void saveToXML(XML xml) {
         valueMatcher.saveToXML(xml.addElement("valueMatcher"));
     }
 
@@ -115,4 +112,3 @@ public class ReferenceFilter extends AbstractDocumentFilter {
                 .toString();
     }
 }
-

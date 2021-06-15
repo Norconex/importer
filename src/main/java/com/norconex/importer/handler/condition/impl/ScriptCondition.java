@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.filter.impl;
+package com.norconex.importer.handler.condition.impl;
 
 import javax.script.Bindings;
 
@@ -28,18 +28,19 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.ScriptRunner;
-import com.norconex.importer.handler.filter.AbstractStringFilter;
+import com.norconex.importer.handler.condition.AbstractStringCondition;
 import com.norconex.importer.parser.ParseState;
 
 /**
  * <p>
- * Filter incoming documents using a scripting language.
+ * A condition formulated using a scripting language.
  * The default script engine is <code>JavaScript</code>.
- * </p><p>
+ * </p>
+ * <p>
  * Refer to {@link ScriptRunner} for more information on using a scripting
  * language with Norconex Importer.
  * </p>
- * <h3>How to filter documents with scripting:</h3>
+ * <h3>How to create a condition with scripting:</h3>
  * <p>
  * The following are variables made available to your script for each
  * document:
@@ -52,8 +53,8 @@ import com.norconex.importer.parser.ParseState;
  *       object.</li>
  *   <li><b>parsed:</b> Whether the document was already parsed, as a
  *       boolean.</li>
- *   <li><b>sectionIndex:</b> Content section index if it had to be split,
- *       as an integer.</li>
+ *   <li><b>sectionIndex:</b> Content section index (integer) if it had to be
+ *       split because it was too large.</li>
  * </ul>
  * <p>
  * The expected <b>return value</b> from your script is a boolean indicating
@@ -61,47 +62,43 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
- *   {@nx.include com.norconex.importer.handler.filter.AbstractStringFilter#attributes}
+ * <condition class="com.norconex.importer.handler.condition.impl.ScriptCondition"
+ *   {@nx.include com.norconex.importer.handler.condition.AbstractStringCondition#attributes}
  *       engineName="(script engine name)">
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *   <script>(your script)</script>
- * </handler>
+ * </condition>
  * }
  *
- * <h4>Usage example:</h4>
- * <h5>JavaScript:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *      var isAppleDoc = metadata.getString('fruit') == 'apple'
- *              || content.indexOf('Apple') &gt; -1;
- *      /&#42;return&#42;/ isAppleDoc;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml.example
+ * <!-- Javascript: -->
+ * <condition class="ScriptCondition">
+ *   <script><![CDATA[
+ *     var isAppleDoc = metadata.getString('fruit') == 'apple'
+ *             || content.indexOf('Apple') > -1;
+ *     // Return value:
+ *     isAppleDoc;
+ *   ]]></script>
+ * </condition>
  *
- * <h5>Lua:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
- *      engineName="lua"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *      local isAppleDoc = metadata:getString('fruit') == 'apple'
- *              and content:find('Apple') ~= nil;
- *      return isAppleDoc;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * <!-- Lua: -->
+ * <condition class="ScriptCondition" engineName="lua">
+ *   <script><![CDATA[
+ *     local isAppleDoc = metadata:getString('fruit') == 'apple'
+ *             and content:find('Apple') ~= nil;
+ *     return isAppleDoc;
+ *   ]]></script>
+ * </condition>
+ * }
  *
  * @author Pascal Essiembre
- * @since 2.4.0
+ * @since 3.0.0
  * @see ScriptRunner
  */
 @SuppressWarnings("javadoc")
-public class ScriptFilter extends AbstractStringFilter {
+public class ScriptCondition extends AbstractStringCondition {
 
     private static final Logger LOG =
-            LoggerFactory.getLogger(ScriptFilter.class);
+            LoggerFactory.getLogger(ScriptCondition.class);
 
     private final ScriptRunner<Object> scriptRunner = new ScriptRunner<>();
 
@@ -120,19 +117,18 @@ public class ScriptFilter extends AbstractStringFilter {
     }
 
     @Override
-    protected boolean isStringContentMatching(HandlerDoc doc,
-            StringBuilder content, ParseState parseState, int sectionIndex)
-                    throws ImporterHandlerException {
-
+    protected boolean testDocument(HandlerDoc doc, String input,
+            ParseState parseState, int sectionIndex)
+            throws ImporterHandlerException {
         Bindings b = scriptRunner.createBindings();
         b.put("reference", doc.getReference());
-        b.put("content", content.toString());
+        b.put("content", input);
         b.put("metadata", doc.getMetadata());
         b.put("parsed", parseState);
         b.put("sectionIndex", sectionIndex);
         Object obj = scriptRunner.eval(b);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Returned object from ScriptFilter: {}", obj);
+            LOG.debug("Returned object from ScriptCondition: {}", obj);
         }
         if (obj == null) {
             return false;
@@ -142,17 +138,15 @@ public class ScriptFilter extends AbstractStringFilter {
         }
         return Boolean.valueOf(obj.toString());
     }
-
     @Override
-    protected void saveStringFilterToXML(XML xml) {
-        xml.setAttribute("engineName", getEngineName());
-        xml.addElement("script", getScript());
-    }
-
-    @Override
-    protected void loadStringFilterFromXML(XML xml) {
+    protected void loadStringConditionFromXML(XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
         setScript(xml.getString("script", getScript()));
+    }
+    @Override
+    protected void saveStringConditionToXML(XML xml) {
+        xml.setAttribute("engineName", getEngineName());
+        xml.addElement("script", getScript());
     }
 
     @Override
