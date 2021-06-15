@@ -205,7 +205,10 @@ public abstract class AbstractImporterHandler implements IXMLConfigurable {
      * @param charset the character encoding to test if blank
      * @param parseState whether the document has already been parsed or not.
      * @return detected and clean encoding.
+     * @deprecated Since 3.0.0, charset was already detected or use
+     * {@link CharsetUtil#firstNonBlankOrUTF8(ParseState, String...)}
      */
+    @Deprecated
     protected final String detectCharsetIfBlank(
             HandlerDoc doc, InputStream is,
             String charset, ParseState parseState) {
