@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -155,8 +156,6 @@ public class DOMFilter extends AbstractDocumentFilter {
                 CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
     }
 
-
-
     public String getSelector() {
         return selector;
     }
@@ -259,8 +258,10 @@ public class DOMFilter extends AbstractDocumentFilter {
                 return false;
             }
             // Dealing with doc content
-            String inputCharset = detectCharsetIfBlank(
-                    doc, input, sourceCharset, parseState);
+            String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                    parseState,
+                    sourceCharset,
+                    doc.getDocInfo().getContentEncoding());
             return isDocumentMatched(Jsoup.parse(
                     input, inputCharset, doc.getReference(),
                     DOMUtil.toJSoupParser(getParser())));

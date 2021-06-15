@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2015-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -170,9 +171,10 @@ public class DOMSplitter extends AbstractDocumentSplitter
             HandlerDoc doc, InputStream input, OutputStream output,
             ParseState parseState) throws ImporterHandlerException {
 
-        String inputCharset = detectCharsetIfBlank(
-                doc, input, sourceCharset, parseState);
-
+        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                parseState,
+                sourceCharset,
+                doc.getDocInfo().getContentEncoding());
         List<Doc> docs = new ArrayList<>();
         try {
             Document soupDoc = Jsoup.parse(input, inputCharset,

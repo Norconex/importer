@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2015-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.AbstractDocumentFilter;
 import com.norconex.importer.handler.filter.OnMatch;
 import com.norconex.importer.parser.ParseState;
+import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
@@ -330,8 +331,11 @@ public class DOMContentFilter extends AbstractDocumentFilter {
     protected boolean isDocumentMatched(
             HandlerDoc doc, InputStream input, ParseState parseState)
                     throws ImporterHandlerException {
-        String inputCharset = detectCharsetIfBlank(
-                doc, input, sourceCharset, parseState);
+
+        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
+                parseState,
+                sourceCharset,
+                doc.getDocInfo().getContentEncoding());
         try {
             Document jdoc = Jsoup.parse(input, inputCharset,
                     doc.getReference(), DOMUtil.toJSoupParser(getParser()));
