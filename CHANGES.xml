@@ -10,6 +10,10 @@
     <release version="3.0.0-SNAPSHOT" date="2021-??-??" 
         description="Next major release (since latest milestone)">
       <action dev="essiembre" type="add">
+        Handlers now support XML "flow", which adds supports for 
+        if/ifNot/condition/then/else tags in XML configuration.
+      </action>
+      <action dev="essiembre" type="add">
         New CharsetUtil#firstNonBlankOrUTF8(...) methods.
       </action>
       <action dev="essiembre" type="add">

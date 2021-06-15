@@ -16,6 +16,9 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+  <xs:include schemaLocation="/com/norconex/commons/lang/xml/flow/XMLIf.xsd" />
+  <xs:include schemaLocation="/com/norconex/commons/lang/xml/flow/XMLIfNot.xsd" />
+
   <xs:element name="importer">
     <xs:complexType>
       <xs:all>
@@ -42,7 +45,9 @@
 
   <xs:complexType name="parseHandlerType">
     <xs:all>
-      <xs:element name="handler"      type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="handler" type="anyComplexWithClassType" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="if" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="ifNot" minOccurs="0" maxOccurs="unbounded" />
     </xs:all>
   </xs:complexType>
 

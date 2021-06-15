@@ -1,4 +1,4 @@
-/* Copyright 2010-2018 Norconex Inc.
+/* Copyright 2010-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.norconex.commons.lang.bean.BeanUtil;
 import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.function.FunctionUtil;
 import com.norconex.commons.lang.unit.DataUnit;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.commons.lang.xml.flow.XMLFlow;
 import com.norconex.importer.handler.HandlerConsumer;
 import com.norconex.importer.handler.HandlerContext;
+import com.norconex.importer.handler.HandlerPredicate;
 import com.norconex.importer.handler.IImporterHandler;
 import com.norconex.importer.parser.GenericDocumentParserFactory;
 import com.norconex.importer.parser.IDocumentParserFactory;
@@ -57,13 +59,7 @@ public class ImporterConfig implements IXMLConfigurable {
             new GenericDocumentParserFactory();
 
     private XMLFlow<HandlerContext> xmlFlow = new XMLFlow<>(
-            HandlerConsumer.class, null);
-
-
-//    @Deprecated
-//    private final List<IImporterHandler> preParseHandlers = new ArrayList<>();
-//    @Deprecated
-//    private final List<IImporterHandler> postParseHandlers = new ArrayList<>();
+            HandlerConsumer.class, HandlerPredicate.class);
 
     private Consumer<HandlerContext> preParseConsumer;
     private Consumer<HandlerContext> postParseConsumer;
@@ -106,55 +102,116 @@ public class ImporterConfig implements IXMLConfigurable {
         this.parseErrorsSaveDir = parseErrorsSaveDir;
     }
 
-    //TODO document that this is mainly for XML configuration and
-    // is overwritten when using set/get pre/post handler (which are no longer
-    // loaded by configuration.
-    //TODO Document to use HandlerConsumer#fromImporterHanders(...)
-    // or FunctionUtil.allConsumers(...)
-
+    /**
+     * Gets the {@link Consumer} to be executed on documents before
+     * their parsing has occurred.
+     * @return the document consumer
+     * @since 3.0.0
+     */
     public Consumer<HandlerContext> getPreParseConsumer() {
         return preParseConsumer;
     }
+    /**
+     * <p>
+     * Sets the {@link Consumer} to be executed on documents before
+     * their parsing has occurred.  The consumer will automatically be
+     * created when relying on XML configuration of handlers
+     * ({@link IImporterHandler}). XML
+     * configuration also offers extra XML tags to create basic "flow"
+     * for handler execution.
+     * </p>
+     * <p>
+     * To programmatically set multiple consumers or take advantage of the
+     * many configurable {@link IImporterHandler} instances instead,
+     * you can use {@link FunctionUtil#allConsumers(Consumer...)} or
+     * {@link HandlerConsumer#fromHandlers(IImporterHandler...)}
+     * respectively to create a consumer.
+     * </p>
+     * @param consumer the document consumer
+     * @since 3.0.0
+     */
     public void setPreParseConsumer(Consumer<HandlerContext> consumer) {
         this.preParseConsumer = consumer;
     }
+    /**
+     * Gets the {@link Consumer} to be executed on documents after
+     * their parsing has occurred.
+     * @return the document consumer
+     * @since 3.0.0
+     */
     public Consumer<HandlerContext> getPostParseConsumer() {
         return postParseConsumer;
     }
+    /**
+     * <p>
+     * Sets the {@link Consumer} to be executed on documents after
+     * their parsing has occurred.  The consumer will automatically be
+     * created when relying on XML configuration of handlers
+     * ({@link IImporterHandler}). XML
+     * configuration also offers extra XML tags to create basic "flow"
+     * for handler execution.
+     * </p>
+     * <p>
+     * To programmatically set multiple consumers or take advantage of the
+     * many configurable {@link IImporterHandler} instances instead,
+     * you can use {@link FunctionUtil#allConsumers(Consumer...)} or
+     * {@link HandlerConsumer#fromHandlers(IImporterHandler...)}
+     * respectively to create a consumer.
+     * </p>
+     * @param consumer the document consumer
+     * @since 3.0.0
+     */
     public void setPostParseConsumer(Consumer<HandlerContext> consumer) {
         this.postParseConsumer = consumer;
     }
 
-    //TODO document it is now unreliable if you use XMLFlow
+    /**
+     * Gets importer handlers to be executed on documents before they are
+     * parsed.
+     * @return list of importer handlers
+     * @deprecated Since 3.0.0, use {@link #getPreParseConsumer()} instead
+     */
     @Deprecated
     public List<IImporterHandler> getPreParseHandlers() {
-        //TODO Document behavior (walking through all impls)
-        // Document this will break any flow usage.
         List<IImporterHandler> handlers = new ArrayList<>();
         BeanUtil.visitAll(
                 preParseConsumer, handlers::add, IImporterHandler.class);
         return Collections.unmodifiableList(handlers);
-        //return Collections.unmodifiableList(preParseHandlers);
     }
-    //TODO document it is now unreliable if you use XMLFlow
+    /**
+     * Sets importer handlers to be executed on documents before they are
+     * parsed.
+     * @param preParseHandlers list of importer handlers
+     * @deprecated Since 3.0.0, use {@link #setPreParseConsumer(Consumer)}
+     * instead
+     */
     @Deprecated
     public void setPreParseHandlers(List<IImporterHandler> preParseHandlers) {
         setPreParseConsumer(HandlerConsumer.fromHandlers(preParseHandlers));
-        //CollectionUtil.setAll(this.preParseHandlers, preParseHandlers);
     }
-
+    /**
+     * Gets importer handlers to be executed on documents after they are
+     * parsed.
+     * @return list of importer handlers
+     * @deprecated Since 3.0.0, use {@link #getPostParseConsumer()} instead
+     */
     @Deprecated
     public List<IImporterHandler> getPostParseHandlers() {
         List<IImporterHandler> handlers = new ArrayList<>();
         BeanUtil.visitAll(
                 postParseConsumer, handlers::add, IImporterHandler.class);
         return Collections.unmodifiableList(handlers);
-//        return Collections.unmodifiableList(postParseHandlers);
     }
+    /**
+     * Sets importer handlers to be executed on documents after they are
+     * parsed.
+     * @param postParseHandlers list of importer handlers
+     * @deprecated Since 3.0.0, use {@link #setPostParseConsumer(Consumer)}
+     * instead
+     */
     @Deprecated
     public void setPostParseHandlers(List<IImporterHandler> postParseHandlers) {
         setPostParseConsumer(HandlerConsumer.fromHandlers(postParseHandlers));
-        //CollectionUtil.setAll(this.postParseHandlers, postParseHandlers);
     }
 
     public List<IImporterResponseProcessor> getResponseProcessors() {
@@ -187,20 +244,10 @@ public class ImporterConfig implements IXMLConfigurable {
                 xml.getInteger("maxFileCacheSize", maxFileCacheSize));
         setMaxFilePoolCacheSize(
                 xml.getInteger("maxFilePoolCacheSize", maxFilePoolCacheSize));
-
-        //TODO what to call the new tag?  preParseFlow?  Keep it preParseHandlers?
-        //TODO maybe do not deprecate the XML at all, just the methods?  Yeah, probably best
-        //xml.checkDeprecated("preParseHandlers", "preParseFlow", false);
-
         setPreParseConsumer(xmlFlow.parse(xml.getXML("preParseHandlers")));
-//        setPreParseHandlers(xml.getObjectListImpl(
-//                IImporterHandler.class, "preParseHandlers/*", preParseHandlers));
         setParserFactory(xml.getObjectImpl(IDocumentParserFactory.class,
                 "documentParserFactory", documentParserFactory));
-//        setPostParseHandlers(xml.getObjectListImpl(IImporterHandler.class,
-//                "postParseHandlers/*", postParseHandlers));
         setPostParseConsumer(xmlFlow.parse(xml.getXML("postParseHandlers")));
-
         setResponseProcessors(xml.getObjectListImpl(
                 IImporterResponseProcessor.class,
                 "responseProcessors/responseProcessor", responseProcessors));
@@ -213,10 +260,8 @@ public class ImporterConfig implements IXMLConfigurable {
         xml.addElement("maxFileCacheSize", maxFileCacheSize);
         xml.addElement("maxFilePoolCacheSize", maxFilePoolCacheSize);
         xmlFlow.write(xml.addElement("preParseHandlers"), preParseConsumer);
-//        xml.addElementList("preParseHandlers", "handler", preParseHandlers);
         xml.addElement("documentParserFactory", documentParserFactory);
-//        xml.addElementList("postParseHandlers", "handler", postParseHandlers);
-        xmlFlow.write(xml.addElement("postParseHandlers"), preParseConsumer);
+        xmlFlow.write(xml.addElement("postParseHandlers"), postParseConsumer);
         xml.addElementList(
                 "responseProcessors", "responseProcessor", responseProcessors);
     }

@@ -116,7 +116,7 @@ public class NumericMetadataFilter extends AbstractDocumentFilter {
             return fieldNumber < conditionNumber;
         }};
         String abbr;
-        private Operator(String abbr) {
+        Operator(String abbr) {
             this.abbr = abbr;
         }
         public static Operator getOperator(String op) {

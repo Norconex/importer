@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<!-- 
+   Copyright 2021 Norconex Inc.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<importer>
+
+    <preParseHandlers>
+      
+      <!-- Should not trigger any transformation: -->
+      <handler class="StripBetweenTransformer">
+          <stripBetween inclusive="false">
+              <startMatcher ignoreCase="true">potato</startMatcher>
+              <endMatcher ignoreCase="true">carrot</endMatcher>
+          </stripBetween>
+      </handler>
+
+    </preParseHandlers>
+    
+    <postParseHandlers>
+      <handler class="DebugTagger" logLevel="debug"/>
+      
+      <!-- Author should be set: -->
+      <if>
+        <condition>
+          <fieldMatcher>title</fieldMatcher>
+          <valueMatcher method="wildcard">*Alice's Adventures in Wonderland*</valueMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="Author">Lewis Carroll</constant>
+          </handler>
+        </then>
+      </if>
+
+      <!-- Should set "format" to "HTML": -->
+      <ifNot>
+        <condition>
+          <fieldMatcher>document.contentFamily</fieldMatcher>
+          <valueMatcher>html</valueMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="format">Unknown</constant>
+          </handler>
+        </then>
+        <else>
+          <handler class="ConstantTagger">
+            <constant name="format">HTML</constant>
+          </handler>
+        </else>
+      </ifNot>
+
+      <!-- The "alien" "passenger" should not be set: -->
+      <handler class="ConstantTagger">
+        <condition>
+          <fieldMatcher>document.contentFamily</fieldMatcher>
+          <valueMatcher>xenomorph</valueMatcher>
+        </condition>
+        <constant name="alien">passenger</constant>
+      </handler>
+      
+      <!-- TODO: rejection -->
+      
+      
+    </postParseHandlers>
+
+</importer>

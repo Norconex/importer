@@ -33,10 +33,12 @@ import org.slf4j.LoggerFactory;
 import com.norconex.commons.lang.function.FunctionUtil;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.commons.lang.map.Properties;
 import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.commons.lang.xml.flow.IXMLFlowConsumerAdapter;
+import com.norconex.commons.lang.xml.flow.XMLFlow;
 import com.norconex.importer.ImporterEvent;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.doc.DocMetadata;
@@ -47,7 +49,12 @@ import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
 
-//TODO move to .impl package, or hide visibility?
+/**
+ * Consumer wrapping an {@link IImporterHandler} instance for use in an
+ * {@link XMLFlow}.
+ * @author Pascal Essiembre
+ * @since 3.0.0
+ */
 public class HandlerConsumer
         implements IXMLFlowConsumerAdapter<HandlerContext> {
 
@@ -151,10 +158,12 @@ public class HandlerConsumer
             if (out.isCacheEmpty()) {
                 LOG.debug("Transformer \"{}\" returned no content for: {}.",
                         transformer.getClass(), ctx.getDoc().getReference());
+                IOUtil.closeQuietly(out);
                 newInputStream = in;
             } else {
                 in.dispose();
                 newInputStream = out.getInputStream();
+                IOUtil.closeQuietly(out);
             }
             ctx.getDoc().setInputStream(newInputStream);
         }
@@ -215,6 +224,7 @@ public class HandlerConsumer
     @Override
     public void saveToXML(XML xml) {
         xml.rename("handler");
+        xml.setAttribute("class", handler.getClass().getName());
         if (handler instanceof IXMLConfigurable) {
             ((IXMLConfigurable) handler).saveToXML(xml);
         }

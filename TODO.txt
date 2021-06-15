@@ -1,6 +1,15 @@
 TODO:
 ==============
 
+- Instead of naming handlers wit "Metadata" "Content", made/recommended for 
+  Pre or Post, or what type does it support out of the box vs recommended...
+  Use custom annotations that would generate appropriate javadoc.
+
+- Maybe have the following two tags a <then> or <else> content tag:
+    <reject/> rejects the document
+    <abort/>  more risky: abort the execution flow but consider the doc valid
+        
+
 - Replace DOMDeleteTransformer with DOMTransformer that gives the option
   to only keep what is matching, deleting the rest, or delete what is matching.
 

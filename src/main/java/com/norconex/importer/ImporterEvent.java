@@ -1,4 +1,4 @@
-/* Copyright 2020 Norconex Inc.
+/* Copyright 2020-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,10 @@ public class ImporterEvent extends Event {
             "IMPORTER_HANDLER_BEGIN";
     public static final String IMPORTER_HANDLER_END= "IMPORTER_HANDLER_END";
     public static final String IMPORTER_HANDLER_ERROR= "IMPORTER_HANDLER_ERROR";
+    public static final String IMPORTER_HANDLER_CONDITION_TRUE =
+            "IMPORTER_HANDLER_CONDITION_TRUE";
+    public static final String IMPORTER_HANDLER_CONDITION_FALSE =
+            "IMPORTER_HANDLER_CONDITION_FALSE";
     public static final String IMPORTER_PARSER_BEGIN = "IMPORTER_PARSER_BEGIN";
     public static final String IMPORTER_PARSER_END = "IMPORTER_PARSER_END";
     public static final String IMPORTER_PARSER_ERROR = "IMPORTER_PARSER_ERROR";
