@@ -109,9 +109,9 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             HandlerDoc doc, final InputStream input, final OutputStream output,
             final ParseState parseState) throws ImporterHandlerException {
 
-        String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
-                sourceCharset,
-                doc.getDocInfo().getContentEncoding());
+System.out.println("DocInfo encoding: " + doc.getDocInfo().getContentEncoding());
+
+        String inputCharset = detectCharsetIfBlank(input);
 
         //--- Get target charset ---
         String outputCharset = targetCharset;
@@ -150,6 +150,16 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     }
     public void setSourceCharset(final String sourceCharset) {
         this.sourceCharset = sourceCharset;
+    }
+
+    private String detectCharsetIfBlank(InputStream input)
+            throws ImporterHandlerException {
+        try {
+            return CharsetUtil.detectCharsetIfBlank(sourceCharset, input);
+        } catch (IOException e) {
+            throw new ImporterHandlerException("Could not detect content "
+                    + "character encoding.", e);
+        }
     }
 
     @Override
