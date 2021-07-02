@@ -30,7 +30,7 @@ import com.norconex.importer.handler.condition.IImporterCondition;
 import com.norconex.importer.parser.ParseState;
 
 /**
- * <p
+ * <p>
  * A condition based on a text pattern matching a document reference (e.g. URL).
  * </p>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>

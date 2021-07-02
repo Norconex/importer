@@ -53,8 +53,7 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * <p>
- * <b>Since 3.0.0</b> the
- * {@link #isStringContentMatching(HandlerDoc, StringBuilder, ParseState, int)}
+ * The {@link #testDocument(HandlerDoc, String, ParseState, int)}
  * method is invoked at least once, even if there is no content. This gives
  * subclasses a chance to act on metadata even if there is no content.
  * </p>

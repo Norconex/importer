@@ -196,7 +196,7 @@ public class DOMCondition extends AbstractCharStreamCondition {
     }
     /**
      * Sets this condition content-type matcher.
-     * @return contentTypeMatcher content-type matcher
+     * @param contentTypeMatcher content-type matcher
      */
     public void setContentTypeMatcher(TextMatcher contentTypeMatcher) {
         this.contentTypeMatcher.copyFrom(contentTypeMatcher);
