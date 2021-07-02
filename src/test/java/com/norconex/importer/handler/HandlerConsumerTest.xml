@@ -18,6 +18,25 @@
 <importer>
 
     <preParseHandlers>
+
+      <!-- Should set "dateTest" to "dateSuccess": -->
+      <handler 
+        class="CurrentDateTagger"
+        toField="testDate"
+        format="yyyy-MM-dd HH:mm"
+      />
+      <if>
+        <condition class="DateCondition" format="yyyy-MM-dd HH:mm">
+          <fieldMatcher>testDate</fieldMatcher>
+          <valueMatcher operator="gt" date="NOW-1h" />
+          <valueMatcher operator="le" date="NOW" />
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="dateTest">dateSuccess</constant>
+          </handler>
+        </then>
+      </if>
       
       <!-- Should not trigger any transformation: -->
       <handler class="StripBetweenTransformer">
@@ -26,6 +45,24 @@
               <endMatcher ignoreCase="true">carrot</endMatcher>
           </stripBetween>
       </handler>
+
+      <!-- Should set "domTest" to "docSuccess": -->
+      <if>
+        <condition class="DOMCondition"
+          selector="html &gt; body pre + p &gt; a"
+          parser="html"
+          extract="text"
+        >
+          <valueMatcher method="wildcard">
+            *The Pool of Tears
+          </valueMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="domTest">domSuccess</constant>
+          </handler>
+        </then>
+      </if>
 
     </preParseHandlers>
     
@@ -63,7 +100,83 @@
         </else>
       </ifNot>
 
-      <!-- The "alien" "passenger" should not be set: -->
+      <!-- Should set "refTest" to "refSuccess": -->
+      <if>
+        <condition class="ReferenceCondition">
+          <valueMatcher method="wildcard">*alice*</valueMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="refTest">refSuccess</constant>
+          </handler>
+        </then>
+      </if>
+
+      <!-- 
+        Should set "scriptTest" to "scriptSuccess"
+        and "numericTest" to "numericSuccess":
+        -->
+      <if>
+        <conditions operator="AND">
+          <condition class="ScriptCondition">
+            metadata.getString('document.contentFamily') === 'html';
+          </condition>
+          <condition class="NumericCondition">
+            <fieldMatcher>Content-Length</fieldMatcher>
+            <valueMatcher operator="GE" number="10000"/>
+            <valueMatcher operator="LT" number="20000"/>
+          </condition>
+        </conditions>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="scriptTest">scriptSuccess</constant>
+            <constant name="numericTest">numericSuccess</constant>
+          </handler>
+        </then>
+      </if>
+
+      <!-- Should set "blankTest" to "blankTestSuccess": -->
+      <if>
+        <condition class="BlankCondition">
+          <fieldMatcher ignoreCase="true">BLAH*</fieldMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="blankTest">blankTestSuccess</constant>
+          </handler>
+        </then>
+      </if>
+      <!-- Should set "notBlankTest" to "notBlankTestSuccess": -->
+      <ifNot>
+        <condition class="BlankCondition">
+          <fieldMatcher ignoreCase="true" method="wildcard">content*</fieldMatcher>
+        </condition>
+        <then>
+          <handler class="ConstantTagger">
+            <constant name="notBlankTest">notBlankTestSuccess</constant>
+          </handler>
+        </then>
+      </ifNot>
+
+      <!-- Should reject the document so "rejectTest" is never set: -->
+      <if>
+        <condition class="BlankCondition">
+          <fieldMatcher ignoreCase="true">BLAH*</fieldMatcher>
+        </condition>
+        <then>
+          <reject/>
+        </then>
+      </if>
+      <handler class="ConstantTagger">
+        <constant name="rejectTest">rejectTestFailure</constant>
+      </handler>
+
+
+      <!-- 
+        Test inner condition:
+        The "alien" "passenger" should not be set: 
+        -->
+        <!-- 
       <handler class="ConstantTagger">
         <condition>
           <fieldMatcher>document.contentFamily</fieldMatcher>
@@ -71,6 +184,7 @@
         </condition>
         <constant name="alien">passenger</constant>
       </handler>
+         -->
       
       <!-- TODO: rejection -->
       

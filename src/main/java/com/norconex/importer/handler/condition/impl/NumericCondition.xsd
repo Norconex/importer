@@ -21,11 +21,18 @@
   <xs:element name="condition">
     <xs:complexType>
       <xs:all>
-        <xs:element name="valueMatcher" 
+        <xs:element name="fieldMatcher" 
             type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+        <xs:element name="valueMatcher" 
+            type="NumericMatcherType" minOccurs="0" maxOccurs="2" />
       </xs:all>
       <xs:attribute name="class" type="xs:string"/>
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="NumericMatcherType">
+    <xs:attribute name="operator" type="OperatorType"/>
+    <xs:attribute name="number" type="xs:decimal" use="required"/>
+  </xs:complexType>
   
 </xs:schema>

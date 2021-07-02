@@ -26,6 +26,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +49,7 @@ import com.norconex.importer.doc.DocMetadata;
 import com.norconex.importer.handler.filter.IDocumentFilter;
 import com.norconex.importer.handler.filter.IOnMatchFilter;
 import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.handler.filter.impl.RejectFilter;
 import com.norconex.importer.handler.splitter.IDocumentSplitter;
 import com.norconex.importer.handler.tagger.IDocumentTagger;
 import com.norconex.importer.handler.transformer.IDocumentTransformer;
@@ -215,7 +220,11 @@ public class HandlerConsumer
 
     @Override
     public void loadFromXML(XML xml) {
-        this.handler = xml.toObjectImpl(IImporterHandler.class);
+        if (xml.getName().equals("reject")) {
+            this.handler = RejectFilter.INSTANCE;
+        } else {
+            this.handler = xml.toObjectImpl(IImporterHandler.class);
+        }
         if (this.handler == null) {
             LOG.warn("Importer handler from the following XML resolved to null "
                     + "and will have no effect: {}", xml);
@@ -223,10 +232,28 @@ public class HandlerConsumer
     }
     @Override
     public void saveToXML(XML xml) {
-        xml.rename("handler");
-        xml.setAttribute("class", handler.getClass().getName());
-        if (handler instanceof IXMLConfigurable) {
-            ((IXMLConfigurable) handler).saveToXML(xml);
+        if (handler instanceof RejectFilter) {
+            xml.rename("reject");
+        } else {
+            xml.rename("handler");
+            xml.setAttribute("class", handler.getClass().getName());
+            if (handler instanceof IXMLConfigurable) {
+                ((IXMLConfigurable) handler).saveToXML(xml);
+            }
         }
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

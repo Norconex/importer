@@ -21,10 +21,11 @@
   <xs:element name="condition">
     <xs:complexType>
       <xs:all>
-        <xs:element name="valueMatcher" 
-            type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+        <xs:element name="fieldMatcher" 
+            type="TextMatcherType" minOccurs="0" maxOccurs="1" />
       </xs:all>
       <xs:attribute name="class" type="xs:string"/>
+      <xs:attribute name="matchAnyBlank" type="xs:boolean"/>
     </xs:complexType>
   </xs:element>
   

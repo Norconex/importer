@@ -16,10 +16,11 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
+  <xs:include schemaLocation="../../Importer.xsd"></xs:include>
+
   <xs:complexType name="AbstractCharStreamCondition" abstract="true">
-    <xs:complexContent> 
-      <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
-    </xs:complexContent>   
+    <xs:attribute name="class" type="xs:string"/>
+    <xs:attribute name="sourceCharset" type="xs:string"></xs:attribute>
   </xs:complexType>
 
 </xs:schema>

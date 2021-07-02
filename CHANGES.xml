@@ -14,11 +14,22 @@
         if/ifNot/condition/then/else tags in XML configuration.
       </action>
       <action dev="essiembre" type="add">
+        New "condition" classes for XML "flow" configuration: BlankCondition,
+        DateCondition, DOMCondition, NumericCondition, ReferenceCondition,
+        ScriptCondition, and TextCondition.
+      </action>
+      <action dev="essiembre" type="add">
+        New RejectFilter.
+      </action>
+      <action dev="essiembre" type="add">
         New CharsetUtil#firstNonBlankOrUTF8(...) methods.
       </action>
       <action dev="essiembre" type="add">
         When not already set, an attempt to detect document character encoding 
         is now always made before invoking handlers.
+      </action>
+      <action dev="essiembre" type="add">
+        New CommonMatchers class.
       </action>
     </release>
 

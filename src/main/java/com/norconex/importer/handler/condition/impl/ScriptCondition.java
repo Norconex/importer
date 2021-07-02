@@ -65,28 +65,28 @@ import com.norconex.importer.parser.ParseState;
  * <condition class="com.norconex.importer.handler.condition.impl.ScriptCondition"
  *   {@nx.include com.norconex.importer.handler.condition.AbstractStringCondition#attributes}
  *       engineName="(script engine name)">
- *   <script>(your script)</script>
+ *   (your script)
  * </condition>
  * }
  *
  * {@nx.xml.example
  * <!-- Javascript: -->
  * <condition class="ScriptCondition">
- *   <script><![CDATA[
+ *   <![CDATA[
  *     var isAppleDoc = metadata.getString('fruit') == 'apple'
  *             || content.indexOf('Apple') > -1;
  *     // Return value:
  *     isAppleDoc;
- *   ]]></script>
+ *   ]]>
  * </condition>
  *
  * <!-- Lua: -->
  * <condition class="ScriptCondition" engineName="lua">
- *   <script><![CDATA[
+ *   <![CDATA[
  *     local isAppleDoc = metadata:getString('fruit') == 'apple'
  *             and content:find('Apple') ~= nil;
  *     return isAppleDoc;
- *   ]]></script>
+ *   ]]>
  * </condition>
  * }
  *
@@ -141,12 +141,12 @@ public class ScriptCondition extends AbstractStringCondition {
     @Override
     protected void loadStringConditionFromXML(XML xml) {
         setEngineName(xml.getString("@engineName", getEngineName()));
-        setScript(xml.getString("script", getScript()));
+        setScript(xml.getString(".", getScript()));
     }
     @Override
     protected void saveStringConditionToXML(XML xml) {
         xml.setAttribute("engineName", getEngineName());
-        xml.addElement("script", getScript());
+        xml.setTextContent(getScript());
     }
 
     @Override

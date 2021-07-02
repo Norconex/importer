@@ -1,4 +1,4 @@
-/* Copyright 2020-2021 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,11 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.filter.impl;
+package com.norconex.importer.handler.condition.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
@@ -28,150 +29,143 @@ import org.jsoup.select.Elements;
 
 import com.norconex.commons.lang.text.TextMatcher;
 import com.norconex.commons.lang.xml.XML;
-import com.norconex.importer.doc.DocMetadata;
-import com.norconex.importer.handler.CommonRestrictions;
+import com.norconex.importer.handler.CommonMatchers;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractDocumentFilter;
-import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.handler.condition.AbstractCharStreamCondition;
+import com.norconex.importer.handler.filter.impl.TextFilter;
 import com.norconex.importer.parser.ParseState;
-import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
- * <p>Uses a Document Object Model (DOM) representation of an HTML, XHTML, or
- * XML document content to perform filtering based on matching an
- * element/attribute or element/attribute value.
+ * <p>
+ * A condition using a Document Object Model (DOM) representation of an HTML,
+ * XHTML, or XML document content to match an element, attribute or value.
  * </p>
  * <p>
  * In order to construct a DOM tree, text is loaded entirely
- * into memory. It uses the document content by default, but it can also
- * come from specified metadata fields. If multiple fields values are
- * identified/matched as DOM sources, only one needs to match for the filter
- * to be applied.
- * Use this filter with caution if you know you'll need to parse
+ * into memory. It uses the document content to create the DOM by default,
+ * but it can also use metadata fields. If more than one metadata field
+ * values are identified as the source of DOM content, only one needs to
+ * match for this condition to be <code>true</code>.
+ * Use this condition with caution if you know you'll need to parse
  * huge files. You can use {@link TextFilter} instead if this is a
  * concern.
  * </p>
  * <p>
- * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load a
- * document content into a DOM tree. Elements are referenced using a
+ * The <a href="http://jsoup.org/">jsoup</a> parser library is used to load the
+ * content into a DOM tree. Elements are referenced using a
  * <a href="http://jsoup.org/cookbook/extracting-data/selector-syntax">
  * CSS or JQuery-like syntax</a>.
  * </p>
  * <p>
- * If an element is referenced without a value to match, its mere presence
- * constitutes a match. If both an element and a regular expression is provided
- * the element value will be retrieved and the regular expression will be
- * applied against it for a match.
+ * The use of a value matcher is optional. Without one, any element found
+ * by the provided DOM selector will constitute a match.
+ * If both a DOM selector and a value matcher are provided,
+ * the matching selector element value(s) will be retrieved and the
+ * value matcher will be applied against it (or them) for a match.
  * </p>
- * <p>
- * Refer to {@link AbstractDocumentFilter} for the inclusion/exclusion logic.
- * </p>
- * <p>Should be used as a pre-parse handler.</p>
- * <h3>Content-types</h3>
- * <p>
- * By default, this filter is restricted to (applies only to) documents matching
- * the restrictions returned by
- * {@link CommonRestrictions#domContentTypes(String)}.
- * You can specify your own content types if you know they represent a file
- * with HTML or XML-like markup tags.  For documents that are
- * incompatible, consider using {@link RegexContentFilter}
- * instead.
- * </p>
- *
- * <p>When used as a pre-parse handler,
- * this class attempts to detect the content character
- * encoding unless the character encoding
- * was specified using {@link #setSourceCharset(String)}. Since document
- * parsing converts content to UTF-8, UTF-8 is always assumed when
- * used as a post-parse handler.
- * </p>
- *
  * <p>It is possible to control what gets extracted
  * exactly for matching purposes thanks to the "extract" argument of the
- * new method {@link #setExtract(String)}. Possible values are:</p>
- *
+ * new method {@link #setExtract(String)}. Possible values are:
+ * </p>
  * {@nx.include com.norconex.importer.util.DOMUtil#extract}
+ * <p>
+ * Should be used as a pre-parse handler.
+ * </p>
  *
- * <p>You can specify which parser to use when reading
- * documents. The default is "html" and will normalize the content
+ * <h3>Content-types</h3>
+ * <p>
+ * If you are dealing with multiple document types and you are using this
+ * condition on the document content, it is important
+ * to restrict this condition to text-based XML-like content only to
+ * prevent DOM-parsing errors.
+ * </p>
+ * <p>
+ * By default this condition only applies to documents matching
+ * the content types listed in {@link CommonMatchers#domContentTypes}.
+ * Other content types always make this condition <code>false</code>.
+ * </p>
+ * <p>
+ * You can overwrite these default content types by providing your own
+ * content type matcher. Make sure the content types you use represent a file
+ * with HTML or XML-like markup tags.
+ * </p>
+ *
+ * {@nx.include com.norconex.importer.handler.condition.AbstractCharStreamCondition#charEncoding}
+ *
+ * <h3>Character encoding</h3>
+ * <p>When used as a pre-parse handler, this condition uses the detected
+ * character encoding unless the character encoding
+ * was specified using {@link #setSourceCharset(String)}. Since document
+ * parsing should always converts content to UTF-8, UTF-8 is always
+ * assumed when used as a post-parse handler.
+ * </p>
+ *
+ * <h3>XML vs HTML</h3>
+ * <p>You can specify which DOM parser to use when reading
+ * documents. The default is "html" and will try to normalize/fix the content
  * as HTML. This is generally a desired behavior, but this can sometimes
  * have your selector fail. If you encounter this
  * problem, try switching to "xml" parser, which does not attempt normalization
  * on the content. The drawback with "xml" is you may not get all HTML-specific
  * selector options to work.  If you know you are dealing with XML to begin
- * with, specifying "xml" should be a good option.
+ * with, specifying "xml" is a good option.
  * </p>
  *
- *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
- *     sourceCharset="(character encoding)"
+ * <handler class="com.norconex.importer.handler.condition.impl.DOMCondition"
+ *     {@nx.include com.norconex.importer.handler.condition.AbstractCharStreamCondition#attributes}
  *     selector="(selector syntax)"
  *     parser="[html|xml]"
  *     extract="[text|html|outerHtml|ownText|data|tagName|val|className|cssSelector|attr(attributeKey)]">
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
- *
  *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (optional expression matching fields where the DOM text is located)
+ *     (Optional expression matching one or more fields where the DOM text is located.)
  *   </fieldMatcher>
  *   <valueMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (optional expression matching selector extracted value)
+ *     (Optional expression matching selector extracted value.)
  *   </valueMatcher>
+ *   <contentTypeMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ *     (Optional expression overwriting the content types this condition applies to.)
+ *   </contentTypeMatcher>
  * </handler>
  * }
  *
  * {@nx.xml.example
- * <!-- Exclude an HTML page that has one or more GIF images in it: -->
- * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          selector="img[src$=.gif]" onMatch="exclude" />
+ * <!-- Matches an HTML page that has one or more GIF images in it: -->
+ * <condition class="DOMCondition" selector="img[src$=.gif]" onMatch="exclude"/>
  *
- * <!-- Exclude an HTML page that has a paragraph tag with a class called
+ * <!-- Matches an HTML page that has a paragraph tag with a class called
  *      "disclaimer" and a value containing "skip me": -->
- * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
- *          selector="p.disclaimer" onMatch="exclude" >
+ * <condition class="DOMCondition" selector="p.disclaimer" onMatch="exclude">
  *   <valueMatcher method="regex">\bskip me\b</valueMatcher>
- * </handler>
+ * </condition>
  * }
  *
  * @author Pascal Essiembre
  * @since 3.0.0
  */
 @SuppressWarnings("javadoc")
-public class DOMFilter extends AbstractDocumentFilter {
+public class DOMCondition extends AbstractCharStreamCondition {
 
     private final TextMatcher fieldMatcher = new TextMatcher();
     private final TextMatcher valueMatcher = new TextMatcher();
+    private final TextMatcher contentTypeMatcher =
+            CommonMatchers.domContentTypes();
     private String selector;
     private String extract;
-    private String sourceCharset = null;
     private String parser = DOMUtil.PARSER_HTML;
 
-    public DOMFilter() {
-        setOnMatch(OnMatch.INCLUDE);
-        addRestrictions(
-                CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
-    }
-
-    public String getSelector() {
-        return selector;
-    }
-    public void setSelector(String selector) {
-        this.selector = selector;
-    }
-
     /**
-     * Gets this filter field matcher (copy).
+     * Gets this filter field matcher.
      * @return field matcher
      */
     public TextMatcher getFieldMatcher() {
         return fieldMatcher;
     }
     /**
-     * Sets this filter field matcher (copy).
+     * Sets this condition field matcher.
      * @param fieldMatcher field matcher
      */
     public void setFieldMatcher(TextMatcher fieldMatcher) {
@@ -179,19 +173,35 @@ public class DOMFilter extends AbstractDocumentFilter {
     }
 
     /**
-     * Gets this filter value matcher (copy).
+     * Gets this condition value matcher.
      * @return value matcher
      */
     public TextMatcher getValueMatcher() {
         return valueMatcher;
     }
     /**
-     * Sets this filter value matcher (copy).
+     * Sets this condition value matcher.
      * @param valueMatcher value matcher
      */
     public void setValueMatcher(TextMatcher valueMatcher) {
         this.valueMatcher.copyFrom(valueMatcher);
     }
+
+    /**
+     * Gets this condition content-type matcher.
+     * @return content-type matcher
+     */
+    public TextMatcher getContentTypeMatcher() {
+        return contentTypeMatcher;
+    }
+    /**
+     * Sets this condition content-type matcher.
+     * @return contentTypeMatcher content-type matcher
+     */
+    public void setContentTypeMatcher(TextMatcher contentTypeMatcher) {
+        this.contentTypeMatcher.copyFrom(contentTypeMatcher);
+    }
+
     /**
      * Gets what should be extracted for the value. One of
      * "text" (default), "html", or "outerHtml". <code>null</code> means
@@ -210,20 +220,6 @@ public class DOMFilter extends AbstractDocumentFilter {
     public void setExtract(String extract) {
         this.extract = extract;
     }
-    /**
-     * Gets the assumed source character encoding.
-     * @return character encoding of the source to be transformed
-     */
-    public String getSourceCharset() {
-        return sourceCharset;
-    }
-    /**
-     * Sets the assumed source character encoding.
-     * @param sourceCharset character encoding of the source to be transformed
-     */
-    public void setSourceCharset(String sourceCharset) {
-        this.sourceCharset = sourceCharset;
-    }
 
     /**
      * Gets the parser to use when creating the DOM-tree.
@@ -240,30 +236,38 @@ public class DOMFilter extends AbstractDocumentFilter {
         this.parser = parser;
     }
 
+    public String getSelector() {
+        return selector;
+    }
+    public void setSelector(String selector) {
+        this.selector = selector;
+    }
+
     @Override
-    protected boolean isDocumentMatched(
-            HandlerDoc doc, InputStream input, ParseState parseState)
+    protected boolean testDocument(
+            HandlerDoc doc, Reader input, ParseState parseState)
                     throws ImporterHandlerException {
+
+        // only proceed if we are dealing with a supported content type
+        if (!contentTypeMatcher.matches(
+                doc.getDocInfo().getContentType().toString())) {
+            return false;
+        }
 
         try {
             if (fieldMatcher.getPattern() != null) {
                 // Dealing with field values
                 for (String value :
                         doc.getMetadata().matchKeys(fieldMatcher).valueList()) {
-                    if (isDocumentMatched(Jsoup.parse(value, doc.getReference(),
+                    if (testDocument(Jsoup.parse(value, doc.getReference(),
                             DOMUtil.toJSoupParser(getParser())))) {
                         return true;
                     }
                 }
                 return false;
             }
-            // Dealing with doc content
-            String inputCharset = CharsetUtil.firstNonBlankOrUTF8(
-                    parseState,
-                    sourceCharset,
-                    doc.getDocInfo().getContentEncoding());
-            return isDocumentMatched(Jsoup.parse(
-                    input, inputCharset, doc.getReference(),
+            return testDocument(Jsoup.parse(
+                    IOUtils.toString(input), doc.getReference(),
                     DOMUtil.toJSoupParser(getParser())));
         } catch (IOException e) {
             throw new ImporterHandlerException(
@@ -271,7 +275,7 @@ public class DOMFilter extends AbstractDocumentFilter {
         }
     }
 
-    private boolean isDocumentMatched(Document doc) {
+    private boolean testDocument(Document doc) {
         Elements elms = doc.select(selector);
         // no elements matching
         if (elms.isEmpty()) {
@@ -289,24 +293,22 @@ public class DOMFilter extends AbstractDocumentFilter {
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) {
-        xml.checkDeprecated("@caseSensitive", "valueMatcher/ignoreCase", true);
-        xml.checkDeprecated("regex", "valueMatcher", true);
+    protected void loadCharStreamConditionFromXML(XML xml) {
         setSelector(xml.getString("@selector", selector));
         setParser(xml.getString("@parser", parser));
-        setSourceCharset(xml.getString("@sourceCharset", sourceCharset));
         setExtract(xml.getString("@extract", extract));
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         valueMatcher.loadFromXML(xml.getXML("valueMatcher"));
+        contentTypeMatcher.loadFromXML(xml.getXML("contentTypeMatcher"));
     }
     @Override
-    protected void saveFilterToXML(XML xml) {
+    protected void saveCharStreamConditionToXML(XML xml) {
         xml.setAttribute("selector", selector);
         xml.setAttribute("parser", parser);
-        xml.setAttribute("sourceCharset", sourceCharset);
         xml.setAttribute("extract", extract);
         fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
         valueMatcher.saveToXML(xml.addElement("valueMatcher"));
+        contentTypeMatcher.saveToXML(xml.addElement("contentTypeMatcher"));
     }
 
     @Override

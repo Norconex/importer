@@ -64,8 +64,8 @@ import com.norconex.importer.parser.ParseState;
 @SuppressWarnings("javadoc")
 public class TextCondition extends AbstractStringCondition {
 
-    private final TextMatcher valueMatcher = new TextMatcher();
     private final TextMatcher fieldMatcher = new TextMatcher();
+    private final TextMatcher valueMatcher = new TextMatcher();
 
     public TextCondition() {
         super();

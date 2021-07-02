@@ -21,11 +21,21 @@
   <xs:element name="condition">
     <xs:complexType>
       <xs:all>
-        <xs:element name="valueMatcher" 
+        <xs:element name="fieldMatcher" 
             type="TextMatcherType" minOccurs="1" maxOccurs="1" />
+        <xs:element name="valueMatcher" 
+            type="DateMatcherType" minOccurs="0" maxOccurs="2" />
       </xs:all>
       <xs:attribute name="class" type="xs:string"/>
+      <xs:attribute name="format" type="xs:string"/>
+      <xs:attribute name="docZoneId" type="xs:string"/>
+      <xs:attribute name="conditionZoneId" type="xs:string"/>
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="DateMatcherType">
+    <xs:attribute name="operator" type="OperatorType"/>
+    <xs:attribute name="date" type="xs:string" use="required"/>
+  </xs:complexType>
   
 </xs:schema>

@@ -14,6 +14,8 @@
  */
 package com.norconex.importer.handler;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
@@ -49,7 +51,15 @@ class HandlerConsumerTest {
                 new CachedStreamFactory().newInputStream(
                         FileUtils.openInputStream(TestUtil.getAliceHtmlFile())),
                 metadata));
-        Assertions.assertEquals("Lewis Carroll", metadata.getString("Author"));
-        Assertions.assertEquals("HTML", metadata.getString("format"));
+        assertEquals("Lewis Carroll", metadata.getString("Author"));
+        assertEquals("HTML", metadata.getString("format"));
+        assertEquals("refSuccess", metadata.getString("refTest"));
+        assertEquals("scriptSuccess", metadata.getString("scriptTest"));
+        assertEquals("numericSuccess", metadata.getString("numericTest"));
+        assertEquals("domSuccess", metadata.getString("domTest"));
+        assertEquals("dateSuccess", metadata.getString("dateTest"));
+        assertEquals("blankTestSuccess", metadata.getString("blankTest"));
+        assertEquals("notBlankTestSuccess", metadata.getString("notBlankTest"));
+        Assertions.assertNull(metadata.getString("rejectTest"));
     }
 }

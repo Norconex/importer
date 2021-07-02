@@ -1,4 +1,4 @@
-/* Copyright 2015-2021 Norconex Inc.
+/* Copyright 2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,19 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.norconex.importer.handler.filter.impl;
+package com.norconex.importer.handler.condition.impl;
+
+import static com.norconex.commons.lang.Operator.EQUALS;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 import java.io.InputStream;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -41,24 +40,46 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.norconex.commons.lang.collection.CollectionUtil;
+import com.norconex.commons.lang.Operator;
 import com.norconex.commons.lang.config.ConfigurationException;
 import com.norconex.commons.lang.text.TextMatcher;
+import com.norconex.commons.lang.xml.IXMLConfigurable;
 import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
-import com.norconex.importer.handler.filter.AbstractDocumentFilter;
-import com.norconex.importer.handler.filter.OnMatch;
+import com.norconex.importer.handler.condition.IImporterCondition;
 import com.norconex.importer.parser.ParseState;
 import com.norconex.importer.util.FormatUtil;
+
 /**
- * <p>Accepts or rejects a document based on whether field values correspond
- * to a date matching supplied conditions and format.
- * If multiple values are
- * found for a field, only one of them needs to match for this filter to
- * take effect. If the value cannot be parsed to a valid date, it is
- * considered not to be matching (no exception is thrown).
+ * <p>
+ * A condition based on the date value(s) of matching
+ * metadata fields given the supplied date format. If multiple values are
+ * found for a field, only one of them needs to match for this condition to
+ * be true.
+ * If the value is not a valid date, it is considered not to be matching
+ * (i.e., <code>false</code>).
+ * The default operator is "eq" (equals).
  * </p>
+ *
+ * <h3>Single date vs range of dates:</h3>
+ * <p>
+ * This condition accepts zero, one, or two value matchers:
+ * </p>
+ * <ul>
+ *   <li>
+ *     <b>0:</b> Use no value matcher to simply evaluate
+ *     whether the value is a date.
+ *   </li>
+ *   <li>
+ *     <b>1:</b> Use one value matcher to evaluate if the value is
+ *     lower/greater and/or the same as the specified date.
+ *   </li>
+ *   <li>
+ *     <b>2:</b> Use two value matchers to define a date range to evaluate
+ *     (both matches have to evaluate to <code>true</code>).
+ *   </li>
+ * </ul>
  *
  * <h3>Metadata date field format:</h3>
  * <p>To successfully parse a date, you can specify a date format,
@@ -67,9 +88,9 @@ import com.norconex.importer.util.FormatUtil;
  * milliseconds, between the date and midnight, January 1, 1970).</p>
  *
  * <h3>Absolute date conditions:</h3>
- * <p>When defining a filter condition, you can specify an absolute
+ * <p>When defining a date value matcher, you can specify an absolute
  * date (i.e. a constant date value) to be used for comparison.
- * Supported formats for specifying a condition date are:
+ * Supported formats for configuring an absolute date are:
  * </p>
  * <pre>
  *   yyyy-MM-dd                -&gt; date (e.g. 2015-05-31)
@@ -78,13 +99,13 @@ import com.norconex.importer.util.FormatUtil;
  * </pre>
  *
  * <h3>Relative date conditions:</h3>
- * <P>Filter conditions can also specify a moment in time relative to the
+ * <P>Date value matchers can also specify a moment in time relative to the
  * current date using the <code>TODAY</code> or <code>NOW</code> keyword,
  * optionally followed by a number of time units to add/remove.
  * <code>TODAY</code> is the current day without the hours, minutes, and
  * seconds, where as <code>NOW</code> is the current day with the hours,
  * minutes, and seconds. You can also decide whether you want the
- * current date to be fixed for life time of this filter (does not change
+ * current date to be fixed for the lifetime of this condition (does not change
  * after being set for the first time), or whether
  * it should be refreshed on every invocation to reflect the passing of time.
  * </p>
@@ -94,12 +115,12 @@ import com.norconex.importer.util.FormatUtil;
  * When comparing dates at a more granular level (e.g., hours, minutes,
  * seconds), it may be important to take time zones into account.
  * If the time zone (id or offset) is part of a document field date value
- * and this filter configured format supports time zones, it will be be
+ * and the configured date format supports time zones, it will be be
  * interpreted as a date in the encountered time zone.
  * </p>
  * <p>
- * In cases where you want to overwrite the value existing time zone or
- * specify one for field dates without time zones, you can do so with
+ * In cases where you want to overwrite the value's existing time zone or
+ * specify one for dates without time zones, you can do so with
  * the {@link #setDocZoneId(ZoneId)} method.
  * Explicitly setting a time zone will not "convert" a date to that time zone,
  * but will rather assume it was created in the supplied time zone.
@@ -109,17 +130,17 @@ import com.norconex.importer.util.FormatUtil;
  * specify the time zone using the <code>conditionZoneId</code> option.
  * </p>
  *
+ * {@nx.include com.norconex.commons.lang.Operator#operators}
+ *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
- *     {@nx.include com.norconex.importer.handler.filter.AbstractDocumentFilter#attributes}
+ * <condition class="com.norconex.importer.handler.condition.impl.DateCondition"
  *     format="(document field date format)"
  *     docZoneId="(force a time zone on evaluated fields.)"
- *     conditionZoneId="(time zone of condition dates.)">
+ *     conditionZoneId="(time zone of configured condition dates.)">
  *
- *     {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
  *     <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *       (expression matching date fields to filter)
+ *       (expression matching date fields to evaluate)
  *     </fieldMatcher>
  *
  *     <!-- Use one or two (for ranges) conditions where:
@@ -152,20 +173,19 @@ import com.norconex.importer.util.FormatUtil;
  *                                      to another to adjust to the current time.
  *    -->
  *
- *     <condition operator="[gt|ge|lt|le|eq]" date="(a date)" />
+ *     <valueMatcher operator="[gt|ge|lt|le|eq]" date="(a date)" />
  *
- * </handler>
+ * </condition>
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ * <condition class="DateCondition"
  *     format="yyyy-MM-dd'T'HH:mm:ssZ"
- *     conditionZoneId="America/New_York"
- *     onMatch="include">
+ *     conditionZoneId="America/New_York">
  *   <fieldMatcher>publish_date</fieldMatcher>
- *   <condition operator="ge" date="TODAY-7" />
- *   <condition operator="lt" date="TODAY" />
- * </handler>
+ *   <valueMatcher operator="ge" date="TODAY-7" />
+ *   <valueMatcher operator="lt" date="TODAY" />
+ * </condition>
  * }
  * <p>
  * The above example will only keep documents from the last
@@ -173,56 +193,13 @@ import com.norconex.importer.util.FormatUtil;
  * </p>
  *
  * @author Pascal Essiembre
- * @since 2.2.0
+ * @since 3.0.0
  */
 @SuppressWarnings("javadoc")
-public class DateMetadataFilter extends AbstractDocumentFilter {
-    private static final Logger LOG =
-            LoggerFactory.getLogger(DateMetadataFilter.class);
+public class DateCondition implements IImporterCondition, IXMLConfigurable {
 
-    public enum Operator {
-        GREATER_THAN("gt") {@Override
-        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
-            return fldDate.isAfter(cndDate);
-        }},
-        GREATER_EQUAL("ge") {@Override
-        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
-            return fldDate.isAfter(cndDate) || fldDate.isEqual(cndDate);
-        }},
-        EQUALS("eq") {@Override
-        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
-            return fldDate.isEqual(cndDate);
-        }},
-        LOWER_EQUAL("le") {@Override
-        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
-            return fldDate.isBefore(cndDate) || fldDate.isEqual(cndDate);
-        }},
-        LOWER_THAN("lt") {@Override
-        public boolean evaluate(ZonedDateTime fldDate, ZonedDateTime cndDate) {
-            return fldDate.isBefore(cndDate);
-        }};
-        String abbr;
-        Operator(String abbr) {
-            this.abbr = abbr;
-        }
-        public static Operator getOperator(String op) {
-            if (StringUtils.isBlank(op)) {
-                return null;
-            }
-            for (Operator c : Operator.values()) {
-                if (c.abbr.equalsIgnoreCase(op)) {
-                    return c;
-                }
-            }
-            return null;
-        }
-        @Override
-        public String toString() {
-            return abbr;
-        }
-        public abstract boolean evaluate(
-                ZonedDateTime fieldDate, ZonedDateTime conditionDate);
-    }
+    private static final Logger LOG =
+            LoggerFactory.getLogger(DateCondition.class);
 
     public enum TimeUnit {
         YEAR(ChronoUnit.YEARS, "Y"),
@@ -258,80 +235,61 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     }
 
     private final TextMatcher fieldMatcher = new TextMatcher();
+    private ValueMatcher valueMatcher;
+    private ValueMatcher valueMatcherRangeEnd;
     private String format;
-    private final List<Condition> conditions = new ArrayList<>(2);
-
     private ZoneId docZoneId;
     // condition zoneId is only kept here for when we save to XML.
     private ZoneId conditionZoneId;
 
-    public DateMetadataFilter() {
+
+    public DateCondition() {
         super();
     }
-    /**
-     * Constructor.
-     * @param field field to apply date filtering
-     * @deprecated Since 3.0.0, use {@link #DateMetadataFilter(TextMatcher)}
-     */
-    @Deprecated
-    public DateMetadataFilter(String field) {
-        this(field, OnMatch.INCLUDE);
+    public DateCondition(TextMatcher fieldMatcher) {
+        this(fieldMatcher, null, null);
     }
-    /**
-     * Constructor.
-     * @param field field to apply date filtering
-     * @param onMatch include or exclude on match
-     * @deprecated Since 3.0.0, use
-     *             {@link #DateMetadataFilter(TextMatcher, OnMatch)}
-     */
-    @Deprecated
-    public DateMetadataFilter(String field, OnMatch onMatch) {
-        this(TextMatcher.basic(field), onMatch);
+    public DateCondition(
+            TextMatcher fieldMatcher, ValueMatcher valueMatcher) {
+        this(fieldMatcher, valueMatcher, null);
+    }
+    public DateCondition(
+            TextMatcher fieldMatcher,
+            ValueMatcher rangeStart,
+            ValueMatcher rangeEnd) {
+        setFieldMatcher(fieldMatcher);
+        this.valueMatcher = rangeStart;
+        this.valueMatcherRangeEnd = rangeEnd;
     }
 
-    /**
-     * Constructor.
-     * @param fieldMatcher matcher for fields on which to apply date filtering
-     * @since 3.0.0
-     */
-    public DateMetadataFilter(TextMatcher fieldMatcher) {
-        this(fieldMatcher, OnMatch.INCLUDE);
+    public TextMatcher getFieldMatcher() {
+        return fieldMatcher;
     }
     /**
-     *
-     * @param fieldMatcher matcher for fields on which to apply date filtering
-     * @param onMatch include or exclude on match
-     * @since 3.0.0
+     * Sets the text matcher of field names. Copies it.
+     * @param fieldMatcher text matcher
      */
-    public DateMetadataFilter(TextMatcher fieldMatcher, OnMatch onMatch) {
-        super();
+    public void setFieldMatcher(TextMatcher fieldMatcher) {
         this.fieldMatcher.copyFrom(fieldMatcher);
-        setOnMatch(onMatch);
     }
 
-    /**
-     * Deprecated.
-     * @return field name
-     * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
-     */
-    @Deprecated
-    public String getField() {
-        return fieldMatcher.getPattern();
+    public ValueMatcher getValueMatcher() {
+        return valueMatcher;
     }
-    /**
-     * Deprecated.
-     * @param field field name
-     * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
-     */
-    @Deprecated
-    public void setField(String field) {
-        this.fieldMatcher.setPattern(field);
+    public void setValueMatcher(ValueMatcher firstValueMatcher) {
+        this.valueMatcher = firstValueMatcher;
+    }
+
+    public ValueMatcher getValueMatcherRangeEnd() {
+        return valueMatcherRangeEnd;
+    }
+    public void setValueMatcherRangeEnd(ValueMatcher secondValueMatcher) {
+        this.valueMatcherRangeEnd = secondValueMatcher;
     }
 
     /**
      * Gets the time zone id documents are considered to be.
      * @return zone id
-     * @since 3.0.0
      */
     public ZoneId getDocZoneId() {
         return docZoneId;
@@ -339,18 +297,11 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     /**
      * Sets the time zone id documents are considered to be.
      * @param docZoneId zone id
-     * @since 3.0.0
      */
     public void setDocZoneId(ZoneId docZoneId) {
         this.docZoneId = docZoneId;
     }
 
-    public TextMatcher getFieldMatcher() {
-        return fieldMatcher;
-    }
-    public void setFieldMatcher(TextMatcher fieldMatcher) {
-        this.fieldMatcher.copyFrom(fieldMatcher);
-    }
 
     public String getFormat() {
         return format;
@@ -359,77 +310,10 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         this.format = format;
     }
 
-    // Uses system default time zone.
-    @Deprecated
-    public void addCondition(Operator operator, Date date) {
-
-        conditions.add(new Condition(operator, new StaticDateTimeSupplier(
-                ZonedDateTime.ofInstant(Instant.ofEpochMilli(
-                        date.getTime()), ZoneId.systemDefault()))));
-    }
-    public void addCondition(Operator operator, ZonedDateTime dateTime) {
-        Objects.requireNonNull(dateTime, "'dateTime' must not be null.");
-        conditions.add(new Condition(
-                operator, new StaticDateTimeSupplier(dateTime)));
-    }
-    public void addCondition(Operator operator,
-            Supplier<ZonedDateTime> dateTimeSupplier) {
-        Objects.requireNonNull(dateTimeSupplier,
-                "'dateTimeSupplier' must not be null.");
-        conditions.add(new Condition(operator, dateTimeSupplier));
-    }
-    public void addCondition(Condition condition) {
-        Objects.requireNonNull(condition, "'condition' must not be null.");
-        conditions.add(condition);
-    }
-    /**
-     * Adds a list of conditions, appending them to the list of already
-     * defined conditions in this filter (if any).
-     * @param conditions list of conditions
-     * @since 3.0.0
-     */
-    public void addConditions(List<Condition> conditions) {
-        this.conditions.addAll(conditions);
-    }
-    /**
-     * Sets a list of conditions, overwriting any existing ones in this filter.
-     * @param conditions list of conditions
-     * @since 3.0.0
-     */
-    public void setConditions(List<Condition> conditions) {
-        CollectionUtil.setAll(this.conditions, conditions);
-    }
-    /**
-     * Gets the list date filter conditions for this filter.
-     * @return conditions
-     * @since 3.0.0
-     */
-    public List<Condition> getConditions() {
-        return Collections.unmodifiableList(conditions);
-    }
-    /**
-     * Removes a condition, if it part of already defined conditions.
-     * @param condition the condition to remove
-     * @return <code>true</code> if the filter contained the condition
-     * @since 3.0.0
-     */
-    public boolean removeCondition(Condition condition) {
-        return this.conditions.remove(condition);
-    }
-    /**
-     * Removes all conditions from this filter.
-     * @since 3.0.0
-     */
-    public void removeAllConditions() {
-        this.conditions.clear();
-    }
-
-
     @Override
-    protected boolean isDocumentMatched(
+    public boolean testDocument(
             HandlerDoc doc, InputStream input, ParseState parseState)
                     throws ImporterHandlerException {
-
         if (fieldMatcher.getPattern() == null) {
             throw new IllegalArgumentException(
                     "\"fieldMatcher\" pattern cannot be empty.");
@@ -437,40 +321,47 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         for (Entry<String, List<String>> en :
                 doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             for (String value : en.getValue()) {
-                if (meetsAllConditions(en.getKey(), value)) {
+                if (matches(valueMatcher, en.getKey(), value)
+                        && matches(valueMatcherRangeEnd, en.getKey(), value)) {
                     return true;
                 }
             }
         }
         return false;
     }
-
-    private boolean meetsAllConditions(String fieldName, String fieldValue) {
-
+    private boolean matches(
+            ValueMatcher matcher, String fieldName, String fieldValue) {
+        if (matcher == null) {
+            return true;
+        }
 
         ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
                 fieldValue, format, null, fieldName, docZoneId);
         if (dt == null) {
             return false;
         }
-        for (Condition condition : conditions) {
-            boolean evalResult = condition.operator.evaluate(
-                    dt, condition.getDateTime());
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("{}: {} [{}] {} = {}",
-                        fieldName, fieldValue, condition.operator,
-                        condition.getDateTime(), evalResult);
-            }
-            if (!evalResult) {
-                return false;
-            }
+
+        // if the date obtained by the supplier (the date value or logic
+        // configured) starts with TODAY, we truncate that date to
+        // ensure we are comparing apples to apples. Else, one must ensure
+        // the date format matches for proper comparisons.
+        if (StringUtils.startsWithIgnoreCase(
+                matcher.getDateTimeSupplier().toString(), "today")) {
+            dt = dt.truncatedTo(ChronoUnit.DAYS);
         }
-        return true;
+
+        Operator op = defaultIfNull(matcher.operator, EQUALS);
+        boolean evalResult = op.evaluate(dt, matcher.getDateTime());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("{}: {} [{}] {} = {}",
+                    fieldName, fieldValue, op,
+                    matcher.getDateTime(), evalResult);
+        }
+        return evalResult;
     }
 
     @Override
-    protected void loadFilterFromXML(XML xml) {
-        xml.checkDeprecated("@field", "fieldMatcher", true);
+    public void loadFromXML(XML xml) {
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         setFormat(xml.getString("@format", format));
 
@@ -488,49 +379,24 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         }
         this.conditionZoneId = cZoneId;
 
-        List<XML> nodes = xml.getXMLList("condition");
-        for (XML node : nodes) {
-            String op = node.getString("@operator", null);
-            String dateStr = node.getString("@date", null);
-            if (StringUtils.isBlank(op) || StringUtils.isBlank(dateStr)) {
-                LOG.warn("Both \"operator\" and \"date\" must be provided.");
-                break;
-            }
-            Operator operator = Operator.getOperator(op);
-            if (operator == null) {
-                LOG.warn("Unsupported operator: {}", op);
-                break;
-            }
-            conditions.add(toCondition(operator, dateStr, cZoneId));
+        List<XML> nodes = xml.getXMLList("valueMatcher");
+        if (nodes.size() >= 1) {
+            setValueMatcher(toValueMatcher(nodes.get(0)));
+        }
+        if (nodes.size() >= 2) {
+            setValueMatcherRangeEnd(toValueMatcher(nodes.get(1)));
         }
     }
 
-    @Override
-    protected void saveFilterToXML(XML xml) {
-        xml.setAttribute("format", format);
-        xml.setAttribute("docZoneId", docZoneId);
-        xml.setAttribute("conditionZoneId", conditionZoneId);
-        for (Condition condition : conditions) {
-            xml.addElement("condition")
-                    .setAttribute("operator", condition.operator.abbr)
-                    .setAttribute("date",
-                            condition.dateTimeSupplier.toString());
+    private ValueMatcher toValueMatcher(XML xml) {
+        Operator operator = Operator.of(
+                xml.getString("@operator", EQUALS.toString()));
+        if (operator == null) {
+            throw new IllegalArgumentException(
+                    "Unsupported operator: " + xml.getString("@operator"));
         }
-        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        return EqualsBuilder.reflectionEquals(this, other);
-    }
-    @Override
-    public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
-    }
-    @Override
-    public String toString() {
-        return new ReflectionToStringBuilder(
-                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+        return new ValueMatcher(operator,
+                toDateTimeSupplier(xml.getString("@date", null)));
     }
 
     private static final Pattern RELATIVE_PARTS = Pattern.compile(
@@ -538,11 +404,12 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             "^(NOW|TODAY)\\s*(([-+]{1})\\s*(\\d+)\\s*([YMDhms]{1})\\s*)?"
             //6
            + "(\\*{0,1})$");
-    public static Condition toCondition(
-            Operator operator, String dateString, ZoneId zoneId) {
+    private Supplier<ZonedDateTime> toDateTimeSupplier(String dateStr) {
+        String d = StringUtils.trimToNull(dateStr);
+        if (d == null) {
+            throw new IllegalArgumentException("\"date\" must not be blank.");
+        }
         try {
-            String d = dateString.trim();
-
             // NOW[-+]9[YMDhms][*]
             // TODAY[-+]9[YMDhms][*]
             Matcher m = RELATIVE_PARTS.matcher(d);
@@ -565,38 +432,67 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
                 boolean today = "TODAY".equals(m.group(1));
 
                 if (fixed) {
-                    return new Condition(operator,
-                            new DynamicFixedDateTimeSupplier(
-                                    unit, amount, today, zoneId));
+                    return new DynamicFixedDateTimeSupplier(
+                            unit, amount, today, conditionZoneId);
                 }
-                return new Condition(operator,
-                        new DynamicFloatingDateTimeSupplier(
-                                unit, amount, today, zoneId));
+                return new DynamicFloatingDateTimeSupplier(
+                        unit, amount, today, conditionZoneId);
             }
 
             //--- Static ---
             String dateFormat = null;
             if (d.contains(".")) {
                 dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-            } else if (d.contains("T")) {
+            } else if (d.contains("T") || d.contains(":")) {
                 dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
             } else {
                 dateFormat = "yyyy-MM-dd";
             }
             ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
-                    dateString, dateFormat, null, null, zoneId);
-            return new Condition(operator, new StaticDateTimeSupplier(dt));
+                    dateStr, dateFormat, null, null, conditionZoneId);
+            return new StaticDateTimeSupplier(dt);
         } catch (DateTimeParseException e) {
             throw new ConfigurationException(
-                    "Date parse error for value: " + dateString, e);
+                    "Date parse error for value: " + dateStr, e);
         }
     }
 
+    @Override
+    public void saveToXML(XML xml) {
+        xml.setAttribute("format", format);
+        xml.setAttribute("docZoneId", docZoneId);
+        xml.setAttribute("conditionZoneId", conditionZoneId);
+        fieldMatcher.saveToXML(xml.addElement("fieldMatcher"));
+        if (valueMatcher != null) {
+            xml.addElement("valueMatcher")
+                    .setAttribute("operator", valueMatcher.operator)
+                    .setAttribute("date", valueMatcher.dateTimeSupplier);
+        }
+        if (valueMatcherRangeEnd != null) {
+            xml.addElement("valueMatcher")
+                    .setAttribute("operator", valueMatcher.operator)
+                    .setAttribute("date", valueMatcher.dateTimeSupplier);
+        }
+    }
 
-    public static class Condition {
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
+    }
+
+    public static class ValueMatcher {
         private final Operator operator;
         private final Supplier<ZonedDateTime> dateTimeSupplier;
-        public Condition(
+        public ValueMatcher(
                 Operator operator,
                 Supplier<ZonedDateTime> dateTimeSupplier) {
             super();
@@ -773,4 +669,3 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         return b.toString();
     }
 }
-

@@ -19,12 +19,9 @@
   <xs:include schemaLocation="../AbstractStringCondition.xsd"></xs:include>
   
   <xs:element name="condition">
-    <xs:complexType>
+    <xs:complexType mixed="true">
       <xs:complexContent> 
         <xs:extension base="AbstractStringCondition">
-          <xs:all>
-            <xs:element name="script" minOccurs="1" maxOccurs="1" />
-          </xs:all>
           <xs:attribute name="engineName" type="xs:string"/>
         </xs:extension> 
       </xs:complexContent>   

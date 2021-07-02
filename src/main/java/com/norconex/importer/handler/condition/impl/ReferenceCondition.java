@@ -49,7 +49,7 @@ import com.norconex.importer.parser.ParseState;
  * </condition>
  * }
  * <p>
- * The above eample reject documents having "/login/" in their reference.
+ * The above example reject documents having "/login/" in their reference.
  * </p>
  *
  * @author Pascal Essiembre

@@ -20,6 +20,10 @@ import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_CONDITION_TRU
 import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_END;
 import static com.norconex.importer.ImporterEvent.IMPORTER_HANDLER_ERROR;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.norconex.commons.lang.xml.IXMLConfigurable;
@@ -109,5 +113,19 @@ public class HandlerPredicate
         if (condition instanceof IXMLConfigurable) {
             ((IXMLConfigurable) condition).saveToXML(xml);
         }
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return EqualsBuilder.reflectionEquals(this, other);
+    }
+    @Override
+    public int hashCode() {
+        return HashCodeBuilder.reflectionHashCode(this);
+    }
+    @Override
+    public String toString() {
+        return new ReflectionToStringBuilder(
+                this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }

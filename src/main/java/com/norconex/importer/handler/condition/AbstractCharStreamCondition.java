@@ -39,13 +39,17 @@ import com.norconex.importer.util.CharsetUtil;
  * conditions restricted to text documents only.
  * </p>
  *
- * <p>When used as a pre-parse handler,
+ * {@nx.block #charEncoding
+ * <h3>Character encoding</h3>
+ * <p>
+ * When used as a pre-parse handler,
  * this class will use detected or previously set content character
  * encoding unless the character encoding
  * was specified using {@link #setSourceCharset(String)}. Since document
  * parsing converts content to UTF-8, UTF-8 is always assumed when
  * used as a post-parse handler.
  * </p>
+ * }
  *
  * {@nx.xml.usage #attributes
  *  sourceCharset="(character encoding)"
@@ -58,6 +62,7 @@ import com.norconex.importer.util.CharsetUtil;
  * @author Pascal Essiembre
  * @since 3.0.0 (adapted from {@link AbstractCharStreamFilter})
  */
+@SuppressWarnings("javadoc")
 public abstract class AbstractCharStreamCondition
         implements IImporterCondition, IXMLConfigurable {
 
