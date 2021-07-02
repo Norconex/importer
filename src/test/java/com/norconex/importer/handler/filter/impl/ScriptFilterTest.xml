@@ -18,7 +18,7 @@ Config for "testPrePostScriptFilter" (from #86).
  -->
 <importer>
   <preParseHandlers>
-    <filter
+    <handler
       class="com.norconex.importer.handler.filter.impl.ScriptFilter"
       engineName="javascript"
       onMatch="include"
@@ -27,11 +27,11 @@ Config for "testPrePostScriptFilter" (from #86).
       <![CDATA[
         /*return*/ true;
       ]]></script>
-    </filter>
+    </handler>
   </preParseHandlers>
 
   <postParseHandlers>
-    <filter
+    <handler
       class="com.norconex.importer.handler.filter.impl.ScriptFilter"
       engineName="javascript"
       onMatch="include"
@@ -40,6 +40,6 @@ Config for "testPrePostScriptFilter" (from #86).
       <![CDATA[
         /*return*/ true;
       ]]></script>
-    </filter>
+    </handler>
   </postParseHandlers>
 </importer>
