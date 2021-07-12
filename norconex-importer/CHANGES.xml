@@ -15,6 +15,10 @@
       <action dev="essiembre" type="add">
         New NoContentTransformer ported from version 3.0.0.
       </action>
+      <action dev="essiembre" type="update">
+        Transformers are now invoked at least once, even when a document
+        has no content.
+      </action>
       <action dev="essiembre" type="fix">
         ExternalTransformer was improved to avoid concurrency exceptions.
       </action>

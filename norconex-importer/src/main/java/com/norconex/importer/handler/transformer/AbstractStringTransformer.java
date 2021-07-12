@@ -36,18 +36,18 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * <p>Base class to facilitate creating transformers on text content, loading
  * text into a {@link StringBuilder} for memory processing.
  * </p>
- * 
- * <p><b>Since 2.2.0</b> this class limits the memory used for content 
+ *
+ * <p><b>Since 2.2.0</b> this class limits the memory used for content
  * transformation by reading one section of text at a time.  Each
  * sections are sent for transformation once they are read,
- * so that no two sections exists in memory at once.  Sub-classes should 
- * respect this approach.  Each of them have a maximum number of characters 
+ * so that no two sections exists in memory at once.  Sub-classes should
+ * respect this approach.  Each of them have a maximum number of characters
  * equal to the maximum read size defined using {@link #setMaxReadSize(int)}.
- * When none is set, the default read size is defined by 
+ * When none is set, the default read size is defined by
  * {@link TextReader#DEFAULT_MAX_READ_SIZE}.
  * </p>
- * 
- * <p>An attempt is made to break sections nicely after a paragraph, sentence, 
+ *
+ * <p>An attempt is made to break sections nicely after a paragraph, sentence,
  * or word.  When not possible, long text will be cut at a size equal
  * to the maximum read size.
  * </p>
@@ -60,7 +60,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * Subclasses inherit this {@link IXMLConfigurable} configuration:
  * </p>
  * <pre>
- *  &lt;!-- parent tag has these attribute: 
+ *  &lt;!-- parent tag has these attribute:
  *      maxReadSize="(max characters to read at once)"
  *      sourceCharset="(character encoding)"
  *    --&gt;
@@ -72,7 +72,7 @@ import com.norconex.importer.handler.ImporterHandlerException;
  * </pre>
  * @author Pascal Essiembre
  */
-public abstract class AbstractStringTransformer 
+public abstract class AbstractStringTransformer
             extends AbstractCharStreamTransformer {
 
     private int maxReadSize = TextReader.DEFAULT_MAX_READ_SIZE;
@@ -86,6 +86,7 @@ public abstract class AbstractStringTransformer
         int sectionIndex = 0;
         StringBuilder b = new StringBuilder();
         String text = null;
+        boolean atLeastOnce = false;
         try (TextReader reader = new TextReader(input, maxReadSize)) {
             while ((text = reader.readText()) != null) {
                 b.append(text);
@@ -94,6 +95,13 @@ public abstract class AbstractStringTransformer
                 output.append(b);
                 sectionIndex++;
                 b.setLength(0);
+                atLeastOnce = true;
+            }
+            // If no content, go at least once in it in case the transformer
+            // is writing content regardless.
+            if (!atLeastOnce) {
+                transformStringContent(reference, b, metadata, parsed, 0);
+                output.append(b);
             }
         } catch (IOException e) {
             throw new ImporterHandlerException(
@@ -101,7 +109,7 @@ public abstract class AbstractStringTransformer
         }
         b.setLength(0);
         b = null;
-    }    
+    }
 
     /**
      * Gets the maximum number of characters to read and transform
@@ -123,7 +131,7 @@ public abstract class AbstractStringTransformer
     protected abstract void transformStringContent(
            String reference, StringBuilder content, ImporterMetadata metadata,
            boolean parsed, int sectionIndex) throws ImporterHandlerException;
-   
+
     @Override
     protected final void saveCharStreamTransformerToXML(
             EnhancedXMLStreamWriter writer)
@@ -135,7 +143,7 @@ public abstract class AbstractStringTransformer
      * Saves configuration settings specific to the implementing class.
      * The parent tag along with the "class" attribute are already written.
      * Implementors must not close the writer.
-     * 
+     *
      * @param writer the xml writer
      * @throws XMLStreamException could not save to XML
      */
@@ -155,7 +163,7 @@ public abstract class AbstractStringTransformer
      */
     protected abstract void loadStringTransformerFromXML(XMLConfiguration xml)
             throws IOException;
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -181,7 +189,7 @@ public abstract class AbstractStringTransformer
             .append(maxReadSize)
             .toHashCode();
     }
-    
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
