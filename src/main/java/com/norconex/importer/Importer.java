@@ -117,8 +117,8 @@ public class Importer {
             }
         }
         streamFactory = new CachedStreamFactory(
-                this.importerConfig.getMaxFilePoolCacheSize(),
-                this.importerConfig.getMaxFileCacheSize(),
+                (int) this.importerConfig.getMaxFilePoolCacheSize(),
+                (int) this.importerConfig.getMaxFileCacheSize(),
                 this.importerConfig.getTempDir()); // use workdir + /tmp?
         this.eventManager = new EventManager(eventManager);
 

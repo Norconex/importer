@@ -50,9 +50,9 @@ public class ImporterConfig implements IXMLConfigurable {
 
     public static final String DEFAULT_TEMP_DIR_PATH =
             FileUtils.getTempDirectoryPath();
-    public static final int DEFAULT_MAX_MEM_INSTANCE =
+    public static final long DEFAULT_MAX_MEM_INSTANCE =
             DataUnit.MB.toBytes(100).intValue();
-    public static final int DEFAULT_MAX_MEM_POOL =
+    public static final long DEFAULT_MAX_MEM_POOL =
             DataUnit.GB.toBytes(1).intValue();
 
     private IDocumentParserFactory documentParserFactory =
@@ -68,8 +68,8 @@ public class ImporterConfig implements IXMLConfigurable {
             new ArrayList<>();
 
     private Path tempDir = Paths.get(DEFAULT_TEMP_DIR_PATH);
-    private int maxFileCacheSize = DEFAULT_MAX_MEM_INSTANCE;
-    private int maxFilePoolCacheSize = DEFAULT_MAX_MEM_POOL;
+    private long maxFileCacheSize = DEFAULT_MAX_MEM_INSTANCE;
+    private long maxFilePoolCacheSize = DEFAULT_MAX_MEM_POOL;
     private Path parseErrorsSaveDir;
 
     public IDocumentParserFactory getParserFactory() {
@@ -222,17 +222,17 @@ public class ImporterConfig implements IXMLConfigurable {
         CollectionUtil.setAll(this.responseProcessors, responseProcessors);
     }
 
-    public int getMaxFileCacheSize() {
+    public long getMaxFileCacheSize() {
         return maxFileCacheSize;
     }
-    public void setMaxFileCacheSize(int maxFileCacheSize) {
+    public void setMaxFileCacheSize(long maxFileCacheSize) {
         this.maxFileCacheSize = maxFileCacheSize;
     }
 
-    public int getMaxFilePoolCacheSize() {
+    public long getMaxFilePoolCacheSize() {
         return maxFilePoolCacheSize;
     }
-    public void setMaxFilePoolCacheSize(int maxFilePoolCacheSize) {
+    public void setMaxFilePoolCacheSize(long maxFilePoolCacheSize) {
         this.maxFilePoolCacheSize = maxFilePoolCacheSize;
     }
     @Override
@@ -241,9 +241,9 @@ public class ImporterConfig implements IXMLConfigurable {
         setParseErrorsSaveDir(
                 xml.getPath("parseErrorsSaveDir", parseErrorsSaveDir));
         setMaxFileCacheSize(
-                xml.getInteger("maxFileCacheSize", maxFileCacheSize));
+                xml.getLong("maxFileCacheSize", maxFileCacheSize));
         setMaxFilePoolCacheSize(
-                xml.getInteger("maxFilePoolCacheSize", maxFilePoolCacheSize));
+                xml.getLong("maxFilePoolCacheSize", maxFilePoolCacheSize));
         setPreParseConsumer(xmlFlow.parse(xml.getXML("preParseHandlers")));
         setParserFactory(xml.getObjectImpl(IDocumentParserFactory.class,
                 "documentParserFactory", documentParserFactory));
