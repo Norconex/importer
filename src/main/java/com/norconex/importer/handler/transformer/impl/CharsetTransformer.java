@@ -109,8 +109,6 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             HandlerDoc doc, final InputStream input, final OutputStream output,
             final ParseState parseState) throws ImporterHandlerException {
 
-System.out.println("DocInfo encoding: " + doc.getDocInfo().getContentEncoding());
-
         String inputCharset = detectCharsetIfBlank(input);
 
         //--- Get target charset ---
