@@ -76,6 +76,13 @@ public class HandlerConsumer
         this.handler = handler;
     }
 
+    public IImporterHandler getHandler() {
+        return handler;
+    }
+    public void setHandler(IImporterHandler handler) {
+        this.handler = handler;
+    }
+
     public static Consumer<HandlerContext> fromHandlers(
             IImporterHandler... importerHandlers) {
         return fromHandlers(importerHandlers == null
