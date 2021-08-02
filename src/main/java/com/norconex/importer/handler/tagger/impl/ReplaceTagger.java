@@ -88,7 +88,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.ReplaceTagger">
+ * <handler class="ReplaceTagger">
  *   <replace>
  *     <fieldMatcher>fruit</fieldMatcher>
  *     <valueMatcher replaceAll="true">apple</valueMatcher>

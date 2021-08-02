@@ -68,7 +68,7 @@ import com.norconex.importer.parser.ParseState;
  *   <li>\s (space)</li>
  * </ul>
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.ReduceConsecutivesTransformer">
+ * <handler class="ReduceConsecutivesTransformer">
  *   <reduce>\s</reduce>
  * </handler>
  * }

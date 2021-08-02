@@ -93,8 +93,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.URLExtractorTagger"
- *     toField="documentURLs">
+ * <handler class="URLExtractorTagger" toField="documentURLs">
  *   <restrictTo>
  *     <fieldMatcher>document.contentType</fieldMatcher>
  *     <valueMatcher>application/pdf</valueMatcher>

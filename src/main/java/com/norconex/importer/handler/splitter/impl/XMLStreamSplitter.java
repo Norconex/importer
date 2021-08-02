@@ -110,8 +110,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.splitter.impl.XMLStreamSplitter"
- *     path="/animals/species/animal" />
+ * <handler class="XMLStreamSplitter" path="/animals/species/animal" />
  * }
  *
  * <p>

@@ -2,6 +2,7 @@ TODO:
 ==============
 
 - Deprecate "restrictTo" in favor of XML Flow conditions.
+- Deprecate "filters" in favor of XML Flow conditions.
 
 - Instead of naming handlers wit "Metadata" "Content", made/recommended for 
   Pre or Post, or what type does it support out of the box vs recommended...

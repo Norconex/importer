@@ -60,7 +60,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.StripBetweenTransformer">
+ * <handler class="StripBetweenTransformer">
  *   <stripBetween inclusive="true">
  *     <startMatcher><![CDATA[<!-- SIDENAV_START -->]]></startMatcher>
  *     <endMatcher><![CDATA[<!-- SIDENAV_END -->]]></endMatcher>

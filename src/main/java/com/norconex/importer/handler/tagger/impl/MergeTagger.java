@@ -92,7 +92,7 @@ import com.norconex.importer.parser.ParseState;
  * </handler>
  * }
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.MergeTagger">
+ * <handler class="MergeTagger">
  *   <merge toField="title" deleteFromFields="true"
  *       singleValue="true" singleValueSeparator="," >
  *     <fieldMatcher method="regex">(title|dc.title|dc:title|doctitle)</fieldMatcher>

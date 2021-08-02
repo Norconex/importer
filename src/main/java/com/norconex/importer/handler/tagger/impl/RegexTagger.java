@@ -87,7 +87,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.RegexTagger" >
+ * <handler class="RegexTagger" >
  *   <pattern toField="emails">
  *     [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
  *   </pattern>

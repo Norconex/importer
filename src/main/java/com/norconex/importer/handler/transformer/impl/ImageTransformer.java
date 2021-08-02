@@ -85,8 +85,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.ImageTransformer"
- *     targetFormat="png">
+ * <handler class="ImageTransformer" targetFormat="png">
  *   <scale dimension="400x250" />
  * </handler>
  * }

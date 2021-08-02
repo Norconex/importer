@@ -28,6 +28,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +76,12 @@ public class Importer {
             new ImporterStatus();
 
 	private final ImporterConfig importerConfig;
-	private final CachedStreamFactory streamFactory;
-    private final EventManager eventManager;
+
+	// Only used when using command-line or invoking
+	// importDocument(ImporterRequest). The "doc" version has its own.
+	private CachedStreamFactory requestStreamFactory;
+
+	private final EventManager eventManager;
     private static final InheritableThreadLocal<Importer> INSTANCE =
             new InheritableThreadLocal<>();
 
@@ -105,21 +110,6 @@ public class Importer {
         } else {
             this.importerConfig = new ImporterConfig();
         }
-        Path tempDir = this.importerConfig.getTempDir();
-
-        if (!tempDir.toFile().exists()) {
-            try {
-                Files.createDirectories(tempDir);
-            } catch (IOException e) {
-                throw new ImporterRuntimeException(
-                        "Cannot create importer temporary directory: "
-                                + tempDir, e);
-            }
-        }
-        streamFactory = new CachedStreamFactory(
-                (int) this.importerConfig.getMaxFilePoolCacheSize(),
-                (int) this.importerConfig.getMaxFileCacheSize(),
-                this.importerConfig.getTempDir()); // use workdir + /tmp?
         this.eventManager = new EventManager(eventManager);
 
         INSTANCE.set(this);
@@ -136,10 +126,6 @@ public class Importer {
      */
     public static void main(String[] args) {
         ImporterLauncher.launch(args);
-    }
-
-    public CachedStreamFactory getStreamFactory() {
-        return streamFactory;
     }
 
     /**
@@ -263,11 +249,14 @@ public class Importer {
     // We deal with stream, but since only one of stream or file can be set,
     // convert file to stream only if set.
     private Doc toDocument(ImporterRequest req) throws ImporterException {
+        ensureRequestStreamFactory();
+
         CachedInputStream is;
         String ref = StringUtils.trimToEmpty(req.getReference());
         if (req.getInputStream() != null) {
             // From input stream
-            is = CachedInputStream.cache(req.getInputStream(), streamFactory);
+            is = CachedInputStream.cache(
+                    req.getInputStream(), requestStreamFactory);
         } else if (req.getFile() != null) {
             // From file
             if (!req.getFile().toFile().isFile()) {
@@ -276,7 +265,7 @@ public class Importer {
                                 + req.getFile().toAbsolutePath());
             }
             try {
-                is = streamFactory.newInputStream(
+                is = requestStreamFactory.newInputStream(
                         new FileInputStream(req.getFile().toFile()));
             } catch (IOException e) {
                 throw new ImporterException("Could not import file: "
@@ -286,7 +275,7 @@ public class Importer {
                 ref = req.getFile().toFile().getAbsolutePath();
             }
         } else {
-            is = streamFactory.newInputStream();
+            is = requestStreamFactory.newInputStream();
         }
 
         DocInfo info = new DocInfo(ref);
@@ -294,6 +283,30 @@ public class Importer {
         info.setContentType(req.getContentType());
 
         return new Doc(info, is, req.getMetadata());
+    }
+
+    private synchronized void ensureRequestStreamFactory() {
+        if (requestStreamFactory != null) {
+            return;
+        }
+
+        Path tempDir = this.importerConfig.getTempDir();
+        if (tempDir == null) {
+            tempDir = Paths.get(ImporterConfig.DEFAULT_TEMP_DIR_PATH);
+        }
+        if (!tempDir.toFile().exists()) {
+            try {
+                Files.createDirectories(tempDir);
+            } catch (IOException e) {
+                throw new ImporterRuntimeException(
+                        "Cannot create importer temporary directory: "
+                                + tempDir, e);
+            }
+        }
+        this.requestStreamFactory = new CachedStreamFactory(
+                (int) this.importerConfig.getMaxMemoryPool(),
+                (int) this.importerConfig.getMaxMemoryInstance(),
+                this.importerConfig.getTempDir());
     }
 
     private ImporterStatus doImportDocument(
@@ -386,9 +399,9 @@ public class Importer {
         fire(IMPORTER_PARSER_BEGIN, doc,
                 b -> b.subject(parser).parseState(ParseState.PRE));
 
-        try (   CachedOutputStream out = streamFactory.newOuputStream();
-                OutputStreamWriter output = new OutputStreamWriter(
-                        out, StandardCharsets.UTF_8)) {
+        try (CachedOutputStream out = doc.getStreamFactory().newOuputStream();
+             OutputStreamWriter output = new OutputStreamWriter(
+                     out, StandardCharsets.UTF_8)) {
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Parser \"{}\" about to parse \"{}\".",
@@ -424,7 +437,7 @@ public class Importer {
                             + "content for: {}",
                             parser.getClass(), doc.getReference());
                 }
-                doc.setInputStream(streamFactory.newInputStream());
+                doc.setInputStream(doc.getStreamFactory().newInputStream());
             } else {
                 CachedInputStream newInputStream = out.getInputStream();
                 doc.setInputStream(newInputStream);

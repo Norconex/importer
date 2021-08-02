@@ -107,7 +107,7 @@ import com.norconex.importer.util.DOMUtil;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.DOMDeleteTransformer">
+ * <handler class="DOMDeleteTransformer">
  *   <dom selector="div.firstName" />
  * </handler>
  * }

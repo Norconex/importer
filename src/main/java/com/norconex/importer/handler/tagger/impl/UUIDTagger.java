@@ -58,8 +58,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.UUIDTagger"
- *     field="uuid" onSet="replace" />
+ * <handler class="UUIDTagger" field="uuid" onSet="replace" />
  * }
  * <p>
  * The above generates a UUID and stores it in a "uuid" field, overwriting

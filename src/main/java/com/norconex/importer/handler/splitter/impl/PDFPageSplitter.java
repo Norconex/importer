@@ -82,7 +82,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter">
+ * <handler class="PDFPageSplitter">
  *   <referencePagePrefix>#page</referencePagePrefix>
  * </handler>
  * }

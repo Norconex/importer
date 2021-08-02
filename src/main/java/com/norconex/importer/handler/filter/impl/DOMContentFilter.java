@@ -142,12 +142,12 @@ import com.norconex.importer.util.DOMUtil;
  *
  * {@nx.xml.example
  * <!-- Exclude an HTML page that has one or more GIF images in it: -->
- * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ * <handler class="DOMContentFilter"
  *          selector="img[src$=.gif]" onMatch="exclude" />
  *
  * <!-- Exclude an HTML page that has a paragraph tag with a class called
  *      "disclaimer" and a value containing "skip me": -->
- * <handler class="com.norconex.importer.handler.filter.impl.DOMContentFilter"
+ * <handler class="DOMContentFilter"
  *          selector="p.disclaimer" onMatch="exclude" >
  *   <regex>\bskip me\b</regex>
  * </handler>

@@ -57,8 +57,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.filter.impl.TextFilter"
- *          onMatch="include" >
+ *  <handler class="TextFilter" onMatch="include" >
  *      <valueMatcher>apple</valueMatcher>
  *  </handler>
  * }

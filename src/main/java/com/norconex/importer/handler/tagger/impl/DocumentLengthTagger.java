@@ -65,8 +65,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.DocumentLengthTagger"
- *     toField="docSize" />
+ * <handler class="DocumentLengthTagger" toField="docSize" />
  * }
  *
  * <p>

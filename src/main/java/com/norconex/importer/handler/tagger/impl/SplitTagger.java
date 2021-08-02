@@ -79,7 +79,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.SplitTagger">
+ * <handler class="SplitTagger">
  *   <split>
  *     <fieldMatcher>myField</fieldMatcher>
  *     <separator regex="true">\s*,\s*</separator>

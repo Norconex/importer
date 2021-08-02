@@ -75,7 +75,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.CurrentDateTagger"
+ * <handler class="CurrentDateTagger"
  *      toField="crawl_date" format="yyyy-MM-dd HH:mm" />
  * }
  * <p>

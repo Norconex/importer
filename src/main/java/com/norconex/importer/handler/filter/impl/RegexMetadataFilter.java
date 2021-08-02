@@ -60,7 +60,7 @@ import com.norconex.importer.parser.ParseState;
  * in the title.
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexMetadataFilter"
+ *  &lt;handler class="RegexMetadataFilter"
  *          onMatch="include" field="title" &gt;
  *      &lt;regex&gt;.*potato.*&lt;/regex&gt;
  *  &lt;/handler&gt;

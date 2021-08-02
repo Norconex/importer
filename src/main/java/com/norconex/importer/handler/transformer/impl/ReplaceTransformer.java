@@ -55,7 +55,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.ReplaceTransformer">
+ * <handler class="ReplaceTransformer">
  *   <replace>
  *     <valueMatcher replaceAll="true">junk food</valueMatcher>
  *     <toValue>healthy food</toValue>

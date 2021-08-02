@@ -119,7 +119,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.TextStatisticsTagger">
+ * <handler class="TextStatisticsTagger">
  *   <fieldMatcher>statistics</fieldMatcher>
  * </handler>
  * }

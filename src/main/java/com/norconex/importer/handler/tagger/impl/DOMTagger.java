@@ -184,7 +184,7 @@ import com.norconex.importer.util.DOMUtil;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.DOMTagger">
+ * <handler class="DOMTagger">
  *   <dom selector="div.firstName" toField="firstName" />
  *   <dom selector="div.lastName"  toField="lastName" />
  * </handler>

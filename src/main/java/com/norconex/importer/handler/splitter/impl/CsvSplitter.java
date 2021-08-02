@@ -70,7 +70,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
+ * <handler class="CsvSplitter"
  *     separatorCharacter=","
  *     quoteCharacter="'"
  *     escapeCharacter="\"

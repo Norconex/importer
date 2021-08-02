@@ -51,8 +51,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.StripBeforeTransformer"
- *     inclusive="true">
+ * <handler class="StripBeforeTransformer" inclusive="true">
  *   <stripBeforeMatcher><![CDATA[<!-- HEADER_END -->]]></stripBeforeMatcher>
  * </handler>
  * }

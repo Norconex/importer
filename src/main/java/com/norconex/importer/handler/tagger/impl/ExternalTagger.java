@@ -97,7 +97,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.ExternalTagger">
+ * <handler class="ExternalTagger">
  *   <command>/path/tag/app ${INPUT} ${OUTPUT_META}</command>
  * </handler>
  * }

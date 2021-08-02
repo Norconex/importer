@@ -78,7 +78,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.TruncateTagger"
+ * <handler class="TruncateTagger"
  *     maxLength="50"
  *     appendHash="true"
  *     suffix="!">

@@ -78,7 +78,7 @@ import com.norconex.importer.util.CharsetUtil;
  *
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+ * <handler class="CharsetTransformer"
  *     sourceCharset="ISO-8859-1" targetCharset="UTF-8">
  * </handler>
  * }

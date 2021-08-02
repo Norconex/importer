@@ -87,13 +87,11 @@ import com.norconex.importer.parser.ParseState;
  *
  * {@nx.xml.example
  * <!-- Converts title to lowercase -->
- * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
- *     type="lower" applyTo="field">
+ * <handler class="CharacterCaseTagger" type="lower" applyTo="field">
  *   <fieldMatcher>title</fieldMatcher>
  * </handler>
  * <!-- Make first title character uppercase -->
- * <handler class="com.norconex.importer.handler.tagger.impl.CharacterCaseTagger"
- *     type="string" applyTo="value">
+ * <handler class="CharacterCaseTagger" type="string" applyTo="value">
  *   <fieldMatcher>title</fieldMatcher>
  * </handler>
  * }

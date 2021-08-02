@@ -59,7 +59,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.NoContentTransformer"/>
+ * <handler class="NoContentTransformer"/>
  * }
  * <p>
  * The above example removes the content of all documents (leaving you with

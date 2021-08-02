@@ -105,57 +105,57 @@ import com.norconex.importer.parser.ParseState;
  * will create children documents for each translation performed.  The parent
  * document will always remain the original document, while the children
  * will always be the translations.</p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
- *          api="(microsoft|google|lingo24|moses|yandex)" &gt;
- *      &lt;ignoreContent&gt;(false|true)&lt;/ignoreContent&gt;
- *      &lt;ignoreNonTranslatedFields&gt;(false|true)&lt;/ignoreNonTranslatedFields&gt;
- *      &lt;fieldsToTranslate&gt;(coma-separated list of fields)&lt;/fieldsToTranslate&gt;
- *      &lt;sourceLanguageField&gt;(field containing language)&lt;/sourceLanguageField&gt;
- *      &lt;sourceLanguage&gt;(language when no source language field)&lt;/sourceLanguage&gt;
- *      &lt;targetLanguages&gt;(coma-separated list of languages)&lt;/targetLanguages&gt;
  *
- *      &lt;!-- Microsoft --&gt;
- *      &lt;clientId&gt;...&lt;/clientId&gt;
- *      &lt;clientSecret&gt;...&lt;/clientSecret&gt;
+ * {@nx.xml.usage
+ * <handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
+ *     api="(microsoft|google|lingo24|moses|yandex)">
  *
- *      &lt;!-- Google --&gt;
- *      &lt;apiKey&gt;...&lt;/apiKey&gt;
+ *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *      &lt;!-- Lingo24 --&gt;
- *      &lt;userKey&gt;...&lt;/userKey&gt;
+ *   <ignoreContent>(false|true)</ignoreContent>
+ *   <ignoreNonTranslatedFields>(false|true)</ignoreNonTranslatedFields>
+ *   <fieldsToTranslate>(coma-separated list of fields)</fieldsToTranslate>
+ *   <sourceLanguageField>(field containing language)</sourceLanguageField>
+ *   <sourceLanguage>(language when no source language field)</sourceLanguage>
+ *   <targetLanguages>(coma-separated list of languages)</targetLanguages>
  *
- *      &lt;!-- Moses --&gt;
- *      &lt;smtPath&gt;...&lt;/smtPath&gt;
- *      &lt;scriptPath&gt;...&lt;/scriptPath&gt;
+ *   <!-- Microsoft -->
+ *   <clientId>...</clientId>
+ *   <clientSecret>...</clientSecret>
  *
- *      &lt;!-- Yandex --&gt;
- *      &lt;apiKey&gt;...&lt;/apiKey&gt;
+ *   <!-- Google -->
+ *   <apiKey>...</apiKey>
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
- *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
- *  &lt;/handler&gt;
- * </pre>
- * <h4>Usage example:</h4>
+ *   <!-- Lingo24 -->
+ *   <userKey>...</userKey>
+ *
+ *   <!-- Moses -->
+ *   <smtPath>...</smtPath>
+ *   <scriptPath>...</scriptPath>
+ *
+ *   <!-- Yandex -->
+ *   <apiKey>...</apiKey>
+ *
+ * </handler>
+ * }
+ *
+ * {@nx.xml.example
+ * <handler class="TranslatorSplitter" api="google">
+ *     <sourceLanguageField>langField</sourceLanguageField>
+ *     <targetLanguages>fr</targetLanguages>
+ *     <apiKey>...MYKEYHERE...</apiKey>
+ * </handler>
+ * }
+ *
  * <p>
- * The following uses the Google translation API to translate documents into
+ * The above example uses the Google translation API to translate documents into
  * French, taking the source document language from a field called "langField".
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.splitter.impl.TranslatorSplitter"
- *          api="google" &gt;
- *      &lt;sourceLanguageField&gt;langField&lt;/sourceLanguageField&gt;
- *      &lt;targetLanguages&gt;fr&lt;/targetLanguages&gt;
- *      &lt;apiKey&gt;...MYKEYHERE...&lt;/apiKey&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *
  * @author Pascal Essiembre
  * @since 2.1.0
  */
+@SuppressWarnings("javadoc")
 public class TranslatorSplitter extends AbstractDocumentSplitter {
 
     public static final String API_MICROSOFT = "microsoft";

@@ -158,7 +158,7 @@ import com.norconex.importer.util.FormatUtil;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.filter.impl.DateMetadataFilter"
+ * <handler class="DateMetadataFilter"
  *     format="yyyy-MM-dd'T'HH:mm:ssZ"
  *     conditionZoneId="America/New_York"
  *     onMatch="include">

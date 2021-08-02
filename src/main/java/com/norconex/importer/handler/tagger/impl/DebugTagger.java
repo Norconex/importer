@@ -70,8 +70,7 @@ import com.norconex.importer.parser.ParseState;
  *  </handler>
  * }
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.DebugTagger"
- *          logFields="title,author" logLevel="INFO" />
+ *  <handler class="DebugTagger" logFields="title,author" logLevel="INFO" />
  * }
  * <p>
  * The above logs the value of any "title" and "author" document metadata

@@ -55,8 +55,7 @@ import com.norconex.importer.parser.ParseState;
  * The following will reject documents having "/login/" in their reference.
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
- *          onMatch="exclude"&gt;
+ *  &lt;handler class="RegexReferenceFilter" onMatch="exclude"&gt;
  *      &lt;regex&gt;.*&#47;login/.*&lt;/regex&gt;
  *  &lt;/handler&gt;
  * </pre>

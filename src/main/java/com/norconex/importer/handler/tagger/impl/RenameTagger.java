@@ -69,7 +69,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.RenameTagger">
+ * <handler class="RenameTagger">
  *   <rename toField="title" onSet="replace">
  *     <fieldMatcher>dc.title</fieldMatcher>
  *   </rename>

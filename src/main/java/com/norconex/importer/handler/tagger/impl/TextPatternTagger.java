@@ -65,30 +65,31 @@ import com.norconex.importer.parser.ParseState;
  * This class can be used as a pre-parsing handler on text documents only
  * or a post-parsing handler.
  * </p>
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
+ *
+ * {@nx.xml.usage
+ *  <handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger"
  *          sourceCharset="(character encoding)"
- *          maxReadSize="(max characters to read at once)" &gt;
+ *          maxReadSize="(max characters to read at once)" >
  *
- *      &lt;restrictTo caseSensitive="[false|true]"
- *              field="(name of header/metadata field name to match)"&gt;
+ *      <restrictTo caseSensitive="[false|true]"
+ *              field="(name of header/metadata field name to match)">
  *          (regular expression of value to match)
- *      &lt;/restrictTo&gt;
- *      &lt;!-- multiple "restrictTo" tags allowed (only one needs to match) --&gt;
+ *      </restrictTo>
+ *      <!-- multiple "restrictTo" tags allowed (only one needs to match) -->
  *
- *      &lt;pattern toField="(target field name)"
+ *      <pattern toField="(target field name)"
  *              fieldGroup="(field name match group index)"
  *              valueGroup="(field value match group index)"
  *              ignoreCase="[false|true]"
  *              ignoreDiacritic="[false|true]"
- *              onSet="[append|prepend|replace|optional]"&gt;
+ *              onSet="[append|prepend|replace|optional]">
  *          (regular expression)
- *      &lt;/pattern&gt;
- *      &lt;!-- multiple pattern tags allowed --&gt;
+ *      </pattern>
+ *      <!-- multiple pattern tags allowed -->
  *
- *  &lt;/handler&gt;
- * </pre>
+ *  </handler>
+ * }
+ *
  * <h4>Usage example:</h4>
  * <p>
  * The first pattern in the following example extracts what look like email
@@ -96,16 +97,17 @@ import com.norconex.importer.parser.ParseState;
  * extracts field names and values from "label" and "value" cells on
  * a given HTML table:
  * </p>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.tagger.impl.TextPatternTagger" &gt;
- *      &lt;pattern field="emails"&gt;
+ *
+ * {@nx.xml.example
+ *  <handler class="TextPatternTagger">
+ *      <pattern field="emails">
  *          [A-Za-z0-9+_.-]+?@[a-zA-Z0-9.-]+
- *      &lt;/pattern&gt;
- *      &lt;pattern fieldGroup="1" valueGroup="2"&gt;&lt;![CDATA[
- *        &lt;tr&gt;&lt;td class="label"&gt;(.*?)&lt;/td&gt;&lt;td class="value"&gt;(.*?)&lt;/td&gt;&lt;/tr&gt;
- *      ]]&gt;&lt;/pattern&gt;
- *  &lt;/handler&gt;
- * </pre>
+ *      </pattern>
+ *      <pattern fieldGroup="1" valueGroup="2"><![CDATA[
+ *        <tr><td class="label">(.*?)</td><td class="value">(.*?)</td></tr>
+ *      ]]></pattern>
+ *  </handler>
+ * }
  *
  * @author Pascal Essiembre
  * @since 2.3.0

@@ -177,8 +177,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
- *     fallbackLanguage="en" >
+ * <handler class="LanguageTagger" fallbackLanguage="en" >
  *   <languages>en, fr</languages>
  * </handler>
  * }

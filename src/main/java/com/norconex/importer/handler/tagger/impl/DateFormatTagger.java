@@ -88,7 +88,7 @@ import com.norconex.importer.util.FormatUtil;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.DateFormatTagger"
+ *  <handler class="DateFormatTagger"
  *          fromField="Last-Modified"
  *          toField="solr_date"
  *          toFormat="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" >

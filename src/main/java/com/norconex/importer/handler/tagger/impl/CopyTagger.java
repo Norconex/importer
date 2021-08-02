@@ -61,7 +61,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.CopyTagger">
+ * <handler class="CopyTagger">
  *   <copy toField="author" onSet="append">
  *     <fieldMatcher method="regex">(creator|publisher)</fieldMatcher>
  *   </copy>

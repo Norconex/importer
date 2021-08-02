@@ -71,8 +71,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.filter.impl.NumericMetadataFilter"
- *     onMatch="include">
+ * <handler class="NumericMetadataFilter" onMatch="include">
  *   <fieldMatcher>age</fieldMatcher>
  *   <condition operator="ge" number="20" />
  *   <condition operator="lt" number="30" />

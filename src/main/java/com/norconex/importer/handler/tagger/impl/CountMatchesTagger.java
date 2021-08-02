@@ -82,8 +82,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
- *      toField="urlSegmentCount">
+ *  <handler class="CountMatchesTagger" toField="urlSegmentCount">
  *    <fieldMatcher>document.reference</fieldMatcher>
  *    <countMatcher method="regex">/[^/]+</countMatcher>
  *  </handler>

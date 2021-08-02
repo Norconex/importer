@@ -62,8 +62,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.ForceSingleValueTagger"
- *     action="keepFirst">
+ * <handler class="ForceSingleValueTagger" action="keepFirst">
  *   <fieldMatcher>title</fieldMatcher>
  * </handler>
  * }

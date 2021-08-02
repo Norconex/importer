@@ -116,7 +116,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.TitleGeneratorTagger"
+ * <handler class="TitleGeneratorTagger"
  *     toField="title" titleMaxLength="200" detectHeading="true" />
  * }
  * <p>

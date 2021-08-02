@@ -53,7 +53,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.DeleteTagger">
+ *  <handler class="DeleteTagger">
  *    <fieldMatcher method="regex">^[Xx]-.*</fieldMatcher>
  *  </handler>
  * }

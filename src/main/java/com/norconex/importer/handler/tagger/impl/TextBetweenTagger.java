@@ -86,7 +86,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.TextBetweenTagger">
+ * <handler class="TextBetweenTagger">
  *   <textBetween toField="content">
  *     <startMatcher>OPEN</startMatcher>
  *     <endMatcher>CLOSE</endMatcher>

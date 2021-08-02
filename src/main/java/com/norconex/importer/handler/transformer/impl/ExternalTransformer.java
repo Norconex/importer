@@ -84,7 +84,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.ExternalTransformer">
+ * <handler class="ExternalTransformer">
  *   <command>/path/transform/app ${INPUT} ${OUTPUT}</command>
  *   <metadata>
  *     <pattern field="docnumber" valueGroup="1">DocNo:(\d+)</pattern>

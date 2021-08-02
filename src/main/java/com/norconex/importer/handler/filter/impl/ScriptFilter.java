@@ -71,27 +71,26 @@ import com.norconex.importer.parser.ParseState;
  *
  * <h4>Usage example:</h4>
  * <h5>JavaScript:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *      var isAppleDoc = metadata.getString('fruit') == 'apple'
- *              || content.indexOf('Apple') &gt; -1;
- *      /&#42;return&#42;/ isAppleDoc;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml
+ * <handler class="ScriptFilter">
+ *   <script><![CDATA[
+ *     var isAppleDoc = metadata.getString('fruit') == 'apple'
+ *             || content.indexOf('Apple') > -1;
+ *     /&#42;return&#42;/ isAppleDoc;
+ *   ]]></script>
+ * </handler>
+ * }
  *
  * <h5>Lua:</h5>
- * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.ScriptFilter"
- *      engineName="lua"&gt;
- *    &lt;script&gt;&lt;![CDATA[
- *      local isAppleDoc = metadata:getString('fruit') == 'apple'
- *              and content:find('Apple') ~= nil;
- *      return isAppleDoc;
- *    ]]&gt;&lt;/script&gt;
- *  &lt;/handler&gt;
- * </pre>
+ * {@nx.xml
+ * <handler class="ScriptFilter" engineName="lua">
+ *   <script><![CDATA[
+ *     local isAppleDoc = metadata:getString('fruit') == 'apple'
+ *             and content:find('Apple') ~= nil;
+ *     return isAppleDoc;
+ *   ]]></script>
+ * </handler>
+ * }
  *
  * @author Pascal Essiembre
  * @since 2.4.0

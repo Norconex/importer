@@ -61,7 +61,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger">
+ *  <handler class="ConstantTagger">
  *    <constant name="source">web</constant>
  *  </handler>
  * }
@@ -76,7 +76,7 @@ import com.norconex.importer.parser.ParseState;
 public class ConstantTagger extends AbstractDocumentTagger{
 
     @Deprecated
-    public enum OnConflict { ADD, REPLACE, NOOP };
+    public enum OnConflict { ADD, REPLACE, NOOP }
 
     private final Map<String, List<String>> constants = new HashMap<>();
     private PropertySetter onSet;

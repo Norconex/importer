@@ -62,8 +62,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.filter.impl.EmptyFilter"
- *          onMatch="exclude">
+ *  <handler class="EmptyFilter" onMatch="exclude">
  *    <fieldMatcher method="regex">(title|dc:title)</fieldMatcher>
  *  </handler>
  * }

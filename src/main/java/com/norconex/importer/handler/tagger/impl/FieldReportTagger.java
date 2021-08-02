@@ -82,7 +82,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.FieldReportTagger"
+ * <handler class="FieldReportTagger"
  *     maxSamples="1" file="C:\reports\field-report.csv" />
  * }
  * <p>

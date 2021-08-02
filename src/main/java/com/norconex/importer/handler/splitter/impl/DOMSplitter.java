@@ -99,8 +99,7 @@ import com.norconex.importer.util.DOMUtil;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.splitter.impl.DOMSplitter"
- *     selector="div.contact" />
+ * <handler class="DOMSplitter" selector="div.contact" />
  * }
  *
  * <p>

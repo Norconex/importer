@@ -58,8 +58,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.transformer.impl.SubstringTransformer"
- *     end="10000"/>
+ * <handler class="SubstringTransformer" end="10000"/>
  * }
  * <p>
  * The above example truncates long text to be 10,000 characters maximum.

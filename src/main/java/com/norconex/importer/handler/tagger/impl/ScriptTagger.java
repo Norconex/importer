@@ -75,7 +75,7 @@ import com.norconex.importer.parser.ParseState;
  * fruit is a document about.</p>
  * <h5>JavaScript:</h5>
  * {@nx.xml
- * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger">
+ * <handler class="ScriptTagger">
  *   <script><![CDATA[
  *       metadata.add('fruit', 'apple');
  *   ]]></script>
@@ -83,8 +83,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  * <h5>Lua:</h5>
  * {@nx.xml
- * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
- *     engineName="lua">
+ * <handler class="ScriptTagger" engineName="lua">
  *   <script><![CDATA[
  *       metadata:addString('fruit', {'apple'});
  *   ]]></script>

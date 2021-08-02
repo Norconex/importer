@@ -78,7 +78,7 @@ import com.norconex.importer.parser.ParseState;
  * in a document content.</p>
  * <h5>JavaScript:</h5>
  * {@nx.xml
- * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer">
+ * <handler class="ScriptTransformer">
  *   <script><![CDATA[
  *       modifiedContent = content.replace(/Alice/g, 'Roger');
  *       /&#42;return&#42;/ modifiedContent;
@@ -87,8 +87,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  * <h5>Lua:</h5>
  * {@nx.xml
- * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
- *     engineName="lua">
+ * <handler class="ScriptTransformer" engineName="lua">
  *   <script><![CDATA[
  *       modifiedContent = content:gsub('Alice', 'Roger');
  *       return modifiedContent;

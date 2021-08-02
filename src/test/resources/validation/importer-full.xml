@@ -21,8 +21,8 @@
      -->
 <importer>
   <tempDir>/some/path/</tempDir>
-  <maxFileCacheSize>99</maxFileCacheSize>
-  <maxFilePoolCacheSize>99</maxFilePoolCacheSize>
+  <maxMemoryInstance>99</maxMemoryInstance>
+  <maxMemoryPool>99</maxMemoryPool>
   <parseErrorsSaveDir>/some/path</parseErrorsSaveDir>
 
   <preParseHandlers>

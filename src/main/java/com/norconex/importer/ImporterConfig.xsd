@@ -24,9 +24,9 @@
       <xs:all>
         <xs:element name="tempDir" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="maxFileCacheSize" 
+        <xs:element name="maxMemoryInstance" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
-        <xs:element name="maxFilePoolCacheSize" 
+        <xs:element name="maxMemoryPool" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>
         <xs:element name="parseErrorsSaveDir" 
                     type="xs:string" minOccurs="0" maxOccurs="1"/>

@@ -61,7 +61,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- * <handler class="com.norconex.importer.handler.tagger.impl.KeepOnlyTagger">
+ * <handler class="KeepOnlyTagger">
  *   <fieldMatcher method="regex">(title|description)</fieldMatcher>
  * </handler>
  * }

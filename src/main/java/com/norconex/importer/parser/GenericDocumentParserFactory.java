@@ -105,73 +105,72 @@ import com.norconex.importer.response.ImporterResponse;
  * limit OCR to a subset of document content types, configure the corresponding
  * content-types (e.g. application/pdf, image/tiff, image/png, etc.).</p>
  *
- * <h3>XML configuration usage:</h3>
- * <pre>
- *  &lt;documentParserFactory
- *         class="com.norconex.importer.parser.GenericDocumentParserFactory"&gt;
+ * {@nx.xml.usage
+ * <documentParserFactory
+ *        class="com.norconex.importer.parser.GenericDocumentParserFactory">
  *
- *      &lt;ocr path="(path to Tesseract OCR software executable)"&gt;
- *          &lt;languages&gt;
- *              (optional coma-separated list of Tesseract languages)
- *          &lt;/languages&gt;
- *          &lt;contentTypes&gt;
- *              (optional regex matching content types to limit OCR on)
- *          &lt;/contentTypes&gt;
- *      &lt;/ocr&gt;
+ *     <ocr path="(path to Tesseract OCR software executable)">
+ *         <languages>
+ *             (optional coma-separated list of Tesseract languages)
+ *         </languages>
+ *         <contentTypes>
+ *             (optional regex matching content types to limit OCR on)
+ *         </contentTypes>
+ *     </ocr>
  *
- *      &lt;ignoredContentTypes&gt;
- *          (optional regex matching content types to ignore for parsing,
- *           i.e., not parsed)
- *      &lt;/ignoredContentTypes&gt;
+ *     <ignoredContentTypes>
+ *         (optional regex matching content types to ignore for parsing,
+ *          i.e., not parsed)
+ *     </ignoredContentTypes>
  *
- *      &lt;embedded&gt;
- *          &lt;splitContentTypes&gt;
- *              (optional regex matching content types of containing files
- *               you want to "split" and have their embedded documents
- *               treated as individual documents)
- *          &lt;/splitContentTypes&gt;
- *          &lt;noExtractEmbeddedContentTypes&gt;
- *              (optional regex matching content types of embedded files you do
- *               not want to extract from containing documents, regardless of
- *               the container content type)
- *          &lt;/noExtractEmbeddedContentTypes&gt;
- *          &lt;noExtractContainerContentTypes&gt;
- *              (optional regex matching content types of containing files you
- *               do not want to see their embedded files extracted, regardless
- *               of the embedded content types)
- *          &lt;/noExtractContainerContentTypes&gt;
- *      &lt;/embedded&gt;
+ *     <embedded>
+ *         <splitContentTypes>
+ *             (optional regex matching content types of containing files
+ *              you want to "split" and have their embedded documents
+ *              treated as individual documents)
+ *         </splitContentTypes>
+ *         <noExtractEmbeddedContentTypes>
+ *             (optional regex matching content types of embedded files you do
+ *              not want to extract from containing documents, regardless of
+ *              the container content type)
+ *         </noExtractEmbeddedContentTypes>
+ *         <noExtractContainerContentTypes>
+ *             (optional regex matching content types of containing files you
+ *              do not want to see their embedded files extracted, regardless
+ *              of the embedded content types)
+ *         </noExtractContainerContentTypes>
+ *     </embedded>
  *
- *      &lt;fallbackParser
- *          class="(optionally overwrite the fallback parser)" /&gt;
+ *     <fallbackParser
+ *         class="(optionally overwrite the fallback parser)" />
  *
- *      &lt;parsers&gt;
- *          &lt;!-- Optionally overwrite default parsers.
- *               You can configure many parsers. --&gt;
- *          &lt;parser
- *              contentType="(content type)"
- *              class="(IDocumentParser implementing class)" /&gt;
- *      &lt;/parsers&gt;
+ *     <parsers>
+ *         <!-- Optionally overwrite default parsers.
+ *              You can configure many parsers. -->
+ *         <parser
+ *             contentType="(content type)"
+ *             class="(IDocumentParser implementing class)" />
+ *     </parsers>
  *
- *  &lt;/documentParserFactory&gt;
- * </pre>
+ * </documentParserFactory>
+ * }
  * <h4>Usage example:</h4>
  * <p>
  * The following uses Tesseract to convert English and French images in PDF
  * into text and it will also extract documents from Zip files and treat
  * them as separate documents.
  * </p>
- * <pre>
- *  &lt;documentParserFactory&gt;
- *      &lt;ocr path="/app/ocr/tesseract.exe"&gt;
- *          &lt;languages&gt;en, fr&lt;/languages&gt;
- *          &lt;contentTypes&gt;application/pdf&lt;/contentTypes&gt;
- *      &lt;/ocr&gt;
- *      &lt;embedded&gt;
- *          &lt;splitContentTypes&gt;application/zip&lt;/splitContentTypes&gt;
- *      &lt;/embedded&gt;
- *  &lt;/documentParserFactory&gt;
- * </pre>
+ * {@nx.xml.example
+ * <documentParserFactory>
+ *     <ocr path="/app/ocr/tesseract.exe">
+ *         <languages>en, fr</languages>
+ *         <contentTypes>application/pdf</contentTypes>
+ *     </ocr>
+ *     <embedded>
+ *         <splitContentTypes>application/zip</splitContentTypes>
+ *     </embedded>
+ * </documentParserFactory>
+ * }
  * @author Pascal Essiembre
  */
 public class GenericDocumentParserFactory

@@ -90,7 +90,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.tagger.impl.HierarchyTagger">
+ *  <handler class="HierarchyTagger">
  *      <hierarchy fromField="vegetable" toField="vegetableHierarchy"
  *                 fromSeparator="/"/>
  *  </handler>

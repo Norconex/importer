@@ -67,8 +67,7 @@ import com.norconex.importer.parser.ParseState;
  * This example will accept only documents containing word "apple".
  * </p>
  * <pre>
- *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
- *          onMatch="include" &gt;
+ *  &lt;handler class="RegexContentFilter" onMatch="include"&gt;
  *      &lt;regex&gt;.*apple.*&lt;/regex&gt;
  *  &lt;/handler&gt;
  * </pre>

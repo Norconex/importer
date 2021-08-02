@@ -48,7 +48,7 @@ import com.norconex.importer.parser.ParseState;
  * }
  *
  * {@nx.xml.example
- *  <handler class="com.norconex.importer.handler.filter.impl.EmptyMetadataFilter"
+ *  <handler class="EmptyMetadataFilter"
  *          onMatch="exclude" fields="title,dc:title" />
  * }
  * <p>
