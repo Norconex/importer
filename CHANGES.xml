@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="3.0.0-SNAPSHOT" date="2021-??-??" 
+        description="Changes since last milestone for this upcoming major release.">
+      <action dev="essiembre" type="fix">
+        Fixed invalid configuration in POM "maven-dependency-plugin".
+      </action>
+    </release>
+
     <release version="3.0.0-M2" date="2021-07-28" 
         description="Changes since last milestone for this upcoming major release.">
       <action dev="essiembre" type="add">
