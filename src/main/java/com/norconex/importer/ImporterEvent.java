@@ -101,7 +101,13 @@ public class ImporterEvent extends Event {
     }
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this);
+        // Cannot use HashCodeBuilder.reflectionHashCode here to prevent
+        // "An illegal reflective access operation has occurred"
+        return new HashCodeBuilder()
+                .appendSuper(super.hashCode())
+                .append(parseState)
+                .append(subject)
+                .build();
     }
     @Override
     public String toString() {
