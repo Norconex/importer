@@ -7,8 +7,13 @@
   </properties>
   <body>
 
-    <release version="3.0.0-SNAPSHOT" date="2021-??-??" 
+    <release version="3.0.0-RC1" date="2021-??-??" 
         description="Changes since last milestone for this upcoming major release.">
+      <action dev="essiembre" type="update">
+        Maven dependency updates: Apache Tika 1.27 (and its many transitive
+        dependencies), UCAR jj2000 5.4, Opencsv 5.5.2, 
+        JAI Image-IO jpeg2000 1.4.0, JBIG2 ImageIO 2.0.
+      </action>
       <action dev="essiembre" type="fix">
         Fixed invalid configuration in POM "maven-dependency-plugin".
       </action>

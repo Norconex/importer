@@ -1,4 +1,4 @@
-/* Copyright 2014-2020 Norconex Inc.
+/* Copyright 2014-2021 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,10 @@ import com.norconex.importer.handler.HandlerDoc;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.splitter.AbstractDocumentSplitter;
 import com.norconex.importer.parser.ParseState;
-
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 
 /**
  * <p>Split files with Coma-Separated values (or any other characters, like tab)
@@ -141,19 +143,27 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
         List<Doc> rows = new ArrayList<>();
 
+        CSVParser parser = new CSVParserBuilder()
+                .withSeparator(separatorCharacter)
+                .withQuoteChar(quoteCharacter)
+                .withEscapeChar(escapeCharacter)
+                .build();
+
         //TODO by default (or as an option), try to detect the format of the
         // file (read first few lines and count number of tabs vs coma,
         // quotes per line, etc.
-        try (CSVReader cvsreader = new CSVReader(
-                new InputStreamReader(input, StandardCharsets.UTF_8),
-                    separatorCharacter, quoteCharacter,
-                    escapeCharacter, linesToSkip)) {
+        try (CSVReader csvreader =
+                new CSVReaderBuilder(
+                        new InputStreamReader(input, StandardCharsets.UTF_8))
+                .withSkipLines(linesToSkip)
+                .withCSVParser(parser)
+                .build()) {
 
             String [] cols;
             String[] colNames = null;
             int count = 0;
             StringBuilder contentStr = new StringBuilder();
-            while ((cols = cvsreader.readNext()) != null) {
+            while ((cols = csvreader.readNextSilently()) != null) {
                 count++;
                 Properties childMeta = new Properties();
                 childMeta.loadFromMap(doc.getMetadata());

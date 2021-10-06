@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * This class only purpose is to route PDFBox JBig2 logging to SLF4J.
  * Loaded from /META-INF/services/org.apache.pdfbox.jbig2.util.log.LoggerBridge
- * Will no longer be needed of PDFBox JBig2 drops their custom logging
+ * Will no longer be needed if PDFBox JBig2 drops their custom logging
  * abstraction.
  * @author Pascal Essiembre
  */
