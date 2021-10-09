@@ -1,39 +1,28 @@
 TODO:
 ==============
 
-- Deprecate "restrictTo" in favor of XML Flow conditions.
-- Deprecate "filters" in favor of XML Flow conditions.
+- Deprecate "restrictTo" in favor of XML Flow conditions?
+- Deprecate "filters" in favor of XML Flow conditions?
 
-- Instead of naming handlers wit "Metadata" "Content", made/recommended for 
+- Instead of naming handlers with "Metadata" "Content", made/recommended for 
   Pre or Post, or what type does it support out of the box vs recommended...
   Use custom annotations that would generate appropriate javadoc.
 
-- Maybe have the following two tags a <then> or <else> content tag:
-    <reject/> rejects the document
-    <abort/>  more risky: abort the execution flow but consider the doc valid
-        
-
+- For XMLFlow, in addition of <reject/>, maybe have <abort/> (more risky): 
+  abort the execution flow but consider the doc valid
+  
 - Replace DOMDeleteTransformer with DOMTransformer that gives the option
   to only keep what is matching, deleting the rest, or delete what is matching.
+
+- Consider merging tagger and transformer and detecting if content has changed,
+  and offer in most case to do operation on either field or content (or both).
 
 - Add a TrimTagger/TrimTransformer
 - Add a more convinient way to collapse on white spaces.
 
 - Modify ImporterEvent so that Importer is the source, as it should (as opposed to the doc).
 
-- Consider a generic Matcher/Replacer class that supports either Regex, Normal, or 
-  WildCard matches/replacements.
-     - Write tests for it
-     - Do it also for "restrictTo".
-
 - Remove all the @since x.x.x referencing versions before 3.0.0 
-
-- In the JavaDoc, point to the Summary page with anchor or in appropriate class
-  description method for documentation instead of repreating it.
-  E.g. EncryptKey, restrictTo, "storing values in an existing field", etc.
-  Use -tag and -taglet?   Have tag(let) for thinks such as :
-  if it can be used as pre and/or post handlers, xml configuration usage,
-  sample usage, main doc, etc.
 
 - Have a .misc package for handlers for those not falling into any of the 4 
   types (like DebugTagger and FieldReportTagger).
@@ -44,16 +33,6 @@ TODO:
   CSVSplitter, etc).
 
 - Have a Prefix tagger to prefix all metadata with something.
-  Also modify the RenameTagger to do bulk renaming
-  https://github.com/Norconex/collector-http/issues/553
-
-- Rename all "[xxx]Field" attributes to either sourceField or targetField.
-
-- Add to website generic assumptions such as:
-  - how white spaces are handled in XML.
-  - how all booleans default to false
-  - how all PropertySetter default to APPEND
-  - etc.
 
 - Add to scripts "-Dnashorn.args=--no-deprecation-warning" to silence
   deprecation warning on some JVM.
@@ -65,25 +44,16 @@ TODO:
 
 - Add ReduceConsecutiveTagger.
 
-- Move GenericDocumentParserFactory to .impl (for consistency).
+- Move GenericDocumentParserFactory to .impl (for consistency) or do not make 
+  it a factory?
 
 - Maybe: have a @taglet for if it can be used as pre-post or both? 
 
 - CountValueTagger (one to count mattching patterns, one to count number of multi-value entries)
-- EmptyFilter
 - DOMTransformer, JSON*(handlers)
 - EmptyTagger or CompactTagger (eliminate empty list values and/or duplicate values.  
 
-- Move GenericParserFactory to .impl, or do not make it a factory?
-
-- Add "onSet" to parser so implementors can decide what to do with extracted
-  metadata.
-
-- Package importer with a log4j file that exclude useless errors (e.g. jbig2)
-
 - Have a StripAccentsTagger and Transformer. See: StringUtils.stripAccents(str)
-
-- Have a ContentToFieldTagger to easily take the content and store it in a field
 
 - Add ability to convert binary content into hex/base64 into a text field, or 
   to replace body.
@@ -91,18 +61,10 @@ TODO:
 - Consider making the MS .docs memory fix permanent:
   https://github.com/Norconex/collector-filesystem/issues/39#issuecomment-419327401
 
-- Make OnMatch an IXMLConfigurable object instead of an abstract one.
-
-- Remove "cachedPattern" instances and replace with Model<Pattern> equivalent
-  (transient with string being serialisable). 
-
 - Maybe: rename references to "metadata" to be references to "fields" ?
 - In load/save XML reference local fields instead of getters/setters.
 
 - Convert all arrays to final List for consistency (with unmodifiable getters).
-
-- Consider merging tagger and transformer and detecting if content has changed,
-  and offer in most case to do operation on either field or content (or both).
 
 - Consider using updated Tika RecursiveParser instead of custom one.
 
@@ -114,13 +76,6 @@ TODO:
 - Remove references to deprecated elements.
 
 - Fix external  links in Javadoc (all projects).
-
-- Have a transformer that eliminates the content (and/or store into a field).
-  And mark as resolved this (closed) ticket:
-  https://github.com/Norconex/collector-filesystem/issues/30#issuecomment-384499927
-
-- Boost memory for handlers loading docs in memory for processing to 1GB or
-  x% of free memory and throw warning when having to split. 
 
 - Consider having a flag for text handlers that detect if text or binary
   and by default will handle only text unless forced otherwise.
@@ -145,11 +100,6 @@ TODO:
 
 - Add support for SentimentParser and other Tika recent features.
 
-- Add onConflict to CopyTagger (add,set,ignore) and wherever appropriate
-  (where there is "overwrite"?)
-
-- Switch to Commons CLI 2.x
-
 - Once Norconex Commons Lang upgrades to Velocity 2.0 add Velocity as a 
   scripting language option where applicable (e.g. ScriptTagger).
 
@@ -157,18 +107,9 @@ TODO:
   merge, to accomodate for senarios where key/values are repeated, without a 
   parent wrapping tag, as in: https://github.com/Norconex/importer/issues/54
 
-- Add ability to pass a class resolver when loading an XML, which would
-  for example allows to try loading the class with a predefined set of
-  package paths.  This would allow users to supply only the class name,
-  making configs easier to read/maintain. 
-
 - Maybe have default "text-only" flag for each handlers?? 
 
 - Have a tagger that looks up metadata in a relational database?
-
-- Add ability to do batch rename of field names (e.g. replacing dots with ...)
-
-- Add support for tika SentimentParser.
 
 - Have new taggers: 
     - ExtensionTagger, given a URL, tries to get extension from content type 
@@ -185,9 +126,6 @@ TODO:
       
 - Consider adding LIRE support (image info extraction for image search).
   http://www.lire-project.net/
-
-- Consider creating an ExternalTagger which expects metadata extraction patterns
-  from STDOUT/STDERR or from output file.
 
 - Allow to specify data unit for DocumentLengthTagger (with locale and decimal
   precision).
@@ -208,30 +146,11 @@ TODO:
   leveraging Tika GDAL support (requires external app install, like
   Tesserac OCR feature).
 
-- Create an ImageConverterTransformer that would convert images from/to
-  format of choice. This could allow for instance to convert some 
-  formats non-supported by Tesseract OCR into some that are.
-    
 - Have a maximum recursivity setting somewhere in GenericDocumentParserFactory?
   Alternatively, consider moving to using RecursiveParserWrapper which 
   already supports that.
 
 - MAYBE: Consider interactive shell script invoking the importer.
 
-- MABYE Have a base handler class that takes a functional interface for the 
+- MABYE: Have a base handler class that takes a functional interface for the 
   different types?
-
-
-- MAYBE: Have <restrictTo> being optional wrapping tag that can group
-  multiple other handlers, so the condition does not have to be repeated in 
-  each. E.g.:
-  
-  <preParseHandlers>
-    <tagger>
-    <filter>
-    <restrictTo>
-      <tagger>
-      <transformer>
-    </restrictTo>
-  Have this in addition or as a replacement to current approach?
-  
