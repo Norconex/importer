@@ -7,6 +7,13 @@
   </properties>
   <body>
 
+    <release version="3.0.0-SNAPSHOT" date="2021-??-??"
+        description="Changes since RC1.">
+      <action dev="essiembre" type="update">
+        Updated dependencies to avoid logging library detection conflict. 
+      </action>
+    </release>
+
     <release version="3.0.0-RC1" date="2021-10-09" 
         description="Release Candidate 1.">
       <action dev="essiembre" type="update">
