@@ -14,13 +14,19 @@
  */
 package com.norconex.importer.handler;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.norconex.commons.lang.event.EventManager;
+import com.norconex.commons.lang.io.CachedInputStream;
+import com.norconex.commons.lang.io.CachedOutputStream;
+import com.norconex.commons.lang.io.IOUtil;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.handler.filter.IDocumentFilter;
+import com.norconex.importer.handler.transformer.IDocumentTransformer;
 import com.norconex.importer.parser.ParseState;
+import org.slf4j.Logger;
 
 //TODO move to .impl package, or hide visibility?
 public class HandlerContext {
@@ -87,4 +93,28 @@ public class HandlerContext {
             return !(hasIncludes && !atLeastOneIncludeMatch);
         }
     }
+
+    public void getDocumentTransformed(IDocumentTransformer transformer, Logger LOG) throws ImporterHandlerException, IOException
+    {
+        CachedInputStream in = this.getDoc().getInputStream();
+        try (CachedOutputStream out =
+                     this.getDoc().getStreamFactory().newOuputStream()) {
+            transformer.transformDocument(
+                    new HandlerDoc(this.getDoc()), in, out, this.getParseState());
+            CachedInputStream newInputStream = null;
+            if (out.isCacheEmpty()) {
+                LOG.debug("Transformer \"{}\" returned no content for: {}.",
+                        transformer.getClass(), this.getDoc().getReference());
+                IOUtil.closeQuietly(out);
+                newInputStream = in;
+            } else {
+                in.dispose();
+                newInputStream = out.getInputStream();
+                IOUtil.closeQuietly(out);
+            }
+            this.getDoc().setInputStream(newInputStream);
+        }
+
+    }
+
 }

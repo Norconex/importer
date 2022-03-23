@@ -148,17 +148,7 @@ public final class CommonRestrictions {
      * @param field name of Properties field
      * @return list of restrictions
      */
-    public static PropertyMatchers xmlContentTypes(String field) {
-        return basicMatcherIgnoreCase(field,
-                "application/atom+xml",
-                "application/mathml+xml",
-                "application/rss+xml",
-                "application/xhtml+xml",
-                "application/xml",
-                "application/xslt+xml",
-                "image/svg+xml",
-                "text/xml");
-    }
+
 
     /**
      * <p>
@@ -188,7 +178,7 @@ public final class CommonRestrictions {
                 "image/x-windows-bmp");
     }
 
-    private static PropertyMatchers basicMatcherIgnoreCase(
+    public static PropertyMatchers basicMatcherIgnoreCase(
             String key, String... regexes) {
         PropertyMatchers matchers = new PropertyMatchers();
         for (String regex : regexes) {

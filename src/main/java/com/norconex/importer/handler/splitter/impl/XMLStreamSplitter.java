@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.norconex.commons.lang.map.PropertyMatchers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -134,7 +135,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
     public XMLStreamSplitter() {
         super();
         addRestrictions(
-                CommonRestrictions.xmlContentTypes(DocMetadata.CONTENT_TYPE));
+                xmlContentTypes(DocMetadata.CONTENT_TYPE));
     }
 
     public String getPath() {
@@ -142,6 +143,19 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
     }
     public void setPath(String path) {
         this.path = path;
+    }
+
+
+    public static PropertyMatchers xmlContentTypes(String field) {
+        return CommonRestrictions.basicMatcherIgnoreCase(field,
+                "application/atom+xml",
+                "application/mathml+xml",
+                "application/rss+xml",
+                "application/xhtml+xml",
+                "application/xml",
+                "application/xslt+xml",
+                "image/svg+xml",
+                "text/xml");
     }
 
     @Override

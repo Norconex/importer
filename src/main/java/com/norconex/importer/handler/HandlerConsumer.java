@@ -160,25 +160,9 @@ public class HandlerConsumer
 
     private void transformDocument(
             HandlerContext ctx, IDocumentTransformer transformer)
-                    throws ImporterHandlerException, IOException {
-        CachedInputStream in = ctx.getDoc().getInputStream();
-        try (CachedOutputStream out =
-                ctx.getDoc().getStreamFactory().newOuputStream()) {
-            transformer.transformDocument(
-                    new HandlerDoc(ctx.getDoc()), in, out, ctx.getParseState());
-            CachedInputStream newInputStream = null;
-            if (out.isCacheEmpty()) {
-                LOG.debug("Transformer \"{}\" returned no content for: {}.",
-                        transformer.getClass(), ctx.getDoc().getReference());
-                IOUtil.closeQuietly(out);
-                newInputStream = in;
-            } else {
-                in.dispose();
-                newInputStream = out.getInputStream();
-                IOUtil.closeQuietly(out);
-            }
-            ctx.getDoc().setInputStream(newInputStream);
-        }
+            throws ImporterHandlerException, IOException {
+        ctx.getDocumentTransformed(transformer,LOG);
+
     }
 
     private void splitDocument(
