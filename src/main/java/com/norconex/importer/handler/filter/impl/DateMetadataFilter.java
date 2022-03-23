@@ -38,6 +38,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -576,13 +577,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
             //--- Static ---
             String dateFormat = null;
-            if (d.contains(".")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-            } else if (d.contains("T")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
-            } else {
-                dateFormat = "yyyy-MM-dd";
-            }
+            dateFormat = getDateFormat(d);
             ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
                     dateString, dateFormat, null, null, zoneId);
             return new Condition(operator, new StaticDateTimeSupplier(dt));
@@ -590,6 +585,19 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             throw new ConfigurationException(
                     "Date parse error for value: " + dateString, e);
         }
+    }
+
+
+    private static String getDateFormat(String d) {
+        String dateFormat;
+        if (d.contains(".")) {
+            dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+        } else if (d.contains("T")) {
+            dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+        } else {
+            dateFormat = "yyyy-MM-dd";
+        }
+        return dateFormat;
     }
 
 
