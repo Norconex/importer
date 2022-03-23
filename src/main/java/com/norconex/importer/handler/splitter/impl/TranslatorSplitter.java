@@ -191,7 +191,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
     private String userKey;
 
     // Moses
-    private String smtPath;
+    private String statementExecutionPath;
     private String scriptPath;
 
     /**
@@ -248,11 +248,11 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         translators.put(API_MOSES, new TranslatorStrategy() {
             @Override
             public Translator createTranslator() {
-                return new MosesTranslator(getSmtPath(), getScriptPath());
+                return new MosesTranslator(getStatementExecutionPath(), getScriptPath());
             }
             @Override
             public void validateProperties() throws ImporterHandlerException {
-                if (StringUtils.isAnyBlank(getSmtPath(), getScriptPath())) {
+                if (StringUtils.isAnyBlank(getStatementExecutionPath(), getScriptPath())) {
                     throw new ImporterHandlerException(
                            "Both smtPath and scriptPath must be specified.");
                 }
@@ -385,11 +385,11 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         this.userKey = userKey;
     }
 
-    public String getSmtPath() {
-        return smtPath;
+    public String getStatementExecutionPath() {
+        return statementExecutionPath;
     }
-    public void setSmtPath(String smtPath) {
-        this.smtPath = smtPath;
+    public void setStatementExecutionPath(String statementExecutionPath) {
+        this.statementExecutionPath = statementExecutionPath;
     }
 
     public String getScriptPath() {
@@ -586,7 +586,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         setClientSecret(xml.getString("clientSecret", clientSecret));
         setApiKey(xml.getString("apiKey", apiKey));
         setUserKey(xml.getString("userKey", userKey));
-        setSmtPath(xml.getString("smtPath", smtPath));
+        setStatementExecutionPath(xml.getString("smtPath", statementExecutionPath));
         setScriptPath(xml.getString("scriptPath", scriptPath));
     }
 
@@ -603,7 +603,7 @@ public class TranslatorSplitter extends AbstractDocumentSplitter {
         xml.addElement("clientSecret", clientSecret);
         xml.addElement("apiKey", apiKey);
         xml.addElement("userKey", userKey);
-        xml.addElement("smtPath", smtPath);
+        xml.addElement("smtPath", statementExecutionPath);
         xml.addElement("scriptPath", scriptPath);
     }
 

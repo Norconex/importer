@@ -380,7 +380,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             // Package item file name (e.g. a file in a zip)
             name = tikaMeta.get(Metadata.EMBEDDED_RELATIONSHIP_ID);
             if (StringUtils.isNotBlank(name)) {
-                docInfo.setReference(reference + "!" + name);
+                docInfo.setDocumentReference(reference + "!" + name);
                 embedMeta.set(EMBEDDED_REFERENCE, name);
                 embedMeta.set(EMBEDDED_TYPE, "package-file");
 
@@ -397,7 +397,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             // (e.g. excel file in a word doc)
             name = tikaMeta.get(Metadata.RESOURCE_NAME_KEY);
             if (StringUtils.isNotBlank(name)) {
-                docInfo.setReference(reference + "!" + name);
+                docInfo.setDocumentReference(reference + "!" + name);
 
                 embedMeta.set(EMBEDDED_REFERENCE, name);
                 embedMeta.set(EMBEDDED_TYPE, "file-file");
@@ -421,7 +421,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
                     String embedRef =
                             "embedded-" + embedCount + "." + ct.getExtension();
 
-                    docInfo.setReference(reference + "!" + embedRef);
+                    docInfo.setDocumentReference(reference + "!" + embedRef);
 
                     embedMeta.set(EMBEDDED_REFERENCE, embedRef);
                     embedMeta.set(EMBEDDED_TYPE, "file-file");
@@ -443,7 +443,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             embedMeta.set(EMBEDDED_TYPE, "unknown");
 
 //            docInfo.setEmbeddedType("unknown");
-            docInfo.setReference(reference + "!" + embedRef);
+            docInfo.setDocumentReference(reference + "!" + embedRef);
 //                    + "embedded-" + embedCount + ".unknown");
             return docInfo;
         }

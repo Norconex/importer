@@ -230,7 +230,7 @@ public class Importer {
             docInfo.setContentEncoding(encoding);
         } catch (IOException e) {
             LOG.debug("Problem detecting encoding for: {}",
-                    docInfo.getReference(), e);
+                    docInfo.getDocumentReference(), e);
         }
 
         //--- Add basic metadata for what we know so far ---

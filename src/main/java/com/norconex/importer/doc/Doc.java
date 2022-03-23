@@ -162,12 +162,12 @@ public class Doc {
 
     /**
      * Gets the document reference. Same as
-     * invoking {@link DocInfo#getReference()}.
+     * invoking {@link DocInfo#getDocumentReference()}.
      * @return reference
      * @see #getDocInfo()
      */
     public String getReference() {
-        return docInfo.getReference();
+        return docInfo.getDocumentReference();
     }
 
     @Override

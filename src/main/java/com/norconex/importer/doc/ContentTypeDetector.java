@@ -71,7 +71,7 @@ public final class ContentTypeDetector {
         if (StringUtils.isBlank(safeFileName)) {
             safeFileName = file.getName();
         }
-        return doDetect(TikaInputStream.get(file.toPath()), safeFileName);
+        return determineFileType(TikaInputStream.get(file.toPath()), safeFileName);
     }
     /**
      * Detects the content type from the given input stream.
@@ -97,10 +97,10 @@ public final class ContentTypeDetector {
      */
     public static ContentType detect(InputStream content, String fileName)
             throws IOException {
-        return doDetect(content, fileName);
+        return determineFileType(content, fileName);
     }
 
-    private static ContentType doDetect(
+    private static ContentType determineFileType(
             InputStream is, String fileName) throws IOException {
         try (TikaInputStream tikaStream = TikaInputStream.get(is)) {
             Metadata meta = new Metadata();

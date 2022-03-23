@@ -57,7 +57,7 @@ public class DocInfo implements Serializable {
     //TODO track original vs final here (useful for tracking deletions
     // under a modified reference (and have dynamic committer targets).
     //TODO make final?
-    private String reference;
+    private String documentReference;
     private ContentType contentType;
     private String contentEncoding;
 
@@ -94,7 +94,7 @@ public class DocInfo implements Serializable {
      * @param reference document reference
      */
     public DocInfo(String reference) {
-        setReference(reference);
+        setDocumentReference(reference);
     }
     /**
      * Copy constructor.
@@ -105,12 +105,12 @@ public class DocInfo implements Serializable {
         copyFrom(docInfo);
     }
 
-    public String getReference() {
-        return reference;
+    public String getDocumentReference() {
+        return documentReference;
     }
-    public void setReference(String reference) {
-        Objects.requireNonNull(reference, "'reference' must not be null.");
-        this.reference = reference;
+    public void setDocumentReference(String documentReference) {
+        Objects.requireNonNull(documentReference, "'reference' must not be null.");
+        this.documentReference = documentReference;
     }
 
     public ContentType getContentType() {
