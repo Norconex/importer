@@ -34,11 +34,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableBiConsumer;
 
-import com.norconex.commons.lang.config.ConfigurationLoader;
 import com.norconex.commons.lang.file.ContentType;
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.map.Properties;
-import com.norconex.commons.lang.xml.XMLValidationException;
 import com.norconex.importer.doc.Doc;
 import com.norconex.importer.response.ImporterResponse;
 
@@ -94,7 +92,7 @@ public final class ImporterLauncher {
         }
 
         if (cmd.hasOption(ARG_CHECKCFG)) {
-            checkConfig(configFile, varFile);
+            ValidateImporter.checkConfig(configFile, varFile);
             return;
         }
 
@@ -110,7 +108,7 @@ public final class ImporterLauncher {
         String reference = cmd.getOptionValue(ARG_REFERENCE);
         Properties metadata = new Properties();
         ImporterConfig config =
-                loadCommandLineConfig(cmd, configFile, varFile);
+                ValidateImporter.loadCommandLineConfig(cmd, configFile, varFile);
         Path inputFile = Paths.get(cmd.getOptionValue(ARG_INPUTFILE));
         try {
             ImporterResponse response = new Importer(config).importDocument(
@@ -125,38 +123,6 @@ public final class ImporterLauncher {
             System.err.println(
                     "A problem occured while importing " + inputFile);
             e.printStackTrace(System.err);
-            System.exit(-1);
-        }
-    }
-
-    private static ImporterConfig loadCommandLineConfig(
-            CommandLine cmd, Path configFile, Path varFile) {
-        if (configFile == null) {
-            return null;
-        }
-
-        ImporterConfig config = new ImporterConfig();
-        try {
-            new ConfigurationLoader()
-                .setVariablesFile(varFile)
-                .loadFromXML(configFile, config);
-        } catch (Exception e) {
-            System.err.println("A problem occured loading configuration.");
-            e.printStackTrace(System.err);
-            System.exit(-1);
-        }
-        return config;
-    }
-
-    private static void checkConfig(Path configFile, Path varFile) {
-        try {
-            new ConfigurationLoader()
-                    .setVariablesFile(varFile)
-                    .loadFromXML(configFile, ImporterConfig.class);
-            System.out.println("No XML configuration errors.");
-        } catch (XMLValidationException e) {
-            System.err.println("There were " + e.getErrors().size()
-                    + " XML configuration error(s).");
             System.exit(-1);
         }
     }
