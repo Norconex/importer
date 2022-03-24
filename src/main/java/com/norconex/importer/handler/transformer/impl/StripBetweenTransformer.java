@@ -298,10 +298,12 @@ public class StripBetweenTransformer extends AbstractStringTransformer
         public int hashCode() {
             return HashCodeBuilder.reflectionHashCode(this);
         }
+        /**
         @Override
         public String toString() {
             return new ReflectionToStringBuilder(
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
+        */
     }
 }
