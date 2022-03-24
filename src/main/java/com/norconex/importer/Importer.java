@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import com.norconex.importer.parser.GenericDocumentParserFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -380,7 +381,7 @@ public class Importer {
             final List<Doc> embeddedDocs)
                     throws IOException, ImporterException {
 
-        IDocumentParserFactory factory = importerConfig.getParserFactory();
+        GenericDocumentParserFactory factory = (GenericDocumentParserFactory) importerConfig.getParserFactory();
         IDocumentParser parser = factory.getParser(
                 doc.getReference(), doc.getDocInfo().getContentType());
 

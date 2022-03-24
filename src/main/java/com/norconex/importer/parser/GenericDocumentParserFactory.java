@@ -261,7 +261,6 @@ public class GenericDocumentParserFactory
      * All parsers are assumed to have been configured properly
      * before the first call to this method.
      */
-    @Override
     public final IDocumentParser getParser(
             String documentReference, ContentType contentType) {
         // If ignoring content-type, do not even return a parser

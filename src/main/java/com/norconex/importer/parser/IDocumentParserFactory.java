@@ -29,6 +29,9 @@ public interface IDocumentParserFactory {
      * @param contentType content type
      * @return document parser
      */
+    /**
     IDocumentParser getParser(
             String documentReference, ContentType contentType);
+
+     */
 }
