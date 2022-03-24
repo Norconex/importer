@@ -438,16 +438,13 @@ public class DateCondition implements IImporterCondition, IXMLConfigurable {
                 return new DynamicFloatingDateTimeSupplier(
                         unit, amount, today, conditionZoneId);
             }
-
-            //--- Static ---
+            
             String dateFormat = null;
-            if (d.contains(".")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-            } else if (d.contains("T") || d.contains(":")) {
-                dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
-            } else {
-                dateFormat = "yyyy-MM-dd";
-            }
+            DateFormat py;
+            
+            py = d.contains(".") ? new DateFormat1() : (d.contains("T") || d.contains(":")) ? new DateFormat2() : new DateFormat3();
+            dateFormat=py.giveDateFormat();
+            
             ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
                     dateStr, dateFormat, null, null, conditionZoneId);
             return new StaticDateTimeSupplier(dt);
@@ -667,5 +664,32 @@ public class DateCondition implements IImporterCondition, IXMLConfigurable {
             b.append('*');
         }
         return b.toString();
+    }
+}
+class DateFormat1 implements DateFormat
+{
+    public String giveDateFormat()
+    {
+        String dateFormat;
+        dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+        return dateFormat;
+    }
+}
+class DateFormat2 implements DateFormat
+{
+    public String giveDateFormat()
+    {
+        String dateFormat;
+        dateFormat = "yyyy-MM-dd'T'HH:mm:ss";
+        return dateFormat;
+    }
+}
+class DateFormat3 implements DateFormat
+{
+    public String giveDateFormat()
+    {
+        String dateFormat;
+        dateFormat = "yyyy-MM-dd";
+        return dateFormat;
     }
 }
