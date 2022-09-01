@@ -32,7 +32,7 @@
     <cxf.version>3.4.5</cxf.version>
     <jdom2.version>2.0.6.1</jdom2.version>
     <jpeg2000-imageio.version>1.4.0</jpeg2000-imageio.version>
-    <jsoup.version>1.14.3</jsoup.version>
+    <jsoup.version>1.15.3</jsoup.version>
     <luaj-jse.version>3.0.1</luaj-jse.version>
     <opencsv.version>5.5.2</opencsv.version>
     <tika.version>1.27</tika.version>
