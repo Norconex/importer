@@ -34,9 +34,7 @@ public class RegexUtilTest {
     public void testExtractFields() {
 
         String xml = ResourceLoader.getXmlString(RegexUtilTest.class);
-        Properties fields = null;
-
-        fields = RegexUtil.extractFields(xml,
+        Properties fields = RegexUtil.extractFields(xml,
             //Test 1) no match group, returning whole match as value
             new RegexFieldExtractor()
                 .setField("test1")
@@ -117,7 +115,7 @@ public class RegexUtilTest {
         Assertions.assertEquals(
                 "<div class=\"field\">Last Name</div>\n  "
               + "<div class=\"value\">Dalton</div>",
-                fields.getString("Last Name"),
+                fields.getString("Last Name").replaceAll("\r", ""),
                 "Wrong test6 value.");
 
         //Test 7) No value or field group
