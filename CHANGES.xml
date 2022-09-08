@@ -7,6 +7,15 @@
   </properties>
   <body>
 
+    <release version="3.0.1" date="2022-??-??">
+
+      <action dev="essiembre" type="add" issue="76">
+        New DOMPreserveTransformer.
+      </action>
+    
+    </release>
+
+
     <release version="3.0.0" date="2022-01-02" 
             description="Major release. NOT a drop-in replacement for 2.x.">
 

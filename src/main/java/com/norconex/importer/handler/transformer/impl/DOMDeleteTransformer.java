@@ -45,9 +45,10 @@ import com.norconex.importer.util.CharsetUtil;
 import com.norconex.importer.util.DOMUtil;
 
 /**
- * <p>Enables deletion of one or more elements matching a given selector
+ * <p>
+ * Enables deletion of one or more elements matching a given selector
  * from a document content. Applies to HTML, XHTML, or XML document.
- * To extract DOM elements into metadata fields, use {@link DOMTagger}
+ * To deal with DOM elements in metadata fields, use {@link DOMTagger}
  * instead.
  * </p>
  *
@@ -124,6 +125,7 @@ import com.norconex.importer.util.DOMUtil;
  * @author Pascal Essiembre
  * @since 3.0.0
  * @see DOMTagger
+ * @see DOMPreserveTransformer
  */
 @SuppressWarnings("javadoc")
 public class DOMDeleteTransformer extends AbstractDocumentTransformer {
@@ -136,7 +138,6 @@ public class DOMDeleteTransformer extends AbstractDocumentTransformer {
      * Constructor.
      */
     public DOMDeleteTransformer() {
-        super();
         addRestrictions(
                 CommonRestrictions.domContentTypes(DocMetadata.CONTENT_TYPE));
     }
@@ -209,7 +210,7 @@ public class DOMDeleteTransformer extends AbstractDocumentTransformer {
     }
     public void addSelector(String selector) {
         if (StringUtils.isNotBlank(selector)) {
-            this.selectors.add(selector);
+            selectors.add(selector);
         }
     }
 
