@@ -12,6 +12,9 @@
       <action dev="essiembre" type="add" issue="76">
         New DOMPreserveTransformer.
       </action>
+      <action dev="essiembre" type="add" issue="76">
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2-SNAPSHOT.
+      </action>
     
     </release>
 
