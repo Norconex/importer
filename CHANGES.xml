@@ -7,17 +7,17 @@
   </properties>
   <body>
 
-    <release version="3.0.1-SNAPSHOT" date="2022-??-??">
-
+    <release version="3.0.1-SNAPSHOT" date="2023-??-??">
       <action dev="essiembre" type="add" issue="76">
         New DOMPreserveTransformer.
       </action>
       <action dev="essiembre" type="update">
         Maven dependency updates: norconex-commons-maven-parent 1.0.2-SNAPSHOT.
       </action>
-    
+      <action dev="essiembre" type="fix">
+        Fix RegexTagger not picking up XML-configured "fieldMatcher". 
+      </action>
     </release>
-
 
     <release version="3.0.0" date="2022-01-02" 
             description="Major release. NOT a drop-in replacement for 2.x.">

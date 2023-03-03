@@ -89,8 +89,9 @@ public class RegexTaggerTest {
     }
 
     @Test
-        public void testWriteRead() {
+    public void testWriteRead() {
         RegexTagger tagger = new RegexTagger();
+        tagger.getFieldMatcher().setPattern("(.*)(crawler)").partial();
         tagger.addPattern("field1", "123.*890");
         tagger.addPattern("field2", "abc.*xyz", 3);
         tagger.addPattern(new RegexFieldValueExtractor("blah")
