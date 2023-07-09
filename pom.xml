@@ -20,11 +20,11 @@
   <parent>
     <groupId>com.norconex.commons</groupId>
     <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
   </parent>  
   <groupId>com.norconex.collectors</groupId>
   <artifactId>norconex-importer</artifactId>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.0.1</version>
   <name>Norconex Importer</name>
   
   <properties>

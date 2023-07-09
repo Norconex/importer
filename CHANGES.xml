@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="3.0.1-SNAPSHOT" date="2023-??-??">
+    <release version="3.0.1" date="2023-07-09">
       <action dev="essiembre" type="add" issue="76">
         New DOMPreserveTransformer.
       </action>
