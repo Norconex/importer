@@ -7,6 +7,12 @@
   </properties>
   <body>
 
+    <release version="3.1.0-SNAPSHOT" date="2024-??-??">
+      <action dev="essiembre" type="update">
+        Minimum Java Version is now 11.
+      </action>
+    </release>
+
     <release version="3.0.1" date="2023-07-09">
       <action dev="essiembre" type="add" issue="76">
         New DOMPreserveTransformer.

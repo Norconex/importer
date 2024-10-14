@@ -29,12 +29,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsExclude;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.HashCodeExclude;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -266,7 +267,6 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     private ZoneId conditionZoneId;
 
     public DateMetadataFilter() {
-        super();
     }
     /**
      * Constructor.
@@ -304,7 +304,6 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
      * @since 3.0.0
      */
     public DateMetadataFilter(TextMatcher fieldMatcher, OnMatch onMatch) {
-        super();
         this.fieldMatcher.copyFrom(fieldMatcher);
         setOnMatch(onMatch);
     }
@@ -325,7 +324,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
      */
     @Deprecated
     public void setField(String field) {
-        this.fieldMatcher.setPattern(field);
+        fieldMatcher.setPattern(field);
     }
 
     /**
@@ -414,16 +413,15 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
      * @since 3.0.0
      */
     public boolean removeCondition(Condition condition) {
-        return this.conditions.remove(condition);
+        return conditions.remove(condition);
     }
     /**
      * Removes all conditions from this filter.
      * @since 3.0.0
      */
     public void removeAllConditions() {
-        this.conditions.clear();
+        conditions.clear();
     }
-
 
     @Override
     protected boolean isDocumentMatched(
@@ -448,13 +446,13 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     private boolean meetsAllConditions(String fieldName, String fieldValue) {
 
 
-        ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+        var dt = FormatUtil.parseZonedDateTimeString(
                 fieldValue, format, null, fieldName, docZoneId);
         if (dt == null) {
             return false;
         }
         for (Condition condition : conditions) {
-            boolean evalResult = condition.operator.evaluate(
+            var evalResult = condition.operator.evaluate(
                     dt, condition.getDateTime());
             if (LOG.isDebugEnabled()) {
                 LOG.debug("{}: {} [{}] {} = {}",
@@ -475,28 +473,28 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         setFormat(xml.getString("@format", format));
 
         ZoneId dZoneId = null;
-        String dZoneIdStr = xml.getString("@docZoneId", null);
+        var dZoneIdStr = xml.getString("@docZoneId", null);
         if (StringUtils.isNotBlank(dZoneIdStr)) {
             dZoneId = ZoneId.of(dZoneIdStr);
         }
         setDocZoneId(dZoneId);
 
         ZoneId cZoneId = null;
-        String cZoneIdStr = xml.getString("@conditionZoneId", null);
+        var cZoneIdStr = xml.getString("@conditionZoneId", null);
         if (StringUtils.isNotBlank(cZoneIdStr)) {
             cZoneId = ZoneId.of(cZoneIdStr);
         }
-        this.conditionZoneId = cZoneId;
+        conditionZoneId = cZoneId;
 
-        List<XML> nodes = xml.getXMLList("condition");
+        var nodes = xml.getXMLList("condition");
         for (XML node : nodes) {
-            String op = node.getString("@operator", null);
-            String dateStr = node.getString("@date", null);
+            var op = node.getString("@operator", null);
+            var dateStr = node.getString("@date", null);
             if (StringUtils.isBlank(op) || StringUtils.isBlank(dateStr)) {
                 LOG.warn("Both \"operator\" and \"date\" must be provided.");
                 break;
             }
-            Operator operator = Operator.getOperator(op);
+            var operator = Operator.getOperator(op);
             if (operator == null) {
                 LOG.warn("Unsupported operator: {}", op);
                 break;
@@ -541,28 +539,28 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     public static Condition toCondition(
             Operator operator, String dateString, ZoneId zoneId) {
         try {
-            String d = dateString.trim();
+            var d = dateString.trim();
 
             // NOW[-+]9[YMDhms][*]
             // TODAY[-+]9[YMDhms][*]
-            Matcher m = RELATIVE_PARTS.matcher(d);
+            var m = RELATIVE_PARTS.matcher(d);
             if (m.matches()) {
                 //--- Dynamic ---
                 TimeUnit unit = null;
-                int amount = NumberUtils.toInt(m.group(4), -1);
+                var amount = NumberUtils.toInt(m.group(4), -1);
                 if (amount > -1) {
                     if  ("-".equals(m.group(3))) {
                         amount = -amount;
                     }
-                    String unitStr = m.group(5);
+                    var unitStr = m.group(5);
                     unit = TimeUnit.getTimeUnit(unitStr);
                     if (unit == null) {
                         throw new ConfigurationException(
                                 "Invalid time unit: " + unitStr);
                     }
                 }
-                boolean fixed = !"*".equals(m.group(6));
-                boolean today = "TODAY".equals(m.group(1));
+                var fixed = !"*".equals(m.group(6));
+                var today = "TODAY".equals(m.group(1));
 
                 if (fixed) {
                     return new Condition(operator,
@@ -583,7 +581,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             } else {
                 dateFormat = "yyyy-MM-dd";
             }
-            ZonedDateTime dt = FormatUtil.parseZonedDateTimeString(
+            var dt = FormatUtil.parseZonedDateTimeString(
                     dateString, dateFormat, null, null, zoneId);
             return new Condition(operator, new StaticDateTimeSupplier(dt));
         } catch (DateTimeParseException e) {
@@ -599,7 +597,6 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         public Condition(
                 Operator operator,
                 Supplier<ZonedDateTime> dateTimeSupplier) {
-            super();
             this.operator = operator;
             this.dateTimeSupplier = dateTimeSupplier;
         }
@@ -629,13 +626,14 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
     // (the ZoneId argument is ignored).
     public static class StaticDateTimeSupplier
             implements Supplier<ZonedDateTime> {
+        @EqualsExclude
+        @HashCodeExclude
         private final ZonedDateTime dateTime;
         private final String toString;
         public StaticDateTimeSupplier(ZonedDateTime dateTime) {
-            super();
             this.dateTime = Objects.requireNonNull(
                     dateTime, "'dateTime' must not be null.");
-            this.toString = dateTime.format(DateTimeFormatter.ofPattern(
+            toString = dateTime.format(DateTimeFormatter.ofPattern(
                     "yyyy-MM-dd'T'HH:mm:ss.SSS"));
         }
         @Override
@@ -665,7 +663,6 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         private final ZoneId zoneId;
         public DynamicFloatingDateTimeSupplier(
                 TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
-            super();
             this.unit = unit;
             this.amount = amount;
             this.today = today;
@@ -700,12 +697,11 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         private ZonedDateTime dateTime;
         public DynamicFixedDateTimeSupplier(
                 TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
-            super();
             this.unit = unit;
             this.amount = amount;
             this.today = today;
             this.zoneId = zoneId;
-            this.toString = dynamicToString(unit, amount, today, false);
+            toString = dynamicToString(unit, amount, today, false);
         }
         @Override
         public ZonedDateTime get() {
@@ -736,7 +732,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
 
     private static ZonedDateTime dynamicDateTime(
             TimeUnit unit, int amount, boolean today, ZoneId zoneId) {
-        ZonedDateTime dt = ZonedDateTime.now();
+        var dt = ZonedDateTime.now();
         if (zoneId != null) {
             dt = dt.withZoneSameLocal(zoneId);
         }
@@ -754,7 +750,7 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
             int amount,
             boolean today,
             boolean floating) {
-        StringBuilder b = new StringBuilder();
+        var b = new StringBuilder();
         if (today) {
             b.append("TODAY");
         } else {

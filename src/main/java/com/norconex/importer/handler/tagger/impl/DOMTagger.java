@@ -206,7 +206,7 @@ import com.norconex.importer.util.DOMUtil;
  */
 @SuppressWarnings("javadoc")
 public class DOMTagger extends AbstractDocumentTagger {
-
+ 
     private static final Logger LOG = LoggerFactory.getLogger(DOMTagger.class);
 
     private final List<DOMExtractDetails> extractions = new ArrayList<>();

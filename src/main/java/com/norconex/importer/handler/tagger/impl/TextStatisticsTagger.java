@@ -17,14 +17,13 @@ package com.norconex.importer.handler.tagger.impl;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.BreakIterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -155,17 +154,17 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     }
 
     protected void analyze(Reader input, Properties metadata, String field) {
-        long charCount = 0;
-        long wordCharCount = 0;
-        long wordCount = 0;
-        long sentenceCount = 0;
-        long sentenceCharCount = 0;
-        long paragraphCount = 0;
+        var charCount = 0L;
+        var wordCharCount = 0L;
+        var wordCount = 0L;
+        var sentenceCount = 0L;
+        var sentenceCharCount = 0L;
+        var paragraphCount = 0L;
 
         //TODO make this more efficient, by doing all this in one pass.
-        LineIterator it = IOUtils.lineIterator(input);
+        var it = IOUtils.lineIterator(input);
         while (it.hasNext()) {
-            String line = it.nextLine().trim();
+            var line = it.nextLine().trim();
             if (StringUtils.isBlank(line)) {
                 continue;
             }
@@ -177,18 +176,18 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
             charCount += line.length();
 
             // Word
-            Matcher matcher = PATTERN_WORD.matcher(line);
+            var matcher = PATTERN_WORD.matcher(line);
             while (matcher.find()) {
-                int wordLength = matcher.end() - matcher.start();
+                var wordLength = matcher.end() - matcher.start();
                 wordCount++;
                 wordCharCount += wordLength;
             }
 
             // Sentence
-            BreakIterator boundary = BreakIterator.getSentenceInstance();
+            var boundary = BreakIterator.getSentenceInstance();
             boundary.setText(line);
-            int start = boundary.first();
-            for (int end = boundary.next(); end != BreakIterator.DONE;
+            var start = boundary.first();
+            for (var end = boundary.next(); end != BreakIterator.DONE;
                     start = end, end = boundary.next()) {
                 sentenceCharCount += (end - start);
                 sentenceCount++;
@@ -196,7 +195,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
         }
 
         //--- Add fields ---
-        String prefix = "document.stat.";
+        var prefix = "document.stat.";
         if (StringUtils.isNotBlank(field)) {
             prefix += field.trim() + ".";
         }
@@ -222,7 +221,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
     private String divide(long value, long divisor) {
         return BigDecimal.valueOf(value).divide(
                 BigDecimal.valueOf(divisor), 1,
-                        BigDecimal.ROUND_HALF_UP).toString();
+                        RoundingMode.HALF_UP).toString();
     }
 
     /**
@@ -241,7 +240,7 @@ public class TextStatisticsTagger extends AbstractCharStreamTagger
      */
     @Deprecated
     public void setFieldName(String fieldName) {
-        this.fieldMatcher.setPattern(fieldName);
+        fieldMatcher.setPattern(fieldName);
     }
     /**
      * Gets field matcher for fields to split.

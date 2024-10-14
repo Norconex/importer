@@ -40,7 +40,8 @@ import com.norconex.importer.parser.ParseState;
  * <h3 id="logic">Inclusion/exclusion logic:</h3>
  * <p>The logic for accepting or rejecting documents when a subclass condition
  * is met ("matches") is as follow:</p>
- * <table border="1" summary="Inclusion/exclusion logic">
+ * <table border="1">
+ *  <caption>Inclusion/exclusion logic</caption>
  *  <tr>
  *   <td><b>Matches?</b></td>
  *   <td><b>On match</b></td>
@@ -103,8 +104,8 @@ public abstract class AbstractDocumentFilter extends AbstractImporterHandler
         if (!isApplicable(doc, parseState)) {
             return true;
         }
-        boolean matched = isDocumentMatched(doc, input, parseState);
-        OnMatch safeOnMatch = OnMatch.includeIfNull(onMatch);
+        var matched = isDocumentMatched(doc, input, parseState);
+        var safeOnMatch = OnMatch.includeIfNull(onMatch);
         if (matched) {
             return safeOnMatch == OnMatch.INCLUDE;
         }

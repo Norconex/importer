@@ -52,7 +52,7 @@ public class DOMTaggerTest {
 
     @Test
     public void testDelete() throws ImporterHandlerException {
-
+ 
         String child1 = "<div id=\"childOneId\" class=\"childClass\">"
                 + "<a href=\"http://example.org/doc.html\">"
                 + "Child1 Link</a></div>";

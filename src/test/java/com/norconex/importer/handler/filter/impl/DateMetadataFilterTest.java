@@ -23,7 +23,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,6 @@ import com.norconex.commons.lang.xml.XML;
 import com.norconex.importer.TestUtil;
 import com.norconex.importer.handler.ImporterHandlerException;
 import com.norconex.importer.handler.filter.OnMatch;
-import com.norconex.importer.handler.filter.impl.DateMetadataFilter.Condition;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.DynamicFixedDateTimeSupplier;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.DynamicFloatingDateTimeSupplier;
 import com.norconex.importer.handler.filter.impl.DateMetadataFilter.Operator;
@@ -46,14 +44,14 @@ class DateMetadataFilterTest {
     void testAcceptDocument()
             throws ImporterHandlerException, ParseException {
 
-        Properties meta = new Properties();
+        var meta = new Properties();
 
-        DateMetadataFilter filter = null;
+        DateMetadataFilter filter;
 
         meta.set("field1", "1980-12-21T12:22:01.123");
         filter = new DateMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
-        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS]");
 
         filter.addCondition(Operator.LOWER_EQUAL, LocalDate.of(
                 1980, 12, 21).atStartOfDay(ZoneId.systemDefault()));
@@ -72,7 +70,7 @@ class DateMetadataFilterTest {
         meta.set("field1", "1980-12-21T12:22:01.123");
         filter = new DateMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
-        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        filter.setFormat("yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS]");
         filter.addCondition(Operator.LOWER_EQUAL, LocalDate.of(
                 1980, 12, 22).atStartOfDay(ZoneId.systemDefault()));
         Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE));
@@ -94,7 +92,7 @@ class DateMetadataFilterTest {
 
     @Test
     void testWriteRead() {
-        DateMetadataFilter filter = new DateMetadataFilter();
+        var filter = new DateMetadataFilter();
         filter.setFieldMatcher(TextMatcher.basic("field1"));
         filter.setFormat("yyyy-MM-dd");
         filter.setOnMatch(OnMatch.EXCLUDE);
@@ -112,7 +110,7 @@ class DateMetadataFilterTest {
     @Test
     void testOperatorDateParsing() {
 
-        XML xml = XML.of(
+        var xml = XML.of(
                   "<handler\n"
                 + "    class=\"DateMetadataFilter\""
                 + "    format=\"yyyy-MM-dd'T'HH:mm:ss'Z'\""
@@ -122,10 +120,10 @@ class DateMetadataFilterTest {
                 + "  <condition operator=\"lt\" date=\"2020-09-27T12:34:56\"/>"
                 + "  <condition operator=\"lt\" date=\"2020-09-27\"/>"
                 + "</handler>").create();
-        DateMetadataFilter f = new DateMetadataFilter();
+        var f = new DateMetadataFilter();
         f.loadFromXML(xml);
 
-        List<Condition> conds = f.getConditions();
+        var conds = f.getConditions();
 
         // Assert valid date strings
         Assertions.assertEquals("TODAY",
@@ -135,10 +133,10 @@ class DateMetadataFilterTest {
         Assertions.assertEquals("2020-09-27T00:00:00.000",
                 conds.get(2).getDateTimeSupplier().toString());
 
-        ZonedDateTime today = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS);
-        ZonedDateTime dateTime = ZonedDateTime.of(
+        var today = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS);
+        var dateTime = ZonedDateTime.of(
                 2020, 9, 27, 12, 34, 56, 0, today.getZone());
-        ZonedDateTime date = ZonedDateTime.of(
+        var date = ZonedDateTime.of(
                 2020, 9, 27, 12, 34, 56, 0, today.getZone())
                         .truncatedTo(ChronoUnit.DAYS);
 
@@ -149,23 +147,20 @@ class DateMetadataFilterTest {
 
     @Test
     void testAroundNow() throws ImporterHandlerException {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime then55min = now.minusMinutes(55);
-        LocalDateTime then65min = now.minusMinutes(65);
+        var now = LocalDateTime.now();
+        var then55min = now.minusMinutes(55);
+        var then65min = now.minusMinutes(65);
 
-        DateMetadataFilter f = null;
-        Properties meta = new Properties();
-        XML xml = null;
-
-        // Includes more recent than 1 hour ago
-        xml = XML.of(
-                "<handler\n"
-              + "    class=\"DateMetadataFilter\""
-              + "    format=\"yyyy-MM-dd'T'HH:mm:ss.SSS\""
-              + "    onMatch=\"include\">"
-              + "  <fieldMatcher>docdate</fieldMatcher>"
-              + "  <condition operator=\"gt\" date=\"NOW-1h\"/>"
-              + "</handler>").create();
+        DateMetadataFilter f;
+        var meta = new Properties();
+        var xml = XML.of(
+            "<handler\n"
+          + "    class=\"DateMetadataFilter\""
+          + "    format=\"yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS]\""
+          + "    onMatch=\"include\">"
+          + "  <fieldMatcher>docdate</fieldMatcher>"
+          + "  <condition operator=\"gt\" date=\"NOW-1h\"/>"
+          + "</handler>").create();
 
         f = new DateMetadataFilter();
         f.loadFromXML(xml);
@@ -173,22 +168,22 @@ class DateMetadataFilterTest {
         meta.set("docdate",   then55min.toString());
         Assertions.assertTrue(
                 TestUtil.filter(f, "n/a", meta, PRE),
-                "55 minutes ago was not younger than an hour ago.");
+                "55 minutes ago must be after an hour ago.");
 
         meta.set("docdate", then65min.toString());
         Assertions.assertFalse(
                 TestUtil.filter(f, "n/a", meta, PRE),
-                "65 minutes ago was younger than an hour ago.");
+                "65 minutes ago must be before an hour ago.");
 
         // Excludes older than 1 hour ago
         xml = XML.of(
-                "<handler\n"
-              + "    class=\"DateMetadataFilter\""
-              + "    format=\"yyyy-MM-dd'T'HH:mm:ss.SSS\""
-              + "    onMatch=\"exclude\">"
-              + "  <fieldMatcher>docdate</fieldMatcher>"
-              + "  <condition operator=\"lt\" date=\"NOW-1h\"/>"
-              + "</handler>").create();
+              "<handler\n"
+            + "    class=\"DateMetadataFilter\""
+            + "    format=\"yyyy-MM-dd'T'HH:mm:ss[.SSSSSSSSS][.SSSSSS][.SSS]\""
+            + "    onMatch=\"exclude\">"
+            + "  <fieldMatcher>docdate</fieldMatcher>"
+            + "  <condition operator=\"lt\" date=\"NOW-1h\"/>"
+            + "</handler>").create();
 
         f = new DateMetadataFilter();
         f.loadFromXML(xml);
@@ -213,15 +208,9 @@ class DateMetadataFilterTest {
          *   - L.A.  time: 20:00 on December 20th, 2020
          */
 
-        DateMetadataFilter f = null;
-        Properties meta = new Properties();
-        XML xml = null;
-
-        //--- TEST ---
-        // Doc timezone in config: YES
-        // Doc timezone in field:  NO
-
-        xml = XML.of(
+        DateMetadataFilter f;
+        var meta = new Properties();
+        var xml = XML.of(
                 "<handler\n"
               + "    class=\"DateMetadataFilter\""
               + "    format=\"yyyy-MM-dd'T'HH:mm:ss\""
@@ -231,6 +220,11 @@ class DateMetadataFilterTest {
               + "  <fieldMatcher>docdate</fieldMatcher>"
               + "  <condition operator=\"gt\" date=\"2020-12-21T05:00:00\"/>"
               + "</handler>").create();
+
+        //--- TEST ---
+        // Doc timezone in config: YES
+        // Doc timezone in field:  NO
+
         f = new DateMetadataFilter();
         f.loadFromXML(xml);
 
