@@ -7,9 +7,12 @@
   </properties>
   <body>
 
-    <release version="3.1.0-SNAPSHOT" date="2024-??-??" description="Minor release.">
+    <release version="3.1.0" date="2025-05-24" description="Minor release.">
       <action dev="essiembre" type="update">
         Minimum Java Version is now 11.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates.
       </action>
     </release>
 
@@ -18,7 +21,7 @@
         New DOMPreserveTransformer.
       </action>
       <action dev="essiembre" type="update">
-        Maven dependency updates: norconex-commons-maven-parent 1.0.2-SNAPSHOT.
+        Maven dependency updates: norconex-commons-maven-parent 1.0.2.
       </action>
       <action dev="essiembre" type="fix">
         Fix RegexTagger not picking up XML-configured "fieldMatcher". 
