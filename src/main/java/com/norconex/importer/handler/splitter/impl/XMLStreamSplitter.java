@@ -130,6 +130,10 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
             LoggerFactory.getLogger(XMLStreamSplitter.class);
 
     private String path;
+    private String refField;
+    private String currentElement;
+    private StringBuilder elementText;
+    private String extractedRefValue; // the value inside <url>
 
     public XMLStreamSplitter() {
         super();
@@ -143,6 +147,9 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
     public void setPath(String path) {
         this.path = path;
     }
+
+    public String getRef(){return refField;}
+    public void setRef(String refField){this.refField = refField;}
 
     @Override
     protected List<Doc> splitApplicableDocument(
@@ -164,6 +171,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
+        setRef(xml.getString("@refField", refField));
         setPath(xml.getString("@path", path));
     }
 
@@ -210,6 +218,8 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                 Attributes attributes) throws SAXException {
 
             currentPath.add(qName);
+            currentElement = qName;
+            elementText = new StringBuilder();
 
             if (currentPath.equals(splitPath)) {
                 out = xmlDoc.getStreamFactory().newOuputStream();
@@ -235,6 +245,12 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                 ctnt = ctnt.replaceFirst("^\\s+$", "");
                 w.write(esc(ctnt));
             }
+
+            if (elementText != null) {
+                elementText.append(ch, start, length);
+            }
+
+
         }
 
         @Override
@@ -243,15 +259,38 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
             try {
                 if (w != null) {
                     w.print("</" + esc(qName) + ">");
+
+                    if (refField != null && refField.equalsIgnoreCase(qName)) {
+                        extractedRefValue = elementText.toString().trim();
+                    }
+
                     if (currentPath.equals(splitPath)) {
                         w.flush();
                         Properties childMeta = new Properties();
                         childMeta.loadFromMap(xmlDoc.getMetadata());
                         String embedRef = Integer.toString(splitDocs.size());
+
+                        // fallback if URL is missing
+                        String finalRef;
+                        if (StringUtils.isNotBlank(extractedRefValue)) {
+                            finalRef = extractedRefValue;
+                        } else {
+                            finalRef = xmlDoc.getReference() + "!" + refField + embedRef;
+                        }
+
+
                         Doc childDoc = new Doc(
-                                xmlDoc.getReference() + "!" + embedRef,
+                                finalRef,
                                 out.getInputStream(),
                                 childMeta);
+                        LOG.info("new ref:" + childDoc.getReference());
+
+//                        Doc childDoc = new Doc(
+//                                xmlDoc.getReference() + "!" + refField + embedRef,
+//                                out.getInputStream(),
+//                                childMeta);
+
+
                         w.close();
                         out = null;
                         w = null;

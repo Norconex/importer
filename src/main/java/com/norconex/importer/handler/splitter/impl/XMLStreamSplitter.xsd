@@ -21,8 +21,10 @@
   <xs:element name="handler">
     <xs:complexType>
       <xs:complexContent> 
-        <xs:extension base="AbstractDocumentSplitter"> 
+        <xs:extension base="AbstractDocumentSplitter">
           <xs:attribute name="path" type="xs:string" />
+          <xs:attribute name="refField" type="xs:string" />
+
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
