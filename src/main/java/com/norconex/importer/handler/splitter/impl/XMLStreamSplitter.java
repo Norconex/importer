@@ -132,7 +132,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
     private String path;
     private String referenceField;
     private StringBuilder elementText;
-    private String extractedRefValue; // the value inside <url>
+    private String extractedReferenceValue; // the value inside <url>
 
     public XMLStreamSplitter() {
         super();
@@ -147,8 +147,8 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
         this.path = path;
     }
 
-    public String getRef(){return referenceField;}
-    public void setRef(String referenceField){this.referenceField = referenceField;}
+    public String getReference(){return referenceField;}
+    public void setReference(String referenceField){this.referenceField = referenceField;}
 
     @Override
     protected List<Doc> splitApplicableDocument(
@@ -170,7 +170,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setRef(xml.getString("@referenceField", referenceField));
+        setReference(xml.getString("@referenceField", referenceField));
         setPath(xml.getString("@path", path));
     }
 
@@ -261,7 +261,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                     w.print("</" + esc(qName) + ">");
 
                     if (referenceField != null && referenceField.equalsIgnoreCase(qName)) {
-                        extractedRefValue = elementText.toString().trim();
+                        extractedReferenceValue = elementText.toString().trim();
                     }
 
                     if (currentPath.equals(splitPath)) {
@@ -272,8 +272,8 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
 
                         // fallback if URL is missing
                         String finalRef;
-                        if (StringUtils.isNotBlank(extractedRefValue)) {
-                            finalRef = extractedRefValue;
+                        if (StringUtils.isNotBlank(extractedReferenceValue)) {
+                            finalRef = extractedReferenceValue;
                         } else {
                             finalRef = xmlDoc.getReference() + "!" + referenceField + embedRef;
                         }
