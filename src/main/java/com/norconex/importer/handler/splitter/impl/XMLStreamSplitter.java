@@ -130,8 +130,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
             LoggerFactory.getLogger(XMLStreamSplitter.class);
 
     private String path;
-    private String refField;
-    private String currentElement;
+    private String referenceField;
     private StringBuilder elementText;
     private String extractedRefValue; // the value inside <url>
 
@@ -148,8 +147,8 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
         this.path = path;
     }
 
-    public String getRef(){return refField;}
-    public void setRef(String refField){this.refField = refField;}
+    public String getRef(){return referenceField;}
+    public void setRef(String referenceField){this.referenceField = referenceField;}
 
     @Override
     protected List<Doc> splitApplicableDocument(
@@ -171,12 +170,14 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
 
     @Override
     protected void loadHandlerFromXML(XML xml) {
-        setRef(xml.getString("@refField", refField));
+        setRef(xml.getString("@referenceField", referenceField));
         setPath(xml.getString("@path", path));
     }
 
     @Override
     protected void saveHandlerToXML(XML xml) {
+
+        xml.setAttribute("referenceField", referenceField);
         xml.setAttribute("path", path);
     }
 
@@ -218,7 +219,6 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                 Attributes attributes) throws SAXException {
 
             currentPath.add(qName);
-            currentElement = qName;
             elementText = new StringBuilder();
 
             if (currentPath.equals(splitPath)) {
@@ -260,7 +260,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                 if (w != null) {
                     w.print("</" + esc(qName) + ">");
 
-                    if (refField != null && refField.equalsIgnoreCase(qName)) {
+                    if (referenceField != null && referenceField.equalsIgnoreCase(qName)) {
                         extractedRefValue = elementText.toString().trim();
                     }
 
@@ -275,7 +275,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                         if (StringUtils.isNotBlank(extractedRefValue)) {
                             finalRef = extractedRefValue;
                         } else {
-                            finalRef = xmlDoc.getReference() + "!" + refField + embedRef;
+                            finalRef = xmlDoc.getReference() + "!" + referenceField + embedRef;
                         }
 
 
@@ -283,13 +283,7 @@ public class XMLStreamSplitter extends AbstractDocumentSplitter
                                 finalRef,
                                 out.getInputStream(),
                                 childMeta);
-                        LOG.info("new ref:" + childDoc.getReference());
-
-//                        Doc childDoc = new Doc(
-//                                xmlDoc.getReference() + "!" + refField + embedRef,
-//                                out.getInputStream(),
-//                                childMeta);
-
+                        LOG.debug("new reference: " + childDoc.getReference());
 
                         w.close();
                         out = null;
