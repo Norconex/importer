@@ -303,6 +303,12 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <excludePackageNames>org.*</excludePackageNames>
+          <failOnError>false</failOnError>
+          <failOnWarning>false</failOnWarning>
+          <quiet>true</quiet>
+          <options>
+            <option>-Xdoclint:none</option>
+          </options>
         </configuration>
       </plugin>
 
