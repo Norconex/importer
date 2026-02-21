@@ -15,16 +15,17 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.tika.language.translate.GoogleTranslator;
+import org.apache.tika.language.translate.impl.GoogleTranslator;
 
 import com.norconex.importer.ImporterRuntimeException;
 
 /**
  * Adds accessor methods to {@link GoogleTranslator} to access the API key.
+ * 
  * @author Pascal Essiembre
  * @since 2.1.0
  */
-/*default*/ class FixedGoogleTranslator extends GoogleTranslator {
+/* default */ class FixedGoogleTranslator extends GoogleTranslator {
 
     public FixedGoogleTranslator() {
         super();
@@ -34,6 +35,7 @@ import com.norconex.importer.ImporterRuntimeException;
             throw new ImporterRuntimeException("Cannot mark as available.", e);
         }
     }
+
     public void setApiKey(String apiKey) {
         try {
             FieldUtils.writeField(this, "apiKey", apiKey, true);
@@ -41,6 +43,7 @@ import com.norconex.importer.ImporterRuntimeException;
             throw new ImporterRuntimeException("Cannot set api key.", e);
         }
     }
+
     public String getApiKey() {
         try {
             return (String) FieldUtils.readField(this, "apiKey", true);

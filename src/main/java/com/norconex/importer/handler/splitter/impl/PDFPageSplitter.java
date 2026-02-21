@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.multipdf.Splitter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
@@ -49,16 +50,16 @@ import com.norconex.importer.parser.ParseState;
  *
  * <p>
  * The original PDF is kept intact. If you want to eliminate it to keep only
- * the split pages, make sure to filter it.  You can do so by filtering
+ * the split pages, make sure to filter it. You can do so by filtering
  * out PDFs without one of these two fields added to each pages:
  * <code>document.pdf.pageNumber</code> or
- * <code>document.pdf.numberOfPages</code>.  A filtering example:
+ * <code>document.pdf.numberOfPages</code>. A filtering example:
  * </p>
  *
  * {@nx.xml.example
  * <filter class="com.norconex.importer.handler.filter.impl.EmptyFilter"
- *         onMatch="exclude">
- *   <fieldMatcher matchWhole="true">document.pdf.pageNumber</fieldMatcher>
+ * onMatch="exclude">
+ * <fieldMatcher matchWhole="true">document.pdf.pageNumber</fieldMatcher>
  * </filter>
  * }
  *
@@ -67,28 +68,33 @@ import com.norconex.importer.parser.ParseState;
  * <code>document.contentType</code> matching <code>application/pdf</code>.
  * </p>
  *
- * <p>Should be used as a pre-parse handler.</p>
+ * <p>
+ * Should be used as a pre-parse handler.
+ * </p>
  *
  * {@nx.xml.usage
- *  <handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter">
- *    {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
-
- *    <referencePagePrefix>
- *      (String to put before the page number is appended to the document
- *      reference. Default is "#".)
- *    </referencePagePrefix>
+ * <handler class="com.norconex.importer.handler.splitter.impl.PDFPageSplitter">
+ * {@nx.include
+ * com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * 
+ * <referencePagePrefix>
+ * (String to put before the page number is appended to the document
+ * reference. Default is "#".)
+ * </referencePagePrefix>
  *
- *  </handler>
+ * </handler>
  * }
  *
  * {@nx.xml.example
  * <handler class="PDFPageSplitter">
- *   <referencePagePrefix>#page</referencePagePrefix>
+ * <referencePagePrefix>#page</referencePagePrefix>
  * </handler>
  * }
- * <p>The above example will split PDFs and will append the page number
+ * <p>
+ * The above example will split PDFs and will append the page number
  * to the original PDF reference as "#page1", "#page2", etc.
  * </p>
+ * 
  * @author Pascal Essiembre
  * @since 2.9.0
  */
@@ -97,8 +103,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
     public static final String DOC_PDF_PAGE_NO = "document.pdf.pageNumber";
-    public static final String DOC_PDF_TOTAL_PAGES =
-            "document.pdf.numberOfPages";
+    public static final String DOC_PDF_TOTAL_PAGES = "document.pdf.numberOfPages";
 
     public static final String DEFAULT_REFERENCE_PAGE_PREFIX = "#";
 
@@ -114,6 +119,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
     public String getReferencePagePrefix() {
         return referencePagePrefix;
     }
+
     public void setReferencePagePrefix(String referencePagePrefix) {
         this.referencePagePrefix = referencePagePrefix;
     }
@@ -130,7 +136,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
             return pageDocs;
         }
 
-        try (PDDocument document = PDDocument.load(input)) {
+        try (PDDocument document = Loader.loadPDF(input.readAllBytes())) {
 
             // Make sure we are not splitting single pages.
             if (document.getNumberOfPages() <= 1) {
@@ -145,8 +151,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
             for (PDDocument page : splittedDocuments) {
                 pageNo++;
 
-                String pageRef =
-                        doc.getReference() + referencePagePrefix + pageNo;
+                String pageRef = doc.getReference() + referencePagePrefix + pageNo;
 
                 // metadata
                 Properties pageMeta = new Properties();
@@ -154,17 +159,16 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
 
                 DocInfo pageInfo = new DocInfo(pageRef);
 
-//                pageInfo.setEmbeddedReference(Integer.toString(pageNo));
+                // pageInfo.setEmbeddedReference(Integer.toString(pageNo));
                 pageMeta.set(DocMetadata.EMBEDDED_REFERENCE,
                         Integer.toString(pageNo));
 
-
                 pageInfo.addEmbeddedParentReference(doc.getReference());
 
-//                pageMeta.setReference(pageRef);
-//                pageMeta.setEmbeddedReference(Integer.toString(pageNo));
-//                pageMeta.setEmbeddedParentReference(doc.getReference());
-//                pageMeta.setEmbeddedParentRootReference(doc.getReference());
+                // pageMeta.setReference(pageRef);
+                // pageMeta.setEmbeddedReference(Integer.toString(pageNo));
+                // pageMeta.setEmbeddedParentReference(doc.getReference());
+                // pageMeta.setEmbeddedParentRootReference(doc.getReference());
 
                 pageMeta.set(DOC_PDF_PAGE_NO, pageNo);
                 pageMeta.set(DOC_PDF_TOTAL_PAGES, document.getNumberOfPages());
@@ -212,6 +216,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                 .append(referencePagePrefix, castOther.referencePagePrefix)
                 .isEquals();
     }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder()
@@ -219,6 +224,7 @@ public class PDFPageSplitter extends AbstractDocumentSplitter
                 .append(referencePagePrefix)
                 .toHashCode();
     }
+
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)

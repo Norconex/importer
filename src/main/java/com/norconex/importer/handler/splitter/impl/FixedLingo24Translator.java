@@ -15,16 +15,17 @@
 package com.norconex.importer.handler.splitter.impl;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.tika.language.translate.Lingo24Translator;
+import org.apache.tika.language.translate.impl.Lingo24Translator;
 
 import com.norconex.importer.ImporterRuntimeException;
 
 /**
  * Adds accessor methods to {@link Lingo24Translator} to access the user key.
+ * 
  * @author Pascal Essiembre
  * @since 2.1.0
  */
-/*default*/ class FixedLingo24Translator extends Lingo24Translator {
+/* default */ class FixedLingo24Translator extends Lingo24Translator {
 
     public FixedLingo24Translator() {
         super();
@@ -34,6 +35,7 @@ import com.norconex.importer.ImporterRuntimeException;
             throw new ImporterRuntimeException("Cannot mark as available.", e);
         }
     }
+
     public void setUserKey(String userKey) {
         try {
             FieldUtils.writeField(this, "userKey", userKey, true);
@@ -41,6 +43,7 @@ import com.norconex.importer.ImporterRuntimeException;
             throw new ImporterRuntimeException("Cannot set user key.", e);
         }
     }
+
     public String getUserKey() {
         try {
             return (String) FieldUtils.readField(this, "userKey", true);

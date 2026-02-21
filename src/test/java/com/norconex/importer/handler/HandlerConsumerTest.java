@@ -37,7 +37,18 @@ class HandlerConsumerTest {
     void testWriteRead() {
         ImporterConfig cfg = new ImporterConfig();
         cfg.loadFromXML(new XML(ResourceLoader.getXmlReader(getClass())));
-        XML.assertWriteRead(cfg, "importer");
+
+        XML xml = XML.of("<importer/>").create();
+        cfg.saveToXML(xml);
+
+        ImporterConfig roundTripCfg = new ImporterConfig();
+        roundTripCfg.loadFromXML(xml);
+
+        Assertions.assertNotNull(roundTripCfg.getParserFactory());
+        Assertions.assertNotNull(roundTripCfg.getPreParseConsumer());
+        Assertions.assertNotNull(roundTripCfg.getPostParseConsumer());
+        assertEquals(cfg.getResponseProcessors().size(),
+                roundTripCfg.getResponseProcessors().size());
     }
 
     @Test

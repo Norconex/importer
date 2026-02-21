@@ -8,3 +8,4 @@ manipulation on the extracted text before importing/using it in your own
 service or application.
 
 Website: https://opensource.norconex.com/importer/
+

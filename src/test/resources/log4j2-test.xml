@@ -29,6 +29,24 @@
     <Logger name="org.apache.pdfbox.jbig2.JBIG2Globals" level="OFF" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
+    <!--
+      POI 5.x (bundled with Tika 3.x) switched from its own NullLogger (the default
+      in POI 3.x / Tika 1.x, which silently discarded all log output) to Log4j2 via
+      PoiLogManager. As a result, pre-existing ArrayIndexOutOfBoundsExceptions thrown
+      inside Chunk.processCommands() when parsing legacy .vsd (HDGF) files now surface
+      as ERROR log entries, along with related WARN noise from other POI packages.
+      POI catches them internally and continues, so parsing still succeeds.
+      There is nothing to fix on our end; suppress the noise here.
+    -->
+    <Logger name="org.apache.poi.hdgf" level="OFF" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.apache.poi.hpsf" level="OFF" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
+    <Logger name="org.apache.poi.hslf" level="OFF" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
 
   </Loggers>
 </Configuration>

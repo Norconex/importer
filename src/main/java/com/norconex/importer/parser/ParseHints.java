@@ -31,12 +31,16 @@ public class ParseHints {
 
     private final OCRConfig ocrConfig = new OCRConfig();
     private final EmbeddedConfig embeddedConfig = new EmbeddedConfig();
+    private final GrobidConfig grobidConfig = new GrobidConfig();
 
     public OCRConfig getOcrConfig() {
         return ocrConfig;
     }
     public EmbeddedConfig getEmbeddedConfig() {
         return embeddedConfig;
+    }
+    public GrobidConfig getGrobidConfig() {
+        return grobidConfig;
     }
 
     @Override
@@ -48,6 +52,7 @@ public class ParseHints {
         return new EqualsBuilder()
                 .append(ocrConfig, castOther.ocrConfig)
                 .append(embeddedConfig, castOther.embeddedConfig)
+                .append(grobidConfig, castOther.grobidConfig)
                 .isEquals();
     }
 
@@ -56,6 +61,7 @@ public class ParseHints {
         return new HashCodeBuilder()
                 .append(ocrConfig)
                 .append(embeddedConfig)
+                .append(grobidConfig)
                 .toHashCode();
     }
 
@@ -64,6 +70,7 @@ public class ParseHints {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
                 .append("ocrConfig", ocrConfig)
                 .append("embeddedConfig", embeddedConfig)
+                .append("grobidConfig", grobidConfig)
                 .toString();
     }
 }

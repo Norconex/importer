@@ -20,9 +20,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.tika.io.NullInputStream;
+import org.apache.commons.io.input.NullInputStream;
 
 import com.norconex.commons.lang.io.CachedInputStream;
 import com.norconex.commons.lang.map.Properties;
@@ -36,8 +37,10 @@ import com.norconex.importer.parser.ParseState;
 
 public final class TestUtil {
 
-    private static final String BASE_PATH =
-         "src/site/resources/examples/books/alice-in-wonderland-book-chapter-1";
+        private static final String BASE_PATH = Path.of(
+            System.getProperty("basedir", "."),
+            "src", "site", "resources", "examples", "books",
+            "alice-in-wonderland-book-chapter-1").toString();
 
     private TestUtil() {
         super();
@@ -51,22 +54,26 @@ public final class TestUtil {
     public static File getAlicePdfFile() {
         return new File(BASE_PATH + ".pdf");
     }
+
     public static File getAliceDocxFile() {
         return new File(BASE_PATH + ".docx");
     }
+
     public static File getAliceZipFile() {
         return new File(BASE_PATH + ".zip");
     }
+
     public static File getAliceHtmlFile() {
         return new File(BASE_PATH + ".html");
     }
+
     public static File getAliceTextFile() {
         return new File(BASE_PATH + ".txt");
     }
+
     public static Importer getTestConfigImporter() throws IOException {
         ImporterConfig config = new ImporterConfig();
-        try (InputStream is =
-                TestUtil.class.getResourceAsStream("test-config.xml");
+        try (InputStream is = TestUtil.class.getResourceAsStream("test-config.xml");
                 Reader r = new InputStreamReader(is)) {
             new XML(r).populate(config);
         }
@@ -75,12 +82,13 @@ public final class TestUtil {
 
     public static boolean filter(IDocumentFilter filter, String ref,
             Properties metadata, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         return filter(filter, ref, null, metadata, parseState);
     }
+
     public static boolean filter(IDocumentFilter filter, String ref,
             InputStream is, Properties metadata, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         InputStream input = is == null ? new NullInputStream(0) : is;
         return filter.acceptDocument(
                 toHandlerDoc(ref, input, metadata), input, parseState);
@@ -88,33 +96,38 @@ public final class TestUtil {
 
     public static void tag(IDocumentTagger tagger, String ref,
             Properties metadata, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         tag(tagger, ref, null, metadata, parseState);
     }
+
     public static void tag(IDocumentTagger tagger, String ref,
             InputStream is, Properties metadata, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         InputStream input = is == null ? new NullInputStream(0) : is;
         tagger.tagDocument(
                 toHandlerDoc(ref, input, metadata), input, parseState);
     }
 
-
     public static HandlerDoc toHandlerDoc() {
         return toHandlerDoc("N/A", null, new Properties());
     }
+
     public static HandlerDoc toHandlerDoc(Properties meta) {
         return toHandlerDoc("N/A", null, meta);
     }
+
     public static HandlerDoc toHandlerDoc(String ref) {
         return toHandlerDoc(ref, null, new Properties());
     }
+
     public static HandlerDoc toHandlerDoc(String ref, Properties meta) {
         return toHandlerDoc(ref, null, meta);
     }
+
     public static HandlerDoc toHandlerDoc(String ref, InputStream in) {
         return toHandlerDoc(ref, in, new Properties());
     }
+
     public static HandlerDoc toHandlerDoc(
             String ref, InputStream in, Properties meta) {
         // Remove document.reference for tests that need the same count

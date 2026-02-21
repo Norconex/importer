@@ -7,6 +7,98 @@
   </properties>
   <body>
 
+    <release version="3.2.0-SNAPSHOT" date="2026-??-??" description="Minor release.">
+      <action dev="essiembre" type="add">
+        New GrobidConfig class for configuring optional Grobid REST service
+        integration (disabled by default). When enabled, Tika's JournalParser
+        and GrobidRESTParser are used to extract metadata from scientific
+        documents (e.g., PDF journal articles). Configurable via
+        GenericDocumentParserFactory XML with a new "grobid" element.
+      </action>
+      <action dev="essiembre" type="add">
+        New AbstractTikaParser.MetadataFieldPolicy enum (PRESERVE, LEGACY, BOTH)
+        to control how Dublin Core "dc:" prefixed metadata field names are
+        mapped to Importer metadata. Default is BOTH, which stores values under
+        both the original "dc:" name and the legacy unprefixed name.
+      </action>
+      <action dev="essiembre" type="add">
+        Added local SLF4J Logger/LoggerBridge shims for PDFBox JBIG2 to 
+        silence runtime warnings caused by missing logging classes in the
+        updated PDFBox/JBIG2 dependency chain.
+      </action>
+      <action dev="essiembre" type="update">
+        Minimum Java Version is now 17.
+      </action>
+      <action dev="essiembre" type="update">
+        Apache Tika upgraded from 1.27 to 3.2.3. The monolithic
+        "tika-parsers" artifact is replaced by the modular Tika 3.x packages:
+        tika-parsers-standard-package, tika-parser-advancedmedia-package,
+        tika-parser-nlp-package, tika-parser-scientific-package, and
+        tika-parser-sqlite3-package.
+      </action>
+      <action dev="essiembre" type="update">
+        norconex-commons-maven-parent upgraded from 1.1.0 to 1.2.0.
+      </action>
+      <action dev="essiembre" type="update">
+        Dependency updates: commons-compress 1.21 -> 1.28.0, 
+        commons-io 2.21.0 (new explicit dependency), jsoup 1.15.3 -> 1.21.1,
+        opencsv 5.5.2 -> 5.12.0, Apache POI 5.5.1 (poi, poi-ooxml-full,
+        xmlbeans 5.3.0) now explicit dependencies, jbig2-imageio 3.0.4 added.
+      </action>
+      <action dev="essiembre" type="update">
+        Added nashorn-core 15.4 as an explicit dependency since the Nashorn
+        JavaScript engine is no longer bundled with the JDK in Java 17+.
+      </action>
+      <action dev="essiembre" type="update">
+        ContentTypeDetector overhauled to support Tika 3.x: now uses a
+        DefaultDetector with custom MIME types loaded explicitly. Added deep
+        MS Office content-type disambiguation via OLE header and OOXML ZIP
+        entry inspection, correctly resolving generic "application/x-tika-msoffice"
+        and "application/x-tika-ooxml" to their specific types (Word, Excel,
+        PowerPoint, Visio, etc.) using both file extension hints and binary
+        content sniffing.
+      </action>
+      <action dev="essiembre" type="update">
+        AbstractTikaParser updated for Tika 3.x: TikaMetadataKeys replaced
+        by TikaCoreProperties; OCR configuration now explicitly sets
+        TesseractOCRParser in the ParseContext; improved DocumentParserException
+        message to include the document reference; Grobid parser chain is
+        disabled by default by removing JournalParser/GrobidRESTParser from 
+        the AutoDetectParser's internal list via reflection.
+      </action>
+      <action dev="essiembre" type="update">
+        GenericDocumentParserFactory: Tika startup warning-suppression
+        (for TesseractOCRParser and SQLite3Parser) now uses Class.forName()
+        and reflection to avoid hard compile-time dependency on classes that
+        may not be present, preventing ClassNotFoundException at startup.
+      </action>
+      <action dev="essiembre" type="update">
+        LanguageTagger: updated Tika 3.x import for OptimaizeLangDetector
+        (now under org.apache.tika.langdetect.optimaize package).
+      </action>
+      <action dev="essiembre" type="update">
+        PDFPageSplitter: updated to use PDFBox 3.x API (Loader.loadPDF(byte[])
+        instead of the removed PDDocument.load(InputStream)).
+      </action>
+      <action dev="essiembre" type="update">
+        FallbackParser: improved tika-config.xml loading with fallback
+        to classloader resource lookup and ultimately TikaConfig.getDefaultConfig()
+        when no custom config file is found on the classpath.
+      </action>
+      <action dev="essiembre" type="update">
+        custom-mimetypes.xml: added Tika XML namespace declaration, fixed
+        XFDL root-XML localName case (XFDL), and removed invalid DOCTYPE.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven Surefire plugin configured with --add-opens for Java module
+        system compatibility and a test-scoped tika.config system property.
+      </action>
+      <action dev="essiembre" type="update">
+        Maven central publishing switched from nexus-staging-maven-plugin
+        to central-publishing-maven-plugin (Sonatype Central Portal).
+      </action>
+    </release>
+
     <release version="3.1.0" date="2025-05-24" description="Minor release.">
       <action dev="essiembre" type="update">
         Minimum Java Version is now 11.

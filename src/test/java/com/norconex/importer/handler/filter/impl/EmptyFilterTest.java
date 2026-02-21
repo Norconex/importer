@@ -16,7 +16,7 @@ package com.norconex.importer.handler.filter.impl;
 
 import static com.norconex.importer.parser.ParseState.PRE;
 
-import org.apache.tika.io.NullInputStream;
+import org.apache.commons.io.input.NullInputStream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,56 +30,56 @@ import com.norconex.importer.handler.filter.OnMatch;
 
 public class EmptyFilterTest {
 
-    @Test
-    public void testEmptyFields() throws ImporterHandlerException {
-        Properties meta = new Properties();
-        meta.add("field1", "a string to match");
-        meta.add("field2", "");
+        @Test
+        public void testEmptyFields() throws ImporterHandlerException {
+                Properties meta = new Properties();
+                meta.add("field1", "a string to match");
+                meta.add("field2", "");
 
-        EmptyFilter filter = new EmptyFilter();
+                EmptyFilter filter = new EmptyFilter();
 
-        filter.setFieldMatcher(TextMatcher.basic("field1"));
-        filter.setOnMatch(OnMatch.EXCLUDE);
+                filter.setFieldMatcher(TextMatcher.basic("field1"));
+                filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE),
-                "field1 not filtered properly.");
+                Assertions.assertTrue(TestUtil.filter(filter, "n/a", null, meta, PRE),
+                                "field1 not filtered properly.");
 
-        filter.setFieldMatcher(TextMatcher.basic("field2"));
-        Assertions.assertFalse(
-                TestUtil.filter(filter, "n/a", null, meta, PRE),
-                "field2 not filtered properly.");
+                filter.setFieldMatcher(TextMatcher.basic("field2"));
+                Assertions.assertFalse(
+                                TestUtil.filter(filter, "n/a", null, meta, PRE),
+                                "field2 not filtered properly.");
 
-        filter.setFieldMatcher(TextMatcher.basic("field3"));
-        Assertions.assertFalse(
-                TestUtil.filter(filter, "n/a", null, meta, PRE),
-                "field3 not filtered properly.");
-    }
+                filter.setFieldMatcher(TextMatcher.basic("field3"));
+                Assertions.assertFalse(
+                                TestUtil.filter(filter, "n/a", null, meta, PRE),
+                                "field3 not filtered properly.");
+        }
 
-    @Test
-    public void testEmptyContent()
-            throws ImporterHandlerException {
-        Properties meta = new Properties();
+        @Test
+        public void testEmptyContent()
+                        throws ImporterHandlerException {
+                Properties meta = new Properties();
 
-        EmptyFilter filter = new EmptyFilter();
-        filter.setOnMatch(OnMatch.EXCLUDE);
+                EmptyFilter filter = new EmptyFilter();
+                filter.setOnMatch(OnMatch.EXCLUDE);
 
-        Assertions.assertTrue(TestUtil.filter(filter,
-                "n/a", new NullInputStream(5, true, false), meta, PRE),
-                "Non-empty stream should be accepted.");
-        Assertions.assertFalse(TestUtil.filter(filter,
-                "n/a", new NullInputStream(0, true, false), meta, PRE),
-                "Empty stream should be rejected.");
-        Assertions.assertFalse(TestUtil.filter(filter, "n/a", null, meta, PRE),
-                "Null stream should be rejected.");
-    }
+                Assertions.assertTrue(TestUtil.filter(filter,
+                                "n/a", new NullInputStream(5, true, false), meta, PRE),
+                                "Non-empty stream should be accepted.");
+                Assertions.assertFalse(TestUtil.filter(filter,
+                                "n/a", new NullInputStream(0, true, false), meta, PRE),
+                                "Empty stream should be rejected.");
+                Assertions.assertFalse(TestUtil.filter(filter, "n/a", null, meta, PRE),
+                                "Null stream should be rejected.");
+        }
 
-    @Test
+        @Test
         public void testWriteRead() {
-        EmptyFilter filter = new EmptyFilter();
-        filter.addRestriction(new PropertyMatcher(
-                TextMatcher.basic("author"), TextMatcher.regex("Pascal.*")));
-        filter.setFieldMatcher(TextMatcher.regex("(field1|field2|field3)"));
-        filter.setOnMatch(OnMatch.INCLUDE);
-        XML.assertWriteRead(filter, "handler");
-    }
+                EmptyFilter filter = new EmptyFilter();
+                filter.addRestriction(new PropertyMatcher(
+                                TextMatcher.basic("author"), TextMatcher.regex("Pascal.*")));
+                filter.setFieldMatcher(TextMatcher.regex("(field1|field2|field3)"));
+                filter.setOnMatch(OnMatch.INCLUDE);
+                XML.assertWriteRead(filter, "handler");
+        }
 }

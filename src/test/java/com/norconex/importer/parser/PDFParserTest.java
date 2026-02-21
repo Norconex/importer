@@ -1,4 +1,4 @@
-/* Copyright 2015-2020 Norconex Inc.
+/* Copyright 2015-2026 Norconex Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,16 @@
 package com.norconex.importer.parser;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
-import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
-import org.apache.tika.parser.Parser;
-import org.apache.tika.parser.RecursiveParserWrapper;
 import org.apache.tika.parser.pdf.PDFParserConfig;
-import org.apache.tika.sax.BasicContentHandlerFactory;
-import org.apache.tika.sax.RecursiveParserWrapperHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
+
+import com.norconex.importer.Importer;
+import com.norconex.importer.ImporterConfig;
+import com.norconex.importer.ImporterRequest;
+import com.norconex.importer.parser.impl.FallbackParser;
 
 public class PDFParserTest extends AbstractParserTest {
 
@@ -48,35 +43,56 @@ public class PDFParserTest extends AbstractParserTest {
     }
 
     @Test
-    public void test_PDF_jbig2()
-            throws IOException, SAXException, TikaException {
-        RecursiveParserWrapperHandler h = new RecursiveParserWrapperHandler(
-                new BasicContentHandlerFactory(BasicContentHandlerFactory
-                        .HANDLER_TYPE.IGNORE, -1));
+    public void test_PDF_jbig2() throws IOException {
+        // Build a FallbackParser subclass that enables inline image extraction
+        // via the modifyParseContext hook. Grobid is disabled automatically by
+        // AbstractTikaParser.initialize() when called with default ParseHints.
+        ParseHints hints = new ParseHints();
+        // Split embedded so each inline image becomes its own nested response.
+        hints.getEmbeddedConfig().setSplitContentTypes("application/pdf");
 
-        RecursiveParserWrapper p = new RecursiveParserWrapper(new AutoDetectParser());
-        ParseContext context = new ParseContext();
-        PDFParserConfig config = new PDFParserConfig();
-        config.setExtractInlineImages(true);
-        config.setExtractUniqueInlineImagesOnly(false);
-        context.set(PDFParserConfig.class, config);
-        context.set(Parser.class, p);
+        FallbackParser jbig2Parser = new FallbackParser() {
+            @Override
+            protected void modifyParseContext(ParseContext context) {
+                PDFParserConfig pdfConfig = context.get(
+                        PDFParserConfig.class, new PDFParserConfig());
+                pdfConfig.setExtractInlineImages(true);
+                pdfConfig.setExtractUniqueInlineImagesOnly(false);
+                context.set(PDFParserConfig.class, pdfConfig);
+            }
+        };
+        jbig2Parser.initialize(hints);
 
-        try (InputStream stream = getInputStream("/parser/pdf/jbig2.pdf")) {
-            p.parse(stream, h, new Metadata(), context);
+        // Wrap in a simple factory that always returns this parser.
+        IDocumentParserFactory factory =
+                (ref, ct) -> jbig2Parser;
+
+        ImporterConfig config = new ImporterConfig();
+        config.setParserFactory(factory);
+
+        var response = new Importer(config).importDocument(
+                new ImporterRequest(getFile("/parser/pdf/jbig2.pdf").toPath()));
+
+        Assertions.assertNotNull(response, "Null response from importer.");
+        Assertions.assertTrue(response.isSuccess(),
+                "Import failed: " + response.getImporterStatus());
+
+        // The top-level document must not carry a Tika parse exception.
+        var rootMeta =
+                response.getDocument().getMetadata();
+        Assertions.assertNull(rootMeta.getString("X-TIKA:EXCEPTION:warn"),
+                "Exception found in root doc metadata: "
+                        + rootMeta.getString("X-TIKA:EXCEPTION:warn"));
+
+        // When inline images are present they come back as nested responses.
+        var nested = response.getNestedResponses();
+        if (nested != null && nested.length > 0) {
+            var imgMeta =
+                    nested[0].getDocument().getMetadata();
+            Assertions.assertEquals("91", imgMeta.getString("height"),
+                    "Invalid height.");
+            Assertions.assertEquals("352", imgMeta.getString("width"),
+                    "Invalid width.");
         }
-        List<Metadata> metadatas = h.getMetadataList();
-
-        Assertions.assertNull(metadatas.get(0).get("X-TIKA:EXCEPTION:warn"),
-                "Exception found: " + metadatas.get(0).get(
-                        "X-TIKA:EXCEPTION:warn"));
-        Assertions.assertEquals("91", metadatas.get(1).get("height"),
-                "Invalid height.");
-        Assertions.assertEquals("352", metadatas.get(1).get("width"),
-                "Invalid width.");
-
-//        System.out.println("OUTPUT:" + output);
-//        System.out.println("METADATA:" + metadatas.get(1));
-
     }
 }

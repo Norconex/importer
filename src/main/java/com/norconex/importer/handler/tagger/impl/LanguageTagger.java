@@ -25,7 +25,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.tika.langdetect.OptimaizeLangDetector;
+import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector;
 import org.apache.tika.language.detect.LanguageDetector;
 import org.apache.tika.language.detect.LanguageResult;
 import org.slf4j.Logger;
@@ -41,26 +41,32 @@ import com.norconex.importer.handler.tagger.AbstractStringTagger;
 import com.norconex.importer.parser.ParseState;
 
 /**
- * <p>Detects a document language based on Apache Tika language detection
+ * <p>
+ * Detects a document language based on Apache Tika language detection
  * capability.
  * It adds the detected language to the
  * "<code>document.language</code>" metadata field.
  * Optionally adds all potential languages detected with their
- * probability score as well as additional fields following this pattern:</p>
+ * probability score as well as additional fields following this pattern:
+ * </p>
+ * 
  * <pre>
  * document.language.&lt;rank&gt;.tag
- * document.language.&lt;rank&gt;.probability</pre>
+ * document.language.&lt;rank&gt;.probability
+ * </pre>
  * <p>
  * <code>&lt;rank&gt;</code> is to indicate the match order, based
  * on match probability score (starting at 1).
  * </p>
  *
- * <p>This tagger can be used both as a pre-parse (on text only)
- * or post-parse handler.</p>
+ * <p>
+ * This tagger can be used both as a pre-parse (on text only)
+ * or post-parse handler.
+ * </p>
  *
  * <h3>Accuracy:</h3>
  * <p>
- * To obtain optimal detection, long enough text is expected.  The default
+ * To obtain optimal detection, long enough text is expected. The default
  * detection algorithm is optimized for document with lots of text.
  * This tagger relies on Tika language detection capabilities and future
  * versions may provide better precision for documents made of short
@@ -79,76 +85,76 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * <ul>
- *   <li>af Afrikaans</li>
- *   <li>an Aragonese</li>
- *   <li>ar Arabic</li>
- *   <li>ast Asturian</li>
- *   <li>be Belarusian</li>
- *   <li>br Breton</li>
- *   <li>ca Catalan</li>
- *   <li>bg Bulgarian</li>
- *   <li>bn Bengali</li>
- *   <li>cs Czech</li>
- *   <li>cy Welsh</li>
- *   <li>da Danish</li>
- *   <li>de German</li>
- *   <li>el Greek</li>
- *   <li>en English</li>
- *   <li>es Spanish</li>
- *   <li>et Estonian</li>
- *   <li>eu Basque</li>
- *   <li>fa Persian</li>
- *   <li>fi Finnish</li>
- *   <li>fr French</li>
- *   <li>ga Irish</li>
- *   <li>gl Galician</li>
- *   <li>gu Gujarati</li>
- *   <li>he Hebrew</li>
- *   <li>hi Hindi</li>
- *   <li>hr Croatian</li>
- *   <li>ht Haitian</li>
- *   <li>hu Hungarian</li>
- *   <li>id Indonesian</li>
- *   <li>is Icelandic</li>
- *   <li>it Italian</li>
- *   <li>ja Japanese</li>
- *   <li>km Khmer</li>
- *   <li>kn Kannada</li>
- *   <li>ko Korean</li>
- *   <li>lt Lithuanian</li>
- *   <li>lv Latvian</li>
- *   <li>mk Macedonian</li>
- *   <li>ml Malayalam</li>
- *   <li>mr Marathi</li>
- *   <li>ms Malay</li>
- *   <li>mt Maltese</li>
- *   <li>ne Nepali</li>
- *   <li>nl Dutch</li>
- *   <li>no Norwegian</li>
- *   <li>oc Occitan</li>
- *   <li>pa Punjabi</li>
- *   <li>pl Polish</li>
- *   <li>pt Portuguese</li>
- *   <li>ro Romanian</li>
- *   <li>ru Russian</li>
- *   <li>sk Slovak</li>
- *   <li>sl Slovene</li>
- *   <li>so Somali</li>
- *   <li>sq Albanian</li>
- *   <li>sr Serbian</li>
- *   <li>sv Swedish</li>
- *   <li>sw Swahili</li>
- *   <li>ta Tamil</li>
- *   <li>te Telugu</li>
- *   <li>th Thai</li>
- *   <li>tl Tagalog</li>
- *   <li>tr Turkish</li>
- *   <li>uk Ukrainian</li>
- *   <li>ur Urdu</li>
- *   <li>vi Vietnamese</li>
- *   <li>yi Yiddish</li>
- *   <li>zh-cn Simplified Chinese</li>
- *   <li>zh-tw Traditional Chinese</li>
+ * <li>af Afrikaans</li>
+ * <li>an Aragonese</li>
+ * <li>ar Arabic</li>
+ * <li>ast Asturian</li>
+ * <li>be Belarusian</li>
+ * <li>br Breton</li>
+ * <li>ca Catalan</li>
+ * <li>bg Bulgarian</li>
+ * <li>bn Bengali</li>
+ * <li>cs Czech</li>
+ * <li>cy Welsh</li>
+ * <li>da Danish</li>
+ * <li>de German</li>
+ * <li>el Greek</li>
+ * <li>en English</li>
+ * <li>es Spanish</li>
+ * <li>et Estonian</li>
+ * <li>eu Basque</li>
+ * <li>fa Persian</li>
+ * <li>fi Finnish</li>
+ * <li>fr French</li>
+ * <li>ga Irish</li>
+ * <li>gl Galician</li>
+ * <li>gu Gujarati</li>
+ * <li>he Hebrew</li>
+ * <li>hi Hindi</li>
+ * <li>hr Croatian</li>
+ * <li>ht Haitian</li>
+ * <li>hu Hungarian</li>
+ * <li>id Indonesian</li>
+ * <li>is Icelandic</li>
+ * <li>it Italian</li>
+ * <li>ja Japanese</li>
+ * <li>km Khmer</li>
+ * <li>kn Kannada</li>
+ * <li>ko Korean</li>
+ * <li>lt Lithuanian</li>
+ * <li>lv Latvian</li>
+ * <li>mk Macedonian</li>
+ * <li>ml Malayalam</li>
+ * <li>mr Marathi</li>
+ * <li>ms Malay</li>
+ * <li>mt Maltese</li>
+ * <li>ne Nepali</li>
+ * <li>nl Dutch</li>
+ * <li>no Norwegian</li>
+ * <li>oc Occitan</li>
+ * <li>pa Punjabi</li>
+ * <li>pl Polish</li>
+ * <li>pt Portuguese</li>
+ * <li>ro Romanian</li>
+ * <li>ru Russian</li>
+ * <li>sk Slovak</li>
+ * <li>sl Slovene</li>
+ * <li>so Somali</li>
+ * <li>sq Albanian</li>
+ * <li>sr Serbian</li>
+ * <li>sv Swedish</li>
+ * <li>sw Swahili</li>
+ * <li>ta Tamil</li>
+ * <li>te Telugu</li>
+ * <li>th Thai</li>
+ * <li>tl Tagalog</li>
+ * <li>tr Turkish</li>
+ * <li>uk Ukrainian</li>
+ * <li>ur Urdu</li>
+ * <li>vi Vietnamese</li>
+ * <li>yi Yiddish</li>
+ * <li>zh-cn Simplified Chinese</li>
+ * <li>zh-tw Traditional Chinese</li>
  * </ul>
  *
  * <p>
@@ -156,29 +162,31 @@ import com.norconex.importer.parser.ParseState;
  * upgrades.
  * </p>
  *
- * <p>If you do not restrict the list of language candidates to detect,
+ * <p>
+ * If you do not restrict the list of language candidates to detect,
  * the default behavior is to try match all languages currently supported.
  * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.LanguageTagger"
- *     keepProbabilities="(false|true)"
- *     toField="(custom target field to store the language)"
- *     fallbackLanguage="(default language when detection failed)"
- *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
+ * keepProbabilities="(false|true)"
+ * toField="(custom target field to store the language)"
+ * fallbackLanguage="(default language when detection failed)"
+ * {@nx.include
+ * com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <languages>
- *     (CSV list of language tag candidates. Defaults to the above list.)
- *   </languages>
+ * <languages>
+ * (CSV list of language tag candidates. Defaults to the above list.)
+ * </languages>
  *
  * </handler>
  * }
  *
  * {@nx.xml.example
  * <handler class="LanguageTagger" fallbackLanguage="en" >
- *   <languages>en, fr</languages>
+ * <languages>en, fr</languages>
  * </handler>
  * }
  * <p>
@@ -193,27 +201,26 @@ import com.norconex.importer.parser.ParseState;
 public class LanguageTagger extends AbstractStringTagger
         implements IXMLConfigurable {
 
-    //TODO Check if doc.size is defined in metadata? If so, use it to
-    //determine if we are going with small or long text?
+    // TODO Check if doc.size is defined in metadata? If so, use it to
+    // determine if we are going with small or long text?
 
-    //TODO provide ways to overwrite or specify custom language profiles
+    // TODO provide ways to overwrite or specify custom language profiles
     // in this tagger configuration?
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(LanguageTagger.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LanguageTagger.class);
 
     private LanguageDetector detector;
     private boolean keepProbabilities;
     private final List<String> languages = new ArrayList<>();
     private String fallbackLanguage;
 
-    private final Comparator<LanguageResult> langResultComparator =
-            (o1, o2) -> Float.compare(o2.getRawScore(), o1.getRawScore());
+    private final Comparator<LanguageResult> langResultComparator = (o1, o2) -> Float.compare(o2.getRawScore(),
+            o1.getRawScore());
 
     @Override
     protected void tagStringContent(HandlerDoc doc, StringBuilder content,
             ParseState parseState, int sectionIndex)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
 
         // For massive docs: only use first section of document to detect langs
         if (sectionIndex > 0) {
@@ -229,14 +236,14 @@ public class LanguageTagger extends AbstractStringTagger
             LOG.debug("No language found, using fallback language for {}.",
                     doc.getReference());
             doc.getMetadata().set(DocMetadata.LANGUAGE, fallbackLanguage);
-//            metadata.setLanguage(fallbackLanguage);
+            // metadata.setLanguage(fallbackLanguage);
             return;
         }
 
         Collections.sort(results, langResultComparator);
         doc.getMetadata().set(
                 DocMetadata.LANGUAGE, results.get(0).getLanguage());
-//        metadata.setLanguage(results.get(0).getLanguage());
+        // metadata.setLanguage(results.get(0).getLanguage());
 
         if (keepProbabilities) {
             int count = 0;
@@ -253,9 +260,11 @@ public class LanguageTagger extends AbstractStringTagger
     public boolean isKeepProbabilities() {
         return keepProbabilities;
     }
+
     /**
      * Sets whether to keep the match probabilities for each languages
-     * detected.  Default is <code>false</code>.
+     * detected. Default is <code>false</code>.
+     * 
      * @param keepProbabilities <code>true</code> to keep probabilities
      */
     public void setKeepProbabilities(boolean keepProbabilities) {
@@ -266,10 +275,12 @@ public class LanguageTagger extends AbstractStringTagger
     public String getFallbackLanguage() {
         return fallbackLanguage;
     }
+
     /**
-     * Sets the fallback language when none are detected.  Default behavior
+     * Sets the fallback language when none are detected. Default behavior
      * is to not tag incoming documents with a language field when no detection
      * occurs.
+     * 
      * @param fallbackLanguage the default languages when no detection
      */
     public void setFallbackLanguage(String fallbackLanguage) {
@@ -298,8 +309,10 @@ public class LanguageTagger extends AbstractStringTagger
     public List<String> getLanguages() {
         return Collections.unmodifiableList(languages);
     }
+
     /**
      * Sets the language candidates for the language detection.
+     * 
      * @param languages languages to consider for detection
      */
     public void setLanguages(List<String> languages) {
@@ -311,7 +324,7 @@ public class LanguageTagger extends AbstractStringTagger
         if (detector != null) {
             throw new IllegalStateException(
                     "You cannot set LanguageTagger properties after it "
-                  + "has been initialized (started tagging documents).");
+                            + "has been initialized (started tagging documents).");
         }
     }
 
@@ -335,10 +348,12 @@ public class LanguageTagger extends AbstractStringTagger
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

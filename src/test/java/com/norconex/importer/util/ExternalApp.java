@@ -184,8 +184,11 @@ public class ExternalApp {
             javaTask.setFork(true);
             javaTask.setFailonerror(true);
             javaTask.setClassname(ExternalApp.class.getName());
-            javaTask.setClasspath(
-                    new Path(project, SystemUtils.JAVA_CLASS_PATH));
+            String cp = System.getProperty("surefire.test.class.path");
+            if (StringUtils.isBlank(cp)) {
+                cp = SystemUtils.JAVA_CLASS_PATH;
+            }
+            javaTask.setClasspath(new Path(project, cp));
             Argument arg = javaTask.getCommandLine().createArgument();
             arg.setPrefix("\"");
             arg.setLine(args);

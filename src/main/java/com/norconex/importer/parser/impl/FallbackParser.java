@@ -15,6 +15,7 @@
 package com.norconex.importer.parser.impl;
 
 import java.io.IOException;
+import java.net.URL;
 
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.exception.TikaException;
@@ -23,10 +24,10 @@ import org.xml.sax.SAXException;
 
 import com.norconex.importer.ImporterRuntimeException;
 
-
 /**
  * Parser using auto-detection of document content-type to figure out
  * which specific parser to invoke to best parse a document.
+ * 
  * @author Pascal Essiembre
  */
 public class FallbackParser extends AbstractTikaParser {
@@ -40,8 +41,16 @@ public class FallbackParser extends AbstractTikaParser {
 
     private static TikaConfig tikaConfig() {
         try {
-            return new TikaConfig(
-                    FallbackParser.class.getResource("/tika-config.xml"));
+            URL configUrl = FallbackParser.class.getResource(
+                    "/tika-config.xml");
+            if (configUrl == null) {
+                configUrl = FallbackParser.class.getClassLoader()
+                        .getResource("tika-config.xml");
+            }
+            if (configUrl == null) {
+                return TikaConfig.getDefaultConfig();
+            }
+            return new TikaConfig(configUrl);
         } catch (TikaException | IOException | SAXException e) {
             throw new ImporterRuntimeException(
                     "Could not load tika configuration file.", e);
