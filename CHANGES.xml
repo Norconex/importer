@@ -91,7 +91,7 @@
       </action>
       <action dev="essiembre" type="update">
         Maven Surefire plugin configured with --add-opens for Java module
-        system compatibility and a test-scoped tika.config system property.
+        system compatibility.
       </action>
       <action dev="essiembre" type="update">
         Maven central publishing switched from nexus-staging-maven-plugin
