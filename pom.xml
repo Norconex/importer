@@ -13,25 +13,21 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.norconex.commons</groupId>
-    <artifactId>norconex-commons-maven-parent</artifactId>
-    <version>1.2.0</version>
-  </parent>  
-  <groupId>com.norconex.collectors</groupId>
+    <groupId>com.norconex.collectors.v3</groupId>
+    <artifactId>norconex-collector-parent</artifactId>
+    <version>3.2.0-SNAPSHOT</version>
+  </parent>
+  <groupId>com.norconex.collectors.v3</groupId>
   <artifactId>norconex-importer</artifactId>
   <version>3.2.0-SNAPSHOT</version>
   <name>Norconex Importer</name>
-  
   <properties>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
-    <java.version>17</java.version>  
-  
+    <java.version>17</java.version>
     <commons-compress.version>1.28.0</commons-compress.version>
     <commons-io.version>2.21.0</commons-io.version>
     <cxf.version>3.4.5</cxf.version>
@@ -47,24 +43,20 @@
     <webp-imageio.version>0.1.6</webp-imageio.version>
   </properties>
   <inceptionYear>2009</inceptionYear>
-
   <repositories>
-    
     <!-- The following repo is required for jai-imageio-jpeg2000 support. -->
     <repository>
       <id>apache.snapshots</id>
       <url>http://repository.mygrid.org.uk/artifactory/mygrid-all/</url>
       <!-- url>http://repository.apache.org/snapshots/</url -->
     </repository>
-
     <!-- The following repo is required for jj2000 support. -->
     <repository>
-        <id>unidata-releases</id>
-        <name>UNIDATA Releases</name>
-        <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
+      <id>unidata-releases</id>
+      <name>UNIDATA Releases</name>
+      <url>https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases/</url>
     </repository>
   </repositories>
-
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -94,7 +86,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.tika</groupId>
@@ -173,14 +164,12 @@
       <artifactId>nashorn-core</artifactId>
       <version>${nashorn.version}</version>
     </dependency>
-    
     <!-- Required for JPEG JJ200 support. -->
     <dependency>
       <groupId>edu.ucar</groupId>
       <artifactId>jj2000</artifactId>
       <version>${ucar-jj2000.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
@@ -192,20 +181,17 @@
         </exclusion>
       </exclusions>
     </dependency>
-
     <dependency>
       <groupId>org.luaj</groupId>
       <artifactId>luaj-jse</artifactId>
       <version>${luaj-jse.version}</version>
     </dependency>
-
     <!-- image/webp format -->
     <dependency>
       <groupId>org.sejda.imageio</groupId>
       <artifactId>webp-imageio</artifactId>
       <version>${webp-imageio.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.norconex.commons</groupId>
       <artifactId>norconex-commons-lang</artifactId>
@@ -217,9 +203,7 @@
       <type>zip</type>
       <scope>provided</scope>
     </dependency>
-
     <!-- Logging dependencies: -->
-
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j2-impl</artifactId>
@@ -235,7 +219,6 @@
       <artifactId>jcl-over-slf4j</artifactId>
       <scope>test</scope>
     </dependency>
-    
     <!-- Tests: -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -247,7 +230,6 @@
       <artifactId>ant</artifactId>
       <scope>test</scope>
     </dependency>
-
     <!-- Ensure required POI and XMLBeans classes are available at compile scope
          to prevent StackOverflowError in XWPFRelation initialization.
          Using poi-ooxml-full (~15-20 MB) instead of poi-ooxml-lite (~2-3 MB) for maximum
@@ -267,7 +249,6 @@
       <artifactId>poi</artifactId>
       <version>5.5.1</version>
     </dependency>
-
     <!-- This jpeg2000 dep is not distributed due to JPEG 2000 licensing issue.
          It is included here as "test" only so it does not get distributed.
          https://github.com/jai-imageio/jai-imageio-jpeg2000/blob/master/LICENSE-JJ2000.txt
@@ -278,7 +259,6 @@
       <version>${jpeg2000-imageio.version}</version>
       <scope>test</scope>
     </dependency>
-
     <!-- Not included with Tika and required for parsing Visio XML-based files.
          Consider removing (quite big) once included in poi-ooxml-schemas. See:
          https://poi.apache.org/faq.html#faq-N10025
@@ -289,18 +269,14 @@
       <version>1.3</version>
     </dependency>
       -->
-    
   </dependencies>
-  
   <build>
     <plugins>
-
       <!-- Until ready: -Dassembly.skipAssembly=true -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
       </plugin>
-     
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -314,28 +290,23 @@
           </options>
         </configuration>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
       </plugin>
-    
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
       </plugin>
-      
       <!--  Use VM argument -Dgpg.skip=true to disable GPG signing. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
       </plugin>
-
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
       </plugin>
-      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -356,7 +327,6 @@
           </execution>
         </executions>
       </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -372,27 +342,23 @@
           </systemPropertyVariables>
         </configuration>
       </plugin>
-      
     </plugins>
   </build>
-  
   <distributionManagement>
     <site>
       <id>norconex-site-deployment</id>
       <url>${site.baseurl}/importer/v3</url>
     </site>
   </distributionManagement>
-  
   <url>https://opensource.norconex.com/importer</url>
-  <description>Norconex Importer is a Java library and command-line application meant to &quot;parse&quot; and &quot;extract&quot; content out of a computer file as plain text, whatever its format (HTML, PDF, Word, etc). In addition, it allows you to perform any manipulation on the extracted text before importing/using it in your own service or application.</description>
+  <description>Norconex Importer is a Java library and command-line application meant to "parse" and "extract" content out of a computer file as plain text, whatever its format (HTML, PDF, Word, etc). In addition, it allows you to perform any manipulation on the extracted text before importing/using it in your own service or application.</description>
   <issueManagement>
-  	<system>GitHub</system>
-  	<url>https://github.com/Norconex/importer/issues</url>
+    <system>GitHub</system>
+    <url>https://github.com/Norconex/importer/issues</url>
   </issueManagement>
   <scm>
     <url>https://github.com/Norconex/importer</url>
     <connection>scm:git:git@github.com:Norconex/importer.git</connection>
     <developerConnection>scm:git:git@github.com:Norconex/importer.git</developerConnection>
   </scm>
-
 </project>
