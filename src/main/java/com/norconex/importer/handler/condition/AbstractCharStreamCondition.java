@@ -40,7 +40,7 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  *
  * {@nx.block #charEncoding
- * <h3>Character encoding</h3>
+ * <h2>Character encoding</h2>
  * <p>
  * When used as a pre-parse handler,
  * this class will use detected or previously set content character

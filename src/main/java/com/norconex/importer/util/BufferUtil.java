@@ -19,18 +19,20 @@ import java.io.Writer;
 
 /**
  * Buffer related utility methods.
+ * 
  * @author Pascal Essiembre
  */
 public final class BufferUtil {
 
+    /** Maximum tail size inspected when choosing a cut point. */
     public static final int MAX_CONTENT_FROM_END_TO_CUT = 1000;
-    
+
     private BufferUtil() {
         super();
     }
 
     /**
-     * Flushes the buffer to output stream.  If the buffer is considered 
+     * Flushes the buffer to output stream. If the buffer is considered
      * partial (e.g. containing a partial set of a huge document),
      * you can tell the method to be wise about only flushing the content
      * up to the last line break it finds, dot, or space,
@@ -38,8 +40,9 @@ public final class BufferUtil {
      * content after the cut location will remain in the buffer for further use.
      * If the output writer is null, it will simply truncate the buffer content
      * without writing it anywhere.
-     * @param buffer the buffer to flush
-     * @param out where to write the buffer content
+     * 
+     * @param buffer    the buffer to flush
+     * @param out       where to write the buffer content
      * @param cutWisely whether to "cut" wisely the buffer content
      * @throws IOException when there is a problem flushing the buffer
      */
@@ -69,8 +72,7 @@ public final class BufferUtil {
             }
         }
         while (buffer.length() != 0) {
-            int writeChunkSize = 
-                    Math.min(buffer.length(), MAX_CONTENT_FROM_END_TO_CUT);
+            int writeChunkSize = Math.min(buffer.length(), MAX_CONTENT_FROM_END_TO_CUT);
             if (out != null) {
                 char[] chars = new char[writeChunkSize];
                 buffer.getChars(0, writeChunkSize, chars, 0);

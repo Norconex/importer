@@ -35,35 +35,38 @@ import com.norconex.importer.handler.tagger.AbstractDocumentTagger;
 import com.norconex.importer.parser.ParseState;
 
 /**
- * <p>Define and add constant values to documents.  To add multiple constant
+ * <p>
+ * Define and add constant values to documents. To add multiple constant
  * values under the same constant name, repeat the constant entry with a
  * different value.
  * </p>
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * values will be added to the end of the existing value list.
  * It is possible to change this default behavior
  * with {@link #setOnSet(PropertySetter)}.
  * </p>
- * <p>Can be used both as a pre-parse or post-parse handler.</p>
+ * <p>
+ * Can be used both as a pre-parse or post-parse handler.
+ * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.ConstantTagger"
- *     {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
+ * {@nx.include com.norconex.commons.lang.map.PropertySetter#attributes}>
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <!-- multiple constant tags allowed -->
- *   <constant name="CONSTANT_NAME">Constant Value</constant>
+ * <!-- multiple constant tags allowed -->
+ * <constant name="CONSTANT_NAME">Constant Value</constant>
  *
  * </handler>
  * }
  *
  * {@nx.xml.example
- *  <handler class="ConstantTagger">
- *    <constant name="source">web</constant>
- *  </handler>
+ * <handler class="ConstantTagger">
+ * <constant name="source">web</constant>
+ * </handler>
  * }
  * <p>
  * The above example adds a constant to incoming documents to identify they
@@ -73,10 +76,21 @@ import com.norconex.importer.parser.ParseState;
  * @author Pascal Essiembre
  */
 @SuppressWarnings("javadoc")
-public class ConstantTagger extends AbstractDocumentTagger{
+public class ConstantTagger extends AbstractDocumentTagger {
 
+    /**
+     * @deprecated Since 3.0.0, use {@link PropertySetter} via
+     *             {@link #getOnSet()} and {@link #setOnSet(PropertySetter)}.
+     */
     @Deprecated
-    public enum OnConflict { ADD, REPLACE, NOOP }
+    public enum OnConflict {
+        /** Add values to existing ones. */
+        ADD,
+        /** Replace existing values. */
+        REPLACE,
+        /** Do not set when target already has values. */
+        NOOP
+    }
 
     private final Map<String, List<String>> constants = new HashMap<>();
     private PropertySetter onSet;
@@ -84,7 +98,7 @@ public class ConstantTagger extends AbstractDocumentTagger{
     @Override
     public void tagApplicableDocument(
             HandlerDoc doc, InputStream document, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         for (Entry<String, List<String>> entry : constants.entrySet()) {
             PropertySetter.orAppend(onSet).apply(
                     doc.getMetadata(), entry.getKey(), entry.getValue());
@@ -93,14 +107,17 @@ public class ConstantTagger extends AbstractDocumentTagger{
 
     /**
      * Gets the property setter to use when a value is set.
+     * 
      * @return property setter
      * @since 3.0.0
      */
     public PropertySetter getOnSet() {
         return onSet;
     }
+
     /**
      * Sets the property setter to use when a value is set.
+     * 
      * @param onSet property setter
      * @since 3.0.0
      */
@@ -110,6 +127,7 @@ public class ConstantTagger extends AbstractDocumentTagger{
 
     /**
      * Gets the conflict resolution strategy.
+     * 
      * @return conflict resolution strategy
      * @since 2.7.0
      * @deprecated Since 3.0.0, use {@link #getOnSet()} instead
@@ -124,8 +142,10 @@ public class ConstantTagger extends AbstractDocumentTagger{
         }
         return OnConflict.ADD;
     }
+
     /**
      * Sets the conflict resolution strategy.
+     * 
      * @param onConflict conflict resolution strategy.
      * @since 2.7.0
      * @deprecated Since 3.0.0, use {@link #setOnSet(PropertySetter)} instead
@@ -143,15 +163,32 @@ public class ConstantTagger extends AbstractDocumentTagger{
         }
     }
 
+    /**
+     * Gets configured constants.
+     * 
+     * @return configured constants as an unmodifiable map
+     */
     public Map<String, List<String>> getConstants() {
         return Collections.unmodifiableMap(constants);
     }
 
+    /**
+     * Adds a constant value for a field.
+     * 
+     * @param name  target field name
+     * @param value field value to add
+     */
     public void addConstant(String name, String value) {
         if (name != null && value != null) {
             constants.computeIfAbsent(name, k -> new ArrayList<>()).add(value);
         }
     }
+
+    /**
+     * Removes all configured constants for the given field.
+     * 
+     * @param name field name
+     */
     public void removeConstant(String name) {
         constants.remove(name);
     }
@@ -186,10 +223,12 @@ public class ConstantTagger extends AbstractDocumentTagger{
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

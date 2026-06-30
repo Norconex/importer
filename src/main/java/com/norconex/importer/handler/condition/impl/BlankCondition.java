@@ -44,7 +44,7 @@ import com.norconex.importer.parser.ParseState;
  * when read).
  * </p>
  *
- * <h3>Multiple fields and values:</h3>
+ * <h2>Multiple fields and values:</h2>
  * <p>
  * By default, ALL values for all fields matched by your field matcher
  * expression must be blank for this condition to be <code>true</code>.
@@ -58,18 +58,19 @@ import com.norconex.importer.parser.ParseState;
  *
  * {@nx.xml.usage
  * <condition
- *     class="com.norconex.importer.handler.condition.impl.BlankCondition"
- *     matchAnyBlank="[false|true]">
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (Optional expression matching fields we want to test if blank,
- *      instead of using the document content.)
- *   </fieldMatcher>
+ * class="com.norconex.importer.handler.condition.impl.BlankCondition"
+ * matchAnyBlank="[false|true]">
+ * <fieldMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (Optional expression matching fields we want to test if blank,
+ * instead of using the document content.)
+ * </fieldMatcher>
  * </handler>
  * }
  *
  * {@nx.xml.example
  * <condition class="BlankCondition">
- *   <fieldMatcher method="regex">(title|dc:title)</fieldMatcher>
+ * <fieldMatcher method="regex">(title|dc:title)</fieldMatcher>
  * </condition>
  * }
  * <p>
@@ -77,6 +78,7 @@ import com.norconex.importer.parser.ParseState;
  * "title" or "dc:title" are blank.
  * </p>
  * <p>
+ * 
  * @author Pascal Essiembre
  * @since 3.0.0
  */
@@ -86,15 +88,38 @@ public class BlankCondition implements IImporterCondition, IXMLConfigurable {
     private final TextMatcher fieldMatcher = new TextMatcher();
     private boolean matchAnyBlank;
 
+    /**
+     * Gets the field matcher.
+     * 
+     * @return field matcher
+     */
     public TextMatcher getFieldMatcher() {
         return fieldMatcher;
     }
+
+    /**
+     * Sets the field matcher.
+     * 
+     * @param fieldMatcher field matcher
+     */
     public void setFieldMatcher(TextMatcher fieldMatcher) {
         this.fieldMatcher.copyFrom(fieldMatcher);
     }
+
+    /**
+     * Whether any matched blank value should satisfy the condition.
+     * 
+     * @return <code>true</code> for any-match behavior
+     */
     public boolean isMatchAnyBlank() {
         return matchAnyBlank;
     }
+
+    /**
+     * Sets whether any matched blank value should satisfy the condition.
+     * 
+     * @param matchAnyBlank <code>true</code> for any-match behavior
+     */
     public void setMatchAnyBlank(boolean matchAnyBlank) {
         this.matchAnyBlank = matchAnyBlank;
     }
@@ -114,8 +139,7 @@ public class BlankCondition implements IImporterCondition, IXMLConfigurable {
         }
 
         // If no values returned, call it blank
-        List<String> values =
-                doc.getMetadata().matchKeys(fieldMatcher).valueList();
+        List<String> values = doc.getMetadata().matchKeys(fieldMatcher).valueList();
         if (values.isEmpty()) {
             return true;
         }
@@ -133,6 +157,7 @@ public class BlankCondition implements IImporterCondition, IXMLConfigurable {
         matchAnyBlank = xml.getBoolean("@matchAnyBlank", matchAnyBlank);
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
     }
+
     @Override
     public void saveToXML(XML xml) {
         xml.setAttribute("matchAnyBlank", matchAnyBlank);
@@ -143,10 +168,12 @@ public class BlankCondition implements IImporterCondition, IXMLConfigurable {
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

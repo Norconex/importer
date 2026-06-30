@@ -67,7 +67,7 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  * <p>Should be used as a pre-parse handler.</p>
  *
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * values will be added to the end of the existing value list.
@@ -75,7 +75,7 @@ import com.norconex.importer.util.DOMUtil;
  * {@link PropertySetter}.
  * </p>
  *
- * <h3>Content-types</h3>
+ * <h2>Content-types</h2>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
@@ -153,7 +153,7 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
- * <h3>Content deletion from fields</h3>
+ * <h2>Content deletion from fields</h2>
  * <p>
  * As of 3.0.0, you can specify whether to delete any elements
  * matched by the selector. You can use with a "toField" or on its own.
@@ -626,3 +626,4 @@ public class DOMTagger extends AbstractDocumentTagger {
         }
     }
 }
+

@@ -52,38 +52,44 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 /**
- * <p>Split files with Coma-Separated values (or any other characters, like tab)
- * into one document per line.</p>
+ * <p>
+ * Split files with Coma-Separated values (or any other characters, like tab)
+ * into one document per line.
+ * </p>
  *
- * <p>Can be used both as a pre-parse (text documents) or post-parse handler
- * documents.</p>
+ * <p>
+ * Can be used both as a pre-parse (text documents) or post-parse handler
+ * documents.
+ * </p>
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.splitter.impl.CsvSplitter"
- *          separatorCharacter=""
- *          quoteCharacter=""
- *          escapeCharacter=""
- *          useFirstRowAsFields="(false|true)"
- *          linesToSkip="(integer)"
- *          referenceColumn="(column name or position from 1)"
- *          contentColumns="(csv list of column/position to use as content)" >
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * separatorCharacter=""
+ * quoteCharacter=""
+ * escapeCharacter=""
+ * useFirstRowAsFields="(false|true)"
+ * linesToSkip="(integer)"
+ * referenceColumn="(column name or position from 1)"
+ * contentColumns="(csv list of column/position to use as content)" >
+ * {@nx.include
+ * com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  * </handler>
  * }
  *
  * {@nx.xml.example
  * <handler class="CsvSplitter"
- *     separatorCharacter=","
- *     quoteCharacter="'"
- *     escapeCharacter="\"
- *     useFirstRowAsFields="true"
- *     linesToSkip="0"
- *     referenceColumn="clientId"
- *     contentColumns="orgDesc" />
+ * separatorCharacter=","
+ * quoteCharacter="'"
+ * escapeCharacter="\"
+ * useFirstRowAsFields="true"
+ * linesToSkip="0"
+ * referenceColumn="clientId"
+ * contentColumns="orgDesc" />
  * }
  * <p>
  * Given this sample CSV file content...
  * </p>
+ * 
  * <pre>
  * 'clientId','clientName','clientOrg','orgDesc'
  * '123','Joe Dalton','ACME Inc.','Organization\'s description'
@@ -101,17 +107,20 @@ import com.opencsv.CSVReaderBuilder;
 public class CsvSplitter extends AbstractDocumentSplitter
         implements IXMLConfigurable {
 
+    /** Default CSV separator character (comma). */
     public static final char DEFAULT_SEPARATOR_CHARACTER = ',';
+    /** Default CSV quote character (double quote). */
     public static final char DEFAULT_QUOTE_CHARACTER = '"';
+    /** Default CSV escape character (backslash). */
     public static final char DEFAULT_ESCAPE_CHARACTER = '\\';
 
-    //--- Fields to define ---
-    //TODO add to base class for most/all splitters with a protected method
+    // --- Fields to define ---
+    // TODO add to base class for most/all splitters with a protected method
     // that has the strategy
     // for creating references, default is to append to parent with !
     // and also setting common fields such as "parent-reference"
 
-    //TODO add to base class the automated setting of parent elements to child
+    // TODO add to base class the automated setting of parent elements to child
     // make optional to transfer all properties as is, or prefix them all,
     // except for document.parent.reference which should remain as is.
 
@@ -129,7 +138,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
     protected List<Doc> splitApplicableDocument(
             HandlerDoc doc, InputStream input,
             OutputStream output, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         try {
             return doSplitApplicableDocument(doc, input);
         } catch (IOException e) {
@@ -149,17 +158,16 @@ public class CsvSplitter extends AbstractDocumentSplitter
                 .withEscapeChar(escapeCharacter)
                 .build();
 
-        //TODO by default (or as an option), try to detect the format of the
+        // TODO by default (or as an option), try to detect the format of the
         // file (read first few lines and count number of tabs vs coma,
         // quotes per line, etc.
-        try (CSVReader csvreader =
-                new CSVReaderBuilder(
-                        new InputStreamReader(input, StandardCharsets.UTF_8))
+        try (CSVReader csvreader = new CSVReaderBuilder(
+                new InputStreamReader(input, StandardCharsets.UTF_8))
                 .withSkipLines(linesToSkip)
                 .withCSVParser(parser)
                 .build()) {
 
-            String [] cols;
+            String[] cols;
             String[] colNames = null;
             int count = 0;
             StringBuilder contentStr = new StringBuilder();
@@ -195,8 +203,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
                         }
                         childMeta.set(colName, colValue);
                     }
-                    String childDocRef =
-                            doc.getReference() + "!" + childEmbedRef;
+                    String childDocRef = doc.getReference() + "!" + childEmbedRef;
                     CachedInputStream content = null;
                     if (contentStr.length() > 0) {
                         content = doc.getStreamFactory().newInputStream(
@@ -214,12 +221,12 @@ public class CsvSplitter extends AbstractDocumentSplitter
                     childMeta.set(
                             DocMetadata.EMBEDDED_REFERENCE, childEmbedRef);
 
-//                    childInfo.setEmbeddedReference(childEmbedRef);
+                    // childInfo.setEmbeddedReference(childEmbedRef);
 
-//                    childMeta.setReference(childDocRef);
-//                    childMeta.setEmbeddedReference(childEmbedRef);
-//                    childMeta.setEmbeddedParentReference(doc.getReference());
-//                    childMeta.setEmbeddedParentRootReference(doc.getReference());
+                    // childMeta.setReference(childDocRef);
+                    // childMeta.setEmbeddedReference(childEmbedRef);
+                    // childMeta.setEmbeddedParentReference(doc.getReference());
+                    // childMeta.setEmbeddedParentRootReference(doc.getReference());
                     rows.add(childDoc);
                 }
             }
@@ -237,23 +244,25 @@ public class CsvSplitter extends AbstractDocumentSplitter
                 continue;
             }
             if (Objects.equals(nameOrPosToMatch, colName)
-                   || NumberUtils.toInt(nameOrPosToMatch) == colPosition) {
+                    || NumberUtils.toInt(nameOrPosToMatch) == colPosition) {
                 return true;
             }
         }
         return false;
     }
 
-
     /**
      * Gets the value-separator character.
+     * 
      * @return value-separator character
      */
     public char getSeparatorCharacter() {
         return separatorCharacter;
     }
+
     /**
      * Sets the value-separator character. Default is a comma (,).
+     * 
      * @param separatorCharacter value-separator character
      */
     public void setSeparatorCharacter(char separatorCharacter) {
@@ -262,14 +271,17 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     /**
      * Get the value's surrounding quotes character.
+     * 
      * @return value's surrounding quotes character
      */
     public char getQuoteCharacter() {
         return quoteCharacter;
     }
+
     /**
-     * Sets the value's surrounding quotes character.  Default is the
+     * Sets the value's surrounding quotes character. Default is the
      * double-quote character (").
+     * 
      * @param quoteCharacter value's surrounding quotes character
      */
     public void setQuoteCharacter(char quoteCharacter) {
@@ -278,13 +290,16 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     /**
      * Gets the escape character.
+     * 
      * @return escape character
      */
     public char getEscapeCharacter() {
         return escapeCharacter;
     }
+
     /**
-     * Sets the escape character.  Default is the backslash character (\).
+     * Sets the escape character. Default is the backslash character (\).
+     * 
      * @param escapeCharacter escape character
      */
     public void setEscapeCharacter(char escapeCharacter) {
@@ -293,16 +308,19 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     /**
      * Whether to use the first row as field names for values.
+     * 
      * @return <code>true</code> if using first row as field names.
      */
     public boolean isUseFirstRowAsFields() {
         return useFirstRowAsFields;
     }
+
     /**
      * Sets whether to use the first row as field names for values.
      * Default is <code>false</code>.
+     * 
      * @param useFirstRowAsFields <code>true</code> if using first row as
-     *        field names
+     *                            field names
      */
     public void setUseFirstRowAsFields(boolean useFirstRowAsFields) {
         this.useFirstRowAsFields = useFirstRowAsFields;
@@ -310,35 +328,62 @@ public class CsvSplitter extends AbstractDocumentSplitter
 
     /**
      * Gets how many lines to skip before starting to parse lines.
+     * 
      * @return how many lines to skip
      */
     public int getLinesToSkip() {
         return linesToSkip;
     }
+
     /**
      * Sets how many lines to skip before starting to parse lines.
      * Default is 0.
+     * 
      * @param linesToSkip how many lines to skip
      */
     public void setLinesToSkip(int linesToSkip) {
         this.linesToSkip = linesToSkip;
     }
 
+    /**
+     * Gets the reference column.
+     * 
+     * @return column name or 1-based position
+     */
     public String getReferenceColumn() {
         return referenceColumn;
     }
+
+    /**
+     * Sets the reference column.
+     * 
+     * @param referenceColumn column name or 1-based position
+     */
     public void setReferenceColumn(String referenceColumn) {
         this.referenceColumn = referenceColumn;
     }
 
+    /**
+     * Gets content columns.
+     * 
+     * @return content columns as an unmodifiable list
+     */
     public List<String> getContentColumns() {
         return Collections.unmodifiableList(contentColumns);
     }
+
+    /**
+     * Sets content columns.
+     * 
+     * @param contentColumns content column names or 1-based positions
+     */
     public void setContentColumns(String... contentColumns) {
         setContentColumns(Arrays.asList(contentColumns));
     }
+
     /**
      * Sets content columns.
+     * 
      * @param contentColumns content columns
      * @since 3.0.0
      */
@@ -384,7 +429,7 @@ public class CsvSplitter extends AbstractDocumentSplitter
         if (character.length() > 1) {
             throw new ConfigurationException(
                     "\"" + key + "\" value can only be a single character. "
-                  + "Value: " + character);
+                            + "Value: " + character);
         }
         return character.charAt(0);
     }
@@ -393,10 +438,12 @@ public class CsvSplitter extends AbstractDocumentSplitter
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

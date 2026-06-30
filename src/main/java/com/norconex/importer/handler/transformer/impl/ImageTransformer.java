@@ -49,7 +49,7 @@ import com.norconex.importer.parser.ParseState;
  * {@link GenericDocumentParserFactory}.
  * </p>
  *
- * <h3>Content-types</h3>
+ * <h2>Content-types</h2>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
@@ -58,7 +58,7 @@ import com.norconex.importer.parser.ParseState;
  * image.
  * </p>
  *
- * <h3>Image dimension format</h3>
+ * <h2>Image dimension format</h2>
  * <p>
  * For a list of supported image dimension formats, refer to
  * {@link DimensionConverter}.
@@ -89,7 +89,7 @@ import com.norconex.importer.parser.ParseState;
  *   <scale dimension="400x250" />
  * </handler>
  * }
- * <h4>Usage example:</h4>
+ * <h3>Usage example:</h3>
  * <p>
  * The above example converts images to PNG while scaling it to a maximum
  * dimension of 400 pixels wide and 250 pixel high.

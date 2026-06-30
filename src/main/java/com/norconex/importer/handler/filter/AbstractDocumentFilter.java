@@ -37,7 +37,7 @@ import com.norconex.importer.parser.ParseState;
  * {@link #isDocumentMatched(HandlerDoc, InputStream, ParseState)}
  * method.</p>
  *
- * <h3 id="logic">Inclusion/exclusion logic:</h3>
+ * <h2 id="logic">Inclusion/exclusion logic:</h2>
  * <p>The logic for accepting or rejecting documents when a subclass condition
  * is met ("matches") is as follow:</p>
  * <table border="1">

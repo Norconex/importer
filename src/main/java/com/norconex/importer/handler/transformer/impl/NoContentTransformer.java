@@ -38,7 +38,7 @@ import com.norconex.importer.parser.ParseState;
  * <p>Get rid of the content stream and optionally store it as text into a
  * metadata field instead.
  * </p>
- * <h3>Storing content in an existing field</h3>
+ * <h2>Storing content in an existing field</h2>
  * <p>
  * If a <code>toField</code> with the same name already exists for a document,
  * the value will be added to the end of the existing value list.
@@ -130,3 +130,4 @@ public class NoContentTransformer extends AbstractDocumentTransformer
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+

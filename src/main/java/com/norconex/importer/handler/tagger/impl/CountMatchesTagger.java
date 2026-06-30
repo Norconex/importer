@@ -46,11 +46,11 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  * <p>
  * If no "fieldMatcher" expression is specified, the document content will be
- * used.  If the "fieldMatcher" matches more than one field, the sum of all
+ * used. If the "fieldMatcher" matches more than one field, the sum of all
  * matches will be stored as a single value. More often than not,
  * you probably want to set your "countMatcher" to "partial".
  * </p>
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * the count value will be added to the end of the existing value list.
@@ -58,34 +58,39 @@ import com.norconex.importer.parser.ParseState;
  * with {@link #setOnSet(PropertySetter)}.
  * </p>
  *
- * <p>Can be used as a pre-parse tagger on text document only when matching
+ * <p>
+ * Can be used as a pre-parse tagger on text document only when matching
  * strings on document content, or both as a pre-parse or post-parse handler
- * when the "fieldMatcher" is used.</p>
+ * when the "fieldMatcher" is used.
+ * </p>
  *
  * {@nx.xml.usage
- *  <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
- *      toField="(target field)"
- *      maxReadSize="(max characters to read at once)"
- *      {@nx.include com.norconex.importer.handler.tagger.AbstractCharStreamTagger#attributes}>
+ * <handler class="com.norconex.importer.handler.tagger.impl.CountMatchesTagger"
+ * toField="(target field)"
+ * maxReadSize="(max characters to read at once)"
+ * {@nx.include
+ * com.norconex.importer.handler.tagger.AbstractCharStreamTagger#attributes}>
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (optional expression for fields used to count matches)
- *   </fieldMatcher>
+ * <fieldMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (optional expression for fields used to count matches)
+ * </fieldMatcher>
  *
- *   <countMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (expression used to count matches)
- *   </countMatcher>
+ * <countMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (expression used to count matches)
+ * </countMatcher>
  *
- *  </handler>
+ * </handler>
  * }
  *
  * {@nx.xml.example
- *  <handler class="CountMatchesTagger" toField="urlSegmentCount">
- *    <fieldMatcher>document.reference</fieldMatcher>
- *    <countMatcher method="regex">/[^/]+</countMatcher>
- *  </handler>
+ * <handler class="CountMatchesTagger" toField="urlSegmentCount">
+ * <fieldMatcher>document.reference</fieldMatcher>
+ * <countMatcher method="regex">/[^/]+</countMatcher>
+ * </handler>
  * }
  * <p>
  * The above will count the number of segments in a URL.
@@ -139,6 +144,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         }
         return count;
     }
+
     private int countContentMatches(Reader reader)
             throws ImporterHandlerException {
         int count = 0;
@@ -159,14 +165,17 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
     /**
      * Gets the maximum number of characters to read from content for tagging
      * at once. Default is {@link TextReader#DEFAULT_MAX_READ_SIZE}.
+     * 
      * @return maximum read size
      */
     public int getMaxReadSize() {
         return maxReadSize;
     }
+
     /**
      * Sets the maximum number of characters to read from content for tagging
      * at once.
+     * 
      * @param maxReadSize maximum read size
      */
     public void setMaxReadSize(int maxReadSize) {
@@ -175,14 +184,17 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     /**
      * Gets the field matcher.
+     * 
      * @return field matcher
      * @since 3.0.0
      */
     public TextMatcher getFieldMatcher() {
         return fieldMatcher;
     }
+
     /**
      * Sets the field matcher.
+     * 
      * @param fieldMatcher field matcher
      * @since 3.0.0
      */
@@ -192,14 +204,17 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     /**
      * Gets the count matcher.
+     * 
      * @return count matcher
      * @since 3.0.0
      */
     public TextMatcher getCountMatcher() {
         return countMatcher;
     }
+
     /**
      * Sets the count matcher.
+     * 
      * @param countMatcher count matcher
      * @since 3.0.0
      */
@@ -209,14 +224,17 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     /**
      * Sets the target field.
+     * 
      * @return target field
      * @since 3.0.0
      */
     public String getToField() {
         return toField;
     }
+
     /**
      * Gets the target field.
+     * 
      * @param toField target field
      * @since 3.0.0
      */
@@ -226,14 +244,17 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     /**
      * Gets the property setter to use when a value is set.
+     * 
      * @return property setter
      * @since 3.0.0
      */
     public PropertySetter getOnSet() {
         return onSet;
     }
+
     /**
      * Sets the property setter to use when a value is set.
+     * 
      * @param onSet property setter
      * @since 3.0.0
      */
@@ -243,6 +264,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
 
     /**
      * Gets matches details.
+     * 
      * @return matches details
      * @deprecated Since 3.0.0, use {@link #getToField()},
      *             {@link #getFieldMatcher()}, and {@link #getCountMatcher()}.
@@ -257,17 +279,21 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         md.setRegex(Method.REGEX == countMatcher.getMethod());
         return Collections.unmodifiableList(Arrays.asList(md));
     }
+
     /**
      * Removes match details.
+     * 
      * @param matchDetails match details
      * @deprecated Since 3.0.0, this method does nothing.
      */
     @Deprecated
     public void removeMatchDetails(MatchDetails matchDetails) {
-        //NOOP
+        // NOOP
     }
+
     /**
      * Adds a match details.
+     * 
      * @param matchDetails the match details
      * @deprecated Since 3.0.0, use {@link #setToField(String)},
      *             {@link #setFieldMatcher(TextMatcher)},
@@ -282,6 +308,11 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         fieldMatcher.setPattern(matchDetails.getFromField());
     }
 
+    /**
+     * Match details used by deprecated APIs.
+     * 
+     * @deprecated Since 3.0.0.
+     */
     @Deprecated
     public static class MatchDetails {
         private String fromField;
@@ -289,9 +320,21 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         private String value;
         private boolean regex;
         private boolean caseSensitive;
+
+        /**
+         * Constructor.
+         */
         public MatchDetails() {
             super();
         }
+
+        /**
+         * Constructor.
+         * 
+         * @param fromField source field
+         * @param toField   target field
+         * @param value     value or pattern to count
+         */
         public MatchDetails(
                 String fromField, String toField, String value) {
             super();
@@ -299,57 +342,93 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
             this.toField = toField;
             this.value = value;
         }
+
+        /**
+         * Gets the source field.
+         * 
+         * @return source field
+         */
         public String getFromField() {
             return fromField;
         }
+
+        /**
+         * Gets the value or pattern to count.
+         * 
+         * @return value or pattern
+         */
         public String getValue() {
             return value;
         }
+
+        /**
+         * Gets the target field.
+         * 
+         * @return target field
+         */
         public String getToField() {
             return toField;
         }
+
+        /**
+         * Whether <code>value</code> is a regex.
+         * 
+         * @return <code>true</code> when using regex matching
+         */
         public boolean isRegex() {
             return regex;
         }
+
         /**
          * Whether the matching should be case sensitive or not.
+         * 
          * @return <code>true</code> if case sensitive
          */
         public boolean isCaseSensitive() {
             return caseSensitive;
         }
+
         /**
          * Sets the field with the value we want to perform matches on.
+         * 
          * @param fromField field with the value to perform matches on
          */
         public void setFromField(String fromField) {
             this.fromField = fromField;
         }
+
         /**
          * Sets the text or regular expression to match
+         * 
          * @param value the substring to match or regular expression
          */
         public void setValue(String value) {
             this.value = value;
         }
+
         /**
          * Sets the field to store the match count.
+         * 
          * @param toField field to store the match count
          */
         public void setToField(String toField) {
             this.toField = toField;
         }
+
         /**
          * Sets whether the <code>value</code> to match is a regular expression.
+         * 
          * @param regex <code>true</code> if <code>value</code> is a
          *              regular expression
          */
         public void setRegex(boolean regex) {
             this.regex = regex;
         }
+
         /**
          * Sets whether to do a case sensitive match or not.
          * Matches are not case sensitive by default.
+         * 
          * @param caseSensitive <code>true</code> if doing a case sensitive
          *                      match
          */
@@ -361,18 +440,18 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         public boolean equals(final Object other) {
             return EqualsBuilder.reflectionEquals(this, other);
         }
+
         @Override
         public int hashCode() {
             return HashCodeBuilder.reflectionHashCode(this);
         }
+
         @Override
         public String toString() {
             return new ReflectionToStringBuilder(
                     this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
         }
     }
-
-
 
     @Override
     protected void loadCharStreamTaggerFromXML(XML xml) {
@@ -384,6 +463,7 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
         fieldMatcher.loadFromXML(xml.getXML("fieldMatcher"));
         countMatcher.loadFromXML(xml.getXML("countMatcher"));
     }
+
     @Override
     protected void saveCharStreamTaggerToXML(XML xml) {
         PropertySetter.toXML(xml, getOnSet());
@@ -397,10 +477,12 @@ public class CountMatchesTagger extends AbstractCharStreamTagger {
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

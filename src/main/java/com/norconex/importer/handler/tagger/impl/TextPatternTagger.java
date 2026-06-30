@@ -53,7 +53,7 @@ import com.norconex.importer.parser.ParseState;
  * is expected.
  * </p>
  *
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * values will be added to the end of the existing value list.
@@ -90,7 +90,7 @@ import com.norconex.importer.parser.ParseState;
  *  </handler>
  * }
  *
- * <h4>Usage example:</h4>
+ * <h3>Usage example:</h3>
  * <p>
  * The first pattern in the following example extracts what look like email
  * addresses in to an "email" field (simplified regex). The second pattern
@@ -224,3 +224,4 @@ public class TextPatternTagger
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+

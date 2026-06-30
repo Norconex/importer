@@ -33,25 +33,26 @@ import com.norconex.importer.parser.ParseState;
  * <p>
  * Tag incoming documents using a scripting language.
  * The default script engine is <code>JavaScript</code>.
- * </p><p>
+ * </p>
+ * <p>
  * Refer to {@link ScriptRunner} for more information on using a scripting
  * language with Norconex Importer.
  * </p>
- * <h3>How to tag documents with scripting:</h3>
+ * <h2>How to tag documents with scripting:</h2>
  * <p>
  * The following are variables made available to your script for each
  * document:
  * </p>
  * <ul>
- *   <li><b>reference:</b> Document unique reference as a string.</li>
- *   <li><b>content:</b> Document content, as a string
- *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as an {@link Properties}
- *       object.</li>
- *   <li><b>parsed:</b> Whether the document was already parsed, as a
- *       boolean.</li>
- *   <li><b>sectionIndex:</b> Content section index if it had to be split,
- *       as an integer.</li>
+ * <li><b>reference:</b> Document unique reference as a string.</li>
+ * <li><b>content:</b> Document content, as a string
+ * (of <code>maxReadSize</code> length).</li>
+ * <li><b>metadata:</b> Document metadata as an {@link Properties}
+ * object.</li>
+ * <li><b>parsed:</b> Whether the document was already parsed, as a
+ * boolean.</li>
+ * <li><b>sectionIndex:</b> Content section index if it had to be split,
+ * as an integer.</li>
  * </ul>
  * <p>
  * There are no expected return value from your script. Returning
@@ -60,33 +61,36 @@ import com.norconex.importer.parser.ParseState;
  *
  * {@nx.xml.usage
  * <handler class="com.norconex.importer.handler.tagger.impl.ScriptTagger"
- *     engineName="(script engine name)"
- *     {@nx.include com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
+ * engineName="(script engine name)"
+ * {@nx.include
+ * com.norconex.importer.handler.tagger.AbstractStringTagger#attributes}>
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <script>(your script)</script>
+ * <script>(your script)</script>
  *
  * </handler>
  * }
  *
- * <h4>Usage example:</h4>
- * <p>The following examples add new metadata field indicating which
- * fruit is a document about.</p>
- * <h5>JavaScript:</h5>
+ * <h3>Usage example:</h3>
+ * <p>
+ * The following examples add new metadata field indicating which
+ * fruit is a document about.
+ * </p>
+ * <h4>JavaScript:</h4>
  * {@nx.xml
  * <handler class="ScriptTagger">
- *   <script><![CDATA[
- *       metadata.add('fruit', 'apple');
- *   ]]></script>
+ * <script><![CDATA[
+ * metadata.add('fruit', 'apple');
+ * ]]></script>
  * </handler>
  * }
- * <h5>Lua:</h5>
+ * <h4>Lua:</h4>
  * {@nx.xml
  * <handler class="ScriptTagger" engineName="lua">
- *   <script><![CDATA[
- *       metadata:addString('fruit', {'apple'});
- *   ]]></script>
+ * <script><![CDATA[
+ * metadata:addString('fruit', {'apple'});
+ * ]]></script>
  * </handler>
  * }
  *
@@ -102,6 +106,7 @@ public class ScriptTagger extends AbstractStringTagger {
     public String getEngineName() {
         return scriptRunner.getEngineName();
     }
+
     public void setEngineName(String engineName) {
         scriptRunner.setEngineName(engineName);
     }
@@ -109,6 +114,7 @@ public class ScriptTagger extends AbstractStringTagger {
     public String getScript() {
         return scriptRunner.getScript();
     }
+
     public void setScript(String script) {
         scriptRunner.setScript(script);
     }
@@ -116,7 +122,7 @@ public class ScriptTagger extends AbstractStringTagger {
     @Override
     protected void tagStringContent(HandlerDoc doc, StringBuilder content,
             ParseState parseState, int sectionIndex)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
         Bindings b = scriptRunner.createBindings();
         b.put("reference", doc.getReference());
         b.put("content", content.toString());
@@ -142,10 +148,12 @@ public class ScriptTagger extends AbstractStringTagger {
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

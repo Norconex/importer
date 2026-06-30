@@ -49,7 +49,7 @@ import com.norconex.importer.response.ImporterResponse;
  * As of 2.6.0, it is possible to register your own parsers.
  * </p>
  *
- * <h3>Ignoring content types:</h3>
+ * <h2>Ignoring content types:</h2>
  * <p>
  * You can "ignore" content-types so they do not get
  * parsed. Unparsed documents will be sent as is to the post handlers
@@ -59,7 +59,7 @@ import com.norconex.importer.response.ImporterResponse;
  * avoid excluding binary content types from parsing.</b>
  * </p>
  *
- * <h3>Character encoding:</h3>
+ * <h2>Character encoding:</h2>
  * <p>
  * Parsing a document also attempts to detect the character encoding
  * (charset) of the extracted text to converts it to UTF-8. When ignoring
@@ -67,7 +67,7 @@ import com.norconex.importer.response.ImporterResponse;
  * take place and your documents will likely retain their original encoding.
  * </p>
  *
- * <h3>Embedded documents:</h3>
+ * <h2>Embedded documents:</h2>
  * <p>
  * For documents containing embedded documents (e.g. zip files), the default
  * behavior of this treat them as a single document, merging all
@@ -89,7 +89,7 @@ import com.norconex.importer.response.ImporterResponse;
  * containers you do not want to extract their embedded documents.
  * </p>
  *
- * <h3>Optical character recognition (OCR):</h3>
+ * <h2>Optical character recognition (OCR):</h2>
  * <p>
  * You can configure this parser to use the
  * <b><a href="https://code.google.com/p/tesseract-ocr/">Tesseract</a></b>
@@ -171,7 +171,7 @@ import com.norconex.importer.response.ImporterResponse;
  *
  * </documentParserFactory>
  * }
- * <h4>Usage example:</h4>
+ * <h3>Usage example:</h3>
  * <p>
  * The following uses Tesseract to convert English and French images in PDF
  * into text and it will also extract documents from Zip files and treat
@@ -549,3 +549,4 @@ public class GenericDocumentParserFactory
                 .toString();
     }
 }
+

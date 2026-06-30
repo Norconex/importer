@@ -283,11 +283,11 @@
         <configuration>
           <excludePackageNames>org.*</excludePackageNames>
           <failOnError>false</failOnError>
-          <failOnWarning>false</failOnWarning>
+          <failOnWarnings>false</failOnWarnings>
           <quiet>true</quiet>
-          <options>
-            <option>-Xdoclint:none</option>
-          </options>
+          <additionalOptions>
+            <additionalOption>-Xdoclint:none</additionalOption>
+          </additionalOptions>
         </configuration>
       </plugin>
       <plugin>

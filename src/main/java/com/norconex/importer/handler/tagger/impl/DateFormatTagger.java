@@ -48,7 +48,7 @@ import com.norconex.importer.util.FormatUtil;
  * <p>When omitting the <code>toField</code>, the value will replace the one
  * in the same field.</p>
  *
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * values will be added to the end of the existing value list.
@@ -326,3 +326,4 @@ public class DateFormatTagger extends AbstractDocumentTagger {
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+

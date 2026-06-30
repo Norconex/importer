@@ -36,25 +36,26 @@ import com.norconex.importer.parser.ParseState;
  * <p>
  * Transform incoming documents using a scripting language.
  * The default script engine is <code>JavaScript</code>.
- * </p><p>
+ * </p>
+ * <p>
  * Refer to {@link ScriptRunner} for more information on using a scripting
  * language with Norconex Importer.
  * </p>
- * <h3>How to transform documents with scripting:</h3>
+ * <h2>How to transform documents with scripting:</h2>
  * <p>
  * The following are variables made available to your script for each
  * document:
  * </p>
  * <ul>
- *   <li><b>reference:</b> Document unique reference as a string.</li>
- *   <li><b>content:</b> Document content, as a string
- *       (of <code>maxReadSize</code> length).</li>
- *   <li><b>metadata:</b> Document metadata as an {@link Properties}
- *       object.</li>
- *   <li><b>parsed:</b> Whether the document was already parsed, as a
- *       boolean.</li>
- *   <li><b>sectionIndex:</b> Content section index if it had to be split,
- *       as an integer.</li>
+ * <li><b>reference:</b> Document unique reference as a string.</li>
+ * <li><b>content:</b> Document content, as a string
+ * (of <code>maxReadSize</code> length).</li>
+ * <li><b>metadata:</b> Document metadata as an {@link Properties}
+ * object.</li>
+ * <li><b>parsed:</b> Whether the document was already parsed, as a
+ * boolean.</li>
+ * <li><b>sectionIndex:</b> Content section index if it had to be split,
+ * as an integer.</li>
  * </ul>
  * <p>
  * The expected <b>return value</b> from your script is a string holding
@@ -62,36 +63,40 @@ import com.norconex.importer.parser.ParseState;
  * </p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
- *     engineName="(script engine name)"
- *     {@nx.include com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
+ * <handler
+ * class="com.norconex.importer.handler.transformer.impl.ScriptTransformer"
+ * engineName="(script engine name)"
+ * {@nx.include
+ * com.norconex.importer.handler.transformer.AbstractStringTransformer#attributes}>
  *
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <script>(your script)</script>
+ * <script>(your script)</script>
  *
  * </handler>
  * }
  *
- * <h4>Usage example:</h4>
- * <p>The following example replaces all occurences of "Alice" with "Roger"
- * in a document content.</p>
- * <h5>JavaScript:</h5>
+ * <h3>Usage example:</h3>
+ * <p>
+ * The following example replaces all occurences of "Alice" with "Roger"
+ * in a document content.
+ * </p>
+ * <h4>JavaScript:</h4>
  * {@nx.xml
  * <handler class="ScriptTransformer">
- *   <script><![CDATA[
- *       modifiedContent = content.replace(/Alice/g, 'Roger');
- *       /&#42;return&#42;/ modifiedContent;
- *   ]]></script>
+ * <script><![CDATA[
+ * modifiedContent = content.replace(/Alice/g, 'Roger');
+ * /&#42;return&#42;/ modifiedContent;
+ * ]]></script>
  * </handler>
  * }
- * <h5>Lua:</h5>
+ * <h4>Lua:</h4>
  * {@nx.xml
  * <handler class="ScriptTransformer" engineName="lua">
- *   <script><![CDATA[
- *       modifiedContent = content:gsub('Alice', 'Roger');
- *       return modifiedContent;
- *   ]]></script>
+ * <script><![CDATA[
+ * modifiedContent = content:gsub('Alice', 'Roger');
+ * return modifiedContent;
+ * ]]></script>
  * </handler>
  * }
  *
@@ -108,6 +113,7 @@ public class ScriptTransformer extends AbstractStringTransformer
     public String getEngineName() {
         return scriptRunner.getEngineName();
     }
+
     public void setEngineName(final String engineName) {
         scriptRunner.setEngineName(engineName);
     }
@@ -115,6 +121,7 @@ public class ScriptTransformer extends AbstractStringTransformer
     public String getScript() {
         return scriptRunner.getScript();
     }
+
     public void setScript(final String script) {
         scriptRunner.setScript(script);
     }
@@ -155,10 +162,12 @@ public class ScriptTransformer extends AbstractStringTransformer
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

@@ -64,7 +64,7 @@ import com.norconex.importer.parser.ParseState;
  * or post-parse handler.
  * </p>
  *
- * <h3>Accuracy:</h3>
+ * <h2>Accuracy:</h2>
  * <p>
  * To obtain optimal detection, long enough text is expected. The default
  * detection algorithm is optimized for document with lots of text.
@@ -78,7 +78,7 @@ import com.norconex.importer.parser.ParseState;
  * for detection.
  * </p>
  *
- * <h3>Supported Languages:</h3>
+ * <h2>Supported Languages:</h2>
  * <p>
  * Languages are represented as code values. As of 2.6.0, at least the
  * following 70 languages are supported by the Tika version used:
@@ -360,3 +360,4 @@ public class LanguageTagger extends AbstractStringTagger
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+

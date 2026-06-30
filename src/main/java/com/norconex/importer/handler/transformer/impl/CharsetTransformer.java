@@ -48,7 +48,7 @@ import com.norconex.importer.util.CharsetUtil;
  * unchanged. When no target character encoding is specified, UTF-8 is assumed.
  * </p>
  *
- * <h3>Should I use this transformer?</h3>
+ * <h2>Should I use this transformer?</h2>
  * <p>
  * Before using this transformer, you need to know the parsing of documents
  * by the importer using default document parser factory will try to convert
@@ -61,7 +61,7 @@ import com.norconex.importer.util.CharsetUtil;
  * handler to do so.
  * </p>
  *
- * <h3>Conversion is not flawless</h3>
+ * <h2>Conversion is not flawless</h2>
  * <p>
  * Because character encoding detection is not always accurate and because
  * documents sometime mix different encoding, there is no guarantee this
@@ -69,17 +69,19 @@ import com.norconex.importer.util.CharsetUtil;
  * </p>
  *
  * {@nx.xml.usage
- * <handler class="com.norconex.importer.handler.transformer.impl.CharsetTransformer"
- *     sourceCharset="(character encoding)"
- *     targetCharset="(character encoding)">
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * <handler class=
+ * "com.norconex.importer.handler.transformer.impl.CharsetTransformer"
+ * sourceCharset="(character encoding)"
+ * targetCharset="(character encoding)">
+ * {@nx.include
+ * com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  * </handler>
  * }
  *
  *
  * {@nx.xml.example
  * <handler class="CharsetTransformer"
- *     sourceCharset="ISO-8859-1" targetCharset="UTF-8">
+ * sourceCharset="ISO-8859-1" targetCharset="UTF-8">
  * </handler>
  * }
  * <p>
@@ -95,11 +97,10 @@ import com.norconex.importer.util.CharsetUtil;
 public class CharsetTransformer extends AbstractDocumentTransformer
         implements IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(CharsetTransformer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CharsetTransformer.class);
 
-    public static final String DEFAULT_TARGET_CHARSET =
-            StandardCharsets.UTF_8.toString();
+    /** Default charset to convert content to when not explicitly set. */
+    public static final String DEFAULT_TARGET_CHARSET = StandardCharsets.UTF_8.toString();
 
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
@@ -111,7 +112,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
 
         String inputCharset = detectCharsetIfBlank(input);
 
-        //--- Get target charset ---
+        // --- Get target charset ---
         String outputCharset = targetCharset;
         if (StringUtils.isBlank(outputCharset)) {
             outputCharset = StandardCharsets.UTF_8.toString();
@@ -125,7 +126,7 @@ public class CharsetTransformer extends AbstractDocumentTransformer
             return;
         }
 
-        //--- Convert ---
+        // --- Convert ---
         try {
             CharsetUtil.convertCharset(
                     input, inputCharset, output, outputCharset);
@@ -136,16 +137,38 @@ public class CharsetTransformer extends AbstractDocumentTransformer
         }
     }
 
+    /**
+     * Gets the target charset.
+     * 
+     * @return target charset
+     */
     public String getTargetCharset() {
         return targetCharset;
     }
+
+    /**
+     * Sets the target charset.
+     * 
+     * @param targetCharset target charset
+     */
     public void setTargetCharset(final String targetCharset) {
         this.targetCharset = targetCharset;
     }
 
+    /**
+     * Gets the source charset.
+     * 
+     * @return source charset, or <code>null</code> to auto-detect
+     */
     public String getSourceCharset() {
         return sourceCharset;
     }
+
+    /**
+     * Sets the source charset.
+     * 
+     * @param sourceCharset source charset, or <code>null</code> to auto-detect
+     */
     public void setSourceCharset(final String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
@@ -176,10 +199,12 @@ public class CharsetTransformer extends AbstractDocumentTransformer
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

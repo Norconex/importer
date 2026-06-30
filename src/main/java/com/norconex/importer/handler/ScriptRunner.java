@@ -44,7 +44,7 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * allows to "plug" any script engines to support your favorite scripting
  * language.
  * </p>
- * <h3>JavaScript</h3>
+ * <h2>JavaScript</h2>
  * <p>
  * The JavaScript (ECMAScript) script engine should already be present as
  * part of your Java installation and is the default script engine used by
@@ -59,7 +59,7 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/Rhino">
  * Mozilla Rhino</a>.
  * </p>
- * <h3>Lua</h3>
+ * <h2>Lua</h2>
  * <p>
  * As of 2.7.0, support for the
  * <a href="https://www.lua.org/">Lua</a> script engine is available.
@@ -68,7 +68,7 @@ import com.norconex.importer.handler.transformer.impl.ScriptTransformer;
  * To use it, set "lua" as the scripting engine with
  * {@link #setEngineName(String)}.
  * </p>
- * <h3>Others</h3>
+ * <h2>Others</h2>
  * <p>
  * Several third-party script engines already exist to support additional
  * languages such as Groovy, JRuby, Scala, Fantom, Jython, etc. Refer to

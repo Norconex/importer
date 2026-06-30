@@ -62,7 +62,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * to extract data from and/or manipulate a document.
  * </p>
  *
- * <h3>Command-line arguments:</h3>
+ * <h2>Command-line arguments:</h2>
  * <p>
  * When constructing the command to launch the external application, it
  * will look for specific tokens to be replaced by file paths
@@ -110,7 +110,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *
  * </dl>
  *
- * <h3>Metadata file format:</h3>
+ * <h2>Metadata file format:</h2>
  *
  * <p>
  * If <code>${INPUT_META}</code> is part of the command, metadata can be
@@ -120,7 +120,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * command. The formats are:
  * </p>
  *
- * <h4>JSON</h4>
+ * <h3>JSON</h3>
  * <pre><code class="language-json">
  * {
  *   "field1" : [ "value1a", "value1b", "value1c" ],
@@ -129,7 +129,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * }
  * </code></pre>
  *
- * <h4>XML</h4>
+ * <h3>XML</h3>
  * <p>Java Properties XML file format, with the exception that
  * metadata with multiple values are supported, and will have their values
  * joined by the symbol for record separator (U+241E).
@@ -146,7 +146,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * &lt;/properties&gt;
  * </code></pre>
  *
- * <h4>Properties</h4>
+ * <h3>Properties</h3>
  * <p>Java Properties standard file format, with the exception that
  * metadata with multiple values are supported, and will have their values
  * joined by the symbol for record separator (U+241E). Refer to Java
@@ -161,7 +161,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  *   field3 = value3a\u241Evalue3b
  * </code></pre>
  *
- * <h3>Metadata extraction patterns:</h3>
+ * <h2>Metadata extraction patterns:</h2>
  * <p>
  * It is possible to specify metadata extraction patterns that will be
  * applied either on the returned metadata file or from the standard output and
@@ -196,7 +196,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * is expected.
  * </p>
  *
- * <h3>Storing values in an existing field</h3>
+ * <h2>Storing values in an existing field</h2>
  * <p>
  * If a target field with the same name already exists for a document,
  * values will be added to the end of the existing value list.
@@ -204,7 +204,7 @@ import com.norconex.importer.parser.impl.ExternalParser;
  * {@link PropertySetter}.
  * </p>
  *
- * <h3>Environment variables:</h3>
+ * <h2>Environment variables:</h2>
  *
  * <p>
  * Execution environment variables can be set to replace environment variables
@@ -841,3 +841,4 @@ public class ExternalHandler {
         }
     }
 }
+

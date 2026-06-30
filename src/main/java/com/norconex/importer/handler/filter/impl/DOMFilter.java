@@ -69,7 +69,7 @@ import com.norconex.importer.util.DOMUtil;
  * Refer to {@link AbstractDocumentFilter} for the inclusion/exclusion logic.
  * </p>
  * <p>Should be used as a pre-parse handler.</p>
- * <h3>Content-types</h3>
+ * <h2>Content-types</h2>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
@@ -323,3 +323,4 @@ public class DOMFilter extends AbstractDocumentFilter {
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+

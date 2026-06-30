@@ -45,7 +45,7 @@ import com.norconex.importer.parser.ParseState;
  * <b>Since 2.2.0</b>, the following regular expression flags are always
  * active: {@link Pattern#MULTILINE} and {@link Pattern#DOTALL}.
  * </p>
- * <h3>XML configuration usage:</h3>
+ * <h2>XML configuration usage:</h2>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexContentFilter"
  *          onMatch="[include|exclude]"
@@ -62,7 +62,7 @@ import com.norconex.importer.parser.ParseState;
  *      &lt;regex&gt;(regular expression of value to match)&lt;/regex&gt;
  *  &lt;/handler&gt;
  * </pre>
- * <h4>Usage example:</h4>
+ * <h3>Usage example:</h3>
  * <p>
  * This example will accept only documents containing word "apple".
  * </p>
@@ -172,3 +172,4 @@ public class RegexContentFilter extends AbstractStringFilter {
                 .toString();
     }
 }
+

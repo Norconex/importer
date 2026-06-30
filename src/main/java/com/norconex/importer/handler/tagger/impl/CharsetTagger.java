@@ -54,7 +54,7 @@ import com.norconex.importer.util.CharsetUtil;
  * unchanged. When no target character encoding is specified, UTF-8 is assumed.
  * </p>
  *
- * <h3>Should I use this tagger?</h3>
+ * <h2>Should I use this tagger?</h2>
  * <p>
  * Before using this tagger, you need to know the parsing of documents
  * by the importer (using the default document parser factory) will try to
@@ -67,30 +67,32 @@ import com.norconex.importer.util.CharsetUtil;
  * handler to do so.
  * </p>
  *
- * <h3>Conversion is not flawless</h3>
+ * <h2>Conversion is not flawless</h2>
  * <p>
  * Because character encoding detection is not always accurate and because
  * documents sometime mix different encoding, there is no guarantee this
  * class will handle ALL character encoding conversions properly.
  * </p>
  * {@nx.xml.usage
- *  <handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
- *          sourceCharset="(character encoding)"
- *          targetCharset="(character encoding)">
- *   {@nx.include com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
+ * <handler class="com.norconex.importer.handler.tagger.impl.CharsetTagger"
+ * sourceCharset="(character encoding)"
+ * targetCharset="(character encoding)">
+ * {@nx.include
+ * com.norconex.importer.handler.AbstractImporterHandler#restrictTo}
  *
- *   <fieldMatcher {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
- *     (expression matching fields to be converted)
- *   </fieldMatcher>
+ * <fieldMatcher
+ * {@nx.include com.norconex.commons.lang.text.TextMatcher#matchAttributes}>
+ * (expression matching fields to be converted)
+ * </fieldMatcher>
  *
- *  </handler>
+ * </handler>
  * }
  *
  * {@nx.xml.example
- *  <handler class="CharsetTagger"
- *          sourceCharset="ISO-8859-1" targetCharset="UTF-8">
- *    <fieldMatcher>description</fieldMatcher>
- *  </handler>
+ * <handler class="CharsetTagger"
+ * sourceCharset="ISO-8859-1" targetCharset="UTF-8">
+ * <fieldMatcher>description</fieldMatcher>
+ * </handler>
  * }
  * <p>
  * The above example converts the characters of a "description" field from
@@ -105,11 +107,10 @@ import com.norconex.importer.util.CharsetUtil;
 public class CharsetTagger extends AbstractDocumentTagger
         implements IXMLConfigurable {
 
-    private static final Logger LOG =
-            LoggerFactory.getLogger(CharsetTagger.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CharsetTagger.class);
 
-    public static final String DEFAULT_TARGET_CHARSET =
-            StandardCharsets.UTF_8.toString();
+    /** Default charset to convert values to when not explicitly set. */
+    public static final String DEFAULT_TARGET_CHARSET = StandardCharsets.UTF_8.toString();
 
     private String targetCharset = DEFAULT_TARGET_CHARSET;
     private String sourceCharset = null;
@@ -118,15 +119,14 @@ public class CharsetTagger extends AbstractDocumentTagger
     @Override
     public void tagApplicableDocument(
             HandlerDoc doc, InputStream document, ParseState parseState)
-                    throws ImporterHandlerException {
+            throws ImporterHandlerException {
 
         if (fieldMatcher.getPattern() == null) {
             throw new ImporterHandlerException(
                     "\"fieldMatcher\" cannot be blank on CharsetTagger.");
         }
 
-        for (Entry<String, List<String>> en :
-            doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
+        for (Entry<String, List<String>> en : doc.getMetadata().matchKeys(fieldMatcher).entrySet()) {
             LOG.debug("Field to convert charset: {}", en.getKey());
             convertCharset(doc.getReference(), doc.getMetadata(), en.getKey());
         }
@@ -134,6 +134,7 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     /**
      * Gets field-matching expression.
+     * 
      * @return expression
      * @deprecated Since 3.0.0, use {@link #getFieldMatcher()}.
      */
@@ -141,8 +142,10 @@ public class CharsetTagger extends AbstractDocumentTagger
     public String getFieldsRegex() {
         return fieldMatcher.getPattern();
     }
+
     /**
      * Sets field-matching regular expression.
+     * 
      * @param fieldsRegex regular expressiopm
      * @deprecated Since 3.0.0, use {@link #setFieldMatcher(TextMatcher)}
      */
@@ -153,14 +156,17 @@ public class CharsetTagger extends AbstractDocumentTagger
 
     /**
      * Gets field matcher.
+     * 
      * @return field matcher
      * @since 3.0.0
      */
     public TextMatcher getFieldMatcher() {
         return fieldMatcher;
     }
+
     /**
      * Set field matcher (copy).
+     * 
      * @param fieldMatcher field matcher
      * @since 3.0.0
      */
@@ -174,12 +180,10 @@ public class CharsetTagger extends AbstractDocumentTagger
         if (values == null) {
             return;
         }
-        String declaredEncoding =
-                metadata.getString(DocMetadata.CONTENT_ENCODING);
+        String declaredEncoding = metadata.getString(DocMetadata.CONTENT_ENCODING);
         List<String> newValues = new ArrayList<>();
         for (String value : values) {
-            String newValue =
-                    convertCharset(reference, value, declaredEncoding);
+            String newValue = convertCharset(reference, value, declaredEncoding);
             newValues.add(newValue);
         }
         metadata.setList(metaField, newValues);
@@ -188,7 +192,7 @@ public class CharsetTagger extends AbstractDocumentTagger
     private String convertCharset(
             String reference, String value, String declaredEncoding) {
 
-        //--- Get source charset ---
+        // --- Get source charset ---
         String inputCharset = sourceCharset;
         if (StringUtils.isBlank(inputCharset)) {
             inputCharset = CharsetUtil.detectCharset(value, declaredEncoding);
@@ -199,7 +203,7 @@ public class CharsetTagger extends AbstractDocumentTagger
         }
         inputCharset = CharsetUtils.clean(inputCharset);
 
-        //--- Get target charset ---
+        // --- Get target charset ---
         String outputCharset = targetCharset;
         if (StringUtils.isBlank(outputCharset)) {
             outputCharset = StandardCharsets.UTF_8.toString();
@@ -215,7 +219,7 @@ public class CharsetTagger extends AbstractDocumentTagger
             return value;
         }
 
-        //--- Convert ---
+        // --- Convert ---
         try {
             value = CharsetUtil.convertCharset(
                     value, inputCharset, outputCharset);
@@ -231,13 +235,30 @@ public class CharsetTagger extends AbstractDocumentTagger
     public String getTargetCharset() {
         return targetCharset;
     }
+
+    /**
+     * Sets the target charset.
+     * 
+     * @param targetCharset target charset
+     */
     public void setTargetCharset(String targetCharset) {
         this.targetCharset = targetCharset;
     }
 
+    /**
+     * Gets the source charset.
+     * 
+     * @return source charset, or <code>null</code> to auto-detect
+     */
     public String getSourceCharset() {
         return sourceCharset;
     }
+
+    /**
+     * Sets the source charset.
+     * 
+     * @param sourceCharset source charset, or <code>null</code> to auto-detect
+     */
     public void setSourceCharset(String sourceCharset) {
         this.sourceCharset = sourceCharset;
     }
@@ -262,10 +283,12 @@ public class CharsetTagger extends AbstractDocumentTagger
     public boolean equals(final Object other) {
         return EqualsBuilder.reflectionEquals(this, other);
     }
+
     @Override
     public int hashCode() {
         return HashCodeBuilder.reflectionHashCode(this);
     }
+
     @Override
     public String toString() {
         return new ReflectionToStringBuilder(

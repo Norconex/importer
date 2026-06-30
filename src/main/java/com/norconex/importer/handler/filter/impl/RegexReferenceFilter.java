@@ -33,7 +33,7 @@ import com.norconex.importer.parser.ParseState;
 /**
  * <p>Accepts or rejects a document based on its reference (e.g. URL).
  * </p>
- * <h3>XML configuration usage:</h3>
+ * <h2>XML configuration usage:</h2>
  * <pre>
  *  &lt;handler class="com.norconex.importer.handler.filter.impl.RegexReferenceFilter"
  *          onMatch="[include|exclude]"
@@ -50,7 +50,7 @@ import com.norconex.importer.parser.ParseState;
  * </pre>
  * <p>Can be used both as a pre-parse or post-parse handler.</p>
  *
- * <h4>Usage example:</h4>
+ * <h3>Usage example:</h3>
  * <p>
  * The following will reject documents having "/login/" in their reference.
  * </p>
@@ -156,4 +156,5 @@ public class RegexReferenceFilter extends AbstractDocumentFilter {
                 .toString();
     }
 }
+
 

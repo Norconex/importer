@@ -39,7 +39,7 @@ import com.norconex.importer.parser.ParseState;
  * control characters (char &lt;= 32) are removed before evaluating whether
  * their values are empty.</p>
  *
- * <h3>Filtering on multiple fields:</h3>
+ * <h2>Filtering on multiple fields:</h2>
  * <p>
  * It is important to note that when your field matcher expression matches
  * more than one field, only one of the matched fields needs to be empty
@@ -150,4 +150,5 @@ public class EmptyFilter extends AbstractDocumentFilter {
                 this, ToStringStyle.SHORT_PREFIX_STYLE).toString();
     }
 }
+
 

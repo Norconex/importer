@@ -64,7 +64,7 @@ import com.norconex.importer.util.DOMUtil;
  * </p>
  * <p>Should be used as a pre-parse handler.</p>
  *
- * <h3>Content-types</h3>
+ * <h2>Content-types</h2>
  * <p>
  * By default, this filter is restricted to (applies only to) documents matching
  * the restrictions returned by
@@ -137,7 +137,7 @@ import com.norconex.importer.util.DOMUtil;
  * with, specifying "xml" should be a good option.
  * </p>
  *
- * <h3>Multiple preserved elements</h3>
+ * <h2>Multiple preserved elements</h2>
  * <p>
  * It is possible to preserve multiple elements or text.  Specifying multiple
  * DOM selector will achieve that.  Each potential match is always
@@ -469,3 +469,4 @@ public class DOMPreserveTransformer extends AbstractDocumentTransformer {
         }
     }
 }
+

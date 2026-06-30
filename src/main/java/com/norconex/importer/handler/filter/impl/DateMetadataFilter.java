@@ -61,13 +61,13 @@ import com.norconex.importer.util.FormatUtil;
  * considered not to be matching (no exception is thrown).
  * </p>
  *
- * <h3>Metadata date field format:</h3>
+ * <h2>Metadata date field format:</h2>
  * <p>To successfully parse a date, you can specify a date format,
  * as per the formatting options found on {@link DateTimeFormatter}.
  * The default format when not specified is EPOCH (the difference, measured in
  * milliseconds, between the date and midnight, January 1, 1970).</p>
  *
- * <h3>Absolute date conditions:</h3>
+ * <h2>Absolute date conditions:</h2>
  * <p>When defining a filter condition, you can specify an absolute
  * date (i.e. a constant date value) to be used for comparison.
  * Supported formats for specifying a condition date are:
@@ -78,7 +78,7 @@ import com.norconex.importer.util.FormatUtil;
  *                                milliseconds (e.g. 2015-05-31T22:44:15)
  * </pre>
  *
- * <h3>Relative date conditions:</h3>
+ * <h2>Relative date conditions:</h2>
  * <P>Filter conditions can also specify a moment in time relative to the
  * current date using the <code>TODAY</code> or <code>NOW</code> keyword,
  * optionally followed by a number of time units to add/remove.
@@ -90,7 +90,7 @@ import com.norconex.importer.util.FormatUtil;
  * it should be refreshed on every invocation to reflect the passing of time.
  * </p>
  *
- * <h3>Time zones:</h3>
+ * <h2>Time zones:</h2>
  * <p>
  * When comparing dates at a more granular level (e.g., hours, minutes,
  * seconds), it may be important to take time zones into account.
@@ -769,4 +769,5 @@ public class DateMetadataFilter extends AbstractDocumentFilter {
         return b.toString();
     }
 }
+
 
