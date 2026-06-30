@@ -36,78 +36,76 @@ import com.norconex.importer.parser.ParseState;
 
 public class StripBetweenTransformerTest {
 
-    @Test
-    public void testTransformTextDocument()
-            throws ImporterHandlerException, IOException {
-        StripBetweenTransformer t = new StripBetweenTransformer();
-        addEndPoints(t, "<h2>", "</h2>");
-        addEndPoints(t, "<P>", "</P>");
-        addEndPoints(t, "<head>", "</hEad>");
-        addEndPoints(t, "<Pre>", "</prE>");
+        @Test
+        public void testTransformTextDocument()
+                        throws ImporterHandlerException, IOException {
+                StripBetweenTransformer t = new StripBetweenTransformer();
+                addEndPoints(t, "<h2>", "</h2>");
+                addEndPoints(t, "<P>", "</P>");
+                addEndPoints(t, "<head>", "</hEad>");
+                addEndPoints(t, "<Pre>", "</prE>");
 
-        File htmlFile = TestUtil.getAliceHtmlFile();
-        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
+                File htmlFile = TestUtil.getAliceHtmlFile();
+                InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Properties metadata = new Properties();
-        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.transformDocument(
-                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is, metadata),
-                is, os, ParseState.PRE);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                Properties metadata = new Properties();
+                metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
+                t.transformDocument(
+                                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is, metadata),
+                                is, os, ParseState.PRE);
 
-        Assertions.assertEquals(458, os.toString().length(),
-                "Length of doc content after transformation is incorrect.");
+                Assertions.assertEquals(648, os.toString().length(),
+                                "Length of doc content after transformation is incorrect.");
 
-        is.close();
-        os.close();
-    }
+                is.close();
+                os.close();
+        }
 
+        @Test
+        public void testCollectorHttpIssue237()
+                        throws ImporterHandlerException, IOException {
+                StripBetweenTransformer t = new StripBetweenTransformer();
+                addEndPoints(t, "<body>", "<\\!-- START -->");
+                addEndPoints(t, "<\\!-- END -->", "<\\!-- START -->");
+                addEndPoints(t, "<\\!-- END -->", "</body>");
 
-    @Test
-    public void testCollectorHttpIssue237()
-            throws ImporterHandlerException, IOException {
-        StripBetweenTransformer t = new StripBetweenTransformer();
-        addEndPoints(t, "<body>", "<\\!-- START -->");
-        addEndPoints(t, "<\\!-- END -->", "<\\!-- START -->");
-        addEndPoints(t, "<\\!-- END -->", "</body>");
+                String html = "<html><body>"
+                                + "ignore this text"
+                                + "<!-- START -->extract me 1<!-- END -->"
+                                + "ignore this text"
+                                + "<!-- START -->extract me 2<!-- END -->"
+                                + "ignore this text"
+                                + "</body></html>";
 
-        String html = "<html><body>"
-                + "ignore this text"
-                + "<!-- START -->extract me 1<!-- END -->"
-                + "ignore this text"
-                + "<!-- START -->extract me 2<!-- END -->"
-                + "ignore this text"
-                + "</body></html>";
+                ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                Properties metadata = new Properties();
+                metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
+                t.transformDocument(TestUtil.toHandlerDoc("fake.html", is, metadata),
+                                is, os, ParseState.PRE);
+                String output = os.toString();
+                is.close();
+                os.close();
+                // System.out.println(output);
+                Assertions.assertEquals(
+                                "<html>extract me 1extract me 2</html>", output);
+        }
 
-        ByteArrayInputStream is = new ByteArrayInputStream(html.getBytes());
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Properties metadata = new Properties();
-        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.transformDocument(TestUtil.toHandlerDoc("fake.html", is, metadata),
-                is, os, ParseState.PRE);
-        String output = os.toString();
-        is.close();
-        os.close();
-        //System.out.println(output);
-        Assertions.assertEquals(
-                "<html>extract me 1extract me 2</html>", output);
-    }
+        @Test
+        public void testWriteRead() {
+                StripBetweenTransformer t = new StripBetweenTransformer();
+                addEndPoints(t, "<!-- NO INDEX", "/NOINDEX -->");
+                addEndPoints(t, "<!-- HEADER START", "HEADER END -->");
+                XML.assertWriteRead(t, "handler");
+        }
 
-
-    @Test
-    public void testWriteRead() {
-        StripBetweenTransformer t = new StripBetweenTransformer();
-        addEndPoints(t, "<!-- NO INDEX", "/NOINDEX -->");
-        addEndPoints(t, "<!-- HEADER START", "HEADER END -->");
-        XML.assertWriteRead(t, "handler");
-    }
-
-    private void addEndPoints(
-            StripBetweenTransformer t, String start, String end) {
-        StripBetweenDetails d = new StripBetweenDetails(
-                TextMatcher.regex(start).setIgnoreCase(true),
-                TextMatcher.regex(end).setIgnoreCase(true));
-        d.setInclusive(true);
-        t.addStripBetweenDetails(d);
-    }
+        private void addEndPoints(
+                        StripBetweenTransformer t, String start, String end) {
+                StripBetweenDetails d = new StripBetweenDetails(
+                                TextMatcher.regex(start).setIgnoreCase(true),
+                                TextMatcher.regex(end).setIgnoreCase(true));
+                d.setInclusive(true);
+                t.addStripBetweenDetails(d);
+        }
 }

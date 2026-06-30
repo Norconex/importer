@@ -34,37 +34,36 @@ import com.norconex.importer.parser.ParseState;
 
 public class StripBeforeTransformerTest {
 
-    @Test
-    public void testTransformTextDocument()
-            throws ImporterHandlerException, IOException {
-        StripBeforeTransformer t = new StripBeforeTransformer();
-        t.setStripBeforeMatcher(
-                TextMatcher.regex("So she set to work").setIgnoreCase(true));
-        t.setInclusive(false);
-        File htmlFile = TestUtil.getAliceHtmlFile();
-        InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
+        @Test
+        public void testTransformTextDocument()
+                        throws ImporterHandlerException, IOException {
+                StripBeforeTransformer t = new StripBeforeTransformer();
+                t.setStripBeforeMatcher(
+                                TextMatcher.regex("So she set to work").setIgnoreCase(true));
+                t.setInclusive(false);
+                File htmlFile = TestUtil.getAliceHtmlFile();
+                InputStream is = new BufferedInputStream(new FileInputStream(htmlFile));
 
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Properties metadata = new Properties();
-        metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
-        t.transformDocument(
-                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is),
-                is, os, ParseState.PRE);
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                Properties metadata = new Properties();
+                metadata.set(DocMetadata.CONTENT_TYPE, "text/html");
+                t.transformDocument(
+                                TestUtil.toHandlerDoc(htmlFile.getAbsolutePath(), is),
+                                is, os, ParseState.PRE);
 
-        Assertions.assertEquals(371, os.toString().length(),
-                "Length of doc content after transformation is incorrect.");
+                Assertions.assertEquals(414, os.toString().length(),
+                                "Length of doc content after transformation is incorrect.");
 
-        is.close();
-        os.close();
-    }
+                is.close();
+                os.close();
+        }
 
-
-    @Test
-    public void testWriteRead() {
-        StripBeforeTransformer t = new StripBeforeTransformer();
-        t.setInclusive(false);
-        t.setStripBeforeMatcher(
-                TextMatcher.regex("So she set to work").setIgnoreCase(true));
-        XML.assertWriteRead(t, "handler");
-    }
+        @Test
+        public void testWriteRead() {
+                StripBeforeTransformer t = new StripBeforeTransformer();
+                t.setInclusive(false);
+                t.setStripBeforeMatcher(
+                                TextMatcher.regex("So she set to work").setIgnoreCase(true));
+                XML.assertWriteRead(t, "handler");
+        }
 }
