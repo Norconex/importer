@@ -17,6 +17,7 @@ package com.norconex.importer.parser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.tika.parser.CompositeParser;
 import org.apache.tika.parser.Parser;
+import org.apache.tika.parser.ParserDecorator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -39,6 +41,9 @@ import com.norconex.importer.doc.Doc;
 import com.norconex.importer.parser.impl.ExternalParser;
 
 public class GenericDocumentParserFactoryTest {
+
+        private static final String SENTIMENT_PARSER =
+                        "org.apache.tika.parser.sentiment.SentimentAnalysisParser";
 
         @Test
         public void testWriteRead() {
@@ -66,29 +71,83 @@ public class GenericDocumentParserFactoryTest {
         }
 
         @Test
-        public void testSentimentParserDisabledByDefault()
-                        throws IllegalAccessException, NoSuchFieldException {
-                GenericDocumentParserFactory factory = new GenericDocumentParserFactory();
-                factory.getParseHints().getSentimentConfig().setEnabled(false);
+        public void testSentimentParserExcludedFromTikaServiceLoading()
+                        throws Exception {
+                // Tika's SentimentAnalysisParser downloads its model while the
+                // service loader instantiates it, i.e. while TikaConfig is
+                // being built, in the parser factory constructor. That is
+                // before any Importer configuration is read, so it can only be
+                // prevented by a service-loader exclusion in tika-config.xml.
+                // Dropping it from the chain afterwards is too late: the
+                // download (and its stall on a slow network) already happened.
+                Assertions.assertDoesNotThrow(
+                                () -> Class.forName(SENTIMENT_PARSER),
+                                "Sentiment parser missing from classpath; test "
+                                                + "would pass vacuously.");
 
-                Object fallback = FieldUtils.readField(factory, "fallbackParser", true);
-                Object parser = FieldUtils.readField(fallback, "parser", true);
+                URL configUrl = getClass().getResource("/tika-config.xml");
+                Assertions.assertNotNull(
+                                configUrl, "Importer tika-config.xml not found.");
+                Assertions.assertTrue(
+                                IOUtils.toString(configUrl, StandardCharsets.UTF_8)
+                                                .contains(SENTIMENT_PARSER),
+                                "tika-config.xml must exclude " + SENTIMENT_PARSER
+                                                + " from service loading.");
+
+                Assertions.assertFalse(
+                                chainContainsSentimentParser(
+                                                new GenericDocumentParserFactory()),
+                                "Sentiment parser should be disabled by default.");
+        }
+
+        @Test
+        public void testSentimentParserUnavailableModelIsNotFatal()
+                        throws Exception {
+                GenericDocumentParserFactory factory =
+                                new GenericDocumentParserFactory();
+                factory.loadFromXML(new XML("<documentParserFactory>"
+                                + "<sentiment enabled=\"true\" "
+                                + "modelPath=\"no-such-sentiment-model.bin\"/>"
+                                + "</documentParserFactory>"));
+
+                // An unreachable model must be reported and skipped, never
+                // propagated as a failure that stops the crawler.
+                Assertions.assertDoesNotThrow(() -> factory.getParser(
+                                "n/a", ContentType.TEXT));
+                Assertions.assertFalse(
+                                chainContainsSentimentParser(factory),
+                                "Sentiment parser should be absent when its model "
+                                                + "cannot be loaded.");
+        }
+
+        private boolean chainContainsSentimentParser(
+                        GenericDocumentParserFactory factory) throws Exception {
+                Object fallback =
+                                FieldUtils.readField(factory, "fallbackParser", true);
+                return contains(
+                                (CompositeParser) FieldUtils.readField(
+                                                fallback, "parser", true));
+        }
+
+        private boolean contains(CompositeParser cp) throws Exception {
                 Field parsersField = CompositeParser.class.getDeclaredField("parsers");
                 parsersField.setAccessible(true);
                 @SuppressWarnings("unchecked")
-                List<Parser> parserList = (List<Parser>) parsersField.get(parser);
-
-                Assertions.assertFalse(
-                                parserList.stream().anyMatch(p -> {
-                                        Parser wrapped = p;
-                                        while (wrapped instanceof org.apache.tika.parser.ParserDecorator) {
-                                                wrapped = ((org.apache.tika.parser.ParserDecorator) wrapped)
-                                                                .getWrappedParser();
-                                        }
-                                        return "org.apache.tika.parser.sentiment.SentimentAnalysisParser"
-                                                        .equals(wrapped.getClass().getName());
-                                }),
-                                "Sentiment parser should be disabled by default.");
+                List<Parser> parserList = (List<Parser>) parsersField.get(cp);
+                for (Parser p : parserList) {
+                        Parser wrapped = p;
+                        while (wrapped instanceof ParserDecorator) {
+                                wrapped = ((ParserDecorator) wrapped).getWrappedParser();
+                        }
+                        if (SENTIMENT_PARSER.equals(wrapped.getClass().getName())) {
+                                return true;
+                        }
+                        if (wrapped instanceof CompositeParser
+                                        && contains((CompositeParser) wrapped)) {
+                                return true;
+                        }
+                }
+                return false;
         }
 
         @Test

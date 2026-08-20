@@ -3,4 +3,22 @@
   <service-loader
       loadErrorHandler="WARN"
       initializableProblemHandler="IGNORE"/>
+
+  <!--
+    Tika's SentimentAnalysisParser implements Initializable and downloads its
+    model while the service loader instantiates it, i.e. while this very
+    TikaConfig is being built. That happens long before any Importer
+    configuration is read, so it cannot be turned off from Importer XML after
+    the fact: an unreachable model URL stalls (and warns) on every startup,
+    including "configcheck". Excluding the class here keeps the service loader
+    from instantiating it at all. When sentiment analysis is explicitly enabled
+    in the Importer configuration, AbstractTikaParser creates and registers the
+    parser itself, with the configured model path.
+  -->
+  <parsers>
+    <parser class="org.apache.tika.parser.DefaultParser">
+      <parser-exclude
+          class="org.apache.tika.parser.sentiment.SentimentAnalysisParser"/>
+    </parser>
+  </parsers>
 </properties>

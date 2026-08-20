@@ -22,6 +22,19 @@
         explicitly enabled via GenericDocumentParserFactory XML with a
         "sentiment" element.
       </action>
+      <action dev="essiembre" type="fix">
+        Fixed "Failed to load sentiment model" warnings and long startup stalls
+        (up to a minute or more per parser factory, on "start" as well as
+        "configcheck") when the Tika sentiment model URL is slow or unreachable.
+        Tika's SentimentAnalysisParser downloaded its model while the service
+        loader instantiated it, i.e., before any Importer configuration could be
+        read, so it is now excluded from Tika service loading altogether and only
+        created when sentiment analysis is explicitly enabled.
+      </action>
+      <action dev="essiembre" type="fix">
+        The sentiment "modelPath" setting is now applied before the model is
+        loaded, so a custom (e.g., local) model path takes effect.
+      </action>
       <action dev="essiembre" type="add">
         New AbstractTikaParser.MetadataFieldPolicy enum (PRESERVE, LEGACY, BOTH)
         to control how Dublin Core "dc:" prefixed metadata field names are

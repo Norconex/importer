@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +32,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.tika.config.Initializable;
+import org.apache.tika.config.Param;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.exception.ZeroByteFileException;
@@ -65,6 +68,7 @@ import com.norconex.importer.parser.GrobidConfig;
 import com.norconex.importer.parser.IHintsAwareParser;
 import com.norconex.importer.parser.OCRConfig;
 import com.norconex.importer.parser.ParseHints;
+import com.norconex.importer.parser.SentimentConfig;
 
 /**
  * Base class wrapping Apache Tika parser for use by the importer.
@@ -159,16 +163,31 @@ public class AbstractTikaParser implements IHintsAwareParser {
         }
     }
 
+    /**
+     * Applies the sentiment analysis configuration.
+     * <p>
+     * Tika's {@code SentimentAnalysisParser} is {@code Initializable} and
+     * downloads its model as the service loader instantiates it, that is,
+     * while the {@code TikaConfig} backing this parser is being built. That
+     * happens in the parser constructor, before any Importer configuration is
+     * read, so it cannot be switched off after the fact. It is therefore kept
+     * out of the chain entirely by a {@code parser-exclude} entry in the
+     * Importer {@code tika-config.xml}, and created here instead when
+     * sentiment analysis is explicitly enabled.
+     * </p>
+     */
     private void applySentimentConfig() {
         if (!(parser instanceof AutoDetectParser)) {
             return;
         }
-        com.norconex.importer.parser.SentimentConfig sentimentCfg = parseHints.getSentimentConfig();
+        CompositeParser cp = (CompositeParser) parser;
+        SentimentConfig sentimentCfg = parseHints.getSentimentConfig();
 
         if (!sentimentCfg.isEnabled()) {
-            boolean removed = removeParserFromList(
-                    (CompositeParser) parser, SENTIMENT_PARSER);
-            if (removed) {
+            // Normally already absent thanks to the tika-config.xml
+            // exclusion. This covers custom tika-config.xml files that do
+            // not carry that exclusion.
+            if (removeParserFromList(cp, SENTIMENT_PARSER)) {
                 LOG.debug("Sentiment analysis parsing is disabled. "
                         + "SentimentAnalysisParser has been removed from the Tika parser chain. "
                         + "Configure SentimentConfig with enabled=true to activate it.");
@@ -176,12 +195,48 @@ public class AbstractTikaParser implements IHintsAwareParser {
             return;
         }
 
+        if (containsParser(cp, SENTIMENT_PARSER)) {
+            LOG.info("Sentiment analysis parsing is enabled "
+                    + "(SentimentAnalysisParser already in the Tika parser chain).");
+            return;
+        }
+
         String modelPath = StringUtils.defaultIfBlank(
-                sentimentCfg.getModelPath(),
-                com.norconex.importer.parser.SentimentConfig.DEFAULT_MODEL_PATH);
-        configureSentimentModelPath((CompositeParser) parser, modelPath);
-        LOG.info("Sentiment analysis parsing is enabled (model path: {}).",
-                modelPath);
+                sentimentCfg.getModelPath(), SentimentConfig.DEFAULT_MODEL_PATH);
+        Parser sentimentParser = newSentimentParser(modelPath);
+        if (sentimentParser != null && addParserToList(cp, sentimentParser)) {
+            LOG.info("Sentiment analysis parsing is enabled (model path: {}).",
+                    modelPath);
+        }
+    }
+
+    /**
+     * Creates and initializes Tika's {@code SentimentAnalysisParser}. The
+     * model path is injected before {@code initialize(...)} is invoked, since
+     * that is when the model is resolved and loaded.
+     *
+     * @param modelPath model path or URL
+     * @return the initialized parser, or {@code null} if it could not be created
+     */
+    private Parser newSentimentParser(String modelPath) {
+        try {
+            Class<?> cls = Class.forName(SENTIMENT_PARSER);
+            Parser sentimentParser =
+                    (Parser) cls.getDeclaredConstructor().newInstance();
+            java.lang.reflect.Field modelField = cls.getDeclaredField("modelPath");
+            modelField.setAccessible(true);
+            modelField.set(sentimentParser, modelPath);
+            ((Initializable) sentimentParser).initialize(
+                    Collections.<String, Param>emptyMap());
+            return sentimentParser;
+        } catch (ReflectiveOperationException | TikaException
+                | RuntimeException e) {
+            LOG.error("Sentiment analysis is enabled but Tika's "
+                    + "SentimentAnalysisParser could not be initialized with model "
+                    + "path \"{}\". Sentiment analysis will be unavailable.",
+                    modelPath, e);
+            return null;
+        }
     }
 
     /**
@@ -225,26 +280,39 @@ public class AbstractTikaParser implements IHintsAwareParser {
     }
 
     @SuppressWarnings("unchecked")
-    private void configureSentimentModelPath(CompositeParser cp, String modelPath) {
+    private boolean containsParser(CompositeParser cp, String parserClassName) {
         try {
             java.lang.reflect.Field field = CompositeParser.class.getDeclaredField("parsers");
             field.setAccessible(true);
-            List<Parser> list = (List<Parser>) field.get(cp);
-            for (Parser p : list) {
+            for (Parser p : (List<Parser>) field.get(cp)) {
                 Parser unwrapped = unwrapDecorator(p);
-                if (isParser(unwrapped, SENTIMENT_PARSER)) {
-                    java.lang.reflect.Field modelField = unwrapped.getClass().getDeclaredField("modelPath");
-                    modelField.setAccessible(true);
-                    modelField.set(unwrapped, modelPath);
-                    return;
+                if (isParser(unwrapped, parserClassName)) {
+                    return true;
                 }
-                if (unwrapped instanceof CompositeParser) {
-                    configureSentimentModelPath((CompositeParser) unwrapped, modelPath);
+                if (unwrapped instanceof CompositeParser && containsParser(
+                        (CompositeParser) unwrapped, parserClassName)) {
+                    return true;
                 }
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            LOG.warn("Could not configure the Tika sentiment model path; "
-                    + "the default setup may still be used.", e);
+            LOG.warn("Could not inspect the Tika parser chain via reflection.", e);
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean addParserToList(CompositeParser cp, Parser parserToAdd) {
+        try {
+            java.lang.reflect.Field field = CompositeParser.class.getDeclaredField("parsers");
+            field.setAccessible(true);
+            List<Parser> mutable = new ArrayList<>((List<Parser>) field.get(cp));
+            mutable.add(parserToAdd);
+            field.set(cp, mutable);
+            return true;
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOG.warn("Could not add {} to the Tika parser chain via reflection.",
+                    parserToAdd.getClass().getName(), e);
+            return false;
         }
     }
 
