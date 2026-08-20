@@ -20,10 +20,11 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * Configuration settings influencing how documents are parsed by various 
- * parsers.  These settings are not applicable to all parsers and some parsers
+ * Configuration settings influencing how documents are parsed by various
+ * parsers. These settings are not applicable to all parsers and some parsers
  * may decide not to support some of these settings (for not being able to
  * or else).
+ * 
  * @author Pascal Essiembre
  * @since 2.6.0
  */
@@ -32,15 +33,22 @@ public class ParseHints {
     private final OCRConfig ocrConfig = new OCRConfig();
     private final EmbeddedConfig embeddedConfig = new EmbeddedConfig();
     private final GrobidConfig grobidConfig = new GrobidConfig();
+    private final SentimentConfig sentimentConfig = new SentimentConfig();
 
     public OCRConfig getOcrConfig() {
         return ocrConfig;
     }
+
     public EmbeddedConfig getEmbeddedConfig() {
         return embeddedConfig;
     }
+
     public GrobidConfig getGrobidConfig() {
         return grobidConfig;
+    }
+
+    public SentimentConfig getSentimentConfig() {
+        return sentimentConfig;
     }
 
     @Override
@@ -53,6 +61,7 @@ public class ParseHints {
                 .append(ocrConfig, castOther.ocrConfig)
                 .append(embeddedConfig, castOther.embeddedConfig)
                 .append(grobidConfig, castOther.grobidConfig)
+                .append(sentimentConfig, castOther.sentimentConfig)
                 .isEquals();
     }
 
@@ -62,6 +71,7 @@ public class ParseHints {
                 .append(ocrConfig)
                 .append(embeddedConfig)
                 .append(grobidConfig)
+                .append(sentimentConfig)
                 .toHashCode();
     }
 
@@ -71,6 +81,7 @@ public class ParseHints {
                 .append("ocrConfig", ocrConfig)
                 .append("embeddedConfig", embeddedConfig)
                 .append("grobidConfig", grobidConfig)
+                .append("sentimentConfig", sentimentConfig)
                 .toString();
     }
 }

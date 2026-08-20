@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -80,10 +79,9 @@ public class AbstractTikaParser implements IHintsAwareParser {
         BOTH
     }
 
-    private static final String GROBID_REST_PARSER =
-            "org.apache.tika.parser.journal.GrobidRESTParser";
-    private static final String JOURNAL_PARSER =
-            "org.apache.tika.parser.journal.JournalParser";
+    private static final String GROBID_REST_PARSER = "org.apache.tika.parser.journal.GrobidRESTParser";
+    private static final String JOURNAL_PARSER = "org.apache.tika.parser.journal.JournalParser";
+    private static final String SENTIMENT_PARSER = "org.apache.tika.parser.sentiment.SentimentAnalysisParser";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTikaParser.class);
 
@@ -119,6 +117,7 @@ public class AbstractTikaParser implements IHintsAwareParser {
             this.ocrTesseractConfig = toTesseractConfig(parseHints.getOcrConfig());
         }
         applyGrobidConfig();
+        applySentimentConfig();
     }
 
     /**
@@ -160,6 +159,31 @@ public class AbstractTikaParser implements IHintsAwareParser {
         }
     }
 
+    private void applySentimentConfig() {
+        if (!(parser instanceof AutoDetectParser)) {
+            return;
+        }
+        com.norconex.importer.parser.SentimentConfig sentimentCfg = parseHints.getSentimentConfig();
+
+        if (!sentimentCfg.isEnabled()) {
+            boolean removed = removeParserFromList(
+                    (CompositeParser) parser, SENTIMENT_PARSER);
+            if (removed) {
+                LOG.debug("Sentiment analysis parsing is disabled. "
+                        + "SentimentAnalysisParser has been removed from the Tika parser chain. "
+                        + "Configure SentimentConfig with enabled=true to activate it.");
+            }
+            return;
+        }
+
+        String modelPath = StringUtils.defaultIfBlank(
+                sentimentCfg.getModelPath(),
+                com.norconex.importer.parser.SentimentConfig.DEFAULT_MODEL_PATH);
+        configureSentimentModelPath((CompositeParser) parser, modelPath);
+        LOG.info("Sentiment analysis parsing is enabled (model path: {}).",
+                modelPath);
+    }
+
     /**
      * Walks the internal {@code parsers} list of the given
      * {@link CompositeParser} (and any nested {@code CompositeParser}s)
@@ -169,22 +193,23 @@ public class AbstractTikaParser implements IHintsAwareParser {
      */
     @SuppressWarnings("unchecked")
     private boolean removeGrobidParsersFromList(CompositeParser cp) {
+        return removeParserFromList(cp, GROBID_REST_PARSER, JOURNAL_PARSER);
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean removeParserFromList(CompositeParser cp, String... parserClassNames) {
         try {
-            java.lang.reflect.Field field =
-                    CompositeParser.class.getDeclaredField("parsers");
+            java.lang.reflect.Field field = CompositeParser.class.getDeclaredField("parsers");
             field.setAccessible(true);
             List<Parser> list = (List<Parser>) field.get(cp);
-            // The list itself may be unmodifiable; copy it first.
             List<Parser> mutable = new java.util.ArrayList<>(list);
             boolean removed = mutable.removeIf(p -> {
-                // Unwrap ParserDecorator to get at the real class name.
                 Parser unwrapped = unwrapDecorator(p);
-                if (isGrobidParser(unwrapped)) {
+                if (isParser(unwrapped, parserClassNames)) {
                     return true;
                 }
-                // Recurse into nested CompositeParser entries.
                 if (unwrapped instanceof CompositeParser) {
-                    removeGrobidParsersFromList((CompositeParser) unwrapped);
+                    removeParserFromList((CompositeParser) unwrapped, parserClassNames);
                 }
                 return false;
             });
@@ -193,9 +218,33 @@ public class AbstractTikaParser implements IHintsAwareParser {
             }
             return removed;
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            LOG.warn("Could not disable Grobid parsers via reflection; "
-                    + "Grobid-related warnings may appear.", e);
+            LOG.warn("Could not disable Tika parser(s) via reflection; "
+                    + "some external parser warnings may appear.", e);
             return false;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void configureSentimentModelPath(CompositeParser cp, String modelPath) {
+        try {
+            java.lang.reflect.Field field = CompositeParser.class.getDeclaredField("parsers");
+            field.setAccessible(true);
+            List<Parser> list = (List<Parser>) field.get(cp);
+            for (Parser p : list) {
+                Parser unwrapped = unwrapDecorator(p);
+                if (isParser(unwrapped, SENTIMENT_PARSER)) {
+                    java.lang.reflect.Field modelField = unwrapped.getClass().getDeclaredField("modelPath");
+                    modelField.setAccessible(true);
+                    modelField.set(unwrapped, modelPath);
+                    return;
+                }
+                if (unwrapped instanceof CompositeParser) {
+                    configureSentimentModelPath((CompositeParser) unwrapped, modelPath);
+                }
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            LOG.warn("Could not configure the Tika sentiment model path; "
+                    + "the default setup may still be used.", e);
         }
     }
 
@@ -215,11 +264,20 @@ public class AbstractTikaParser implements IHintsAwareParser {
      * that requires an external Grobid REST service.
      */
     private boolean isGrobidParser(Parser p) {
+        return isParser(p, GROBID_REST_PARSER, JOURNAL_PARSER);
+    }
+
+    private boolean isParser(Parser p, String... parserClassNames) {
         if (p == null) {
             return false;
         }
         String name = p.getClass().getName();
-        return GROBID_REST_PARSER.equals(name) || JOURNAL_PARSER.equals(name);
+        for (String parserClassName : parserClassNames) {
+            if (parserClassName.equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

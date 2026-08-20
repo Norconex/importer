@@ -16,10 +16,15 @@ package com.norconex.importer.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.tika.parser.CompositeParser;
+import org.apache.tika.parser.Parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,55 +40,81 @@ import com.norconex.importer.parser.impl.ExternalParser;
 
 public class GenericDocumentParserFactoryTest {
 
-    @Test
-    public void testWriteRead() {
-        GenericDocumentParserFactory f = new GenericDocumentParserFactory();
+        @Test
+        public void testWriteRead() {
+                GenericDocumentParserFactory f = new GenericDocumentParserFactory();
 
-        // default read/write
-//        XMLConfigurationUtil.assertWriteRead(f);
+                // default read/write
+                // XMLConfigurationUtil.assertWriteRead(f);
 
-        // more complex read/write
-        f.setIgnoredContentTypesRegex("test");
-        EmbeddedConfig emb = f.getParseHints().getEmbeddedConfig();
-        emb.setNoExtractContainerContentTypes("noExtractContainerTest");
-        emb.setNoExtractEmbeddedContentTypes("noExtractEmbeddedTest");
-        emb.setSplitContentTypes(".*");
+                // more complex read/write
+                f.setIgnoredContentTypesRegex("test");
+                EmbeddedConfig emb = f.getParseHints().getEmbeddedConfig();
+                emb.setNoExtractContainerContentTypes("noExtractContainerTest");
+                emb.setNoExtractEmbeddedContentTypes("noExtractEmbeddedTest");
+                emb.setSplitContentTypes(".*");
 
-        OCRConfig ocr = f.getParseHints().getOcrConfig();
-        ocr.setContentTypes("ocrContentTypesTest");
-        ocr.setLanguages("ocrLanguages");
-        ocr.setPath("ocrPath");
+                OCRConfig ocr = f.getParseHints().getOcrConfig();
+                ocr.setContentTypes("ocrContentTypesTest");
+                ocr.setLanguages("ocrLanguages");
+                ocr.setPath("ocrPath");
 
-        ExternalParser app = new ExternalParser();
-        app.setCommand("command.exe");
-        f.registerParser(ContentType.BMP, app);
-        XML.assertWriteRead(f, "documentParserFactory");
-    }
-
-    @Test
-    public void testIgnoringContentTypes() throws IOException {
-
-        GenericDocumentParserFactory factory =
-                new GenericDocumentParserFactory();
-        factory.setIgnoredContentTypesRegex("application/pdf");
-        Properties metadata = new Properties();
-
-        ImporterConfig config = new ImporterConfig();
-        config.setParserFactory(factory);
-        Importer importer = new Importer(config);
-        Doc doc = importer.importDocument(
-                new ImporterRequest(TestUtil.getAlicePdfFile().toPath())
-                        .setContentType(ContentType.PDF)
-                        .setMetadata(metadata)
-                        .setReference("n/a")).getDocument();
-
-        try (InputStream is = doc.getInputStream()) {
-            String output = IOUtils.toString(
-                    is, StandardCharsets.UTF_8).substring(0, 100);
-            output = StringUtils.remove(output, '\n');
-            Assertions.assertTrue(
-                    !StringUtils.isAsciiPrintable(output),
-                    "Non-parsed output expected to be binary.");
+                ExternalParser app = new ExternalParser();
+                app.setCommand("command.exe");
+                f.registerParser(ContentType.BMP, app);
+                XML.assertWriteRead(f, "documentParserFactory");
         }
-    }
+
+        @Test
+        public void testSentimentParserDisabledByDefault()
+                        throws IllegalAccessException, NoSuchFieldException {
+                GenericDocumentParserFactory factory = new GenericDocumentParserFactory();
+                factory.getParseHints().getSentimentConfig().setEnabled(false);
+
+                Object fallback = FieldUtils.readField(factory, "fallbackParser", true);
+                Object parser = FieldUtils.readField(fallback, "parser", true);
+                Field parsersField = CompositeParser.class.getDeclaredField("parsers");
+                parsersField.setAccessible(true);
+                @SuppressWarnings("unchecked")
+                List<Parser> parserList = (List<Parser>) parsersField.get(parser);
+
+                Assertions.assertFalse(
+                                parserList.stream().anyMatch(p -> {
+                                        Parser wrapped = p;
+                                        while (wrapped instanceof org.apache.tika.parser.ParserDecorator) {
+                                                wrapped = ((org.apache.tika.parser.ParserDecorator) wrapped)
+                                                                .getWrappedParser();
+                                        }
+                                        return "org.apache.tika.parser.sentiment.SentimentAnalysisParser"
+                                                        .equals(wrapped.getClass().getName());
+                                }),
+                                "Sentiment parser should be disabled by default.");
+        }
+
+        @Test
+        public void testIgnoringContentTypes() throws IOException {
+
+                GenericDocumentParserFactory factory = new GenericDocumentParserFactory();
+                factory.setIgnoredContentTypesRegex("application/pdf");
+                Properties metadata = new Properties();
+
+                ImporterConfig config = new ImporterConfig();
+                config.setParserFactory(factory);
+                Importer importer = new Importer(config);
+                Doc doc = importer.importDocument(
+                                new ImporterRequest(TestUtil.getAlicePdfFile().toPath())
+                                                .setContentType(ContentType.PDF)
+                                                .setMetadata(metadata)
+                                                .setReference("n/a"))
+                                .getDocument();
+
+                try (InputStream is = doc.getInputStream()) {
+                        String output = IOUtils.toString(
+                                        is, StandardCharsets.UTF_8).substring(0, 100);
+                        output = StringUtils.remove(output, '\n');
+                        Assertions.assertTrue(
+                                        !StringUtils.isAsciiPrintable(output),
+                                        "Non-parsed output expected to be binary.");
+                }
+        }
 }

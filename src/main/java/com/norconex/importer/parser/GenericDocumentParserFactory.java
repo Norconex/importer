@@ -117,6 +117,12 @@ import com.norconex.importer.response.ImporterResponse;
  * limit OCR to a subset of document content types, configure the corresponding
  * content-types (e.g. application/pdf, image/tiff, image/png, etc.).
  * </p>
+ * <p>
+ * Optional external Tika integrations are disabled by default and only become
+ * active when explicitly configured. This includes OCR, Grobid, and sentiment
+ * analysis, preventing startup-time network calls or local service dependency
+ * checks unless a user intentionally enables them.
+ * </p>
  *
  * {@nx.xml.usage
  * <documentParserFactory
@@ -132,8 +138,11 @@ import com.norconex.importer.response.ImporterResponse;
  * </ocr>
  *
  * <grobid enabled="[false|true]"
- * serviceUrl="(base URL of Grobid REST service, default: http://localhost:8070)"/>
-
+ * serviceUrl="(base URL of Grobid REST service, default:
+ * http://localhost:8070)"/>
+ *
+ * <sentiment enabled="[false|true]"
+ * modelPath="(optional model path or URL, default: remote Tika model)"/>
  *
  * <ignoredContentTypes>
  * (optional regex matching content types to ignore for parsing,
@@ -437,6 +446,16 @@ public class GenericDocumentParserFactory
             grobidCfg.setServiceUrl(grobidXml.getString(
                     "@serviceUrl", grobidCfg.getServiceUrl()));
         }
+
+        // Sentiment Config
+        XML sentimentXml = xml.getXML("sentiment");
+        if (sentimentXml != null) {
+            SentimentConfig sentimentCfg = parseHints.getSentimentConfig();
+            sentimentCfg.setEnabled(sentimentXml.getBoolean(
+                    "@enabled", sentimentCfg.isEnabled()));
+            sentimentCfg.setModelPath(sentimentXml.getString(
+                    "@modelPath", sentimentCfg.getModelPath()));
+        }
     }
 
     @Override
@@ -483,6 +502,14 @@ public class GenericDocumentParserFactory
             xml.addElement("grobid")
                     .setAttribute("enabled", grobid.isEnabled())
                     .setAttribute("serviceUrl", grobid.getServiceUrl());
+        }
+        SentimentConfig sentiment = parseHints.getSentimentConfig();
+        if (sentiment.isEnabled()
+                || !SentimentConfig.DEFAULT_MODEL_PATH.equals(
+                        sentiment.getModelPath())) {
+            xml.addElement("sentiment")
+                    .setAttribute("enabled", sentiment.isEnabled())
+                    .setAttribute("modelPath", sentiment.getModelPath());
         }
     }
 
@@ -549,4 +576,3 @@ public class GenericDocumentParserFactory
                 .toString();
     }
 }
-

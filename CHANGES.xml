@@ -16,6 +16,13 @@
         GenericDocumentParserFactory XML with a new "grobid" element.
       </action>
       <action dev="essiembre" type="add">
+        New SentimentConfig class for optional Tika sentiment analysis
+        (disabled by default). Like OCR and Grobid, sentiment analysis is an
+        opt-in integration that avoids startup-time remote model downloads unless
+        explicitly enabled via GenericDocumentParserFactory XML with a
+        "sentiment" element.
+      </action>
+      <action dev="essiembre" type="add">
         New AbstractTikaParser.MetadataFieldPolicy enum (PRESERVE, LEGACY, BOTH)
         to control how Dublin Core "dc:" prefixed metadata field names are
         mapped to Importer metadata. Default is BOTH, which stores values under

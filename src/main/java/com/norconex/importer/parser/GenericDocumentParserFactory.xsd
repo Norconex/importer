@@ -20,6 +20,8 @@
     <xs:complexType>
       <xs:all>
         <xs:element ref="ocr" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="grobid" minOccurs="0" maxOccurs="1" />
+        <xs:element ref="sentiment" minOccurs="0" maxOccurs="1" />
         <xs:element name="ignoredContentTypes" type="nonEmptyValue" minOccurs="0" maxOccurs="1" />
         <xs:element ref="embedded" minOccurs="0" maxOccurs="1" />
         <xs:element ref="fallbackParser" minOccurs="0" maxOccurs="1" />
@@ -36,6 +38,20 @@
         <xs:element name="contentTypes" type="nonEmptyValue" minOccurs="0" maxOccurs="1" />
       </xs:all>
       <xs:attribute name="path" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="grobid">
+    <xs:complexType>
+      <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+      <xs:attribute name="serviceUrl" type="xs:string" use="optional"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="sentiment">
+    <xs:complexType>
+      <xs:attribute name="enabled" type="xs:boolean" use="optional"/>
+      <xs:attribute name="modelPath" type="xs:string" use="optional"/>
     </xs:complexType>
   </xs:element>
 
