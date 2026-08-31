@@ -7,7 +7,7 @@
   </properties>
   <body>
 
-    <release version="3.2.0-SNAPSHOT" date="2026-??-??" description="Minor release.">
+    <release version="3.2.0" date="2026-08-31" description="Minor release.">
       <action dev="essiembre" type="add">
         New GrobidConfig class for configuring optional Grobid REST service
         integration (disabled by default). When enabled, Tika's JournalParser
